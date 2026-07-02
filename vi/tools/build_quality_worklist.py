@@ -57,11 +57,12 @@ def section_titles(text: str) -> list[str]:
 def toc_rows(text: str) -> list[tuple[str, str, str]]:
     rows: list[tuple[str, str, str]] = []
     for line in text.splitlines():
-        if "&" not in line or not line.rstrip().endswith("\\\\"):
+        if "&" not in line:
             continue
-        if line.strip().startswith(r"\textbf"):
+        stripped = line.strip()
+        if stripped.startswith(r"\textbf") or stripped.startswith(r"\hline"):
             continue
-        parts = [part.strip().rstrip("\\").strip() for part in line.split("&")]
+        parts = [part.strip().rstrip("\\").strip() for part in stripped.split("&")]
         if len(parts) >= 3 and parts[0].isdigit():
             rows.append((parts[0], parts[1], parts[2]))
     return rows

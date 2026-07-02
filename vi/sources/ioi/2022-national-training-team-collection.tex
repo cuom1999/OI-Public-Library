@@ -18,7 +18,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2022. Tệp này
 là bản quét ảnh: \texttt{pdftotext} chỉ trả về các dấu sang trang và không khôi
 phục được văn bản thân bài. Vì vậy bản LaTeX này chuyển ngữ phần nhận diện tập
-sách, mục lục và mười ba bài đầu tiên bằng cách đọc trực tiếp các trang đã
+sách, mục lục và toàn bộ mười bốn bài bằng cách đọc trực tiếp các trang đã
 render từ PDF, kết hợp OCR bằng \texttt{tesseract}.
 \end{abstract}
 
@@ -49,7 +49,7 @@ về duy trì thông tin đường đi trên một lớp DAG đặc biệt.
 159 & Ứng dụng của đại số tuyến tính trong OI & Chang Ruinian \\
 182 & Bàn về các bài toán tổ hợp chuỗi liên quan tới lý thuyết Lyndon & Wan Chengzhang \\
 204 & Báo cáo ra đề \emph{Chuỗi của Cutie Duo} & Feng Shiyuan \\
-213 & Bàn về bài toán mô phỏng luồng chi phí trong OI & Chen Kuowen
+213 & Bàn về bài toán mô phỏng luồng chi phí trong OI & Chen Kuowen \\
 \end{tabular}
 \end{center}
 
@@ -7201,6 +7201,353 @@ tác giả trên con đường OI.
   \url{https://en.wikipedia.org/wiki/Suffix_array}.
 \end{enumerate}
 
+\section{Bàn về bài toán mô phỏng luồng chi phí trong OI}
+
+\begin{center}
+\textbf{Chen Kuowen, Trường Trung học Dư Diêu, Chiết Giang}
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Luồng chi phí là một mô hình kinh điển trong lý thuyết đồ thị. Trong thi tin
+học, nhiều bài toán có thể quy về luồng chi phí, nhưng việc chạy trực tiếp thuật
+toán luồng thường không đạt độ phức tạp mong muốn. Bài viết này xuất phát từ
+mô hình luồng chi phí cực tiểu, nhắc lại mạng dư, đường tăng, chu trình âm và
+thuật toán SSP, rồi tổng kết các cách ``mô phỏng'' quá trình tăng luồng bằng
+cấu trúc dữ liệu, tính lồi, đối ngẫu tuyến tính và các dạng đồ thị đặc biệt
+như chuỗi một chiều, chuỗi hai chiều và cây.
+
+\subsection{Mở đầu}
+
+Mô hình luồng chi phí có năng lực biểu diễn rất mạnh: chọn một số đối tượng,
+ghép cặp, phân phối tài nguyên, lập lịch, hoặc cân bằng nhiều điều kiện đều có
+thể viết thành một bài toán tìm luồng cực tiểu chi phí. Vấn đề là mạng trong
+OI thường có quy mô lớn hoặc có cấu trúc động; nếu chỉ dựng đồ thị rồi chạy
+thuật toán tổng quát thì số cạnh, số lần tăng luồng hoặc chi phí tìm đường ngắn
+đều quá cao.
+
+Vì vậy mục tiêu của bài viết không phải trình bày một thuật toán luồng chi phí
+tổng quát mới, mà là phân tích bản chất của quá trình tăng luồng. Khi đồ thị có
+cấu trúc đặc biệt, đường tăng thường chỉ đi qua một số điểm mấu chốt, chi phí
+theo lượng luồng có tính lồi rời rạc, hoặc bài toán đối ngẫu có dạng DP dễ hơn.
+Nếu nhận ra các tính chất đó, ta có thể mô phỏng chính xác kết quả của luồng chi
+phí mà không cần duy trì toàn bộ mạng dư.
+
+\subsection{Tóm lược về luồng chi phí cực tiểu}
+
+\subsubsection{Định nghĩa và quy ước}
+
+Cho đồ thị có hướng $G=(V,E)$, mỗi cạnh $(u,v)$ có dung lượng $c(u,v)$ và chi
+phí đơn vị $a(u,v)$. Một luồng $x$ phải thỏa bảo toàn luồng tại mọi đỉnh khác
+nguồn $s$ và đích $t$:
+\[
+  \sum_{(u,v)\in E} x_{uv} = \sum_{(v,w)\in E} x_{vw}
+  \quad (v\in V\setminus\{s,t\}),
+\]
+đồng thời $0\le x_{uv}\le c(u,v)$. Chi phí của luồng là
+\[
+  \operatorname{cost}_G(x)=\sum_{(u,v)\in E} x_{uv}a(u,v),
+\]
+còn giá trị luồng là lượng chảy ròng từ $s$ tới $t$. Bài toán nguồn--đích cần
+tìm luồng khả thi có chi phí nhỏ nhất, có thể với giá trị luồng cố định hoặc
+không cố định tùy mô hình.
+
+\subsubsection{Mạng dư}
+
+Với một luồng hiện tại $x$, mạng dư $G_x$ gồm cạnh thuận còn dung lượng
+$c(u,v)-x_{uv}$ với chi phí $a(u,v)$, và cạnh ngược có dung lượng $x_{uv}$ với
+chi phí $-a(u,v)$. Nếu $x'$ là một luồng khả thi trên mạng dư, ký hiệu
+$x\oplus x'$ là kết quả cộng luồng theo cạnh thuận và trừ theo cạnh ngược. Khi
+đó chi phí biến đổi đúng bằng chi phí của phần luồng dư:
+\[
+  \operatorname{cost}_G(x\oplus x')=
+  \operatorname{cost}_G(x)+\operatorname{cost}_{G_x}(x').
+\]
+Đẳng thức này là cơ sở để xem mỗi bước cải thiện nghiệm như một bài toán tìm
+đường hoặc chu trình có chi phí âm trong mạng dư.
+
+\subsubsection{Đường tăng và chu trình âm}
+
+Một đường từ $s$ tới $t$ trong mạng dư với mọi cạnh còn dung lượng dương gọi là
+đường tăng; dung lượng của đường là dung lượng nhỏ nhất trên các cạnh của nó.
+Một chu trình trong mạng dư có tổng chi phí âm gọi là chu trình âm. Nếu tồn tại
+chu trình âm, ta có thể đẩy luồng quanh chu trình đó để giảm chi phí mà không
+đổi giá trị luồng. Nếu tồn tại đường tăng âm từ $s$ tới $t$, ta có thể tăng giá
+trị luồng đồng thời giảm chi phí biên.
+
+\paragraph{Bổ đề.}
+Các cải thiện trong mạng dư có thể phân rã thành đường tăng giữa $s,t$ và các
+chu trình. Vì vậy, một luồng chỉ tối ưu khi mạng dư không chứa chu trình âm và
+không chứa đường tăng có chi phí âm phù hợp với ràng buộc giá trị luồng đang
+xét. Đây là dạng quen thuộc của điều kiện tối ưu nguyên thủy--đối ngẫu.
+
+\subsubsection{Thuật toán SSP}
+
+Thuật toán \emph{successive shortest path} bắt đầu từ luồng không. Trong mỗi
+vòng, tìm đường ngắn nhất từ $s$ tới $t$ trên mạng dư, đẩy một đơn vị hoặc đẩy
+theo dung lượng nghẽn, rồi cập nhật mạng dư. Nếu dùng thế năng để bảo đảm trọng
+số không âm sau mỗi lần chạy đường ngắn, ta nhận được cách cài đặt kinh điển
+của min-cost max-flow.
+
+\begin{enumerate}
+  \item Khởi tạo $x=0$.
+  \item Khi còn đường tăng có chi phí làm cải thiện mục tiêu, tìm đường ngắn
+  nhất $P$ trong mạng dư.
+  \item Đẩy lượng luồng cho phép trên $P$ và đặt $x\leftarrow x\oplus P$.
+  \item Trả về luồng cuối cùng.
+\end{enumerate}
+
+Bài viết nhấn mạnh rằng trong các bài OI, ta thường không chạy SSP nguyên dạng.
+Thay vào đó, ta chứng minh các đường ngắn nhất có hình dạng đặc biệt rồi duy trì
+chúng bằng heap, cây đoạn, DSU hoặc các hàm lồi rời rạc. Sau $k$ lần tăng, chi
+phí nhận được chính là hàm $f(k)$: chi phí nhỏ nhất của luồng có giá trị đúng
+$k$.
+
+\subsection{Kỹ thuật và hướng suy nghĩ}
+
+\subsubsection{Mô phỏng đường tăng}
+
+Khi đồ thị có nhiều đỉnh phụ nhưng đường tăng luôn đi qua một số lớp hoặc điểm
+mấu chốt, ta không cần giữ toàn bộ đồ thị. Chỉ cần biết đường ngắn nhất giữa
+các điểm mấu chốt, rồi ghép các đoạn đó lại. Nếu mỗi đoạn có thể được lấy bằng
+heap hoặc cấu trúc dữ liệu, một vòng SSP có thể giảm từ tuyến tính theo số cạnh
+xuống còn logarithm hoặc gần tuyến tính tổng cộng.
+
+\paragraph{Ví dụ 1: AGCO18C Coins.}
+Bài toán yêu cầu chia $n$ người vào ba nhóm để tối đa hóa tổng vàng, bạc và
+đồng thu được. Một cách dựng luồng là ban đầu giả sử mọi người ở nhóm thứ nhất,
+sau đó mỗi người có các cạnh biểu diễn lợi ích khi chuyển sang nhóm thứ hai
+hoặc thứ ba. Đường tăng chỉ cần xét qua các điểm mấu chốt tương ứng với ba nhóm
+và các lựa chọn người. Ta duy trì các ứng viên chuyển nhóm bằng heap; mỗi lần
+chọn đường tăng tốt nhất thì cập nhật trạng thái của đúng những người liên quan.
+Như vậy quá trình giống SSP nhưng không hề dựng mạng dư đầy đủ.
+
+\paragraph{Ví dụ 2: NOI2019 Sequence.}
+Cho hai dãy $a_i,b_i$, cần chọn hai dãy con độ dài $k$ sao cho phần giao có kích
+thước ít nhất $L$ và tổng giá trị lớn nhất. Nếu cố định số phần tử giao, bài
+toán có thể dựng thành luồng qua các lớp ``chỉ chọn $a$'', ``chỉ chọn $b$'' và
+``chọn cả hai''. Cách đầu tiên là liệt kê số phần tử giao rồi mô phỏng đường
+tăng giữa các lớp bằng heap. Khi chuyển từ tham số $d-1$ sang $d$, dung lượng
+của một số cạnh thay đổi rất ít nên có thể tái sử dụng cấu trúc dữ liệu.
+
+Cách thứ hai nhìn bài toán qua quy hoạch tuyến tính. Sau khi nới lỏng tính
+nguyên, ma trận ràng buộc vẫn cho nghiệm nguyên; bài toán đối ngẫu dẫn tới một
+dạng chọn các chênh lệch tốt nhất. Từ đó ta lại thu được cùng các điểm mấu chốt
+nhưng chứng minh ngắn hơn và có thể đạt $O(n\log n)$.
+
+\subsubsection{Tính lồi}
+
+Gọi $f(k)$ là chi phí nhỏ nhất để gửi đúng $k$ đơn vị luồng. Với mạng có dung
+lượng nguyên, dãy $f(k)$ là lồi rời rạc trên miền xác định:
+\[
+  f(k+1)-f(k) \ge f(k)-f(k-1).
+\]
+Trực giác là đường tăng thứ $k+1$ không thể rẻ hơn đường tăng thứ $k$ sau khi
+các cơ hội rẻ đã bị dùng. Tính lồi này cho phép tìm lượng luồng tối ưu bằng tam
+phân rời rạc, nhị phân trên độ dốc hoặc WQS binary search.
+
+\paragraph{Ví dụ 3: bài toán khăn ăn.}
+Trong mô hình kế hoạch khăn ăn, mỗi ngày cần một số khăn sạch, có thể mua mới
+hoặc giặt bằng các dịch vụ khác nhau với thời gian và chi phí khác nhau. Dựng
+đồ thị theo thời gian, cạnh mua mới và cạnh giặt đều là các lựa chọn chuyển
+trạng thái. Hàm chi phí theo số khăn luân chuyển là lồi, nên có thể tìm số
+lượng tối ưu bằng tìm kiếm trên lượng luồng, hoặc dùng tham lam dựa trên chênh
+lệch chi phí biên. Đây là ví dụ điển hình cho việc dùng tính lồi để tránh chạy
+luồng trên mọi giá trị.
+
+\subsubsection{Duy trì hàm tuyến tính từng đoạn}
+
+Nhiều mô hình luồng sau khi rút gọn không cần lưu từng đường tăng, mà chỉ cần
+lưu hàm chi phí của một khối. Hàm này thường lồi và tuyến tính từng đoạn. Khi
+ghép hai khối, ta cộng chập các hàm; khi thêm một cạnh dung lượng hữu hạn, ta
+cắt miền; khi thêm chi phí đơn vị, ta tịnh tiến độ dốc. Heap trái/phải,
+multiset hoặc cây cân bằng có thể duy trì các điểm gãy của hàm.
+
+Đây là cách nhìn quan trọng trong các bài trên chuỗi một chiều và hai chiều ở
+phần sau: thay vì mô phỏng từng lần tăng, ta duy trì tập độ dốc còn hữu hiệu.
+
+\subsubsection{Đối ngẫu quy hoạch tuyến tính}
+
+Một mạng luồng chi phí có thể viết thành quy hoạch tuyến tính. Lấy đối ngẫu đôi
+khi biến bài toán từ ``chọn các cạnh luồng'' thành ``gán thế năng cho đỉnh''.
+Nếu đồ thị có cấu trúc đường thẳng, cây hoặc khoảng, các ràng buộc đối ngẫu có
+thể trở thành DP hoặc bài toán hồi quy đơn điệu.
+
+\paragraph{Ví dụ 4: ZJOI2020 Sequence.}
+Bài toán cho phép thực hiện các thao tác trên đoạn chẵn, đoạn lẻ hoặc toàn bộ
+đoạn để giảm dãy về $0$, cần số thao tác ít nhất. Sau khi biến đổi, mô hình có
+thể viết như một luồng chi phí với các cạnh biểu diễn việc giảm trên từng lớp
+chỉ số. Lấy đối ngẫu đưa bài toán về chọn các biến thỏa ràng buộc lân cận, từ
+đó có lời giải DP gọn hơn mô hình luồng ban đầu.
+
+\paragraph{Mô hình hồi quy đẳng trương.}
+Một dạng thường gặp là cần chọn dãy đơn điệu $x_1\le x_2\le\cdots\le x_n$ để
+tối ưu tổng các hàm lồi theo từng vị trí. Trong ngôn ngữ luồng, các cạnh giữa
+vị trí liên tiếp ép điều kiện đơn điệu; trong đối ngẫu, lời giải có thể mô tả
+bằng cách gộp các đoạn có trung bình không đúng thứ tự. Thuật toán PAV và các
+biến thể heap chính là cách mô phỏng luồng chi phí trên mô hình này.
+
+\subsection{Một số đồ thị đặc biệt}
+
+\subsubsection{Mô hình chuột vào hang}
+
+Bài viết dùng mô hình ``chuột vào hang'' để thống nhất nhiều bài. Trên một đường
+thẳng, mỗi con chuột phải đi tới một hang còn chỗ; chi phí là khoảng cách hoặc
+trọng số đường đi. Nếu mọi cạnh chỉ cho đi theo một chiều, ta có chuỗi một
+chiều; nếu được đi hai chiều, ta có chuỗi hai chiều. Các biến thể với dung lượng
+cạnh, mở/đóng vị trí hoặc truy vấn khoảng đều có thể xem như luồng chi phí trên
+đường.
+
+\subsubsection{Chuỗi một chiều}
+
+Trong chuỗi một chiều, luồng chỉ đi từ trái sang phải. Điều kiện tối ưu trở nên
+đơn giản: đường tăng thường nối một con chuột chưa ghép với một hang chưa đầy,
+hoặc đổi ghép qua một đoạn liên tiếp. Vì không có chu trình âm phức tạp, ta có
+thể dùng cây đoạn để duy trì đường tăng tốt nhất của mỗi đoạn và ghép thông tin
+từ hai con.
+
+\paragraph{Ví dụ 5: Skydiving Survival.}
+Mỗi người nhảy dù cần tìm vị trí hạ cánh hợp lệ trên một đường thẳng. Khi thêm
+một người hoặc một vị trí, trạng thái ghép thay đổi như một đường tăng trong mô
+hình chuột--hang. Cây đoạn lưu ứng viên ``chuột thừa'', ``hang thừa'' và chi phí
+tốt nhất khi ghép qua biên. Khi một bên đã đầy, nó có thể được xem ngược lại
+như nhu cầu của phía kia; cách chuyển vai này chính là cạnh ngược trong mạng dư.
+
+Một lời giải khác duy trì hàm lồi tuyến tính từng đoạn của mỗi tiền tố. Mỗi con
+chuột thêm một điểm gãy, mỗi hang xóa hoặc dịch một điểm gãy. Hai lời giải tương
+ứng với hai cách nhìn của cùng quá trình SSP.
+
+\paragraph{Ví dụ 6: duy trì chuỗi một chiều.}
+Khi có cập nhật điểm và truy vấn đáp án toàn cục, ta dùng cây đoạn. Với mỗi nút,
+lưu bốn loại thông tin: nhu cầu còn lại ở đầu trái, khả năng cung cấp ở đầu
+phải, chi phí tốt nhất nội bộ và đường tăng tốt nhất đi qua biên. Phép hợp hai
+nút là chạy một bước ``mô phỏng luồng'' giữa phần dư của con trái và con phải.
+
+\paragraph{Ví dụ 7: Trade.}
+Bài toán có nhiều truy vấn khoảng trên một chuỗi. Nếu tách theo khối, các cạnh
+nằm hoàn toàn trong khối được tiền xử lý, còn phần đi qua biên giữa hai khối
+được biểu diễn bởi hàm chi phí theo lượng luồng qua cạnh giữa. Do hàm này lồi,
+có thể tìm lượng luồng tối ưu bằng tam phân hoặc nhị phân trên độ dốc. Kết quả
+là một thuật toán chia khối kết hợp cây đoạn, nhanh hơn nhiều so với chạy luồng
+cho từng truy vấn.
+
+\paragraph{Ví dụ 8: lập lịch công việc.}
+Mỗi công việc có thời điểm phát hành, hạn chót và giá trị. Chọn các công việc
+để tối đa hóa lợi ích có thể dựng thành chuỗi một chiều: thời gian là các đỉnh,
+cạnh dung lượng biểu diễn số máy hoặc số vị trí còn trống, còn công việc là
+cạnh nhảy qua một khoảng thời gian. WQS binary search biến ràng buộc số lượng
+công việc thành phạt tuyến tính; sau đó DSU có thể tìm vị trí trống gần nhất để
+mô phỏng đường tăng.
+
+\paragraph{Ví dụ 9: NOI2017 Vegetables.}
+Mỗi loại rau có số lượng, giá trị giảm dần theo ngày và giới hạn bán. Cách nhìn
+luồng là gửi đơn vị hàng hóa từ ngày sản xuất tới ngày bán với chi phí âm bằng
+lợi nhuận. Lời giải thứ nhất dùng cây đoạn để mô phỏng việc lấy đơn vị lợi
+nhuận biên tốt nhất. Lời giải thứ hai biến mỗi đơn vị lợi nhuận thành một công
+việc có hạn chót, rồi dùng DSU để đặt nó vào ngày muộn nhất còn chỗ. Hai cách
+làm cùng phản ánh một mạng dư nhưng cách thứ hai ngắn và thực dụng hơn.
+
+\paragraph{Ví dụ 10: Interval.}
+Trong mô hình đoạn có dung lượng cạnh bằng $1$, các thao tác thêm/xóa chuột,
+hang hoặc sửa dung lượng đều làm thay đổi cục bộ mạng dư. Cây đoạn lưu đường
+tăng tốt nhất và chu trình âm tốt nhất của từng đoạn. Khi ghép hai đoạn, chỉ có
+những đường đi qua biên mới cần xét thêm. Cách này cho phép xử lý cập nhật động
+trong $O(\log n)$ hoặc $O(\log^2 n)$ tùy phiên bản.
+
+\subsubsection{Chuỗi hai chiều}
+
+Trong chuỗi hai chiều, luồng có thể đi cả trái lẫn phải. Điều kiện tối ưu phức
+tạp hơn vì đường tăng có thể đổi hướng, nhưng cấu trúc lồi vẫn còn. Một cách
+là giữ hai heap cho các độ dốc bên trái và bên phải; khi thêm một điểm mới, ta
+đưa nó vào phía thích hợp rồi cân bằng bằng cách chuyển điểm gãy giữa hai heap.
+
+\paragraph{Ví dụ 11: chuỗi hai chiều cơ bản.}
+Với các chuột và hang trên đường thẳng, chi phí ghép là khoảng cách. Lời giải
+cây đoạn lưu thông tin tốt nhất ở hai đầu đoạn; lời giải hàm lồi lưu các điểm
+gãy. Khi nối thêm một vị trí, thủ tục \textsc{Extend} cập nhật cặp heap và giá
+trị hằng của hàm. Nếu một điểm gãy vượt qua phía còn lại, nó tương ứng với một
+đường tăng vừa được thực hiện trong mạng dư.
+
+\paragraph{Ví dụ 12: UER \#8 BRS.}
+Bài toán thêm dung lượng trên các đoạn của chuỗi hai chiều. Bản OCR của mã giả
+\textsc{Extend} bị nhiễu, nhưng ý chính là mỗi trạng thái lưu hai phần tử tốt
+nhất ở hai phía và một giá trị bù. Khi ghép, ta so sánh cặp tốt nhất mới với
+các cặp cũ, rồi di chuyển chúng giữa hai heap. Phân tích khấu hao cho thấy mỗi
+điểm gãy chỉ bị chuyển số lần hữu hạn, nên tổng thời gian gần tuyến tính nhân
+logarithm.
+
+\paragraph{Ví dụ 13: IOI2017 Wiring.}
+Bài \emph{Wiring} là mô hình ghép hai màu điểm trên đường thẳng với chi phí
+khoảng cách. Lời giải DP chính thức có thể được hiểu như mô phỏng luồng trên
+chuỗi hai chiều sau khi gom các đoạn cùng màu. Các đoạn đơn sắc tạo ra hàm lồi;
+khi chuyển sang đoạn màu khác, ta thực hiện một loạt đường tăng tốt nhất giữa
+hai tập điểm.
+
+\paragraph{Ví dụ 14: CTSC2010 Product Sales.}
+Các truy vấn bán sản phẩm có thể xem như cố định một phần luồng trên chuỗi rồi
+hỏi chi phí tối ưu của phần còn lại. Nếu biết trước cạnh nào bị ép lưu lượng,
+ta chia chuỗi thành các đoạn độc lập; mỗi đoạn duy trì hàm lồi riêng và ghép
+qua các điều kiện biên. Cách này biến một bài luồng động thành bài toán ghép
+hàm tuyến tính từng đoạn.
+
+\paragraph{Ví dụ 15: truy vấn cố định lưu lượng cạnh.}
+Khi mỗi truy vấn yêu cầu cố định lưu lượng trên một cạnh, phần bên trái và bên
+phải của cạnh chỉ tương tác qua đúng một biến. Hàm chi phí theo biến đó là lồi,
+nên đáp án là tổng hai hàm lồi cộng thêm hằng số. Nếu tiền xử lý prefix/suffix
+của các hàm, mỗi truy vấn có thể trả lời bằng tìm điểm gãy thích hợp thay vì
+chạy lại luồng.
+
+\subsubsection{Cây}
+
+Trên cây, đường giữa hai điểm là duy nhất nên mô hình chuột--hang mở rộng khá
+tự nhiên. Khó khăn nằm ở chỗ nhiều nhánh cùng tranh dung lượng qua một cạnh.
+Thông thường ta xử lý từ lá lên gốc; mỗi cây con trả về một hàm lồi hoặc một
+tập điểm gãy biểu diễn chi phí khi còn dư bao nhiêu đơn vị cần chuyển lên cha.
+
+\paragraph{Ví dụ 16: LibreOJ NOI Round \#2 Gold Miner.}
+Bài toán khai thác vàng trên cây có thể dựng thành việc chọn một số luồng đi
+qua các cạnh với lợi ích ở đỉnh và chi phí di chuyển. Mỗi cây con trả về hàm
+chi phí theo số đơn vị gửi lên cha. Khi gộp các con, ta cộng chập các hàm lồi;
+heap hoặc hàng đợi ưu tiên dùng để lấy các chênh lệch tốt nhất. Đây là phiên
+bản cây của mô phỏng đường tăng.
+
+\paragraph{Ví dụ 17: ICPC WF 2018 Conquer The World.}
+Bài này có các thành phố cần phân phối quân hoặc tài nguyên trên cây với chi
+phí theo khoảng cách. Xem phần dư ở mỗi đỉnh là chuột hoặc hang, ta ghép từ dưới
+lên: phần cùng cây con được triệt tiêu trước, phần dư mới đi qua cạnh cha và
+chịu thêm chi phí. Dùng multiset hoặc heap có lazy tag để cộng chi phí cạnh cho
+toàn bộ phần dư, ta thu được lời giải gần tuyến tính.
+
+\subsection{Tổng kết}
+
+Các ví dụ trên cho thấy ``mô phỏng luồng chi phí'' không phải một kỹ thuật đơn
+lẻ, mà là một cách đọc mô hình. Trước hết dựng hoặc tưởng tượng mạng luồng để
+hiểu điều kiện tối ưu. Sau đó quan sát mạng dư: đường tăng đi qua những điểm
+nào, chi phí theo lượng luồng có lồi không, đối ngẫu có dạng DP không, và đồ thị
+có phải đường thẳng hoặc cây không. Khi câu trả lời là có, ta thay thuật toán
+luồng tổng quát bằng cấu trúc dữ liệu đặc thù nhưng vẫn giữ được chứng minh tối
+ưu từ luồng chi phí.
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn các thầy cô, bạn bè và những người đã trao đổi về các mô hình
+luồng chi phí, đặc biệt là các lời giải và ghi chép công khai về mô phỏng luồng
+chi phí trong OI. Các ví dụ trong bài lấy từ nhiều kỳ thi và tài liệu khác nhau;
+một số tên bài trong bản quét bị OCR nhiễu nên bản dịch giữ tên tiếng Anh hoặc
+tên quen dùng khi cần.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Bài giảng và ghi chép về thuật toán luồng chi phí cực tiểu trong OI.
+  \item Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest và Clifford
+  Stein. \emph{Introduction to Algorithms}.
+  \item Các lời giải công khai của NOI2017 \emph{Vegetables}, IOI2017
+  \emph{Wiring} và những bài liên quan tới mô hình chuột--hang.
+  \item Yang Yuchen. \emph{Ghi chép về mô phỏng luồng chi phí}. Blog Luogu,
+  \url{https://www.luogu.com.cn/}.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục đã đọc được trên ảnh render, tập năm 2022 bao phủ các nhóm chủ đề
@@ -7282,5 +7629,11 @@ in 204--212. Đây là báo cáo ra đề về bài \emph{Chuỗi của Cutie Du
 nhiễu một số chỉ số trong công thức truy vấn, nên bản dịch giữ cấu trúc thuật
 toán, các độ phức tạp, điều kiện hình học dữ liệu và ví dụ, đồng thời diễn giải
 những công thức có ký hiệu không đọc chắc được.
+Bài thứ mười bốn được OCR từ các trang vật lý 217--246 của PDF, tương ứng trang
+in 213--241. Đây là bài tổng kết mô phỏng luồng chi phí; OCR làm nhiễu nhiều
+mã giả, hình minh họa và chỉ số công thức trong các ví dụ về chuỗi một chiều,
+chuỗi hai chiều và cây, nên bản dịch giữ mô hình, điều kiện tối ưu, kỹ thuật dữ
+liệu và ý chứng minh, đồng thời diễn giải các hình bằng văn bản thay vì dựng
+lại khi nhãn không đủ chắc.
 
 \end{document}

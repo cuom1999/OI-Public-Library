@@ -15,11 +15,11 @@ source documents.
 
 | Priority | Translation | Source pages | Current state | Extraction status | Required work |
 | ---: | --- | ---: | --- | --- | --- |
-| 1 | `sources/ioi/2022-national-training-team-collection.tex` | 246 | ToC plus first thirteen articles translated | `pdftotext` is essentially blank; Tesseract OCR is readable but noisy | Continue OCR-backed translation from article 14 onward. |
-| 2 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | ToC plus first thirteen articles translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 14 onward; no OCR needed for first pass. |
-| 3 | `sources/ioi/2020-national-training-team-collection.tex` | 196 | ToC plus first thirteen articles translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 14 onward. |
-| 4 | `sources/ioi/2017-national-training-team-collection.tex` | 204 | ToC plus first thirteen articles translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 14 onward. |
-| 5 | `sources/ioi/2019-national-training-team-collection.tex` | 231 | ToC plus first thirteen articles translated | `pdftotext` extracts body text but includes watermark noise | Continue from article 14 onward after filtering watermark text. |
+| 1 | `sources/ioi/2017-national-training-team-collection.tex` | 204 | ToC plus first fourteen articles translated; final page-190 article still pending | `pdftotext` extracts readable Unicode Chinese | Translate `Báo cáo ra đề Tái cấu trúc bộ gen`. |
+| 2 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | ToC plus first fourteen articles translated; final page-192 article still pending | `pdftotext` extracts readable Unicode Chinese | Translate the Euler graph generation/counting article; no OCR needed for first pass. |
+| 3 | `sources/ioi/2019-national-training-team-collection.tex` | 231 | ToC plus first fourteen articles translated; final page-202 article still pending | `pdftotext` extracts body text but includes watermark noise | Translate the Young tableau article after filtering watermark text. |
+| 4 | `sources/ioi/2022-national-training-team-collection.tex` | 246 | ToC plus all fourteen articles translated | `pdftotext` is essentially blank; Tesseract OCR is readable but noisy | Article coverage complete; proofread OCR-heavy formulas and pseudocode. |
+| 5 | `sources/ioi/2020-national-training-team-collection.tex` | 196 | ToC plus all fourteen articles translated | `pdftotext` extracts readable Unicode Chinese | Article coverage complete; proofread mathematical notation and examples. |
 | 6 | `sources/ioi/2013-national-training-team-collection.tex` | 137 | ToC plus first article translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 2 onward. |
 | 7 | `sources/ioi/2014-national-training-team-collection.tex` | 228 | ToC plus first article translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 2 onward. |
 | 8 | `sources/ioi/2016-national-training-team-collection.tex` | 234 | ToC plus first article translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 2 onward. |
