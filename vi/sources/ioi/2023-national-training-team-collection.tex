@@ -2,6 +2,9 @@
 % Source-PDF: IOI中国国家候选队论文/国家集训队2023论文集.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\renewcommand{\leadsto}{\mathrel{\longrightarrow}}
+\newcommand{\nleadsto}{\mathrel{\not\to}}
+\providecommand{\square}{\mathord{\vcenter{\hrule height .6em width .6em}}}
 
 \title{Tập luận văn đội tuyển quốc gia Trung Quốc năm 2023}
 \author{Huấn luyện viên: Yang Yaoliang, Peng Sijin}
@@ -56,25 +59,1750 @@ Sijin. Tệp PDF gồm 249 trang và được tạo bằng LaTeX với gói \tex
 \end{tabular}
 \end{center}
 
-\section{Chủ đề chính}
+\section{Tổng quan một số phương pháp xử lý tính liên thông và các bài toán liên quan trong lý thuyết đồ thị}
 
-Từ mục lục và phần đầu của bài thứ nhất, tập năm 2023 bao phủ các nhóm chủ đề
-sau:
+\begin{center}
+Trường Trung học phổ thông số 2 trực thuộc Đại học Sư phạm Hoa Đông\\
+Wan Chengzhang
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Bài viết này chia thành hai phần: đồ thị vô hướng và đồ thị có hướng. Nội dung
+thảo luận một số tư tưởng thuật toán về tính liên thông có tính thực dụng trong
+thi tin học; ngoài ra còn khảo sát thêm một số bài toán lý thuyết đồ thị có liên
+hệ nhất định với tính liên thông.
+\end{abstract}
+
+\subsection{Định nghĩa và quy ước}
+
+Với đồ thị vô hướng hoặc có hướng $G$:
 \begin{itemize}
-  \item tính liên thông trong đồ thị, treewidth, đồ thị nối tiếp-song song và static top tree;
-  \item xây dựng dữ liệu, bao hàm--loại trừ và các báo cáo ra đề;
-  \item hình học, trường hữu hạn, ma trận, tính lồi và số học;
-  \item palindrome, cấu trúc dữ liệu xâu con và DSU;
-  \item matching đồ thị hai phía, hypercube và phân tích thừa số nguyên tố;
-  \item thống kê trên cây và các bài toán cổ điển được xem xét lại.
+  \item mặc định ký hiệu $V$ là tập đỉnh của $G$, $E$ là tập cạnh của $G$,
+  $n=|V|$ là số đỉnh của $G$, $m=|E|$ là số cạnh của $G$;
+  \item nếu $E$ không có phần tử lặp, ta nói $G$ không có cạnh bội; nếu mọi
+  $(u,u)\notin E$, ta nói $G$ không có khuyên;
+  \item $G$ là đồ thị đơn khi và chỉ khi $G$ không có cạnh bội và không có
+  khuyên;
+  \item ký hiệu $u \to v$ biểu thị một cạnh $(u,v)$;
+  \item ký hiệu $u \leadsto v$ biểu thị một đường đi bắt đầu tại $u$ và kết
+  thúc tại $v$, tức $u=x_1\to x_2\to\cdots\to x_k=v$;
+  \item một chu trình là một đường đi dạng $u\leadsto u$;
+  \item đường đi đơn là đường đi không đi qua đỉnh lặp;
+  \item chu trình đơn là chu trình không đi qua đỉnh lặp, ngoại trừ đỉnh đầu và
+  đỉnh cuối;
+  \item $G'=(V',E')$ là đồ thị con của $G$ khi và chỉ khi $V'\subseteq V$,
+  $E'\subseteq E$;
+  \item đồ thị con cảm sinh theo tập đỉnh $V'$ của $G$ là
+  $G'=(V',E')$, $E'=\{(u,v)\in E\mid u,v\in V'\}$;
+  \item đồ thị con cảm sinh theo tập cạnh $E'$ của $G$ là
+  $G'=(V',E')$, $V'=\{x\in V\mid(\exists y)((x,y)\in E'\lor(y,x)\in E')\}$.
 \end{itemize}
 
-\section{Ghi chú về trích xuất}
+\subsection{Đồ thị vô hướng}
 
-Phần thân của tập 2023 có thể trích xuất được mà không cần OCR. Bài đầu tiên
-chia nội dung thành đồ thị vô hướng và đồ thị có hướng, trình bày các ý tưởng
-thuật toán về tính liên thông trong thi tin học, đồng thời bàn thêm các bài
-toán đồ thị có liên hệ với tính liên thông. Tập này có chất lượng văn bản phù
-hợp để mở rộng thành bản dịch từng bài với công thức, hình và bảng.
+Tính liên thông trong đồ thị vô hướng là một khái niệm rất dễ hiểu. Nếu tồn tại
+đường đi $u\leadsto v$, ta nói $u,v$ liên thông (vẫn dùng ký hiệu $u\leadsto v$
+để biểu thị $u,v$ liên thông). Đây là một quan hệ tương đương. Tiếp theo ta định
+nghĩa một số khái niệm sẽ dùng về sau.
+
+\paragraph{Định nghĩa 2.1 (tập cắt đỉnh/cạnh).}
+Với đồ thị vô hướng $G=(V,E)$ và $u,v\in V$: nếu $S\subseteq V$ thỏa
+$u,v\notin S$ và trong đồ thị con cảm sinh của $G$ theo $V\setminus S$ ta có
+$u\nleadsto v$, thì $S$ được gọi là một tập cắt đỉnh của $u,v$; nếu
+$T\subseteq E$ thỏa trong $G'=(V,E\setminus T)$ ta có $u\nleadsto v$, thì
+$T$ được gọi là một tập cắt cạnh của $u,v$.
+
+\paragraph{Định nghĩa 2.2 (độ liên thông đỉnh/cạnh).}
+Với đồ thị vô hướng $G=(V,E)$ và $u,v\in V$, $u\ne v$, nếu mọi tập cắt đỉnh của
+$u,v$ đều có kích thước không nhỏ hơn $s$, ta nói $u,v$ là $s$-liên thông đỉnh;
+nếu mọi tập cắt cạnh của $u,v$ đều có kích thước không nhỏ hơn $t$, ta nói
+$u,v$ là $t$-liên thông cạnh. Độ liên thông đỉnh/cạnh giữa $u,v$ là giá trị nhỏ
+nhất của $s,t$ ở trên. Độ liên thông đỉnh/cạnh của $G$ là giá trị nhỏ nhất trên
+mọi cặp đỉnh.
+
+Ví dụ, $1$-liên thông đỉnh và $1$-liên thông cạnh là tương đương; cả hai đều
+tương đương với tính liên thông theo nghĩa thông thường.
+
+\paragraph{Định lý 2.1 (Menger).}
+Với đồ thị vô hướng $G=(V,E)$ và $u,v\in V$, $u\ne v$:
+\begin{itemize}
+  \item $u,v$ là $k$-liên thông cạnh khi và chỉ khi tồn tại $k$ đường đi
+  $u\leadsto v$ đôi một không chung cạnh;
+  \item $u,v$ là $k$-liên thông đỉnh khi và chỉ khi tồn tại $k$ đường đi
+  $u\leadsto v$ đôi một không chung đỉnh ngoài hai đầu mút.
+\end{itemize}
+
+Đây thực chất là một phiên bản đặc biệt của định lý luồng cực đại cắt cực tiểu.
+Vì chứng minh không liên quan nhiều tới bài viết này nên được lược bỏ. Cần chú
+ý rằng trong định lý Menger ta không yêu cầu các đường đi phải khác nhau. Đồ thị
+đầy đủ $K_2$ gồm hai đỉnh là $k$-liên thông đỉnh với mọi $k$, nhưng trong đó chỉ
+tồn tại một đường đi đơn.
+
+\subsubsection{Cây DFS}
+
+Trước hết ta xét loại liên thông đơn giản nhất, tức $1$-liên thông. Với một đồ
+thị vô hướng liên thông $G$, luôn tìm được một đồ thị con không chu trình $T$
+chứa tất cả các đỉnh. Ta gọi $T$ như vậy là cây khung của $G$.
+
+\paragraph{Định nghĩa 2.3 (thứ tự DFS, cây DFS).}
+Trên đồ thị vô hướng liên thông $G=(V,E)$, thực hiện tìm kiếm theo chiều sâu từ
+đỉnh xuất phát $r\in V$. Nếu đỉnh $x$ là đỉnh thứ $p$ được thăm, gọi $p$ là thứ
+tự DFS của $x$, ký hiệu $\operatorname{dfn}_x=p$. Nếu $x\ne r$, nối một cạnh
+giữa $x$ và đỉnh $y$ lần đầu thăm được $x$; đồ thị tạo thành được gọi là một cây
+DFS gốc $r$, ký hiệu $T$.
+
+Đồ thị $T$ ở trên có $n-1$ cạnh, và có thể chứng minh bằng quy nạp rằng $T$ liên
+thông, nên $T$ thật sự là một cây khung của $G$. Thông thường ta xem nó là cây
+có gốc $r$; các cạnh trên $T$ gọi là cạnh cây, các cạnh còn lại gọi là cạnh
+không thuộc cây.
+
+Cần lưu ý rằng thứ tự DFS và cây DFS tương ứng một-một. Cùng một $r$ có thể có
+nhiều thứ tự DFS và nhiều cây DFS khác nhau.
+
+\paragraph{Tính chất 2.1.1.}
+Thứ tự DFS của toàn bộ các đỉnh tạo thành một hoán vị của $1,\ldots,n$. Với mọi
+đỉnh $x$, tập thứ tự DFS của tất cả đỉnh trong cây con gốc $x$ trên cây DFS tạo
+thành một đoạn liên tiếp bắt đầu từ $\operatorname{dfn}_x$.
+
+\paragraph{Tính chất 2.1.2.}
+Mọi cạnh không thuộc cây đều nối một cặp đỉnh tổ tiên--hậu duệ trên cây DFS. Các
+cạnh như vậy gọi là cạnh ngược lên tổ tiên.
+
+Chứng minh chỉ cần xét tính chất của quá trình DFS. Tính chất 2.1.2 là tính chất
+cốt lõi của cây DFS; đây cũng là lý do nhiều bài toán liên quan tới đồ thị liên
+thông được xét bằng cây DFS.
+
+\paragraph{Ví dụ 2.1.1 (Ehab's Last Theorem\protect\footnote{CF 1325 F}).}
+Với đồ thị vô hướng liên thông $G$ có $n$ đỉnh, ít nhất một trong hai mệnh đề sau
+đúng:
+\begin{enumerate}
+  \item $G$ có một chu trình đơn độ dài không nhỏ hơn $\sqrt n$.
+  \item $G$ có một tập độc lập kích thước không nhỏ hơn $\sqrt n$.
+\end{enumerate}
+
+\emph{Chứng minh.}
+Đặt $p=\lceil\sqrt n\rceil$. Ta đưa ra một chứng minh mang tính xây dựng.
+Trước hết dựng một cây DFS gốc $1$ của $G$, và ký hiệu $d_x$ là độ sâu của $x$
+trên cây DFS.
+
+Xét một cạnh không thuộc cây bất kỳ $x\to y$, trong đó $x$ là hậu duệ. Nếu
+$d_x-d_y\ge p-1$, ta đã tìm được một chu trình đơn có độ dài ít nhất $p$, gồm
+đường đi trên cây $x\leadsto y$ cộng với cạnh không thuộc cây $x\to y$.
+
+Giả sử không tồn tại chu trình như vậy. Khi đó với mọi cạnh không thuộc cây
+$x\to y$ ta có $|d_x-d_y|<p-1$. Ta có thể xây dựng một tập độc lập kích thước ít
+nhất $p$ bằng quá trình sau:
+\begin{itemize}
+  \item Định nghĩa tập đỉnh $S$, ban đầu rỗng.
+  \item Chọn một đỉnh chưa bị đánh dấu có độ sâu lớn nhất hiện tại, gọi là $x$.
+  Đặt $S\leftarrow S\cup\{x\}$, rồi đánh dấu các tổ tiên bậc
+  $0,1,2,\ldots,p-2$ của $x$.
+  \item Lặp lại cho tới khi mọi đỉnh đều bị đánh dấu. Khi đó $S$ là tập độc lập
+  cần tìm.
+\end{itemize}
+
+Trong mỗi vòng, nhiều nhất $p-1$ đỉnh bị đánh dấu, nên
+$|S|\ge \frac{n}{p-1}>p-1$. Đồng thời, đỉnh $x$ được chọn chỉ có thể có cạnh tới
+những đỉnh trong cây con của nó hoặc tới các tổ tiên bậc $0,1,\ldots,p-2$. Cách
+chọn $x$ theo độ sâu lớn nhất bảo đảm các đỉnh trong cây con đã bị đánh dấu, và
+các tổ tiên bậc $0,1,\ldots,p-2$ cũng bị đánh dấu. Vì vậy ở mọi thời điểm, mọi
+đỉnh có cạnh nối với một đỉnh trong $S$ đều đã bị đánh dấu, suy ra $S$ thật sự
+là tập độc lập. Mệnh đề được chứng minh. \hfill$\square$
+
+Với đồ thị vô hướng không liên thông, ta có thể chọn riêng một đỉnh gốc trong
+mỗi thành phần liên thông và dựng cây DFS, tạo thành một rừng DFS. Các khái niệm
+như thứ tự DFS vẫn dùng được, và các tính chất trên vẫn áp dụng. Chẳng hạn ví dụ
+2.1.1 thật ra cũng đúng với đồ thị không liên thông; chứng minh tương tự trường
+hợp liên thông.
+
+\subsubsection{Song liên thông}
+
+Tiếp theo ta nghiên cứu tính $2$-liên thông, phức tạp hơn một chút so với
+$1$-liên thông, còn gọi là song liên thông.
+
+Vì song liên thông là nội dung khá quen thuộc trong OI, phần cơ sở ở đây sẽ được
+trình bày ngắn gọn hơn, nhưng vẫn nêu đầy đủ mọi tính chất cần dùng. Nội dung
+này cũng được mô tả toàn diện trong tài liệu tham khảo [1].
+
+\paragraph{Song liên thông cạnh.}
+Do song liên thông cạnh trực quan hơn song liên thông đỉnh, ta giới thiệu nó
+trước.
+
+Một cặp đỉnh song liên thông cạnh chắc chắn là $1$-liên thông, nên các thành
+phần liên thông khác nhau độc lập với nhau. Vì vậy trước tiên xét trường hợp
+$G$ liên thông. Điều đầu tiên cần nói là song liên thông cạnh (có thể tổng quát
+lên $k$-liên thông cạnh bất kỳ) là một quan hệ tương đương trên tập đỉnh $V$.
+Nói cách khác, ta có thể phân hoạch $V$ theo quan hệ song liên thông cạnh.
+
+\paragraph{Định nghĩa 2.4 (cạnh cắt).}
+Với đồ thị vô hướng liên thông $G=(V,E)$, nếu $e\in E$ thỏa
+$G'=(V,E\setminus\{e\})$ không liên thông, thì $e$ được gọi là một cạnh cắt hay
+cầu. Với đồ thị vô hướng không nhất thiết liên thông, mọi cạnh cắt của một
+thành phần liên thông bất kỳ đều được gọi là cạnh cắt của đồ thị.
+
+Một mô tả tương đương là: nếu $\{e\}$ là tập cắt cạnh của một cặp đỉnh $(u,v)$,
+thì $e$ là cạnh cắt.
+
+\paragraph{Bổ đề 2.2.1.}
+Trong đồ thị vô hướng liên thông $G$, mọi cạnh cắt đều nằm trên cây DFS. Giả sử
+một cạnh cắt là $e=x\to y$, trong đó $x$ là đỉnh con. Sau khi xóa $e$, đồ thị
+tách thành hai thành phần liên thông: cây con của $x$ và phần bù của cây con đó.
+
+\paragraph{Bổ đề 2.2.2.}
+Gọi $E'$ là tập các cạnh cắt của đồ thị vô hướng liên thông $G=(V,E)$, và
+$G'=(V,E\setminus E')$. Khi đó với mọi $u,v\in V$, $u\ne v$, hai đỉnh $u,v$
+song liên thông cạnh trong $G$ khi và chỉ khi $u,v$ liên thông trong $G'$.
+
+\emph{Chứng minh.}
+Nếu $u,v$ liên thông trong $G'$ nhưng không song liên thông cạnh, thì tồn tại
+một cạnh $e$ sao cho sau khi xóa $e$, $u,v$ không còn liên thông. Khi đó $e$ tất
+nhiên là cạnh cắt. Tuy nhiên trong $G'$ đã xóa mọi cạnh cắt, $u,v$ vẫn liên
+thông, mâu thuẫn. Do đó $u,v$ song liên thông cạnh.
+
+Nếu $u,v$ không liên thông trong $G'$, xét đường đi trên cây $u\leadsto v$. Trên
+đường đi này chắc chắn tồn tại một cạnh $e$ là cạnh cắt (nếu không thì $u,v$ đã
+liên thông). Theo bổ đề 2.2.1, sau khi xóa cạnh này, $u,v$ không nằm trong cùng
+một thành phần liên thông, nên $u,v$ không song liên thông cạnh. \hfill$\square$
+
+\paragraph{Định nghĩa 2.5 (thành phần song liên thông cạnh).}
+Các đỉnh của đồ thị vô hướng $G$ có thể được phân hoạch thành vài lớp tương
+đương theo quan hệ song liên thông cạnh. Đồ thị con cảm sinh bởi mỗi lớp tương
+đương được gọi là một thành phần song liên thông cạnh của $G$.
+
+Sự tồn tại của thành phần song liên thông cạnh được bảo đảm bởi bổ đề 2.2.2: chỉ
+cần xóa mọi cạnh cắt của $G$ để được $G'$, khi đó mọi thành phần liên thông của
+$G'$ chính là các thành phần song liên thông cạnh của $G$.
+
+Ta có thể dựa vào bổ đề 2.2.2 để tìm tất cả thành phần song liên thông cạnh; với
+một số kỹ thuật cấu trúc dữ liệu, độ phức tạp thời gian có thể đạt $O(n+m)$.
+Tuy nhiên thuật toán Tarjan cũng có cùng độ phức tạp và gọn hơn.
+
+Xét khi nào một cạnh trở thành cạnh cắt. Gọi cạnh cây DFS là $e=(x,y)$, trong đó
+$x$ là đỉnh con. Khi đó $e$ là cạnh cắt khi và chỉ khi không tồn tại cạnh từ một
+đỉnh trong cây con của $x$ tới một tổ tiên của $x$ (không tính $x$). Chú ý rằng
+mọi cạnh không thuộc cây đều là cạnh ngược lên tổ tiên. Vì vậy ta có thể tính
+$\operatorname{low}_x$: thứ tự DFS nhỏ nhất của một đỉnh có thể tới được từ một
+đỉnh bất kỳ trong cây con của $x$ bằng cách đi qua nhiều nhất một cạnh không
+thuộc cây. Giá trị này được tính bằng quy hoạch động trên cây:
+\[
+\operatorname{low}_x=\min\left(\operatorname{dfn}_x,\,
+  \min_{y\in\operatorname{Son}(x)}\operatorname{low}_y,\,
+  \min_{(x,y)\in E}\operatorname{dfn}_y\right).
+\]
+
+Những đỉnh thỏa $\operatorname{low}_x=\operatorname{dfn}_x$ là đỉnh nông nhất
+của một thành phần song liên thông cạnh. Khi trong quá trình DFS phát hiện một
+đỉnh như vậy, phần chưa bị xóa trong cây con của nó tạo thành một thành phần
+song liên thông cạnh; sau đó xóa cây con này.
+
+\begin{center}
+\fbox{\parbox{0.82\linewidth}{\centering Hình 1: Một đồ thị vô hướng và các thành phần song liên thông cạnh khác nhau của nó.}}
+\end{center}
+
+\paragraph{Song liên thông đỉnh.}
+Song liên thông đỉnh không phải là quan hệ tương đương trên các đỉnh, nhưng ta
+vẫn có thể bắt đầu nghiên cứu từ cây DFS.
+
+\paragraph{Định nghĩa 2.6 (đỉnh cắt).}
+Với đồ thị vô hướng liên thông $G=(V,E)$, nếu $u\in V$ thỏa đồ thị con cảm sinh
+của $G$ theo $V\setminus\{u\}$ không liên thông, thì $u$ được gọi là một đỉnh
+cắt. Với đồ thị vô hướng không nhất thiết liên thông, mọi đỉnh cắt của một
+thành phần liên thông bất kỳ đều được gọi là đỉnh cắt của đồ thị.
+
+Đỉnh cắt cũng có mô tả tương đương: nếu $\{u\}$ là tập cắt đỉnh của một cặp
+đỉnh nào đó, thì $u$ là đỉnh cắt.
+
+Nhắc lại mảng $\operatorname{low}$ trong thuật toán Tarjan:
+$\operatorname{low}_x$ là thứ tự DFS nhỏ nhất của đỉnh có thể tới được từ một
+đỉnh bất kỳ trong cây con của $x$ sau khi đi qua nhiều nhất một cạnh không thuộc
+cây. Ta có thể dùng nó để tìm đỉnh cắt.
+
+\paragraph{Bổ đề 2.2.3.}
+Trong đồ thị vô hướng liên thông $G=(V,E)$, $x$ là đỉnh cắt khi và chỉ khi ít
+nhất một trong hai điều kiện sau đúng:
+\begin{enumerate}
+  \item $x$ là gốc của cây DFS và có ít nhất hai đỉnh con;
+  \item $x$ không phải gốc của cây DFS, và tồn tại một đỉnh con $y$ thỏa
+  $\operatorname{low}_y\ge\operatorname{dfn}_x$.
+\end{enumerate}
+
+\emph{Chứng minh.}
+Điều kiện thứ nhất khá hiển nhiên.
+
+Xét điều kiện thứ hai. Nếu tồn tại đỉnh con $y$ như vậy, thì trong cây con của
+$y$ không có cạnh ngược tới tổ tiên của $x$ (không tính $x$). Sau khi xóa $x$,
+cây con của $y$ không liên thông với bên ngoài và tự tạo thành một thành phần
+liên thông, nên $x$ chắc chắn là đỉnh cắt.
+
+Ngược lại, nếu đỉnh không phải gốc $x$ là đỉnh cắt, gọi $V'$ là phần bù của cây
+con $x$ trong $V$. Sau khi xóa $x$, tồn tại ít nhất một đỉnh con $y$ của $x$
+không liên thông với $V'$. Điều này nghĩa là không đỉnh nào trong cây con của
+$y$ có cạnh ngược tới $V'$, tức
+$\operatorname{low}_y\ge\operatorname{dfn}_x$. \hfill$\square$
+
+\paragraph{Định nghĩa 2.7 (thành phần song liên thông đỉnh).}
+Trong đồ thị vô hướng $G=(V,E)$, nếu tập đỉnh $V'\subseteq V$ thỏa đồ thị con
+cảm sinh $G'$ của $V'$ là song liên thông đỉnh, và với mọi
+$V'\subset V''\subseteq V$, đồ thị con cảm sinh của $V''$ không song liên thông
+đỉnh, thì $G'$ được gọi là một thành phần song liên thông đỉnh của $G$.
+
+Thuật toán Tarjan có thể dùng để tìm tất cả thành phần song liên thông đỉnh, theo
+cách tương tự tìm thành phần song liên thông cạnh: thực hiện quy hoạch động trên
+cây để tính $\operatorname{low}_x$. Nếu với một cặp cha con $(x,y)$ ta có
+$\operatorname{low}_y\ge\operatorname{dfn}_x$, thì lấy phần chưa bị xóa trong
+cây con của $y$, cộng thêm $x$, để tạo thành một thành phần song liên thông
+đỉnh. Sau đó xóa phần chưa bị xóa trong cây con của $y$. Độ phức tạp thời gian
+là $O(n+m)$.
+
+Dựa trên bổ đề 2.2.3 và chứng minh của nó, không khó để chứng minh tính đúng đắn
+của thuật toán Tarjan. Tuy nhiên hiện tại ta chưa nắm nhiều tính chất của thành
+phần song liên thông đỉnh. Trong mục 2.2.1, ta định nghĩa thành phần song liên
+thông cạnh dựa trên phân hoạch của $V'$. Vậy thành phần song liên thông đỉnh có
+hình thức tương tự hay không? Câu trả lời là có, nhưng ta cần chuyển đối tượng
+nghiên cứu từ đỉnh sang cạnh. Tiếp theo ta đưa ra một cách mô tả thành phần song
+liên thông đỉnh từ góc nhìn cạnh. Trong phần còn lại của mục này, mặc định đồ thị
+không có khuyên.
+
+\paragraph{Bổ đề 2.2.4.}
+Trong đồ thị song liên thông đỉnh $G$, với hai đỉnh khác nhau bất kỳ $u,v$, tồn
+tại một chu trình đơn đi qua $u,v$.
+
+\emph{Chứng minh.}
+Đây là hệ quả trực tiếp của định lý Menger. \hfill$\square$
+
+\paragraph{Bổ đề 2.2.5.}
+Trong đồ thị song liên thông đỉnh $G$, với một đỉnh bất kỳ $u$ và một cạnh bất
+kỳ $e$, tồn tại một chu trình đơn đi qua $u,e$; với hai cạnh bất kỳ $e_1,e_2$,
+tồn tại một chu trình đơn đi qua $e_1,e_2$.
+
+\emph{Chứng minh.}
+Tách một cạnh $x\to y$ thành hai cạnh $x\to z$ và $z\to y$. Hiển nhiên đồ thị
+mới vẫn song liên thông đỉnh, và lúc này cạnh đã được chuyển thành đỉnh. Áp dụng
+trực tiếp bổ đề 2.2.4 là đủ. \hfill$\square$
+
+\paragraph{Định nghĩa 2.8.}
+Trong đồ thị vô hướng $G$, nếu hai cạnh $e_1,e_2$ cùng nằm trên một chu trình
+đơn, ta nói chúng đồng chu trình.
+
+\paragraph{Bổ đề 2.2.6.}
+Quan hệ đồng chu trình là một quan hệ tương đương; các cạnh trong mỗi thành phần
+song liên thông đỉnh tạo thành một lớp tương đương theo nghĩa đồng chu trình.
+
+\emph{Chứng minh.}
+Trước hết, hai cạnh bất kỳ trong cùng một thành phần song liên thông đỉnh đều
+đồng chu trình, theo bổ đề 2.2.5.
+
+Với hai cạnh thuộc hai thành phần song liên thông đỉnh khác nhau
+$e_1=(x,y)$, $e_2=(u,v)$, giả sử tồn tại một chu trình đơn đồng thời chứa
+$e_1,e_2$. Khi đó mọi đỉnh trên chu trình này chắc chắn song liên thông đỉnh,
+mâu thuẫn với việc $e_1,e_2$ thuộc hai thành phần song liên thông đỉnh khác
+nhau. \hfill$\square$
+
+Cần chú ý rằng dù trong định nghĩa thành phần song liên thông đỉnh và trong
+chứng minh trên, ta chưa chứng minh một sự thật cơ bản: mỗi cạnh chỉ thuộc một
+thành phần song liên thông đỉnh. Thực ra từ định nghĩa hoặc từ thuật toán Tarjan
+đều có thể dễ dàng suy ra giao của hai thành phần song liên thông đỉnh bất kỳ có
+kích thước nhiều nhất $1$, nên mỗi cạnh đúng là chỉ nằm trong một thành phần
+song liên thông đỉnh.
+
+Nhờ bổ đề 2.2.6, ta có thể nhìn thành phần song liên thông đỉnh tương tự thành
+phần song liên thông cạnh; chỉ khác là thành phần song liên thông cạnh là phân
+hoạch tập đỉnh, còn thành phần song liên thông đỉnh là phân hoạch tập cạnh.
+
+\paragraph{Cây tròn--vuông.}
+Cây tròn--vuông là một cấu trúc dữ liệu dùng để mô tả cấu trúc các thành phần
+song liên thông đỉnh của đồ thị vô hướng.
+
+\paragraph{Định nghĩa 2.9 (cây tròn--vuông).}
+Với đồ thị vô hướng liên thông $G=(V,E)$ có ít nhất $2$ đỉnh, xây một đồ thị vô
+hướng mới $T$. Mỗi đỉnh của $T$ tương ứng với một đỉnh của $G$ hoặc một thành
+phần song liên thông đỉnh của $G$. Hai đỉnh của $T$ có cạnh khi và chỉ khi chúng
+lần lượt biểu diễn một đỉnh $x$ của $G$ và một thành phần song liên thông đỉnh
+$G'=(V',E')$ của $G$, đồng thời $x\in V'$. Đồ thị $T$ được gọi là cây
+tròn--vuông của $G$. Trong $T$, đỉnh tương ứng với đỉnh của đồ thị gốc gọi là
+đỉnh tròn; đỉnh tương ứng với thành phần song liên thông đỉnh của đồ thị gốc gọi
+là đỉnh vuông.
+
+\begin{center}
+\fbox{\parbox{0.82\linewidth}{\centering Hình 2: Một đồ thị vô hướng, các thành phần song liên thông đỉnh khác nhau của nó, và cây tròn--vuông.}}
+\end{center}
+
+Xét một đường đi độ dài $k$ là $u\leadsto v$. Nó lần lượt đi qua các thành phần
+song liên thông đỉnh chứa từng cạnh của nó, nên tương ứng với một đường đi độ
+dài $2k$ từ $u$ tới $v$ trên cây tròn--vuông: ngoài các đỉnh trên đường đi gốc,
+nó còn lần lượt đi qua các đỉnh vuông tương ứng với các thành phần song liên
+thông đỉnh chứa từng cạnh. Vì vậy cây tròn--vuông của một đồ thị liên thông là
+liên thông. Đồng thời, cây tròn--vuông chắc chắn không có chu trình, nếu không
+chu trình đó có thể co thành một thành phần song liên thông đỉnh. Do đó cây
+tròn--vuông thật sự là một cây. Với đồ thị vô hướng $G$ không nhất thiết liên
+thông, có thể định nghĩa ``rừng tròn--vuông'' bằng cách dựng cây tròn--vuông
+riêng cho từng thành phần liên thông.
+
+\paragraph{Tính chất 2.2.1.}
+Cây tròn--vuông là đồ thị hai phía; hai phía lần lượt là các đỉnh tròn và các
+đỉnh vuông.
+
+\paragraph{Tính chất 2.2.2.}
+Một đỉnh là đỉnh cắt khi và chỉ khi đỉnh tròn tương ứng của nó trên cây
+tròn--vuông có bậc lớn hơn $1$. Lá trên cây tròn--vuông (kể cả gốc bậc $1$)
+chắc chắn là đỉnh tròn, và chúng chính là toàn bộ các đỉnh không phải đỉnh cắt.
+
+\paragraph{Tính chất 2.2.3.}
+Trong một đồ thị vô hướng có $n\ge2$ đỉnh, tổng số đỉnh của tất cả thành phần
+song liên thông đỉnh không vượt quá $2n-2$.
+
+\emph{Chứng minh.}
+Chọn một đỉnh tròn làm gốc trên cây tròn--vuông. Sau đó, với mỗi đỉnh vuông, chỉ
+định một đỉnh con của nó. Các đỉnh con này đều là đỉnh tròn và chắc chắn không
+trùng nhau, nên số đỉnh vuông không vượt quá số đỉnh tròn không phải gốc, tức
+$n-1$.
+
+Vì vậy tổng số đỉnh của cây tròn--vuông không vượt quá $2n-1$, tổng số cạnh
+không vượt quá $2n-2$. Tổng kích thước của các thành phần song liên thông đỉnh
+chính là tổng bậc của các đỉnh vuông, tức tổng số cạnh của cây tròn--vuông. Suy
+ra kết luận. \hfill$\square$
+
+\paragraph{Tính chất 2.2.4.}
+Với hai đỉnh $u,v\in V$ trong đồ thị vô hướng liên thông $G$, mọi đường đi đơn
+giữa $u$ và $v$ chắc chắn đi qua, và chỉ đi qua, tất cả thành phần song liên
+thông đỉnh tương ứng với các đỉnh vuông trên đường đi giữa chúng trong cây
+tròn--vuông (cụ thể là đi qua các cạnh nằm trong những thành phần đó); đồng thời
+chắc chắn đi qua mọi đỉnh tròn trên đường đi đó (tức các đỉnh tương ứng trong
+đồ thị gốc).
+
+Cây tròn--vuông là một cấu trúc rất quan trọng trong OI và có nhiều ứng dụng.
+Dưới đây là vài ví dụ.
+
+\paragraph{Ví dụ 2.2.1 (xương rồng).}
+Đồ thị vô hướng liên thông mà mỗi cạnh nằm trên nhiều nhất một chu trình đơn
+được gọi là xương rồng theo cạnh. Nhiều thao tác vốn làm được trên cây có thể
+được chuyển sang xương rồng thông qua cây tròn--vuông.
+
+Xét thuật toán Tarjan trên xương rồng. Ta nhận được một cây DFS, và mỗi cạnh
+không thuộc cây tương ứng với một đường đi trên cây; các đường đi này đôi một
+không chung cạnh. Mỗi cạnh không thuộc cây tương ứng với một chu trình đơn. Vì
+vậy quá trình Tarjan trực tiếp giúp ta tìm mọi chu trình, điều này rất tiện. Ví
+dụ khi cần DP trên xương rồng, ta có thể làm từ dưới lên trên cây tròn--vuông
+(hoặc trên cây DFS): mỗi khi tìm được một chu trình thì DP trên chu trình, nếu
+không thì DP trên cây.
+
+Khi cần sửa đổi/truy vấn đường đi trên xương rồng, thông thường phải chuyển
+đường đi trên xương rồng thành đường đi trên cây tròn--vuông, rồi qua một số
+thảo luận chuyển bài toán thành bài toán trên cây. Tuy nhiên loại bài này thường
+khó cài đặt, và hiện không thường gặp trong OI.
+
+\paragraph{Ví dụ 2.2.2 (Địa địa thiết thiết\protect\footnote{Luogu P8456, SWTR-8}).}
+Cho đồ thị vô hướng liên thông $G=(V,E)$, các cạnh có hai màu đen và trắng. Hãy
+tính số cặp đỉnh không thứ tự $(x,y)$ sao cho tồn tại một đường đi đơn
+$x\leadsto y$ có cả cạnh đen lẫn cạnh trắng.
+
+Ta chỉ cần đếm các cặp $(x,y)$ không thỏa điều kiện. Có ba trường hợp:
+\begin{enumerate}
+  \item mọi đường đi đơn $x\leadsto y$ chỉ đi qua cạnh đen;
+  \item mọi đường đi đơn $x\leadsto y$ chỉ đi qua cạnh trắng;
+  \item tồn tại riêng một đường đi đơn $x\leadsto y$ chỉ gồm cạnh đen và một
+  đường đi đơn chỉ gồm cạnh trắng, nhưng không có đường đi đơn nào đồng thời đi
+  qua hai màu cạnh.
+\end{enumerate}
+
+Trước hết xét trường hợp 1. Theo tính chất 2.2.4 của cây tròn--vuông, ta biết
+chỉ cần xét các cạnh trong mọi đỉnh vuông nằm trên đường đi $x\leadsto y$ của
+cây tròn--vuông, vì các cạnh khác không thể xuất hiện trên đường đi đơn nào từ
+$x$ tới $y$.
+
+Gọi một đỉnh vuông là thuần đen khi và chỉ khi mọi cạnh trong thành phần song
+liên thông đỉnh tương ứng đều là đen; thuần trắng được định nghĩa tương tự. Ta
+khẳng định trường hợp 1 xảy ra khi và chỉ khi mọi đỉnh vuông trên đường đi
+$x\leadsto y$ của cây tròn--vuông đều thuần đen.
+
+Bổ đề phụ: trong đồ thị song liên thông đỉnh, với hai đỉnh cho trước
+$x,y$ ($x\ne y$) và một cạnh $e$, tồn tại một đường đi đơn $x\leadsto y$ đi qua
+$e$.
+
+Chứng minh bổ đề phụ chỉ cần nhắc lại bổ đề 2.2.5. Trước hết tìm một chu trình
+$C$ chứa $x,e$, sau đó chọn một đường đi đơn $P$ từ $y$ tới $x$ sao cho tập đỉnh
+của $P$ và $C$ giao nhau nhiều hơn một đỉnh (chú ý $x$ chắc chắn nằm trong giao,
+nên luôn tìm được $P$ như vậy; nếu không, $x$ là đỉnh cắt). Gọi $u$ là đỉnh gần
+$y$ nhất trên $P$ trong giao của hai tập đỉnh. Khi đó chọn đường đi trên chu
+trình từ $x$ tới $u$ có chứa $e$, ghép với tiền tố $u\leadsto y$ của $P$, ta
+được một đường đi đơn $x\leadsto y$ đi qua $e$.
+
+Vì vậy nếu tồn tại một đỉnh vuông trên đường đi không thuần đen, khi đi tới
+thành phần song liên thông đỉnh đó ta có thể tùy ý đi qua một cạnh trắng trong
+đó, mâu thuẫn với trường hợp 1. Ngược lại, nếu mọi đỉnh vuông trên đường đi đều
+thuần đen, hiển nhiên mọi đường đi đơn từ $x$ tới $y$ đều thuần đen. Khẳng định
+được chứng minh. Trường hợp 2 tương tự trường hợp 1.
+
+Trường hợp 3 nhìn qua phức tạp hơn một chút. Trước hết cần một bổ đề.
+
+Bổ đề phụ: nếu $(x,y)$ thỏa trường hợp 3, thì với hai đường đi đơn bất kỳ
+$P_1,P_2$ từ $x$ tới $y$ lần lượt thuần trắng và thuần đen, chúng không chung
+đỉnh nào ngoài hai đầu mút.
+
+Chứng minh bổ đề không khó: giả sử hai đường đi còn giao nhau ở một đỉnh khác
+ngoài đầu mút, thì có thể lấy một tiền tố và một hậu tố để tạo thành một đường
+đi mới; đường đi mới không thuần đen cũng không thuần trắng, mâu thuẫn với mô
+tả của trường hợp 3.
+
+Bổ đề này cho biết $x,y$ chắc chắn nằm trong cùng một thành phần song liên thông
+đỉnh, nếu không mọi đường đi giữa chúng đều đi qua một đỉnh cắt nào đó. Ngoài
+ra, giả sử trong thành phần song liên thông đỉnh chứa $x,y$ còn có một đỉnh
+$u\ne x,y$ kề với hai cạnh $e_1,e_2$ lần lượt đen và trắng, thì $x,y$ chắc chắn
+không thỏa trường hợp 3. Lý do là ta có thể tìm hai đường đi đơn $x\leadsto y$
+lần lượt đi qua $e_1,e_2$, và chúng giao nhau tại $u$, mâu thuẫn với bổ đề.
+
+Từ phân tích trên, trong mỗi thành phần song liên thông đỉnh có nhiều nhất một
+cặp $(x,y)$ thỏa trường hợp 3; chỉ cần tìm các đỉnh kề đồng thời cạnh đen và
+cạnh trắng.
+
+Sau khi phân tích ba trường hợp, phần còn lại chỉ là tính số lượng các cặp đỉnh
+này; phần đó khá đơn giản nên lược bỏ.
+
+\paragraph{Ví dụ 2.2.3 (Tom \& Jerry\protect\footnote{Luogu P7353; bài này do tác giả ra cho bài tập trại tinh anh IOI 2021.}).}
+Trên một đồ thị vô hướng liên thông $G$, Tom đuổi Jerry. Mỗi lượt Jerry đi
+trước, Tom đi sau. Trong mỗi lần đi, Jerry có thể đi qua tùy ý nhiều cạnh nhưng
+không được đi qua đỉnh Tom đang đứng; Tom mỗi lần chỉ được đi qua nhiều nhất một
+cạnh. Nếu sau khi đi, Tom đứng tại vị trí của Jerry thì Tom thắng. Có $q$ truy
+vấn $(a,b)$: khi ban đầu Tom và Jerry lần lượt đứng tại $a,b$, hỏi Tom có thể
+thắng trong thời gian hữu hạn hay không.
+
+Định nghĩa cặp đỉnh $(x,y)$ là tốt khi và chỉ khi mọi cặp đỉnh tròn kề nhau trên
+đường đi $x\leadsto y$ của cây tròn--vuông cũng kề nhau trong đồ thị gốc $G$.
+
+Kết luận chính: Tom thắng khi và chỉ khi ít nhất một trong hai điều kiện sau
+đúng:
+\begin{enumerate}
+  \item tồn tại một đỉnh $u$ sao cho với mọi $x$, cặp $(u,x)$ là tốt;
+  \item với mọi đỉnh $x$ trong thành phần liên thông chứa $b$ sau khi xóa $a$,
+  cặp $(a,x)$ là tốt.
+\end{enumerate}
+
+Trước hết chứng minh tính đủ. Hai điều kiện thực ra tương tự nhau; lấy điều kiện
+2 làm ví dụ. Mỗi lần Tom chỉ cần tiến một bước về phía Jerry theo đường đi trên
+cây tròn--vuông (tính khả thi ở đây được điều kiện 2 bảo đảm). Từ tính chất của
+cây tròn--vuông, Jerry luôn chỉ có thể di chuyển trong một nhánh của đỉnh Tom
+đang đứng; do đó cuối cùng Tom và Jerry sẽ gặp nhau, Tom thắng.
+
+Xét tính cần. Giả sử cả hai điều kiện đều không thỏa. Khi đó bước đầu tiên Jerry
+có thể đi tới một đỉnh $x$ sao cho $(a,x)$ không tốt, rồi đứng yên chờ tới khi
+Tom đi tới một đỉnh $y$ không nằm trên đường đi cây $a\leadsto x$. Vì điều kiện
+1 không đúng, trong toàn đồ thị chắc chắn tồn tại một đỉnh $z$ sao cho $(y,z)$
+không tốt. Nếu đường đi cây $z\leadsto x$ không đi qua $x$, lúc này Jerry đi
+thẳng từ $x$ tới $z$; nếu không, Jerry có thể đi tới $z$ ở bước ngay trước khi
+Tom đi tới $y$. Tóm lại, ta lại trở về tình huống cặp đỉnh gồm vị trí của Tom và
+vị trí của Jerry không tốt; vì vậy Tom sẽ không bao giờ bắt được Jerry.
+
+Sau khi có kết luận chính, thêm DP trên cây tròn--vuông là giải được bài này.
+Phần sau không liên quan tới bài viết nên lược bỏ.
+
+\paragraph{Phân rã tai.}
+Phân rã tai là một cách mô tả khác của đồ thị song liên thông, và có thể cung
+cấp cho ta một góc nhìn khác trong một số bài toán.
+
+\paragraph{Định nghĩa 2.10 (tai, tai mở).}
+Trong đồ thị vô hướng $G=(V,E)$ có một đồ thị con $G'=(V',E')$. Nếu một đường
+đi đơn hoặc chu trình đơn
+$P:x_1\to x_2\to\cdots\to x_k$ thỏa
+$x_1,x_k\in V'$ và $x_2,\ldots,x_{k-1}\notin V'$, thì $P$ được gọi là một tai
+của $G$ đối với $G'$. Nếu $P$ là đường đi đơn, $P$ được gọi là tai mở của $G$
+đối với $G'$.
+
+\paragraph{Định nghĩa 2.11 (phân rã tai, phân rã tai mở).}
+Với đồ thị vô hướng liên thông $G$, nếu dãy đồ thị liên thông
+$(G_0,G_1,\ldots,G_k)$ thỏa:
+\begin{enumerate}
+  \item $G_0$ là một chu trình đơn (có thể chỉ có một đỉnh), $G_k=G$;
+  \item $G_{i-1}$ là đồ thị con của $G_i$;
+  \item đặt $G_i=(V_i,E_i)$, khi đó $E_i\setminus E_{i-1}$ tạo thành một tai
+  (tai mở) của $G_{i-1}$,
+\end{enumerate}
+thì $(G_0,G_1,\ldots,G_k)$ được gọi là một phân rã tai (phân rã tai mở) của
+$G$.
+
+\paragraph{Định lý 2.2.}
+Đồ thị vô hướng liên thông $G$ có phân rã tai khi và chỉ khi $G$ song liên thông
+cạnh.
+
+\emph{Chứng minh.}
+Trước hết chứng minh tính cần. Nếu $G$ có phân rã tai $(G_0,\ldots,G_k)$, thì
+vì $G_0$ là chu trình đơn, $G_0$ chắc chắn song liên thông cạnh. Nếu $G_i$ song
+liên thông cạnh, thì $G_{i+1}$ thu được bằng cách thêm một đường đi vào $G_i$
+cũng song liên thông cạnh (vì không cạnh nào có thể là cạnh cắt). Quy nạp suy
+ra $G=G_k$ song liên thông cạnh.
+
+Tiếp theo chứng minh tính đủ. Nếu $G=(V,E)$ song liên thông cạnh và không có
+cạnh nào, kết luận hiển nhiên. Nếu không, dựng một cây DFS gốc $1$, rồi lấy một
+phân rã tai của $G$ theo cách sau:
+\begin{enumerate}
+  \item Tìm một cạnh không thuộc cây có đầu mút là $1$, viết là $1\to x$. Cho
+  $G_0$ là chu trình đơn gồm đường đi trên cây $1\leadsto x$ cộng với cạnh này.
+  \item Giả sử hiện đã sinh được $G_i$. Nếu tập đỉnh của $G_i$ chưa phải $V$,
+  tìm một đỉnh $x$ chưa thuộc $G_i$ sao cho cha $y$ của $x$ thuộc $G_i$. Do song
+  liên thông cạnh, tồn tại một cạnh ngược có hai đầu lần lượt là một tổ tiên $u$
+  của $y$ và một hậu duệ $v$ của $x$. Ta chọn đường đi trên cây $y\leadsto v$
+  hợp với cạnh $v\to u$; đây là một tai của $G_i$. Cho $G_{i+1}$ bằng $G_i$ cộng
+  tai này.
+  \item Lặp lại cho tới khi tập đỉnh của $G_i$ là $V$. Nếu khi đó còn cạnh nào
+  của $G$ chưa được thêm vào $G_i$, thêm từng cạnh riêng lẻ như một tai.
+\end{enumerate}
+Ở bước thứ hai, ta luôn bảo đảm tập đỉnh của $G_i$ là một khối liên thông trên
+cây chứa $1$, nên luôn tìm được $x$ như vậy. \hfill$\square$
+
+\paragraph{Ví dụ 2.2.4 (Quare\protect\footnote{SNOI 2013}).}
+Cho đồ thị vô hướng song liên thông cạnh $G$ có trọng số cạnh. Hãy tìm tổng
+trọng số nhỏ nhất của một đồ thị con song liên thông cạnh chứa mọi đỉnh.
+
+Xét trực tiếp hình dạng đồ thị song liên thông cạnh là khá khó, nhưng từ góc nhìn
+phân rã tai thì dễ xử lý hơn. Gọi $f(S)$ là tổng trọng số nhỏ nhất để nối các
+đỉnh trong tập $S$ thành một đồ thị song liên thông cạnh. Khi đó chuyển trạng
+thái có dạng $f(S)+E(S,T\setminus S)\to f(T)$, trong đó $E(S,R)$ là tổng trọng
+số nhỏ nhất của một tai có hai đầu mút thuộc $S$ và các đỉnh còn lại thuộc $R$.
+Có thể tính $E(S,R)$ bằng cách liệt kê đỉnh cuối cùng ngoài hai đầu mút trên tai;
+độ phức tạp $O(2^n\operatorname{Poly}(n))$. Tuy nhiên khi tính mảng $f$, ta cần
+liệt kê tập con, nên tổng độ phức tạp là $O(3^n\operatorname{Poly}(n))$.
+
+Có thể tối ưu điều này. Ta không tính $E(S,R)$, mà trực tiếp liệt kê thứ tự các
+đỉnh trên tai trong quá trình tính mảng $f$: mỗi lần chỉ thêm một đỉnh ở cuối
+tai, thay vì thêm cả tai. Cụ thể, đặt $f(S,i,j)$ là giá trị khi đã nối tập đỉnh
+$S$ thành một đồ thị song liên thông cạnh, hiện đang thêm một tai, tai này đã
+kéo dài từ một đầu tới $i$, và quy định đầu còn lại của tai là $j\in S$. Khi
+chuyển trạng thái chỉ cần liệt kê đỉnh kế tiếp sau $i$ trên tai. Độ phức tạp là
+$O(2^n\operatorname{Poly}(n))$.
+
+\paragraph{Định lý 2.3.}
+Đồ thị vô hướng liên thông không khuyên $G$ có ít nhất ba đỉnh có phân rã tai mở
+khi và chỉ khi $G$ song liên thông đỉnh.
+
+\emph{Chứng minh.}
+Chứng minh nhìn chung tương tự định lý 2.2.
+
+Trước hết chứng minh tính cần. Nếu $G$ có phân rã tai mở $(G_0,\ldots,G_k)$, thì
+vì $G_0$ là chu trình đơn, $G_0$ chắc chắn song liên thông đỉnh. Nếu $G_i$ song
+liên thông đỉnh, thì $G_{i+1}$ thu được bằng cách thêm một đường đi vào $G_i$
+cũng song liên thông đỉnh. Quy nạp suy ra $G=G_k$ song liên thông đỉnh.
+
+Tiếp theo chứng minh tính đủ. Nếu $G=(V,E)$ song liên thông đỉnh, dựng một cây
+DFS gốc $1$, rồi lấy một phân rã tai mở của $G$ như sau:
+\begin{enumerate}
+  \item Tìm một cạnh không thuộc cây có đầu mút là $1$, viết là $1\to x$. Cho
+  $G_0$ là chu trình đơn gồm đường đi trên cây $1\leadsto x$ cộng với cạnh này.
+  \item Giả sử hiện đã sinh được $G_i$. Nếu tập đỉnh của $G_i$ chưa phải $V$,
+  tìm một đỉnh $x$ chưa thuộc $G_i$ sao cho cha $y$ của $x$ thuộc $G_i$. Do song
+  liên thông đỉnh, tồn tại một cạnh ngược có hai đầu lần lượt là một tổ tiên $u$
+  của cha của $y$ và một hậu duệ $v$ của $x$. Ta chọn đường đi trên cây
+  $y\leadsto v$ hợp với cạnh $v\to u$; đây là một tai mở của $G_i$. Cho
+  $G_{i+1}$ bằng $G_i$ cộng tai mở này.
+  \item Lặp lại cho tới khi tập đỉnh của $G_i$ là $V$. Nếu khi đó còn cạnh nào
+  của $G$ chưa được thêm vào $G_i$, thêm từng cạnh riêng lẻ như một tai mở (ở
+  đây dùng điều kiện không có khuyên).
+\end{enumerate}
+Ở bước thứ hai, ta luôn bảo đảm tập đỉnh của $G_i$ là một khối liên thông trên
+cây chứa $1$, nên luôn tìm được $x$ như vậy. \hfill$\square$
+
+\paragraph{Ví dụ 2.2.5 (định hướng lưỡng cực).}
+Cho đồ thị vô hướng $G=(V,E)$ và hai đỉnh khác nhau $s,t$. Bốn mệnh đề sau tương
+đương:
+\begin{enumerate}
+  \item sau khi thêm cạnh vô hướng $s\to t$, $G$ song liên thông đỉnh;
+  \item trong cây tròn--vuông của $G$, mọi đỉnh vuông tạo thành một dây chuyền,
+  và $s\leadsto t$ là một đường kính của cây tròn--vuông;
+  \item tồn tại một cách định hướng các cạnh của $G$ để thu được một đồ thị có
+  hướng không chu trình, trong đó $s$ có bậc vào bằng $0$, $t$ có bậc ra bằng
+  $0$, và mọi đỉnh còn lại đều có bậc vào và bậc ra khác $0$;
+  \item tồn tại một hoán vị các đỉnh $p_1,p_2,\ldots,p_n$ sao cho
+  $p_1=s$, $p_n=t$, và đồ thị con cảm sinh bởi mọi tiền tố cũng như mọi hậu tố
+  đều liên thông.
+\end{enumerate}
+
+\emph{Chứng minh.}
+Trước hết chứng minh mệnh đề 1,2 tương đương và mệnh đề 3,4 tương đương; sau đó
+chứng minh hai cặp mệnh đề này cũng tương đương.
+
+Sự tương đương của mệnh đề 1 và 2 khá hiển nhiên.
+
+Xét mệnh đề 3 và 4. Nếu mệnh đề 3 đúng, lấy một thứ tự tô pô bất kỳ của đồ thị
+đã định hướng làm hoán vị $p$ trong mệnh đề 4. Theo mô tả của mệnh đề 3, ngoài
+$s$, mỗi đỉnh đều có một láng giềng đứng trước nó trong thứ tự tô pô. Vì vậy với
+mọi $p_i$, tồn tại một láng giềng trong $p_1,\ldots,p_{i-1}$; từ tính liên thông
+của đồ thị con cảm sinh bởi $p_1,\ldots,p_{i-1}$ suy ra tính liên thông của đồ
+thị con cảm sinh bởi $p_1,\ldots,p_i$. Quy nạp được mọi tiền tố liên thông; mọi
+hậu tố cũng tương tự. Nếu mệnh đề 4 đúng, định hướng mỗi cạnh từ đỉnh đứng trước
+trong $p$ tới đỉnh đứng sau trong $p$, dễ kiểm tra mệnh đề 3 đúng.
+
+Tiếp theo chứng minh mệnh đề 1 suy ra mệnh đề 3. Sau khi nối $s,t$, lấy một phân
+rã tai mở $(G_0,\ldots,G_k)$ của $G$ sao cho $G_0$ chứa cạnh $s\to t$ (nhắc lại
+chứng minh định lý 2.3, ta có thể làm được điều này trong quá trình dựng).
+$G_0$ là một chu trình đơn, nên hiển nhiên có thể định hướng mọi cạnh ngoài
+$s\to t$ từ $s$ tới $t$. Tiếp tục quy nạp: nếu $G_i$ đã định hướng xong, nay
+thêm một tai mở có hai đầu $u,v$ để được $G_{i+1}$. Nếu trong định hướng của
+$G_i$, $u$ tới được $v$, định hướng tai từ $u$ tới $v$; ngược lại định hướng tai
+từ $v$ tới $u$. Điều này không phá vỡ tính không chu trình, và mọi đỉnh ngoài
+$s,t$ khi được thêm vào đều có bậc vào và bậc ra bằng $1$. Vì vậy định hướng
+cuối cùng của $G=G_k$ thỏa mệnh đề 3.
+
+Cuối cùng chứng minh mệnh đề 4 suy ra mệnh đề 1. Giả sử mệnh đề 1 không đúng.
+Khi đó tồn tại một đỉnh cắt $u$ sao cho sau khi xóa $u$, hai đỉnh $s,t$ nằm
+trong cùng một thành phần liên thông; do đó chắc chắn còn một thành phần liên
+thông $S$ không chứa $s,t$. Gọi $x,y$ lần lượt là đỉnh xuất hiện sớm nhất và
+muộn nhất trong hoán vị $p$ trong tập $S\cup\{u\}$. Ít nhất một trong hai đỉnh
+$x,y$ không phải $u$. Không mất tính tổng quát, giả sử $x\ne u$. Xét đồ thị con
+cảm sinh bởi tiền tố $p_1,\ldots,p_i=x$. Vì $u$ không nằm trong đó, còn $s,x$
+đều nằm trong đó, đồ thị này chắc chắn không liên thông, mâu thuẫn với mệnh đề
+4. Do đó mệnh đề 4 suy ra mệnh đề 1.
+
+Kết hợp các phần trên, ta chứng minh được bốn mệnh đề tương đương, đồng thời đã
+đưa ra cách dựng từ mệnh đề 1 tới mệnh đề 3,4. \hfill$\square$
+
+\begin{center}
+\fbox{\parbox{0.82\linewidth}{\centering Hình 3: Một đồ thị vô hướng, phân rã tai mở sau khi nối $s,t$, và định hướng lưỡng cực.}}
+\end{center}
+
+\subsubsection{Tập cắt và tương đương theo lát cắt}
+
+\paragraph{Không gian cắt và không gian chu trình.}
+Trước đó ta đã định nghĩa tập cắt đỉnh và tập cắt cạnh giữa hai điểm, nhưng tập
+cắt trong phần này có nghĩa hơi khác: nó được định nghĩa trên một phân hoạch hai
+phần của tập đỉnh $V$.
+
+\paragraph{Định nghĩa 2.12 (tập cắt).}
+Trong đồ thị vô hướng $G=(V,E)$, với một phân hoạch hai phần
+$V=V_1\sqcup V_2$, định nghĩa tập cắt giữa $V_1,V_2$ là
+\[
+C(V_1,V_2)=\{e\in E\mid e=(x,y),\,x\in V_1,\,y\in V_2\}.
+\]
+Trong bài viết này cũng viết gọn là $C(V_1)$ hoặc $C(V_2)$.
+
+Có thể thấy, nếu $G$ không liên thông thì một tập cắt của $G$ có thể tách thành
+hợp các tập cắt của từng thành phần liên thông. Vì vậy về cơ bản ta chỉ cần xét
+tập cắt của đồ thị liên thông. Đồ thị liên thông đơn giản nhất là cây, nên ta
+bắt đầu từ tập cắt của cây.
+
+\paragraph{Bổ đề 2.3.1.}
+Với cây $T=(V,E)$, mọi tập con cạnh $E'\subseteq E$ đều là tập cắt, và phân
+hoạch $V_1,V_2$ tương ứng là duy nhất.
+
+\emph{Chứng minh.}
+Với tập con cạnh bất kỳ $E'\subseteq E$, sau khi xóa các cạnh trong $E'$, cây
+tách thành vài thành phần liên thông. Gọi tập các thành phần này là $\mathcal C$.
+Các cạnh trong $E'$ nối các phần tử của $\mathcal C$ thành một cây; gọi cây có
+đỉnh là các phần tử của $\mathcal C$ này là $T'$.
+
+Nếu $E'$ thật sự là tập cắt, thì với mọi $c\in\mathcal C$, tất cả đỉnh trong
+$c$ phải nằm cùng một phía của tập cắt; với hai đỉnh kề nhau $c_1,c_2\in
+\mathcal C$ trên $T'$, chúng phải nằm ở hai phía khác nhau của tập cắt.
+
+Do đó ta nhận được phân hoạch duy nhất có thể: một phía gồm tất cả các đỉnh
+trong những thành phần liên thông ứng với đỉnh độ sâu lẻ trên $T'$, phía còn
+lại gồm tất cả các đỉnh trong những thành phần liên thông ứng với đỉnh độ sâu
+chẵn. Dễ kiểm tra $E'$ đúng là tập cắt của phân hoạch này, nên mệnh đề được
+chứng minh. \hfill$\square$
+
+\paragraph{Bổ đề 2.3.2.}
+Nếu đồ thị liên thông $G=(V,E)$ có cây khung $T=(V,E_0)$, thì với mọi
+$E'_0\subseteq E_0$, tồn tại duy nhất một tập cắt $E'$ của $G$ sao cho
+$E'\cap E_0=E'_0$, và phân hoạch $V_1,V_2$ tương ứng là duy nhất.
+
+\emph{Chứng minh.}
+Theo bổ đề 2.3.1, từ $E'_0$ ta trực tiếp thu được duy nhất một cặp $V_1,V_2$.
+Với mọi cạnh không thuộc cây $e$, nếu hai đầu của $e$ đều nằm trong $V_1$ hoặc
+đều nằm trong $V_2$ thì $e\notin E'$; ngược lại $e\in E'$. Như vậy thu được tập
+cắt duy nhất thỏa điều kiện. \hfill$\square$
+
+Ta còn có thể phân tích thêm những cạnh không thuộc cây nào nằm trong $E'$. Xét
+cạnh không thuộc cây $e$ có hai đầu $x,y$. Nếu đường đi trên cây $x\leadsto y$
+có số lẻ cạnh thuộc $E'_0$, thì trong $T'$ ở chứng minh bổ đề 2.3.1, hai thành
+phần chứa $x,y$ có độ sâu khác tính chẵn lẻ, nghĩa là chúng nằm ở hai phía của
+tập cắt, nên $e\in E'$. Ngược lại $e\notin E'$. Nói cách khác, $E'$ chứa đúng
+các cạnh không thuộc cây băng qua số lẻ cạnh cây thuộc $E'_0$.
+
+\paragraph{Định lý 2.4 (không gian cắt).}
+Trong đồ thị vô hướng $G=(V,E)$, xem mỗi tập cạnh như một vector $m$ chiều trên
+$\mathbb F_2$. Khi đó tập tất cả các tập cắt tạo thành một không gian tuyến tính
+trên $\mathbb F_2$, gọi là không gian cắt. Số chiều của nó là $n-c$, trong đó
+$c$ là số thành phần liên thông của $G$.
+
+\emph{Chứng minh.}
+Trước hết xét trường hợp đồ thị liên thông.
+
+Để chứng minh các tập cắt tạo thành không gian tuyến tính, chỉ cần chứng minh
+hiệu đối xứng của hai tập cắt bất kỳ vẫn là tập cắt. Giả sử có hai tập cắt
+$C_1,C_2$, và các tập con của chúng trên cây khung lần lượt là $E_1,E_2$. Khi
+đó tập con trên cây khung của $C_1\oplus C_2$ là $E_1\oplus E_2$. Xét một cạnh
+không thuộc cây $e$. Nếu nó băng qua số lẻ cạnh trong $E_1\oplus E_2$, thì nhờ
+tính chất bảo toàn chẵn lẻ của hiệu đối xứng, ta có đúng một trong hai điều sau:
+$e$ băng qua số lẻ cạnh trong $E_1$, hoặc $e$ băng qua số lẻ cạnh trong $E_2$.
+Điều này tương đương $e\in C_1\oplus C_2$, nên $C_1\oplus C_2$ đúng là tập cắt.
+
+Để tính số chiều không gian, chỉ cần đưa ra một cơ sở. Theo bổ đề 2.3.2, với
+mỗi cạnh trên cây khung $e$, định nghĩa $f(e)$ là tập cạnh gồm $e$ và các cạnh
+không thuộc cây băng qua $e$. Khi đó mọi $f(e)$ tạo thành một cơ sở của không
+gian cắt, nên số chiều là $n-1$.
+
+Khi đồ thị không liên thông, các thành phần liên thông độc lập với nhau; không
+gian cắt của toàn đồ thị bằng tổng trực tiếp các không gian cắt của từng thành
+phần liên thông. Cộng số chiều lại, không gian cắt của $G$ có số chiều
+$n-c$. \hfill$\square$
+
+Trong đồ thị vô hướng còn có một không gian tuyến tính khác trên $\mathbb F_2$.
+Vì cấu trúc của nó đơn giản và trực quan hơn, còn quá trình thảo luận tương tự
+không gian cắt, ta chỉ nêu kết luận mà không chứng minh.
+
+\paragraph{Định lý 2.5 (không gian chu trình).}
+Trong đồ thị vô hướng $G=(V,E)$, xét mọi đồ thị con $G'=(V,E')$ sao cho bậc của
+mỗi đỉnh đều chẵn. Xem các $E'$ này như vector $m$ chiều trên $\mathbb F_2$,
+chúng tạo thành một không gian tuyến tính trên $\mathbb F_2$, gọi là không gian
+chu trình của $G$. Số chiều của nó là $m-n+c$, trong đó $c$ là số thành phần
+liên thông.
+
+Tương tự không gian cắt, một cơ sở của không gian chu trình được dẫn ra bởi từng
+cạnh không thuộc cây: với mỗi cạnh không thuộc cây $e=(x,y)$, hợp của $e$ với
+đường đi trên cây $x\leadsto y$ tạo thành một chu trình; các chu trình này là
+một cơ sở của không gian chu trình.
+
+\paragraph{Định lý 2.6.}
+Không gian cắt và không gian chu trình của cùng một đồ thị vô hướng là bù trực
+giao của nhau.
+
+\emph{Chứng minh.}
+Dùng cùng một rừng khung, ta chứng minh các phần tử trong cơ sở của không gian
+cắt và cơ sở của không gian chu trình tạo từ rừng khung này đôi một trực giao.
+Xét một cạnh cây $e_1$ và một cạnh không thuộc cây $e_2=(x,y)$; gọi các phần tử
+cơ sở tương ứng của không gian cắt và không gian chu trình là $v_1,v_2$. Nếu
+$e_1$ không nằm trên đường đi cây $x\leadsto y$, thì hai tập cạnh ứng với
+$v_1,v_2$ không giao nhau. Nếu $e_1$ nằm trên đường đi cây $x\leadsto y$, thì
+giao của hai tập cạnh ứng với $v_1,v_2$ chỉ gồm $e_1,e_2$. Trong cả hai trường
+hợp đều có $v_1\cdot v_2=0$.
+
+Đồng thời tổng số chiều của hai không gian bằng $m$, nên chúng là bù trực giao
+của nhau. \hfill$\square$
+
+\paragraph{Ví dụ 2.3.1 (phủ chu trình\protect\footnote{Bài kiểm tra chéo đội tuyển quốc gia Trung Quốc IOI 2023.}).}
+Cho đồ thị vô hướng đơn $G$. Với mỗi $i\in[1,m]$, hãy tính số phần tử trong
+không gian chu trình có tập cạnh kích thước $i$.
+
+Bài này có hai hướng suy nghĩ chính.
+
+Cách 1: một cách làm trực tiếp. Xem mỗi cạnh $e=(x,y)$ như một vector $n$ chiều
+trên $\mathbb F_2$, chỉ có chiều thứ $x,y$ bằng $1$. Khi đó bài toán chuyển
+thành đếm số tập con $i$ phần tử có tổng bằng không.
+
+Cách 2: tìm một rừng khung của $G$, rồi xét một cơ sở của không gian chu trình
+dẫn ra bởi rừng. Liệt kê một phần tử là tổng của $x$ phần tử cơ sở, và chỉ giữ
+lại các chiều ứng với cạnh cây (vì số cạnh không thuộc cây đã được liệt kê là
+$x$). Bài toán chuyển thành đếm trong các tập con $x$ phần tử của cơ sở, có bao
+nhiêu tập cho tổng có số bit $1$ bằng $i-x$.
+
+Cả hai phép chuyển đổi đều có thể xử lý trực tiếp bằng FWT, độ phức tạp
+$O(n2^n+\operatorname{Poly}(m))$.
+
+Trên cơ sở đó, cách 1 có thể dùng định nghĩa của FWT để chuyển FWT thành một DP
+nén trạng thái. Nếu có thể tính \texttt{popcount} và \texttt{lowbit} trong
+$O(1)$, độ phức tạp đạt $O(2^n+\operatorname{Poly}(m))$.
+
+Tối ưu cách 2 cần thêm một số kiến thức nền. Vì khá phức tạp nên không trình bày
+chi tiết ở đây; độc giả quan tâm có thể tham khảo lời giải CF1336E2. Thực chất,
+cách 2 đang tìm phân bố số bit $1$ của mọi phần tử trong một không gian tuyến
+tính trên $\mathbb F_2$. Kết luận là: nếu ta giải được bài toán này trong không
+gian bù trực giao, thì có thể trả lời cho không gian ban đầu với chi phí đa
+thức. Vì vậy ta có thể xét bài toán trên bù trực giao của không gian chu trình,
+tức không gian cắt. Số chiều của không gian cắt là $n-c$, có thể liệt kê trực
+tiếp. Độ phức tạp cuối cùng là $O(2^{n/w}m+\operatorname{Poly}(m))$ theo cách
+ghi của nguồn.
+
+\paragraph{Ứng dụng của tập cắt và tương đương theo lát cắt.}
+Dù đã giới thiệu các tính chất của không gian cắt, tới đây ta vẫn chưa biết cách
+kiểm tra một tập cạnh có phải tập cắt hay không.
+
+Giả sử trong đồ thị có tổng cộng $t$ cạnh không thuộc cây. Ta xem mỗi cạnh là
+một vector $t$ chiều trong $\mathbb F_2$: cạnh không thuộc cây thứ $i$ ứng với
+vector chỉ có bit thứ $i$ bằng $1$, còn vector ứng với một cạnh cây có bit bằng
+$1$ tại đúng các cạnh không thuộc cây băng qua cạnh cây đó, và các bit khác bằng
+$0$.
+
+Xét cơ sở của không gian cắt thu được từ rừng khung. Mỗi phần tử cơ sở có dạng
+một cạnh cây hợp với tất cả cạnh không thuộc cây băng qua cạnh cây đó. Theo định
+nghĩa trên, tổng các vector $t$ chiều ứng với những cạnh trong mỗi phần tử cơ sở
+bằng không.
+
+Ta biết không gian cắt là không gian tuyến tính. Kết hợp định nghĩa vector
+$t$ chiều của cạnh ở trên, không khó thu được: một tập cạnh là tập cắt khi và
+chỉ khi tổng các vector $t$ chiều ứng với mọi cạnh trong tập đó bằng không.
+
+Khi cài đặt, ta không thể thật sự thao tác với vector $t$ chiều. Có thể ánh xạ
+mỗi chiều tới một giá trị trong phạm vi $2^{64}$, rồi biểu diễn một vector bằng
+xor của các giá trị ứng với các bit bằng $1$. Nói cách khác, gán một trọng số
+ngẫu nhiên cho mỗi cạnh không thuộc cây; định nghĩa trọng số của một cạnh cây là
+xor của trọng số mọi cạnh không thuộc cây băng qua nó. Nếu xor trọng số cạnh của
+một tập cạnh bằng không, ta tin rằng nó là tập cắt.
+
+\paragraph{Ví dụ 2.3.2 (DZY Loves Chinese II\protect\footnote{BZOJ 3569}).}
+Cho đồ thị vô hướng $G=(V,E)$. Có $q$ truy vấn, mỗi truy vấn cho một tập cạnh và
+hỏi sau khi xóa tập cạnh đó, đồ thị còn liên thông hay không. Bảo đảm kích thước
+tập cạnh không vượt quá $15$.
+
+Theo phép chuyển đổi trên, ta cần xác định liệu có tồn tại một tập con không
+rỗng của tập cạnh đã cho có xor trọng số bằng không hay không. Chỉ cần xây một
+cơ sở tuyến tính là kiểm tra được.
+
+Chú ý ràng buộc kích thước tập cạnh không vượt quá $15$ là quan trọng. Vì trọng
+số cạnh được đặt trong phạm vi $2^{64}$, còn bài này phải xét mọi tập con để
+kiểm tra có tập con xor bằng không hay không, nên xác suất sai cao hơn nhiều so
+với kiểm tra một tập đơn có phải tập cắt. Vì vậy chỉ xử lý được phạm vi nhỏ. Nếu
+kích thước tập cạnh đã cho lớn hơn $64$, dù thế nào ta cũng sẽ kết luận là không
+liên thông; điều đó rõ ràng vô lý.
+
+Trọng số (vector) cạnh định nghĩa theo cách trên sẽ chia mọi cạnh thành vài lớp
+tương đương, mỗi lớp gồm các cạnh có trọng số bằng nhau. Ta gọi quan hệ tương
+đương này là tương đương theo lát cắt. Quan hệ này có vài dạng định nghĩa khác
+nhau.
+
+\paragraph{Bổ đề 2.3.3.}
+Trong đồ thị vô hướng $G$, với hai cạnh $e_1,e_2$, ba mệnh đề sau tương đương:
+\begin{enumerate}
+  \item $e_1,e_2$ tương đương theo lát cắt;
+  \item $e_1,e_2$ đều là cạnh cắt; hoặc $e_1,e_2$ nằm trong cùng một thành phần
+  song liên thông cạnh, và sau khi xóa $e_1,e_2$, thành phần song liên thông
+  cạnh đó không còn liên thông;
+  \item với mọi chu trình, chu trình đó hoặc đồng thời chứa $e_1,e_2$, hoặc
+  đồng thời không chứa $e_1,e_2$.
+\end{enumerate}
+
+\emph{Chứng minh.}
+Từ định nghĩa trọng số cạnh suy ra ngay mệnh đề 1 và mệnh đề 2 tương đương.
+
+Nếu mệnh đề 2 đúng, giả sử có một chu trình chứa $e_1$ nhưng không chứa $e_2$.
+Khi đó $e_1,e_2$ không phải cạnh cắt. Xóa $e_2$ xong, thành phần song liên thông
+cạnh vẫn liên thông, và lúc này vẫn còn một chu trình chứa $e_1$, nên xóa tiếp
+$e_1$ cũng không ảnh hưởng tới tính liên thông. Điều này nói rằng sau khi xóa
+$e_1,e_2$, thành phần song liên thông cạnh vẫn liên thông, mâu thuẫn. Do đó
+mệnh đề 3 đúng.
+
+Nếu mệnh đề 3 đúng, giả sử sau khi xóa $e_1$, $e_2$ không phải cạnh cắt. Điều đó
+nghĩa là tồn tại một chu trình chứa $e_2$ nhưng không chứa $e_1$, mâu thuẫn. Do
+đó mệnh đề 2 đúng. Vậy mệnh đề 2 và mệnh đề 3 tương đương. \hfill$\square$
+
+\paragraph{Ví dụ 2.3.3 (Tours\protect\footnote{ICPC 2015 World Final}).}
+Cho đồ thị vô hướng có chu trình $G$. Cần tô màu mỗi cạnh bằng một trong $k$ màu
+sao cho trên mỗi chu trình đơn, số cạnh của từng màu xuất hiện bằng nhau. Hỏi
+$k$ lớn nhất là bao nhiêu.
+
+Trực giác cho thấy, vì yêu cầu mọi chu trình đơn có màu phân bố đều, nên với mỗi
+lớp tương đương theo lát cắt trừ cạnh cắt, màu sắc trong lớp đó cũng phải phân
+bố đều. Rõ ràng điều này dẫn tới một phương án tô màu khả thi: lấy $k$ là ước
+chung lớn nhất của kích thước mọi lớp tương đương không phải cạnh cắt, rồi tô
+màu đều trong từng lớp. Theo mệnh đề 3 của bổ đề 2.3.3, ta biết trên mỗi chu
+trình, màu sắc thật sự được phân bố đều.
+
+Tiếp theo cần chứng minh $k$ như vậy là lớn nhất, tức chứng minh mỗi lớp tương
+đương đều phải được tô đều. Dựng một cây DFS. Giả sử có $t$ cạnh không thuộc
+cây, và $C_i$ là chu trình đơn chỉ chứa cạnh không thuộc cây thứ $i$. Ta chỉ cần
+chứng minh mỗi tập
+$D_1\cap D_2\cap\cdots\cap D_t$, trong đó mỗi $D_i$ là $C_i$ hoặc phần bù của
+$C_i$, nếu giao này không rỗng thì là một lớp tương đương theo lát cắt, và đều
+có thể biểu diễn thành tổ hợp tuyến tính hệ số thực của các phần tử
+$\{\bigoplus_{i\in S}C_i\}$ trong không gian chu trình. Khi có kết luận này, ta
+có thể chứng minh riêng cho từng màu rằng số lượng là đúng.
+
+Trước hết chứng minh giao của vài $C_i$, tức $\bigcap_{i\in S} C_i$, có thể
+biểu diễn bằng tổ hợp tuyến tính của các $\bigoplus_{i\in S}C_i$. Thật vậy:
+\[
+\bigcap_{i\in S} C_i =
+\frac{1}{2^{|S|-1}}\sum_{\emptyset\ne T\subseteq S}
+(-1)^{|T|}\bigoplus_{i\in T} C_i .
+\]
+Kết luận này có thể suy ra từ tính chất của FWT. Vì bài viết không giới thiệu
+riêng FWT, và kết luận này không liên quan tới chủ đề chính, ta không chứng minh
+ở đây.
+
+Tiếp theo, dùng nguyên lý bao hàm--loại trừ để chuyển từ giao của vài $C_i$ sang
+giao của các $D_i$: nếu một $D_i$ là phần bù của $C_i$, viết nó thành toàn tập
+trừ $C_i$, từ đó chuyển thành tổ hợp tuyến tính của $2^s$ giao của các tập
+$C_i$, trong đó $s$ là số $i$ sao cho $D_i$ là phần bù của $C_i$. Mệnh đề được
+chứng minh.
+
+Do đó đáp án chính là ước chung lớn nhất của kích thước mọi lớp tương đương theo
+lát cắt không phải cạnh cắt. Dùng phương pháp ngẫu nhiên ở trên, độ phức tạp
+thời gian dễ dàng đạt $O((n+m)\log n)$.
+
+\subsection{Đồ thị có hướng}
+
+Trong đồ thị có hướng, quan hệ liên thông hai chiều không nhất thiết tồn tại.
+Nếu trong đồ thị có hướng tồn tại đường đi $x\leadsto y$, ta nói $x$ tới được
+$y$.
+
+Biến mọi cạnh có hướng trong một đồ thị có hướng thành cạnh vô hướng, ta thu
+được đồ thị vô hướng gọi là đồ thị nền của đồ thị có hướng ban đầu. Nếu đồ thị
+nền liên thông, ta nói đồ thị có hướng ban đầu liên thông yếu.
+
+Với đồ thị có hướng không chu trình, định nghĩa thứ tự tô pô của nó: thứ tự tô
+pô là một hoán vị các đỉnh sao cho nếu $x$ tới được $y$, thì $x$ phải đứng trước
+$y$ trong hoán vị.
+
+\subsubsection{Bài toán khả đạt}
+
+Bài toán khả đạt có thể chia thành hai loại tùy theo yêu cầu là quan hệ khả đạt
+giữa một cặp/một số cặp đỉnh cho trước, hay quan hệ khả đạt giữa mọi cặp đỉnh.
+Loại sau gọi là bài toán bao đóng bắc cầu.
+
+\paragraph{Bao đóng bắc cầu tĩnh.}
+Trong toán rời rạc, bao đóng của một quan hệ hai ngôi $R$ là quan hệ nhỏ nhất
+$R'$ sao cho $R\subseteq R'$ và $R'$ thỏa một tính chất nào đó. Bao đóng bắc
+cầu là $R'$ nhỏ nhất thỏa tính bắc cầu. Rõ ràng với đồ thị có hướng $G$, trước
+hết bổ sung quan hệ cạnh $R$ thành phản xạ (tức bổ sung khuyên), rồi bao đóng
+bắc cầu của nó chính là quan hệ khả đạt $R'$.
+
+Thuật toán Floyd là thuật toán bao đóng bắc cầu thường dùng nhất. Đặt quan hệ
+$R'_k$ là quan hệ khả đạt khi chỉ được đi qua các đỉnh đánh số
+$1,2,\ldots,k$. Bằng cách liệt kê các đường đi qua $k$, ta có được công thức
+truy hồi từ $R'_{k-1}$ tới $R'_k$. Vì Floyd rất quen thuộc trong OI, phần này
+không trình bày chi tiết. Độ phức tạp thời gian của Floyd là $O(n^3)$.
+
+Trong đồ thị thưa, Floyd rất kém hiệu quả. Thực ra ta có thể trực tiếp liệt kê
+đỉnh cuối $y$, rồi tìm kiếm từ $y$ trên đồ thị đảo để thu được mọi đỉnh $x$ có
+thể tới $y$. Làm như vậy cho mọi $y$ sẽ thu được bao đóng bắc cầu với độ phức
+tạp $O(nm)$.
+
+Thuật toán trên có thể tối ưu bằng bitset, nhưng trước đó cần biến đồ thị thành
+không chu trình. Dùng nội dung sẽ giới thiệu ở mục 3.2, ta có thể co mỗi thành
+phần liên thông mạnh thành một đỉnh; khi đó đồ thị gốc trở thành một đồ thị có
+hướng không chu trình $G'$.
+
+Đặt $f(x,y)$ biểu thị $x$ có tới được $y$ hay không. Xem $f(x,*)$ như một vector
+$01$ và duy trì bằng bitset. Theo thứ tự tô pô đảo của $G'$, liệt kê từng đỉnh
+$u$. Khi đó $f(u,*)$ được lấy bằng phép or theo bit của mọi $f(v,*)$ với $v$ là
+hậu duệ trực tiếp của $u$; tất nhiên còn thêm khả đạt tới chính nó,
+$f(u,u)=1$. Phép toán bit trên vector $01$ độ dài $n$ bằng bitset có độ phức tạp
+$O(n/w)$, nên tổng độ phức tạp là $O(nm/w)$.
+
+\paragraph{Ví dụ về bài toán khả đạt động.}
+Nói chung, bao đóng bắc cầu động là một bài toán tương đối khó; phần tài liệu
+tham khảo của bài viết có liệt kê các nghiên cứu liên quan. Loại thường gặp hơn
+là bài toán khả đạt động giữa một số cặp đỉnh cho trước. Với loại bài này, ta
+thường tiếp tục dùng phương pháp bitset để tính bao đóng bắc cầu, đồng thời kết
+hợp các kỹ thuật cấu trúc dữ liệu như chia khối truy vấn (hoặc chia khối thao
+tác).
+
+\paragraph{Ví dụ 3.1.1 (Range Reachability Query\protect\footnote{Huấn luyện đa trường HDU năm 2022.}).}
+Cho đồ thị có hướng không chu trình $G=(V,E)$, các cạnh có chỉ số. Có $q$ truy
+vấn, mỗi truy vấn cho $u,v\in V$ và $l,r$, hỏi nếu chỉ giữ lại các cạnh có chỉ
+số trong $[l,r]$, thì $u$ có tới được $v$ hay không.
+
+Vì chỉ có $q$ truy vấn, ta có thể mô phỏng phương pháp bitset ở trên, nhưng đổi
+chiều thứ hai của bitset từ đỉnh thành truy vấn. Cụ thể, đặt $f(x,i)$ là: khi
+chỉ giữ các cạnh có chỉ số trong $[l_i,r_i]$, đỉnh $x$ có tới được $v_i$ hay
+không, trong đó $l_i,r_i,v_i$ là các tham số tương ứng của truy vấn thứ $i$. Khi
+đó đáp án truy vấn thứ $i$ là $f(u_i,i)$.
+
+Xét cạnh $x\to y$ có chỉ số $c$. Chuyển trạng thái tương ứng là: với mọi
+$i$ thỏa $l_i\le c\le r_i$, đặt
+$f(x,i)\leftarrow f(x,i)\lor f(y,i)$. Theo ngôn ngữ bitset, nếu $S_c$ là tập
+mọi $i$ thỏa $l_i\le c\le r_i$, được biểu diễn bằng vector $01$ độ dài $q$, thì
+\[
+f(x)\leftarrow f(x)\lor (f(y)\land S_c).
+\]
+Dùng quét đường thẳng có thể tính mọi $S_c$, rồi chuyển trạng thái theo thứ tự
+tô pô đảo. Độ phức tạp thời gian là $O(q(m+n)/w)$, nhưng độ phức tạp bộ nhớ cũng
+là $O(q(m+n)/w)$, hơi lớn.
+
+Loại bài này có một cách tối ưu bộ nhớ kinh điển: chia khối theo chiều được lưu
+bằng bitset. Trong bài này, chia khối truy vấn, mỗi khối gồm $B$ truy vấn, và
+chạy thuật toán trên riêng cho từng khối. Như vậy bộ nhớ được tối ưu thành
+$O(B(m+n)/w)$, còn tổng thời gian vẫn là $O(q(m+n)/w)$. Tất nhiên độ dài khối
+$B$ không được quá nhỏ, nếu không hệ số $1/w$ trong thời gian sẽ mất tác dụng.
+
+\paragraph{Ví dụ 3.1.2 (Dynamic Reachability\protect\footnote{ZJCPC 2022, \url{https://codeforces.com/gym/103687}.}).}
+Cho đồ thị có hướng $G=(V,E)$, mỗi cạnh có màu đen hoặc trắng; ban đầu mọi cạnh
+đều màu đen. Sau đó có $q$ thao tác, mỗi thao tác đảo màu một cạnh, hoặc cho
+$u,v\in V$ và hỏi $u$ có thể tới $v$ chỉ bằng cạnh đen hay không.
+
+Vì màu cạnh thay đổi, bao đóng bắc cầu tĩnh trước đó khó áp dụng. Ta xét chia
+khối truy vấn; trong cùng một khối có nhiều cạnh không đổi màu, thuận lợi cho
+việc tiếp tục dùng phương pháp bitset.
+
+Gọi độ dài khối là $B$. Trong một khối, tổng số đỉnh xuất hiện trong mọi sửa đổi
+và truy vấn nhiều nhất là $2B$; gọi các đỉnh này là đỉnh then chốt, lần lượt là
+$u_1,\ldots,u_k$. Trước hết cần tính ảnh hưởng của các cạnh đen không bao giờ
+đổi màu trong khối. Gọi $f(i,j)$ biểu thị chỉ xét các cạnh đen không bao giờ đổi
+màu trong khối, $i$ có tới được $j$ hay không. Chú ý ta thực ra chỉ cần thông
+tin khi $i,j$ đều là đỉnh then chốt, nên chiều thứ hai của bitset chỉ có kích
+thước $k=O(B)$ (vì chiều thứ hai chỉ cần ghi $u_1,\ldots,u_k$). Độ phức tạp tiền
+xử lý phần này là $O(B(m+n)/w)$.
+
+Lúc này ta nhận được một đồ thị có hướng $G'$ chỉ chứa $k$ đỉnh then chốt, trong
+đó có cạnh từ $u_i$ tới $u_j$ khi và chỉ khi $f(u_i,u_j)=1$. Như vậy quy mô bài
+toán đã thu nhỏ; mọi ảnh hưởng của các đỉnh và cạnh không then chốt đều được thể
+hiện trong $G'$.
+
+Xét cách trả lời truy vấn. Giả sử cần hỏi khả đạt từ $u_i$ tới $u_j$. Ngoài các
+cạnh của $G'$, còn phải xét các cạnh đen mới xuất hiện do sửa đổi trong khối;
+số cạnh như vậy là $O(B)$. Ta có thể trực tiếp tìm kiếm thô để tìm tập đỉnh then
+chốt mà $u_i$ tới được. Lấy BFS làm ví dụ: mỗi lần lấy một phần tử khỏi hàng
+đợi, cần đưa những đỉnh mới có thể thăm từ đỉnh đó vào hàng đợi. Quá trình này
+rõ ràng có thể tối ưu bằng bitset: chỉ cần duy trì tập mọi đỉnh hiện ở trong
+hàng đợi hoặc đã ra khỏi hàng đợi, ta nhanh chóng tìm được các đỉnh nên đưa vào
+hàng đợi. Độ phức tạp là $O(B^2/w)$.
+
+Tổng độ phức tạp thời gian là $O(q(n+m)/w+qB^2/w)$. Giống bài trước, độ dài khối
+không thể quá nhỏ, nếu không hệ số $1/w$ của bitset mất tác dụng. Vì vậy có thể
+lấy $B=w/2=32$, khi đó một số nguyên $64$ bit đủ mô tả vector $01$ có nhiều nhất
+$2B$ chiều. Trong bài này, lấy $B$ lớn hơn một chút có vẻ chạy nhanh hơn.
+
+\paragraph{Ví dụ 3.1.3 (Đồ thị có hướng không chu trình\protect\footnote{Nguồn bài không truy vết được.}).}
+Cho đồ thị có hướng không chu trình $G=(V,E)$, đỉnh có trọng số, ban đầu mọi
+trọng số đỉnh bằng $0$. Có $q$ thao tác, gồm ba loại:
+\begin{enumerate}
+  \item cho $u,x$, gán trọng số của mọi đỉnh mà $u$ tới được thành $x$;
+  \item cho $u,x$, lấy min với $x$ trên trọng số của mọi đỉnh mà $u$ tới được;
+  \item cho $u$, hỏi trọng số của $u$.
+\end{enumerate}
+
+Bài này thực ra không phải bài toán khả đạt động, nhưng cách xử lý có nét tương
+tự.
+
+Trước hết tính bao đóng bắc cầu của $G$ với độ phức tạp $O(nm/w)$.
+
+Truy vấn trọng số của $u$ có thể tách thành hai bài toán con: trước hết tìm thao
+tác gán cuối cùng trước đó ảnh hưởng tới $u$, sau đó lấy giá trị nhỏ nhất trong
+các thao tác lấy min ảnh hưởng tới $u$ từ thao tác đó tới thời điểm hiện tại.
+
+Xét bài toán thứ nhất. Chia khối truy vấn với độ dài $B$. Mỗi khi xử lý xong một
+khối thao tác, dùng $O(n+m)$ để cập nhật thao tác gán cuối cùng của mỗi đỉnh.
+Khi truy vấn, ta đã biết đáp án trước khi khối hiện tại bắt đầu; chỉ cần kiểm
+tra trong khối hiện tại có thao tác gán nào liên quan tới $u$ hay không. Việc
+này có thể làm bằng cách liệt kê trực tiếp mọi thao tác gán trong khối hiện tại,
+kiểm tra đỉnh $u_i$ của thao tác đó có tới được $u$ hay không.
+
+Bài toán thứ hai được xử lý gần như giống vậy. Với mỗi $u$ và mỗi khối, duy trì
+giá trị nhỏ nhất trong mọi thao tác lấy min của khối đó ảnh hưởng tới $u$. Truy
+vấn có dạng truy vấn đoạn theo $u$: với các khối nguyên dùng kết quả tiền xử lý,
+còn các phần lẻ liệt kê thô từng thao tác.
+
+Độ phức tạp thời gian là
+$O(nm/w+qB+q(n+m)/B)$. Lấy $B=O(\sqrt{n+m})$, độ phức tạp là
+$O(nm/w+q\sqrt{n+m})$. Chú ý ở đây ta gặp vấn đề bộ nhớ giống ví dụ 3.1.1, có
+thể tối ưu tương tự: với mỗi khối thao tác, chiều lưu bằng bitset chỉ giữ những
+đỉnh được dùng trong các sửa đổi hoặc truy vấn của khối.
+
+\subsubsection{Liên thông mạnh}
+
+\paragraph{Định nghĩa 3.1 (liên thông mạnh).}
+Trong đồ thị có hướng $G$, nếu hai đỉnh $u,v$ thỏa $u$ tới được $v$ và $v$ tới
+được $u$, ta nói $u$ và $v$ liên thông mạnh. Nếu mọi cặp đỉnh trong $G$ đều liên
+thông mạnh, ta nói $G$ là đồ thị liên thông mạnh.
+
+Vì quan hệ khả đạt có tính bắc cầu, quan hệ liên thông mạnh cũng có tính bắc
+cầu, do đó là một quan hệ tương đương. Trong đồ thị có hướng $G$, ta có thể phân
+hoạch mọi đỉnh theo quan hệ liên thông mạnh.
+
+\paragraph{Định nghĩa 3.2 (thành phần liên thông mạnh).}
+Các đỉnh của đồ thị có hướng $G$ có thể được phân hoạch thành vài lớp tương
+đương theo quan hệ liên thông mạnh. Đồ thị con cảm sinh bởi mỗi lớp tương đương
+được gọi là một thành phần liên thông mạnh của $G$.
+
+\paragraph{Cây DFS và thuật toán Tarjan.}
+Trong đồ thị có hướng $G$, nếu đỉnh $r$ tới được mọi đỉnh, ta có thể bắt đầu DFS
+từ $r$. Khi đó, tương tự đồ thị vô hướng, ta định nghĩa cây DFS của $G$.
+
+\paragraph{Định nghĩa 3.3 (thứ tự DFS, cây DFS).}
+Trong đồ thị có hướng $G=(V,E)$, bắt đầu tìm kiếm theo chiều sâu từ một đỉnh
+$r\in V$ tới được mọi đỉnh. Nếu đỉnh $x$ là đỉnh thứ $p$ được thăm, gọi $p$ là
+thứ tự DFS của $x$, ký hiệu $\operatorname{dfn}_x=p$. Nếu $x\ne r$, nối một
+cạnh giữa $x$ và đỉnh $y$ lần đầu thăm được $x$; đồ thị tạo thành được gọi là
+một cây DFS gốc $r$.
+
+Cây DFS là một cây hướng ra ngoài. Trên cây DFS của đồ thị có hướng có vài tính
+chất tương tự đồ thị vô hướng.
+
+\paragraph{Tính chất 3.2.1.}
+Thứ tự DFS của mọi đỉnh tạo thành một hoán vị của $1,\ldots,n$. Với mọi đỉnh
+$x$, tập thứ tự DFS của tất cả đỉnh trong cây con gốc $x$ trên cây DFS tạo thành
+một đoạn liên tiếp bắt đầu từ $\operatorname{dfn}_x$.
+
+\paragraph{Tính chất 3.2.2.}
+Cạnh không thuộc cây hoặc là cạnh từ hậu duệ tới tổ tiên (cạnh ngược), hoặc là
+cạnh từ tổ tiên tới hậu duệ (cạnh xuôi), hoặc là cạnh có hai đầu không có quan
+hệ tổ tiên và đi từ đỉnh có thứ tự DFS lớn tới đỉnh có thứ tự DFS nhỏ (cạnh
+chéo).
+
+Chứng minh đơn giản, nhưng tính chất 3.2.2 cho thấy cấu trúc cạnh không thuộc
+cây trong đồ thị có hướng phức tạp hơn đồ thị vô hướng.
+
+Tiếp theo xét cách dùng cây DFS để tìm thành phần liên thông mạnh. Quá trình
+tương tự tìm thành phần song liên thông: trong quá trình DFS vẫn ghi
+$\operatorname{low}_x$, là thứ tự DFS nhỏ nhất của đỉnh có thể tới được từ một
+đỉnh bất kỳ trong cây con của $x$ bằng cách đi qua nhiều nhất một cạnh không
+thuộc cây. Khi tìm được đỉnh $x$ thỏa
+$\operatorname{low}_x=\operatorname{dfn}_x$, ta thu được một thành phần liên
+thông mạnh có $x$ là đỉnh nông nhất.
+
+Nhưng cách làm trên chưa hoàn toàn đúng, vì tồn tại cạnh chéo. Nếu trong cây con
+của $x$ có một cạnh chéo trỏ tới một thành phần liên thông mạnh đã được thống kê
+trước đó, thì cạnh chéo này thực tế là vô hiệu (vì không giúp $x$ đi tới vị trí
+nông hơn trên cây DFS). Ta cần bỏ qua các cạnh chéo như vậy, nên cải tiến thuật
+toán như sau:
+
+Trong quá trình DFS, duy trì một ngăn xếp gồm các đỉnh đã thăm nhưng chưa được
+phân vào bất kỳ thành phần liên thông mạnh nào. Vẫn tính $\operatorname{low}_x$
+trong DFS, nhưng chỉ khi đầu cuối của cạnh không thuộc cây còn nằm trong ngăn
+xếp (tức chưa bị đưa vào thành phần liên thông mạnh nào) thì cạnh đó mới được
+tính vào $\operatorname{low}_x$. Khi gặp đỉnh
+$\operatorname{low}_x=\operatorname{dfn}_x$, lấy phần trong cây con của $x$ đang
+nằm trên đỉnh ngăn xếp (chắc chắn là một đoạn liên tiếp ở đỉnh ngăn xếp) ra,
+cùng với $x$ tạo thành một thành phần liên thông mạnh.
+
+Chú ý rằng nếu ta chọn tùy ý một điểm xuất phát thì không nhất thiết DFS tới mọi
+đỉnh. Điều này không ảnh hưởng: nếu còn đỉnh chưa thăm, chọn tùy ý một đỉnh
+chưa thăm để DFS tiếp, lặp lại cho tới khi mọi đỉnh được thăm.
+
+Đó là thuật toán Tarjan tìm thành phần liên thông mạnh, độ phức tạp thời gian
+$O(n+m)$. Ta không chứng minh chi tiết tính đúng đắn, nhưng sau khi hiểu thuật
+toán Tarjan trên đồ thị vô hướng và các tính chất của cây DFS trong đồ thị có
+hướng, mọi thứ trở nên tự nhiên.
+
+Sau khi tìm tất cả thành phần liên thông mạnh, xem mỗi thành phần như một đỉnh.
+Cạnh trong đồ thị gốc nếu nằm hoàn toàn trong một thành phần thì bỏ qua, ngược
+lại xem là cạnh nối hai thành phần. Đồ thị có hướng mới thu được là một đồ thị
+có hướng không chu trình; quá trình này gọi là co đỉnh.
+
+\begin{center}
+\fbox{\parbox{0.82\linewidth}{\centering Hình 4: Một đồ thị có hướng, các thành phần liên thông mạnh khác nhau của nó, và kết quả co đỉnh.}}
+\end{center}
+
+Nếu bản thân $G$ đã liên thông mạnh, thì nó chỉ có một thành phần liên thông
+mạnh là chính nó. Theo định nghĩa, bắt đầu DFS từ bất kỳ đỉnh nào cũng thăm được
+mọi đỉnh. Hơn nữa, theo thuật toán Tarjan, trên cây DFS, trong cây con của mọi
+đỉnh $x$ đều phải tồn tại một cạnh trỏ tới một đỉnh có thứ tự DFS nhỏ hơn $x$,
+dù đó là cạnh ngược hay cạnh chéo.
+
+\paragraph{Ví dụ 3.2.1 (Indiana Jones and the Uniform Cave\protect\footnote{NEERC 2016, \url{https://codeforces.com/gym/101190}.}).}
+Đây là một bài tương tác. Có một đồ thị có hướng liên thông mạnh $G$, mỗi đỉnh
+có bậc ra bằng $k$. Tại mỗi đỉnh có một viên đá chỉ vào một cạnh ra, đồng thời
+có một nhãn thuộc $\{0,1,2\}$. Ban đầu ở mỗi đỉnh, viên đá chỉ ngẫu nhiên vào
+một cạnh ra và nhãn bằng $0$.
+
+Bạn không biết cấu trúc của $G$, nhưng cần xuất phát từ một đỉnh nào đó và duyệt
+qua mọi cạnh của $G$. Mỗi khi đi theo một cạnh tới một đỉnh, bạn biết nhãn của
+đỉnh đó, rồi có thể chọn sửa nhãn và hướng chỉ của viên đá, cuối cùng chọn một
+cạnh ra để rời đi. Tuy nhiên nhãn sau khi sửa chỉ có thể là $1$ hoặc $2$. Mọi
+cạnh ra của một đỉnh có thể xem như phân bố đều trên một đường tròn, nên khi mô
+tả một cạnh ra, bạn chỉ có thể dùng dạng ``đếm thuận chiều kim đồng hồ từ cạnh
+đang được viên đá chỉ tới, cạnh thứ $i$''.
+
+Bạn chỉ được phép đi qua $O(nm)$ cạnh; chú ý ở mọi thời điểm bạn đều biết mọi
+quyết định trước đó của mình.
+
+Ta thử mô phỏng quá trình DFS. Gọi quá trình tìm kiếm cây con của $x$ là
+$dfs(x)$; ta kỳ vọng khi $dfs(x)$ được phép kết thúc, mọi cạnh ra của $x$ đều đã
+được thăm.
+
+Trong ba nhãn, $0$ biểu thị tự nhiên cho đỉnh chưa thăm; quy định $1$ và $2$ lần
+lượt biểu thị đỉnh tương ứng là/không là tổ tiên của $x$, trong đó $x$ là đỉnh
+đang thực hiện quá trình $dfs$ hiện tại.
+
+Với quá trình $dfs(x)$, lần lượt liệt kê mọi cạnh ra $x\to y$ và xét nhãn của
+$y$:
+\begin{itemize}
+  \item Nhãn của $y$ là $0$. Điều này tương ứng $y$ là con của $x$ trên cây DFS.
+  Ta đệ quy thực hiện $dfs(y)$, rồi quay lui.
+  \item Nhãn của $y$ là $1$. Điều này nói $x\to y$ là cạnh ngược. Sau khi đi
+  qua cạnh này, ta muốn quay về $x$. Để không lạc đường, quy định với đỉnh có
+  nhãn $1$, viên đá của nó chỉ vào cạnh nằm trên đường đi từ đỉnh đó tới $x$
+  trong cây DFS. Như vậy chỉ cần đi theo cạnh được viên đá chỉ là có thể về
+  $x$. Vấn đề là làm sao biết mình đã về tới $x$? Câu trả lời là tạm thời sửa
+  nhãn của $x$ thành $2$, khi lần sau thăm một đỉnh nhãn $2$ thì chắc chắn đã về
+  tới $x$.
+  \item Nhãn của $y$ là $2$. Điều này nói $x\to y$ là cạnh xuôi hoặc cạnh chéo.
+  Dù thế nào, ta vẫn muốn quay về $x$, nhưng lần này không tiện như trường hợp
+  trước. Ta cần đi ngược hướng cây DFS cho tới khi tới một đỉnh nhãn $1$, rồi
+  quay về $x$ theo cách ở trên (cách nhận biết đã về tới $x$ hơi khác nhưng cũng
+  đơn giản, nên không nói thêm). Vấn đề là làm sao đi tới một đỉnh nhãn $1$.
+  Nhắc lại mảng \(\operatorname{low}\) trong thuật toán Tarjan: nếu từ đỉnh hiện
+  tại $u$ ta liên tục đi tới $\operatorname{low}_u$, thì do đồ thị liên thông
+  mạnh, chắc chắn có thể quay về đỉnh gốc, tức chắc chắn đi qua đỉnh nhãn $1$.
+  Vì vậy với mỗi đỉnh nhãn $2$ là $u$, định nghĩa hướng viên đá của nó là hướng
+  tới $\operatorname{low}_u$. Nếu cạnh tương ứng với $\operatorname{low}_u$ là
+  $u\to\operatorname{low}_u$, viên đá chỉ vào cạnh đó; nếu cạnh tương ứng là
+  $v\to\operatorname{low}_u$ với $v$ là hậu duệ của $u$, viên đá chỉ về hướng
+  cây con chứa $v$.
+\end{itemize}
+
+Vấn đề cuối cùng: sau khi thực hiện xong $dfs(x)$, ta cần quay lui tới cha của
+$x$. Điều này thực ra giống trường hợp cuối cùng vừa nói; chỉ cần trước hết đi
+tới $\operatorname{low}_x$, rồi đi xuống một đoạn là được.
+
+Khi cài đặt có nhiều chi tiết, nhưng khung thuật toán đại thể đã rõ. Ta cần
+$O(nm)$ bước để duyệt mọi cạnh.
+
+\paragraph{Phân rã tai.}
+Trước hết nhắc lại phân rã tai đã định nghĩa ở phần đồ thị vô hướng và mở rộng
+nó sang đồ thị có hướng.
+
+\paragraph{Định nghĩa 3.4 (tai và phân rã tai).}
+Trong đồ thị có hướng $G=(V,E)$ có đồ thị con $G'=(V',E')$. Nếu đường đi đơn
+hoặc chu trình đơn $P:x_1\to x_2\to\cdots\to x_k$ thỏa
+$x_1,x_k\in V'$ và $x_2,\ldots,x_{k-1}\notin V'$, thì $P$ được gọi là một tai
+của $G$ đối với $G'$.
+
+Nếu một dãy đồ thị con $(G_0,G_1,\ldots,G_k)$ của $G$ thỏa:
+\begin{enumerate}
+  \item $G_0$ là một chu trình đơn (có thể chỉ có một đỉnh), $G_k=G$;
+  \item $G_{i-1}$ là đồ thị con của $G_i$;
+  \item đặt $G_i=(V_i,E_i)$, khi đó $E_i\setminus E_{i-1}$ tạo thành một tai
+  của $G_{i-1}$,
+\end{enumerate}
+thì $(G_0,G_1,\ldots,G_k)$ được gọi là một phân rã tai của $G$.
+
+Tương tự đồ thị vô hướng, ta có kết luận sau.
+
+\paragraph{Định lý 3.1.}
+Đồ thị có hướng $G$ có phân rã tai khi và chỉ khi $G$ liên thông mạnh.
+
+\emph{Chứng minh.}
+Trước hết chứng minh tính cần. Nếu $G$ có phân rã tai $(G_0,\ldots,G_k)$, chu
+trình đơn $G_0$ là liên thông mạnh. Nếu $G_i$ liên thông mạnh, giả sử tai được
+thêm vào $G_{i+1}$ là $x\leadsto y$. Từ tính liên thông mạnh của $G_i$, $y$ tới
+được $x$, nên tồn tại một chu trình chứa tai; do đó mọi đỉnh trên tai liên thông
+mạnh với $x,y$, và $G_{i+1}$ cũng liên thông mạnh. Quy nạp suy ra $G=G_k$ liên
+thông mạnh.
+
+Tiếp theo chứng minh tính đủ. Nếu $G=(V,E)$ liên thông mạnh, ta đưa ra cách dựng
+một phân rã tai. Trước hết dựng một cây DFS gốc $1$ của $G$, và tính mảng
+$\operatorname{low}$ theo thuật toán Tarjan. Tính liên thông mạnh của $G$ cho
+biết khi $x\ne1$ thì $\operatorname{low}_x<\operatorname{dfn}_x$. Sau đó xây
+$(G_0,\ldots,G_k)$ bằng quá trình sau.
+
+Cho $G_0$ là đồ thị chỉ chứa đỉnh $1$. Sau đó liệt kê các đỉnh theo thứ tự DFS
+tăng dần. Giả sử đỉnh hiện tại là $x$ có thứ tự DFS $p$; khi đó mọi đỉnh có thứ
+tự DFS $1,\ldots,p-1$ đã nằm trong $G_i$ hiện tại. Nếu $x$ đã ở trong $G_i$ thì
+bỏ qua. Ngược lại, theo $\operatorname{low}_x<\operatorname{dfn}_x$, tồn tại một
+hậu duệ $y$ của $x$ và một cạnh $y\to z$ sao cho $z$ đã nằm trong $G_i$. Khi đó
+lấy đường đi $f_x\to x\leadsto y\to z$ làm một tai thêm vào $G_i$, trong đó
+$f_x$ là cha của $x$; thu được $G_{i+1}$. Sau khi liệt kê mọi đỉnh, mọi đỉnh đều
+đã nằm trong $G_i$ hiện tại; lúc này thêm từng cạnh chưa được thêm vào như một
+tai riêng lẻ. \hfill$\square$
+
+\paragraph{Ví dụ 3.2.2 (Economic One-way Roads\protect\footnote{XXI Open Cup, Grand Prix of Korea, \url{https://codeforces.ml/gym/102759}.}).}
+Cho một đồ thị vô hướng $G$. Cần gán hướng cho mỗi cạnh; mỗi cạnh có chi phí
+riêng cho từng hướng. Hãy định hướng sao cho đồ thị có hướng thu được liên thông
+mạnh và tổng chi phí theo hướng được chọn nhỏ nhất.
+
+Để đối chiếu, ví dụ này thực ra là phiên bản liên thông mạnh của ví dụ 2.2.4.
+
+Gọi $f(S)$ là đáp án ứng với đồ thị con cảm sinh bởi $S$. Mỗi lần chuyển trạng
+thái bằng cách thêm một tai vào $S$. Nếu trực tiếp liệt kê tập đỉnh của tai, độ
+phức tạp là $O(3^n\operatorname{Poly}(n))$; nếu ngay trong chuyển trạng thái
+thêm từng đỉnh theo thứ tự trên tai, có thể đạt
+$O(2^n\operatorname{Poly}(n))$. Vì quá trình cụ thể gần như giống ví dụ 2.2.4,
+không nhắc lại chi tiết.
+
+\paragraph{Định lý 3.2.}
+Đồ thị vô hướng $G$ có thể được định hướng thành đồ thị liên thông mạnh khi và
+chỉ khi $G$ song liên thông cạnh.
+
+\emph{Chứng minh.}
+Tính cần: nếu $G$ không song liên thông cạnh, thì $G$ không liên thông hoặc có
+một cạnh cắt. Đồ thị không liên thông hiển nhiên không thể định hướng thành liên
+thông mạnh; nếu $G$ có cạnh cắt $(x,y)$, dù định hướng cạnh này thế nào thì hoặc
+$x$ không tới được $y$, hoặc $y$ không tới được $x$, nên không thể có định hướng
+liên thông mạnh.
+
+Tính đủ: nếu $G$ song liên thông cạnh, nó có phân rã tai. Định hướng $G_0$ thành
+chu trình có hướng, rồi định hướng mỗi tai sau đó thành đường đi có hướng hoặc
+chu trình có hướng. Ta thu được một phân rã tai có hướng; theo định lý 3.1, đồ
+thị có hướng tương ứng là liên thông mạnh. \hfill$\square$
+
+Thật ra việc dựng định hướng không cần phải tìm phân rã tai phức tạp như vậy. Ta
+chỉ cần dựng cây DFS của đồ thị song liên thông cạnh, định hướng mọi cạnh cây từ
+cha tới con, và định hướng mọi cạnh không thuộc cây từ hậu duệ tới tổ tiên. Điều
+này về cơ bản giống với cách dựng bằng phân rã tai ở trên.
+
+\paragraph{Ví dụ 3.2.3 (trình quản lý App\protect\footnote{UOJ Round 9, \url{https://uoj.ac/contest/18}.}).}
+Một hỗn hợp đồ thị $G$ (có thể đồng thời chứa cạnh có hướng và cạnh vô hướng) có
+thể được định hướng các cạnh vô hướng thành đồ thị liên thông mạnh khi và chỉ
+khi hai điều kiện sau cùng đúng:
+\begin{enumerate}
+  \item nếu xem mọi cạnh có hướng như cạnh vô hướng, đồ thị song liên thông cạnh;
+  \item nếu tách mỗi cạnh vô hướng thành một cặp cạnh có hướng ngược nhau, đồ thị
+  liên thông mạnh.
+\end{enumerate}
+
+\emph{Chứng minh.}
+Tính cần hiển nhiên. Dưới đây chứng minh tính đủ.
+
+Nếu điều kiện 1 và 2 đều đúng, và không có cạnh vô hướng nào, ta không cần định
+hướng. Nếu còn cạnh vô hướng, lấy tùy ý một cạnh vô hướng $(u,v)$ và chứng minh
+nó có một cách định hướng sao cho sau khi định hướng, điều kiện 1 và 2 vẫn đúng
+(thực ra chỉ cần xét điều kiện 2, vì điều kiện 1 không phụ thuộc hướng). Như vậy
+có thể chứng minh kết luận bằng quy nạp.
+
+Gọi đồ thị hiện tại là $G_0$, và đồ thị thu được từ $G_0$ sau khi xóa cạnh vô
+hướng $(u,v)$ là $G'_0$. Với một đỉnh bất kỳ $x$, do $G_0$ liên thông mạnh nên
+tồn tại một đường đi đơn $x\leadsto u$. Nếu đường đi này không đi qua cạnh vô
+hướng $(u,v)$, thì trong $G'_0$, $x$ tới được $u$; ngược lại trong $G'_0$, $x$
+tới được $v$. Tương tự, trong $G'_0$, hoặc $u$ tới được $x$, hoặc $v$ tới được
+$x$.
+
+Trong $G'_0$, nếu tồn tại $x$ sao cho $u$ tới được $x$ và $x$ tới được $v$, thì
+$u$ tới được $v$. Tương tự, nếu tồn tại $x$ sao cho $v$ tới được $x$ và $x$ tới
+được $u$, thì $v$ tới được $u$. Nếu không, với mỗi $x$ đều là $u,x$ tới được
+nhau hoặc $v,x$ tới được nhau. Vì vậy toàn đồ thị có nhiều nhất hai thành phần
+liên thông mạnh. Giả sử $u,v$ không tới được nhau, thì giữa hai thành phần liên
+thông mạnh này không có cạnh, nghĩa là đồ thị nền của $G'_0$ không liên thông,
+tức $(u,v)$ là cạnh cắt trong $G_0$, mâu thuẫn với điều kiện 1. Do đó ít nhất
+một trong hai quan hệ $u$ tới được $v$, hoặc $v$ tới được $u$, là đúng.
+
+Nếu $u$ tới được $v$, định hướng $(u,v)$ thành $v\to u$; ngược lại định hướng
+thành $u\to v$. Điều này làm cho $u,v$ tới được nhau, do đó toàn đồ thị vẫn liên
+thông mạnh, đúng như cần chứng minh. \hfill$\square$
+
+\paragraph{Chu trình có hướng.}
+Trong đồ thị vô hướng có không gian chu trình; mục này nghiên cứu cấu trúc chu
+trình của đồ thị có hướng.
+
+\paragraph{Định nghĩa 3.5 (đồ thị phủ được bằng chu trình).}
+Nếu trong đồ thị có hướng $G$, bậc vào của mỗi đỉnh bằng bậc ra của nó, ta nói
+$G$ phủ được bằng chu trình.
+
+\paragraph{Bổ đề 3.2.1.}
+Tập cạnh của một đồ thị có hướng phủ được bằng chu trình có thể biểu diễn thành
+hợp rời của một số chu trình đơn.
+
+Chứng minh xét bằng quy nạp. Khái niệm đồ thị phủ được bằng chu trình có thể so
+sánh với các phần tử của không gian chu trình trong đồ thị vô hướng.
+
+Tương tự không gian chu trình, ta muốn dùng cây DFS để thu được một bộ ``cơ sở''
+của các đồ thị con phủ được bằng chu trình; tuy nhiên nó không phải là cơ sở
+tuyến tính thật sự, nên không phải lúc nào cũng dùng được. Nói chung, ta xét
+trường hợp cạnh có trọng số (nếu không có quy định đặc biệt về trọng số, xem mỗi
+cạnh có trọng số $1$), và nghiên cứu tính chất của tổng trọng số chu trình trong
+các cấu trúc như không gian xor hoặc các lớp dư modulo $m$.
+
+\paragraph{Bổ đề 3.2.2.}
+Trong đồ thị liên thông mạnh $G$, nếu tồn tại một đường đi
+$P:x\leadsto y$ có tổng trọng số $S$, thì tồn tại một đường đi $y\leadsto x$ có
+tổng trọng số $S'$ thỏa $S'\equiv -S\pmod m$.
+
+\emph{Chứng minh.}
+Nếu $m=1$ thì kết luận hiển nhiên. Ngược lại, lấy tùy ý một đường đi
+$Q:y\leadsto x$ có tổng trọng số $T$. Xét đường đi ghép
+$Q+P+Q+P+\cdots+Q$, gồm $m-1$ bản sao của $P$ và $m$ bản sao của $Q$; dấu cộng
+biểu thị ghép đường đi. Đây là một đường đi từ $y$ tới $x$, và tổng trọng số của
+nó là $(m-1)S+mT\equiv -S\pmod m$. \hfill$\square$
+
+\paragraph{Bổ đề 3.2.3.}
+Trong đồ thị liên thông mạnh $G$, với mỗi cạnh $x\to y$ có trọng số $z$, thêm
+một cạnh mới $y\to x$ có trọng số $-z$. Ta thu được một đồ thị mới $G'$ có
+trọng số cạnh phản đối xứng. Tập tổng trọng số của mọi đồ thị con phủ được bằng
+chu trình của $G$ và $G'$ là tương đương theo modulo $m$.
+
+\emph{Chứng minh.}
+Đây là hệ quả của bổ đề 3.2.2, vì mỗi chu trình của $G'$ có thể tương ứng với
+một chu trình của $G$ bằng bổ đề 3.2.2. \hfill$\square$
+
+Vì vậy ta chỉ cần nghiên cứu đồ thị có trọng số phản đối xứng như vậy. Cây DFS
+của đồ thị này có thể xem như không còn một chiều: ta có thể đi hai chiều trên
+cây. Qua tính toán đơn giản, tổng trọng số của đường đi trên cây (không nhất
+thiết đơn) từ $x$ tới $y$ chắc chắn là $\operatorname{dep}_y-\operatorname{dep}_x$,
+trong đó $\operatorname{dep}_x$ là tổng trọng số trên đường đi từ gốc cây DFS
+tới $x$.
+
+\paragraph{Bổ đề 3.2.4.}
+Trên đồ thị $G$ có trọng số phản đối xứng, gọi một chu trình đơn chỉ chứa một
+cạnh không thuộc cây (ở đây cạnh ngược chiều của cạnh cây không tính là cạnh
+không thuộc cây) là chu trình cơ bản. Khi đó tổng trọng số của mọi đồ thị con
+phủ được bằng chu trình của $G$ bằng một tổ hợp tuyến tính hệ số nguyên của tổng
+trọng số một số chu trình cơ bản.
+
+\emph{Chứng minh.}
+Giả sử một chu trình lần lượt đi qua các cạnh không thuộc cây
+$e_1,\ldots,e_k$, trong đó $e_i$ có dạng $x_i\to y_i$ và trọng số $z_i$. Tổng
+trọng số chu trình là
+\[
+\sum_{i=1}^k (z_i+\operatorname{dep}_{y_{i+1}}-\operatorname{dep}_{x_i}),
+\]
+với $y_{k+1}=y_1$. Đổi chỗ các hạng chứa $y_i$ trong tổng, ta được
+\[
+\sum_{i=1}^k (z_i+\operatorname{dep}_{y_i}-\operatorname{dep}_{x_i}),
+\]
+mà mỗi hạng đúng là tổng trọng số của một chu trình cơ bản. Kết hợp với tính
+chất đồ thị con phủ được bằng chu trình có thể tách thành một số chu trình, bổ
+đề được chứng minh. \hfill$\square$
+
+\paragraph{Định lý 3.3.}
+Trong đồ thị liên thông mạnh $G$, ước chung lớn nhất của tổng trọng số mọi đồ
+thị con phủ được bằng chu trình bằng ước chung lớn nhất của mọi
+$z+\operatorname{dep}_y-\operatorname{dep}_x$, trong đó $(x,y,z)$ chạy qua bộ ba
+đỉnh đầu, đỉnh cuối và trọng số của mọi cạnh không thuộc cây, còn
+$\operatorname{dep}_x$ là độ dài đường đi trên cây từ gốc tới $x$.
+
+\emph{Chứng minh.}
+Gọi ước chung lớn nhất cần tìm là $g$. Theo bổ đề 3.2.3 và 3.2.4, ta biết trong
+modulo $g$, tập tổng trọng số các đồ thị con phủ được bằng chu trình của $G$
+tương đương với tập mọi $z+\operatorname{dep}_y-\operatorname{dep}_x$. Vì vậy
+nếu mọi phần tử của một trong hai tập đều là bội của $g$, thì tập còn lại cũng
+vậy. Điều này chứng minh hai cách tính ước chung lớn nhất là nhất quán.
+\hfill$\square$
+
+Ở trên ta chỉ thảo luận tính chất theo các lớp dư modulo $m$. Tuy nhiên chỉ cần
+bổ đề 3.2.2 vẫn đúng, các tính chất trên có thể mở rộng sang một số cấu trúc
+khác, chẳng hạn không gian xor, hoặc tổng quát hơn là cấu trúc cộng không nhớ
+trong hệ cơ số $k$. Dù vậy, khi xét tính chất modulo $m$, chỉ cần nắm ước chung
+lớn nhất là cơ bản có được toàn bộ thông tin cấu trúc; còn trong các cấu trúc
+khác ở trên có thể cần thêm công cụ như cơ sở tuyến tính.
+
+\paragraph{Ví dụ 3.2.4 (chu kỳ của đồ thị có hướng).}
+Trong đồ thị có hướng $G=(V,E)$, nếu tồn tại một cặp số nguyên $p,k$ sao cho với
+mọi cặp đỉnh $x,y$ và mọi $t\ge k$, tồn tại một đường đi $x\leadsto y$ gồm
+$t$ cạnh khi và chỉ khi tồn tại một đường đi $x\leadsto y$ gồm $t+p$ cạnh; đồng
+thời theo khóa thứ nhất là $p$ và khóa thứ hai là $k$, cặp số nguyên nói trên là
+nhỏ nhất. Khi đó $p,k$ lần lượt được gọi là một chu kỳ và chỉ số lũy thừa hội tụ
+của $G$.
+
+Một cách nói tương đương: gọi $A$ là ma trận kề của $G$, thì với mọi $t\ge k$ có
+$A^t=A^{t+p}$, trong đó phép nhân ma trận được định nghĩa bằng phép nhân là and
+theo bit, phép cộng là or theo bit.
+
+Xét chu kỳ của đồ thị liên thông mạnh. Thực ra nó chính là ước chung lớn nhất
+$g$ của mọi độ dài chu trình trong định lý 3.3, vì khi $t$ đủ lớn, ta có thể đi
+tùy ý trong đồ thị liên thông mạnh. Theo định lý Bezout, ta có thể ghép ra bội
+bất kỳ của $g$ bằng tổ hợp tuyến tính hệ số nguyên của độ dài các chu trình. Khi
+số bước đủ lớn, mọi hệ số đều có thể lấy là số nguyên dương.
+
+Với đồ thị tổng quát, chu kỳ chắc chắn phải là bội của chu kỳ của từng thành
+phần liên thông mạnh; lấy bội chung nhỏ nhất của chu kỳ mọi thành phần liên
+thông mạnh là được. Điều này khá dễ hiểu, nên lược bỏ chứng minh nghiêm ngặt.
+
+Với chỉ số lũy thừa hội tụ, không có công thức trực tiếp để tính.
+
+\paragraph{Ví dụ 3.2.5 (Phoenix and Odometers\protect\footnote{CF 1515 G}).}
+Cho đồ thị có hướng có trọng số cạnh $G$. Có $q$ truy vấn, mỗi truy vấn cho
+$v,b,m$, hỏi có tồn tại một chu trình (không nhất thiết đơn) đi qua $v$ có tổng
+trọng số $S$ thỏa $S\equiv b\pmod m$ hay không.
+
+Đây là một ví dụ của cấu trúc lớp dư modulo $m$. Rõ ràng chỉ cần xét thành phần
+liên thông mạnh chứa $v$. Theo định lý 3.3, tính ước chung lớn nhất $g$ của tổng
+trọng số mọi chu trình trong đó, rồi kiểm tra $\gcd(g,m)\mid b$ là đủ.
+
+\paragraph{Ví dụ 3.2.6 (Thuật thụ số\protect\footnote{CTT 2020; phát biểu bài ở đây không hoàn toàn giống bản gốc.}).}
+Cho một đồ thị vô hướng có trọng số $G$ và số nguyên $k$. Có $q$ truy vấn, mỗi
+truy vấn cho $x,y,v$, hỏi có tồn tại một đường đi $x\leadsto y$ sao cho kết quả
+cộng không nhớ trong hệ cơ số $k$ của mọi trọng số cạnh bằng $v$ hay không.
+
+Đây là một ví dụ của phép cộng không nhớ trong hệ cơ số $k$. Khác với trước đó,
+đây là đồ thị vô hướng, nên cần tách mỗi cạnh vô hướng thành một cặp cạnh có
+hướng ngược nhau. Vì vậy khi thực hiện thao tác tương tự định lý 3.3, ngoài cạnh
+không thuộc cây còn phải xét cạnh ngược chiều của cạnh cây; tức với cạnh cây có
+trọng số $w$, $2w$ cũng là một phần tử trong cơ sở. Sau đó dùng tất cả tổng trọng
+số chu trình cơ bản này để dựng một cơ sở tuyến tính hệ cơ số $k$ phục vụ truy
+vấn.
+
+Một điểm khác trong bài này là mục tiêu không phải chu trình mà là đường đi
+$x\leadsto y$. Ta chỉ cần chọn tùy ý một đường đi $x\leadsto y$, chẳng hạn
+đường đi trên cây, rồi cộng thêm một tập con các phần tử cơ sở là có thể thu
+được mọi đường đi từ $x$ tới $y$. Vì vậy khi truy vấn, lấy tổng trọng số đường
+đi cây $x\leadsto y$ làm giá trị ban đầu, rồi kiểm tra trong cơ sở tuyến tính có
+tồn tại một số phần tử sao cho cộng với giá trị ban đầu thành $v$ hay không.
+
+\subsubsection{Đồ thị giải đấu}
+
+Đồ thị giải đấu là đồ thị có hướng đơn sao cho với mỗi cặp đỉnh khác nhau
+$u,v$, đúng một trong hai cạnh $u\to v$ và $v\to u$ tồn tại. Bây giờ ta thảo
+luận ngắn gọn vài kết luận liên quan tới tính liên thông trong đồ thị giải đấu.
+
+\paragraph{Đường Hamilton.}
+
+\paragraph{Định nghĩa 3.6 (đường Hamilton, chu trình Hamilton).}
+Trong đồ thị $G$, đường đi đi qua mọi đỉnh đúng một lần gọi là đường Hamilton;
+chu trình đi qua mọi đỉnh đúng một lần (đỉnh đầu và đỉnh cuối tính là một lần)
+gọi là chu trình Hamilton.
+
+\paragraph{Định lý 3.4.}
+Mọi đồ thị giải đấu đều có đường Hamilton.
+
+\emph{Chứng minh.}
+Quy nạp theo số đỉnh. Nếu đồ thị giải đấu $n-1$ đỉnh có đường Hamilton, thì
+trong đồ thị giải đấu $n$ đỉnh, giả sử không mất tính tổng quát rằng đường
+Hamilton của đồ thị con cảm sinh bởi $n-1$ đỉnh đầu là
+$1\to2\to\cdots\to n-1$. Khi đó:
+\begin{enumerate}
+  \item nếu có cạnh $n\to1$, nối $n$ vào đầu đường Hamilton;
+  \item nếu có cạnh $n-1\to n$, nối $n$ vào cuối đường Hamilton;
+  \item nếu có cạnh $1\to n$ và $n\to n-1$, thì chắc chắn tồn tại
+  $x\in[1,n-2]$ sao cho $x\to n$ và $n\to x+1$ (có thể dùng nhị phân để tìm
+  $x$ như vậy), rồi chèn $n$ vào giữa $x$ và $x+1$.
+\end{enumerate}
+Vậy đồ thị giải đấu $n$ đỉnh cũng có đường Hamilton. Theo quy nạp, kết luận
+đúng. \hfill$\square$
+
+\paragraph{Định lý 3.5.}
+Đồ thị giải đấu liên thông mạnh có chu trình Hamilton.
+
+\emph{Chứng minh.}
+Theo định lý 3.4, trước hết dựng một đường Hamilton, giả sử là
+$1\to2\to\cdots\to n$. Tìm $t$ lớn nhất sao cho có cạnh $t\to1$. Khi đó với các
+đỉnh $x$ sau $t$, đều có cạnh $1\to x$, tức
+$1\to t+1,\ldots,1\to n$. Hiện ta có một chu trình
+$1\to2\to\cdots\to t\to1$; tiếp theo cố gắng thêm các đỉnh $t+1,\ldots,n$ vào
+chu trình.
+
+Mô tả lại bài toán: có một chu trình chứa $1$, và từ $1$ có cạnh tới mọi đỉnh
+chưa nằm trên chu trình. Ta muốn chứng minh tồn tại một đỉnh hiện chưa nằm trên
+chu trình có thể được thêm vào để tạo chu trình lớn hơn. Thật vậy, do đồ thị
+liên thông mạnh, chắc chắn tồn tại một đỉnh $x$ chưa nằm trên chu trình và một
+đỉnh $y$ trên chu trình sao cho có cạnh $x\to y$; nếu không, các đỉnh ngoài chu
+trình không tới được các đỉnh trên chu trình. Kết hợp với $1\to x$, ta tìm được
+một vị trí thích hợp $z$ trên chu trình (nằm giữa $1$ và $y$) sao cho
+$z\to x\to\operatorname{next}_z$. Chèn $x$ vào giữa $z$ và
+$\operatorname{next}_z$, trong đó $\operatorname{next}_z$ là đỉnh kế tiếp của
+$z$ trên chu trình. \hfill$\square$
+
+\paragraph{Thành phần liên thông mạnh.}
+Sau khi co thành phần liên thông mạnh, đồ thị tổng quát trở thành đồ thị có
+hướng không chu trình. Với đồ thị giải đấu, ta có kết quả tốt hơn.
+
+\paragraph{Bổ đề 3.3.1.}
+Sau khi co thành phần liên thông mạnh, đồ thị giải đấu tạo thành một dây chuyền.
+
+\emph{Chứng minh.}
+Với hai đỉnh $x,y$ thuộc hai thành phần liên thông mạnh khác nhau, do chắc chắn
+tồn tại $x\to y$ hoặc $y\to x$, nên $x$ tới được $y$ hoặc $y$ tới được $x$. Vì
+vậy quan hệ khả đạt giữa các thành phần liên thông mạnh tạo thành một thứ tự
+toàn phần, tức sau khi co đỉnh sẽ tạo thành một dây chuyền. \hfill$\square$
+
+Trong đồ thị giải đấu, để tìm thành phần liên thông mạnh không cần dùng thuật
+toán Tarjan; có nhiều cách đơn giản hơn.
+
+Trước hết có thể tìm một đường Hamilton của đồ thị giải đấu, giả sử là
+$1\to2\to\cdots\to n$. Khi đó mỗi thành phần liên thông mạnh chắc chắn là một
+đoạn liên tiếp. Với một cạnh $x\to y$, nếu $x<y$ thì nó không ảnh hưởng tới tính
+liên thông (vì trên dây chuyền đã có thể đi từ $x$ tới $y$); nếu $x>y$, thì
+$y\to y+1\to\cdots\to x$ hợp với cạnh này tạo thành một chu trình, tức mọi đỉnh
+trong $[y,x]$ thuộc cùng một thành phần liên thông mạnh. Hợp nhất tất cả các
+đoạn $[y,x]$ như vậy, ta nhận được một phân hoạch đoạn của $[1,n]$; các đoạn đó
+chính là mọi thành phần liên thông mạnh.
+
+Còn một cách đơn giản và thực dụng hơn để tìm thành phần liên thông mạnh của đồ
+thị giải đấu, dựa vào định lý Landau dưới đây.
+
+\paragraph{Định lý 3.6 (Landau).}
+Giả sử trong đồ thị giải đấu $G$, mọi đỉnh được sắp theo bậc ra tăng dần thành
+$p_1,\ldots,p_n$, và bậc ra của $p_i$ là $d_i$. Khi đó với mọi
+$1\le k\le n$:
+\[
+\sum_{i=1}^k d_i\ge \binom{k}{2}.
+\]
+Mở rộng: mỗi thành phần liên thông mạnh của $G$ là một đoạn liên tiếp trong hoán
+vị $p$, và $p_k$ là đầu phải của một thành phần liên thông mạnh khi và chỉ khi
+\[
+\sum_{i=1}^k d_i=\binom{k}{2}.
+\]
+
+\emph{Chứng minh.}
+Chỉ xét đồ thị con cảm sinh bởi $k$ đỉnh đầu, nó có $\binom{k}{2}$ cạnh; các cạnh
+này đã đóng góp $\binom{k}{2}$ vào $\sum_{i=1}^k d_i$, nên
+$\sum_{i=1}^k d_i\ge \binom{k}{2}$.
+
+Nếu $x,y$ thuộc hai thành phần liên thông mạnh khác nhau và $x$ tới được $y$,
+thì với mọi cạnh ra $y\to z$ của $y$, dễ chứng minh chắc chắn tồn tại cạnh
+$x\to z$; ngoài ra $x$ còn có thêm cạnh $x\to y$, nên bậc ra của $x$ lớn hơn
+bậc ra của $y$. Điều này nói rằng mỗi thành phần liên thông mạnh đúng là một
+đoạn liên tiếp trong hoán vị $p$.
+
+Nếu đẳng thức $\sum_{i=1}^k d_i=\binom{k}{2}$ xảy ra, thì không có cạnh nào từ
+$p_{k+1},\ldots,p_n$ tới $p_1,\ldots,p_k$; do đó các đỉnh từ $p_{k+1}$ trở đi
+không tới được các đỉnh trước $p_k$, và hai phía này không thể thuộc cùng một
+thành phần liên thông mạnh. Ngược lại, nếu $p_i,\ldots,p_k$ tạo thành một thành
+phần liên thông mạnh, cũng suy ra các đỉnh sau $p_{k+1}$ không tới được các đỉnh
+trước $p_k$, tức đẳng thức xảy ra. Điều này chứng minh phần mở rộng của định lý.
+\hfill$\square$
+
+Trong định lý Landau, thay bậc ra bằng bậc vào thì kết luận tương ứng hiển nhiên
+cũng đúng. Dưới đây dùng mô tả theo bậc vào. Sắp mọi đỉnh theo bậc vào tăng dần;
+lấy các $k$ thỏa $\sum_{i=1}^k d_i=\binom{k}{2}$ làm đầu phải, mỗi đoạn liên
+tiếp được chia ra chính là một thành phần liên thông mạnh, và các thành phần
+liên thông mạnh nằm bên trái có thể tới các thành phần nằm bên phải.
+
+\paragraph{Ví dụ 3.3.1 (bài luyện tập lý thuyết đồ thị cơ sở\protect\footnote{CTT 2020}).}
+Cho đồ thị giải đấu $G$. Với mỗi cạnh, hãy tính số thành phần liên thông mạnh
+sau khi lật hướng cạnh đó.
+
+Cách 1: dùng đường Hamilton.
+
+Nếu cạnh bị lật nối hai thành phần liên thông mạnh khác nhau, hiển nhiên sau khi
+lật sẽ hợp nhất thành một mọi thành phần liên thông mạnh nằm giữa hai thành phần
+này trên đường Hamilton; phần này rất dễ tính.
+
+Nếu cạnh bị lật nằm trong cùng một thành phần liên thông mạnh, tìm một chu trình
+Hamilton của thành phần đó. Nếu cạnh bị lật không nằm trên chu trình Hamilton,
+rõ ràng tính liên thông mạnh không bị ảnh hưởng. Ngược lại, sau khi xóa cạnh đó
+trên chu trình Hamilton, còn lại một đường Hamilton. Như đã nói ở trên, với mọi
+cạnh $x\to y$ ngược hướng đường Hamilton, tác dụng của nó là hợp nhất đoạn
+$[y,x]$ thành một thành phần liên thông mạnh. Lúc này $[y,x]$ là đoạn trên chu
+trình; dùng một số kỹ thuật cấu trúc dữ liệu để duy trì mọi $[y,x]$, có thể
+truy vấn trong $O(1)$ tình hình thành phần liên thông mạnh sau khi xóa một cạnh
+trên chu trình, nhưng cài đặt khá rắc rối.
+
+Cách 2: dùng định lý Landau.
+
+Sắp mọi đỉnh theo bậc vào tăng dần thành $p_1,\ldots,p_n$, bậc vào của $p_i$ là
+$d_i$. Lật một cạnh $p_x\to p_y$ sẽ làm bậc vào của $p_x$ tăng $1$ và bậc vào
+của $p_y$ giảm $1$. Chỉ xét dãy $d_i$, phát hiện sửa đổi trên có thể biểu diễn
+bằng $O(1)$ phép sửa điểm trên $d_i$. Điều cần trả lời là số lượng $k$ thỏa
+$\sum_{i=1}^k d_i=\binom{k}{2}$. Vì vậy chỉ cần duy trì trên mỗi đoạn giá trị nhỏ
+nhất của $\sum_{i=1}^k d_i-\binom{k}{2}$ và số lần đạt nhỏ nhất, là có thể trả
+lời đơn giản.
+
+Cả hai cách đều có độ phức tạp thời gian $O(n^2)$, nhưng cách 2 gọn hơn.
+
+\subsection{Tổng kết}
+
+Bài viết đã thảo luận nhiều bài toán và thuật toán liên quan tới tính liên thông
+của đồ thị, đồng thời cung cấp một số cấu trúc và tư tưởng thường dùng để giải
+các bài toán này. Trong đồ thị vô hướng, ta lấy cây DFS làm trung tâm, tập trung
+thảo luận quan hệ song liên thông và một số tính chất, ứng dụng của tập cắt.
+Trong đồ thị có hướng, ta lấy quan hệ khả đạt và thành phần liên thông mạnh làm
+trung tâm, rồi thảo luận các tính chất và ứng dụng tương ứng.
+
+Thực ra còn nhiều nội dung bài viết chưa đi sâu nhắc tới, chẳng hạn cắt nhỏ nhất
+trong đồ thị vô hướng, thành phần tam liên thông, quan hệ thống trị trong đồ thị
+có hướng, bao đóng bắc cầu động, v.v. Có hai lý do: một là giới hạn dung lượng,
+hai là các nội dung này đã được thảo luận trong các luận văn đội tuyển các năm
+trước. Tác giả liệt kê các luận văn tương ứng trong tài liệu tham khảo; độc giả
+quan tâm có thể đọc thêm.
+
+\subsection{Lời cảm ơn}
+
+\begin{itemize}
+  \item Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+  đổi.
+  \item Cảm ơn thầy Jin Jing của Trường Trung học phổ thông số 2 trực thuộc Đại
+  học Sư phạm Hoa Đông đã quan tâm và hướng dẫn.
+  \item Cảm ơn sự giúp đỡ của các bạn học đã trao đổi với tôi về các nội dung
+  liên quan.
+  \item Cảm ơn sự quan tâm và ủng hộ của cha mẹ.
+\end{itemize}
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}[label={[\arabic*]}]
+  \item Yu Haoxiang, ``Bàn lại các thuật toán liên quan tới tính liên thông của
+  đồ thị'', Tập luận văn đội tuyển IOI 2021.
+  \item Chang Ruinian, ``Ứng dụng của đại số tuyến tính trong OI'', Tập luận văn
+  đội tuyển IOI 2022.
+  \item Wikipedia, ``Ear Decomposition'',
+  \url{https://en.wikipedia.org/wiki/Ear_decomposition}.
+  \item Wikipedia, ``Bipolar Orientation'',
+  \url{https://en.wikipedia.org/wiki/Bipolar_orientation}.
+  \item zx2003, ``Bàn sơ về định hướng lưỡng cực và ứng dụng'',
+  \url{https://www.luogu.com.cn/blog/user19567/yi-dao-tu-lun-ti-ji-ji-yan-sheng}.
+  \item CCF, Niên giám Olympic Tin học Toàn quốc 2020.
+  \item Wang Wentao, ``Bàn về một số thuật toán và ứng dụng của bài toán cắt nhỏ
+  nhất trong đồ thị vô hướng'', Tập luận văn đội tuyển IOI 2016.
+  \item Sun Yaofeng, ``Nghiên cứu bài toán bao đóng bắc cầu động'', Tập luận văn
+  đội tuyển IOI 2017.
+  \item Chen Sunli, ``Bàn về cây thống trị và ứng dụng'', Tập luận văn đội tuyển
+  IOI 2020.
+\end{enumerate}
 
 \end{document}

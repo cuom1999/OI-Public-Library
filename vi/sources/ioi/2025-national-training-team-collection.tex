@@ -2,6 +2,7 @@
 % Source-PDF: IOI中国国家候选队论文/国家集训队2025论文集.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\providecommand{\square}{\dashv}
 
 \title{Tập luận văn đội tuyển quốc gia Trung Quốc năm 2025}
 \author{Tập luận văn đội tuyển quốc gia Olympic Tin học}
@@ -18,8 +19,8 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2025. Tệp được
 dàn trang bằng Adobe InDesign và có lớp văn bản đọc được cho mục lục cũng như
 các trang thân bài đã kiểm tra. Bản LaTeX này chuyển ngữ phần nhận diện tập
-sách và toàn bộ mục lục, đồng thời ghi lại các chủ đề chính để phục vụ bản
-dịch chi tiết hơn.
+sách, toàn bộ mục lục, và bài đầu tiên của Liu Hengxi về đoạn liên tiếp cùng
+các bài toán liên quan.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -62,26 +63,1102 @@ một trang PDF.
 \end{tabular}
 \end{center}
 
-\section{Chủ đề chính}
+\section*{Bài 1. Bàn về đoạn liên tiếp và các bài toán liên quan}
+\addcontentsline{toc}{section}{Bài 1. Bàn về đoạn liên tiếp và các bài toán liên quan}
 
-Từ mục lục và phần đầu của bài thứ nhất, tập năm 2025 bao phủ các nhóm chủ đề
-sau:
+\begin{center}
+Liu Hengxi, Trường Trung học Trấn Hải, Ninh Ba
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Đoạn liên tiếp là một đối tượng thường gặp trong các kỳ thi tin học. Bài viết
+này chuyển một loạt bài toán liên quan đến đoạn liên tiếp về một dạng thống
+nhất, khảo sát các tính chất của tập khoảng, đưa ra thuật toán cho một lớp tập
+khoảng đặc biệt, rồi dùng các thuật toán trên tập khoảng để giải một phần các
+bài toán. Ngoài ra, bài viết chứng minh độ khó của một số bài toán bằng quy
+giảm.
+
+\subsection*{1. Mở đầu}
+
+Trong các bài toán thi tin học, ta thường gặp những mô tả như ``giá trị của
+các phần tử tạo thành một khoảng'' hoặc ``$r-l=\max-\min$''. Những bài toán
+kiểu này thường liên quan đến đoạn liên tiếp. Khi làm bài \emph{[CCPC Final
+2021] Tree Partition}, tác giả nhận thấy còn có cách làm tốt hơn, từ đó suy
+nghĩ về trường hợp tổng quát hơn và thu được một số kết quả trong bài viết này.
+
+Tác giả mong rằng thông qua bài viết này, người đọc có thể hiểu bản chất của
+bài toán đoạn liên tiếp, nắm được một số tính chất của đoạn liên tiếp, và biết
+cách dùng thuật toán trên tập khoảng để giải một số bài toán.
+
+\subsection*{2. Quy ước}
+
+Nếu không nói rõ, các số xuất hiện đều là số nguyên.
+
+Với $l,r\in\mathbb Z$, $l\le r$, khoảng $[l,r]$ biểu thị tập các số nguyên giữa
+$l$ và $r$, tức là
+\[
+  [l,r]=\{i\mid i\in\mathbb Z,\ l\le i\le r\}.
+\]
+Khi $l<r$, gọi $[l,r]$ là một khoảng không tầm thường. Độ dài của khoảng
+$[l,r]$ là số phần tử trong nó, tức là $r-l+1$.
+
+Với một hoán vị $p$, ký hiệu $p^{-1}$ là hoán vị nghịch đảo của $p$, tức là
+$p^{-1}_{p_i}=i$.
+
+Với một hoán vị $p$, ký hiệu $p_{[l,r]}$ là tập tạo bởi
+$p_l,\ldots,p_r$, tức là
+\[
+  p_{[l,r]}=\{p_i\mid i\in[l,r]\}.
+\]
+
+Nếu không nói rõ, kích thước của hoán vị $p$ là $n$, chỉ số của $p$ nằm trong
+$[1,n]$, và khoảng $[l,r]$ thỏa $1\le l\le r\le n$.
+
+Ký hiệu $U$ là tập tất cả các khoảng được chứa trong $[1,n]$, tức là
+\[
+  U=\{[l,r]\mid 1\le l\le r\le n\}.
+\]
+Ký hiệu $2^A$ là tập lũy thừa của tập $A$, tức là
+$2^A=\{B\mid B\subseteq A\}$.
+
+\subsection*{3. Đoạn liên tiếp}
+
+\subsubsection*{3.1. Dẫn nhập}
+
+\paragraph{\term{Định nghĩa 3.1} (đoạn liên tiếp của hoán vị).}
+Với một hoán vị $p$, nếu khoảng $[l,r]$ thỏa $p_{[l,r]}\in U$, thì gọi
+$[l,r]$ là một đoạn liên tiếp của $p$.
+
+Trong các kỳ thi tin học, ta thường gặp các bài toán về đoạn liên tiếp và các
+mở rộng liên quan. Mở rộng có thể là thay khoảng của hoán vị bằng cây con liên
+thông của cây, hoặc thay một hoán vị bằng nhiều hoán vị. Những mở rộng này
+thường đều có thể biểu diễn dưới một dạng thống nhất.
+
+\subsubsection*{3.2. Dạng thống nhất}
+
+Giả sử có $m$ cấu trúc và $n$ phần tử. Gọi tập tạo bởi $n$ phần tử là $A$; để
+tiện, có thể xem $A=[1,n]$. Mỗi cấu trúc chứa $n$ phần tử, và trên mỗi cấu
+trúc ta định nghĩa một tập con của $A$ có ``liên thông'' hay không. Ta cần tìm
+thông tin về các tập con của $A$ đồng thời ``liên thông'' trên cả $m$ cấu
+trúc.
+
+Xem các tập con của $A$ đồng thời ``liên thông'' trên $m$ cấu trúc là các đoạn
+liên tiếp suy rộng.
+
+Việc định nghĩa mỗi tập con của $A$ có ``liên thông'' trên một cấu trúc hay
+không tương đương với việc cấu trúc đó có một tập liên thông
+$C\subseteq 2^A$ chứa tất cả các tập con ``liên thông''.
+
+Do đó bài toán cũng có thể phát biểu là: có $n$ phần tử, gọi tập của chúng là
+$A$, và có $m$ tập con $C_1,\ldots,C_m$ của $2^A$; ta cần tìm thông tin về
+\[
+  \bigcap_i C_i .
+\]
+
+Trong các bài toán thi tin học, những cấu trúc thường gặp gồm:
 \begin{itemize}
-  \item đoạn liên tiếp, tập khoảng, tính lồi và các quy giảm độ khó;
-  \item phân rã chuỗi dài, đổi gốc trên cây, bài toán lân cận trên cây và đồ thị;
-  \item nguyên lý chuyển vị, quy hoạch động, cơ sở tuyến tính và nhân ma trận;
-  \item dãy Thue--Morse, bài toán xâu, cấu trúc dữ liệu xâu trên cây;
-  \item hình học tính toán không sai số, biến ngẫu nhiên liên tục và tensor;
-  \item số học modulo lũy thừa nguyên tố, hệ số phân thức hữu tỉ và bất đẳng thức đồng dư tuyến tính;
-  \item các báo cáo ra đề và báo cáo lời giải cho một số bài cụ thể.
+  \item Hoán vị, tức dây chuyền: tập liên thông của hoán vị $p$ thường được
+  định nghĩa là $\{p_{[l,r]}\mid [l,r]\in U\}$, tức là các khoảng của $p$.
+  Tập liên thông này cũng chính là tập liên thông của dây chuyền
+  $T=(V,E)$, $V=[1,n]$,
+  $E=\{(p_i,p_{i+1})\mid i\in[1,n-1]\}$.
+  \item Cây: với cây $T=(V,E)$, $V=A$, tập liên thông thường được định nghĩa là
+  $\{S\mid S\subseteq V,\ T[S]\text{ là đồ thị liên thông}\}$. Định nghĩa này
+  tương đương với
+  \[
+    \{S\mid S\subseteq V,\ |\{(u,v)\in E\mid u,v\in S\}|=|S|-1\}.
+  \]
+  Ở đây $G[S]$ là đồ thị con cảm sinh bởi tập đỉnh $S$.
+  \item Đồ thị: với đồ thị $G=(V,E)$, $V=A$, tập liên thông thường được định
+  nghĩa là $\{S\mid S\subseteq V,\ G[S]\text{ là đồ thị liên thông}\}$.
 \end{itemize}
 
-\section{Ghi chú về trích xuất}
+Những tổ hợp cấu trúc có thể xuất hiện gồm:
+\begin{itemize}
+  \item hai dây chuyền, tức đoạn liên tiếp của hoán vị;
+  \item nhiều dây chuyền hơn;
+  \item dây chuyền và cây;
+  \item dây chuyền và nhiều cây;
+  \item dây chuyền và đồ thị;
+  \item hai cây.
+\end{itemize}
 
-Phần thân của tập 2025 có thể trích xuất được mà không cần OCR. Bài đầu tiên
-mô hình hóa nhiều bài toán đoạn liên tiếp bằng một dạng thống nhất trên họ tập
-khoảng, khảo sát các tính chất đóng của họ khoảng và dùng chúng để giải một
-số bài toán, đồng thời chứng minh độ khó của một số biến thể qua quy giảm. Tập
-này phù hợp để mở rộng thành bản dịch từng bài với công thức, hình và bảng.
+Với tổ hợp không chứa dây chuyền, chẳng hạn hai cây, việc đếm số đoạn liên
+tiếp đã khá khó.
+
+Với tổ hợp có chứa dây chuyền, số đoạn liên tiếp không vượt quá $O(n^2)$, và
+bài toán tương ứng cũng tương đối dễ hơn. Ta có thể đánh số lại các phần tử
+thành $1,2,\ldots,n$ theo thứ tự trên một dây chuyền. Sau khi đánh số lại, mọi
+đoạn liên tiếp đều là khoảng, vì vậy ta cần khảo sát tính chất của các tập
+khoảng.
+
+\subsection*{4. Tập khoảng}
+
+\paragraph{\term{Định nghĩa 4.1} (chính quy).}
+Nếu họ tập $S$ thỏa
+\[
+  S\subseteq U,\qquad [1,n]\in S,\qquad \forall i\in[1,n],\ \{i\}\in S,
+\]
+thì gọi $S$ là chính quy. Ở đây họ tập là một tập có phần tử là các tập.
+
+\paragraph{\term{Định nghĩa 4.2} (đóng loại I).}
+Nếu họ tập chính quy $S$ thỏa
+\[
+  \forall A,B\in S,\quad A\cap B\ne\varnothing \Rightarrow A\cup B\in S,
+\]
+thì gọi $S$ là đóng loại I.
+
+\paragraph{\term{Định nghĩa 4.3} (đóng loại II).}
+Nếu họ tập chính quy $S$ thỏa
+\[
+  \forall A,B\in S,\quad A\cap B\ne\varnothing \Rightarrow A\cap B\in S,
+\]
+thì gọi $S$ là đóng loại II.
+
+\paragraph{\term{Định nghĩa 4.4} (đóng loại III).}
+Nếu họ tập chính quy $S$ thỏa
+\[
+  \forall A,B\in S,\quad
+  A\cap B\ne\varnothing \land A\nsubseteq B \land B\nsubseteq A
+  \Rightarrow A\setminus B\in S,
+\]
+thì gọi $S$ là đóng loại III.
+
+Ta có ngay các kết luận sau từ định nghĩa:
+\begin{enumerate}
+  \item Giao của một số họ tập chính quy là họ tập chính quy.
+  \item Giao của một số họ tập đóng loại I là họ tập đóng loại I.
+  \item Giao của một số họ tập đóng loại II là họ tập đóng loại II.
+  \item Giao của một số họ tập đóng loại III là họ tập đóng loại III.
+\end{enumerate}
+
+\subsubsection*{4.1. Tập khoảng đóng loại I và II}
+
+\paragraph{\term{Định nghĩa 4.5} (khoảng cực tiểu).}
+Giả sử tập khoảng $S$ là tập khoảng đóng loại I và II. Với
+$i\in[1,n-1]$, nếu khoảng $[l,r]$ chứa $[i,i+1]$, thuộc $S$, và mọi khoảng như
+vậy đều chứa $[l,r]$, tức là
+\[
+  [l,r]\supseteq[i,i+1],\quad [l,r]\in S,\quad
+  \forall [l',r']\in S,\ [l',r']\supseteq[i,i+1]\Rightarrow [l',r']\supseteq[l,r],
+\]
+thì gọi $[l,r]$ là khoảng cực tiểu của $S$ chứa $[i,i+1]$, ký hiệu
+\[
+  M_S(i)=[ml_S(i),mr_S(i)].
+\]
+Dãy gồm $n-1$ khoảng cực tiểu được gọi là dãy khoảng cực tiểu của $S$, ký hiệu
+$M_S$.
+
+\paragraph{\term{Định lý 4.1}.}
+Giả sử tập khoảng $S$ đóng loại I và II. Với mọi $i\in[1,n-1]$, tồn tại khoảng
+cực tiểu của $S$ chứa $[i,i+1]$.
+
+\paragraph{\term{Chứng minh}.}
+Với $S$ đóng loại I và II và $i\in[1,n-1]$, lấy
+\[
+  [l,r]=\bigcap_{[x,y]\supseteq[i,i+1]\land [x,y]\in S}[x,y].
+\]
+Vì $[1,n]\in S$, vế phải có ít nhất một khoảng được lấy giao. Rõ ràng
+$[l,r]\supseteq[i,i+1]$, và nếu $[l',r']\supseteq[i,i+1]$ thì
+$[l',r']\supseteq[l,r]$. Chỉ cần chứng minh $[l,r]\in S$. Lần lượt áp dụng
+tính đóng loại II của $S$ cho các khoảng ở vế phải, suy ra $[l,r]\in S$.
+\hfill$\square$
+
+\paragraph{\term{Định lý 4.2}.}
+Giả sử tập khoảng $S$ đóng loại I và II. Với khoảng không tầm thường
+$[l,r]$ ($l<r$), điều kiện cần và đủ để $[l,r]\in S$ là
+\[
+  \forall i\in[l,r-1],\quad M_S(i)\subseteq[l,r].
+\]
+
+\paragraph{\term{Chứng minh}.}
+Xét tập khoảng $S$ đóng loại I và II và khoảng không tầm thường $[l,r]$.
+
+Tính đủ: nếu $\forall i\in[l,r-1]$, $M_S(i)\subseteq[l,r]$, thì
+\[
+  [l,r]=\bigcup_{i=l}^{r-1} M_S(i).
+\]
+Với $i\in[l+1,r-1]$, khi lấy hợp $M_S(i)$ với
+$\bigcup_{j=l}^{i-1}M_S(j)$, ta có $i\in M_S(i)$ và
+$i\in\bigcup_{j=l}^{i-1}M_S(j)$. Vì vậy có thể lần lượt áp dụng tính đóng loại
+I của $S$, suy ra $[l,r]\in S$.
+
+Tính cần: nếu $[l,r]\in S$, theo định nghĩa khoảng cực tiểu, với mọi
+$i\in[l,r-1]$, rõ ràng $[l,r]\supseteq[i,i+1]$, nên $M_S(i)\subseteq[l,r]$.
+\hfill$\square$
+
+Từ định lý trên, một tập khoảng đóng loại I và II có thể được xác định bởi
+$n-1$ khoảng cực tiểu.
+
+\subsubsection*{4.2. Tập khoảng đóng loại I, II và III}
+
+\paragraph{\term{Bổ đề 4.1}.}
+Giả sử tập khoảng $S$ đóng loại I, II và III. Nếu $i,j$ ($1\le i<j\le n-1$)
+thỏa
+\[
+  i+1\le ml_S(j)\le mr_S(i)\le j,
+\]
+thì $ml_S(j)=i+1$ và $mr_S(i)=j$.
+
+\paragraph{\term{Chứng minh}.}
+Giả sử $i+1<ml_S(j)\le mr_S(i)\le j$. Theo định nghĩa khoảng cực tiểu,
+$[ml_S(i),mr_S(i)]$ và $[ml_S(j),mr_S(j)]$ đều thuộc $S$. Vì $S$ đóng loại III,
+\[
+  [ml_S(i),mr_S(i)]\setminus[ml_S(j),mr_S(j)]
+  =[ml_S(i),ml_S(j)-1]\in S.
+\]
+Khoảng này chứa $[i,i+1]$, mâu thuẫn với việc $[ml_S(i),mr_S(i)]$ là khoảng
+cực tiểu chứa $[i,i+1]$. Do đó $ml_S(j)=i+1$. Tương tự, $mr_S(i)=j$.
+\hfill$\square$
+
+Lấy $T$ là tập các chỉ số $i$ sao cho khoảng cực tiểu chứa $[i,i+1]$ không bị
+một khoảng cực tiểu khác chứa thật:
+\[
+  T=\{i\in[1,n-1]\mid
+  \neg(\exists j\in[1,n-1],\ M_S(i)\subsetneq M_S(j))\}.
+\]
+
+\paragraph{\term{Bổ đề 4.2}.}
+Với $i\in[1,n-1]$, nếu tồn tại $t\in T$ sao cho $M_S(i)\supseteq[t,t+1]$,
+thì $i\in T$.
+
+\paragraph{\term{Chứng minh}.}
+Giả sử $i\notin T$. Khi đó tồn tại $j\in[1,n-1]$ sao cho
+$M_S(i)\subsetneq M_S(j)$. Vì $M_S(t)$ là khoảng cực tiểu chứa $[t,t+1]$ và
+$M_S(i)\supseteq[t,t+1]$, ta có $M_S(t)\subseteq M_S(i)$. Do
+$M_S(i)\subsetneq M_S(j)$, suy ra $M_S(t)\subseteq M_S(i)\subsetneq M_S(j)$,
+mâu thuẫn với $t\in T$. \hfill$\square$
+
+\paragraph{\term{Bổ đề 4.3}.}
+Với mọi $i\in[1,n-1]$, tồn tại $t\in T$ sao cho $M_S(t)$ chứa $[i,i+1]$.
+
+\paragraph{\term{Chứng minh}.}
+Với $i\in[1,n-1]$, trong các $M_S(j)$ chứa $[i,i+1]$, chọn khoảng có độ dài
+lớn nhất và gọi là $M_S(t)$. Nếu $M_S(t)$ bị một $M_S(u)$ chứa thật, thì
+$M_S(u)$ cũng chứa $[i,i+1]$ và có độ dài lớn hơn, mâu thuẫn. Vì vậy $M_S(t)$
+không bị khoảng cực tiểu khác chứa thật, tức là $t\in T$. \hfill$\square$
+
+\paragraph{\term{Bổ đề 4.4}.}
+Nếu tồn tại $i,j\in T$, $i\ne j$, sao cho $M_S(i)=M_S(j)$, thì
+$\forall t\in T$, $M_S(t)=[1,n]$.
+
+\paragraph{\term{Chứng minh}.}
+Giả sử $i,j\in T$, $i\ne j$, và $M_S(i)=M_S(j)$. Nếu $ml_S(i)\ne1$, lấy
+$k=ml_S(i)-1$.
+
+Nếu $mr_S(k)\ge i+1$, thì $M_S(k)\supseteq[i,i+1]$. Vì $[ml_S(i),mr_S(i)]$ là
+khoảng cực tiểu chứa $[i,i+1]$, $M_S(k)\supseteq M_S(i)$. Lại có
+$k\in M_S(k)$ và $k\notin M_S(i)$, nên $M_S(k)\supsetneq M_S(i)$, mâu thuẫn
+với $i\in T$.
+
+Nếu $mr_S(k)\le i$, thì
+$k\le ml_S(i)\le mr_S(k)\le i$. Theo bổ đề 4.1, $mr_S(k)=i$. Mặt khác,
+$k\le ml_S(j)\le mr_S(k)\le j$, nên theo bổ đề 4.1, $mr_S(k)=j$, mâu thuẫn.
+
+Do đó $ml_S(i)=1$. Tương tự, $mr_S(i)=n$. Theo tính chất của $T$,
+$\forall t\in T$, không thể có $M_S(t)\subsetneq M_S(i)=[1,n]$, do đó
+$\forall t\in T$, $M_S(t)=[1,n]$. \hfill$\square$
+
+\paragraph{\term{Bổ đề 4.5}.}
+Khi các $M_S(t)$, $t\in T$, đôi một khác nhau, không tồn tại
+$i,j\in T$, $i\ne j$, sao cho $M_S(i)\supseteq[j,j+1]$.
+
+\paragraph{\term{Chứng minh}.}
+Nếu tồn tại $i,j\in T$, $i\ne j$, sao cho $M_S(i)\supseteq[j,j+1]$, thì theo
+định nghĩa khoảng cực tiểu, $M_S(i)\supseteq M_S(j)$. Do
+$M_S(i)\ne M_S(j)$, ta có $M_S(i)\supsetneq M_S(j)$, mâu thuẫn với $j\in T$.
+\hfill$\square$
+
+\paragraph{\term{Bổ đề 4.6}.}
+Khi các $M_S(t)$, $t\in T$, đôi một khác nhau, giả sử
+$T=\{t_1,t_2,\ldots,t_k\}$,
+$t_0=0<t_1<t_2<\cdots<t_k<t_{k+1}=n$. Khi đó
+\[
+  M_S(t_i)=[t_{i-1}+1,t_{i+1}].
+\]
+
+\paragraph{\term{Chứng minh}.}
+Theo bổ đề 4.5, $M_S(t_i)\subseteq[t_{i-1}+1,t_{i+1}]$. Chỉ cần chứng minh
+\[
+  ml_S(t_i)=
+  \begin{cases}
+    1, & i=1,\\
+    t_{i-1}+1, & i\ge2,
+  \end{cases}
+\]
+phần về $mr_S(t_i)$ tương tự.
+
+Nếu $ml_S(t_1)>1$, thì $[1,2]$ không bị bất kỳ $M_S(t_i)$ nào chứa, mâu thuẫn
+với bổ đề 4.3. Vì vậy $ml_S(t_1)=1$.
+
+Với $i\in[2,k]$, nếu $mr_S(t_{i-1})<ml_S(t_i)$, thì
+$[ml_S(t_i)-1,ml_S(t_i)]$ không bị bất kỳ $M_S(t_i)$ nào chứa, mâu thuẫn với
+bổ đề 4.3. Do đó
+$t_{i-1}+1\le ml_S(t_i)\le mr_S(t_{i-1})\le t_i$. Theo bổ đề 4.1,
+$ml_S(t_i)=t_{i-1}+1$. \hfill$\square$
+
+\paragraph{\term{Định lý 4.3}.}
+Giả sử tập khoảng $S$ đóng loại I, II và III. Khi $n\ge2$, luôn có thể chia
+khoảng $[1,n]$ thành $k$ khoảng con
+$[l_1,r_1],[l_2,r_2],\ldots,[l_k,r_k]$,
+$k\ge2$, $l_1=1$, $r_k=n$, $l_i\le r_i$, $r_i+1=l_{i+1}$, sao cho:
+\begin{itemize}
+  \item Với mọi $i\in[1,k]$, $[l_i,r_i]\in S$.
+  \item Mọi phần tử của $S$ hoặc bị chứa trong một khoảng con $[l_i,r_i]$, hoặc
+  có thể biểu diễn thành hợp của một số khoảng con nguyên vẹn liên tiếp, tức là
+  \[
+    S\subseteq
+    \bigcup_{i=1}^k \{[l,r]\mid [l,r]\subseteq[l_i,r_i]\}
+    \cup \{[l_i,r_j]\mid 1\le i\le j\le k\}.
+  \]
+  \item Tập các khoảng liên tiếp có thể biểu diễn thành hợp của một số khoảng
+  con nguyên vẹn thỏa một trong hai điều kiện:
+  \[
+    S\supseteq \{[l_i,r_j]\mid 1\le i\le j\le k\}.
+  \]
+  Khi đó gọi phép chia này là phép chia hợp.
+  \item Hoặc $S$ chỉ chứa các khoảng con nguyên vẹn và $[1,n]$, đồng thời
+  $k\ge3$:
+  \[
+    S\cap\{[l_i,r_j]\mid 1\le i\le j\le k\}
+    =\{[l_i,r_i]\mid i\in[1,k]\}\cup\{[1,n]\}.
+  \]
+  Khi đó gọi phép chia này là phép chia tách.
+\end{itemize}
+
+\paragraph{\term{Chứng minh}.}
+Lấy
+\[
+  T=\{t_1,t_2,\ldots,t_k\}
+  =\{i\in[1,n-1]\mid
+  \neg(\exists j\in[1,n-1],\ M_S(i)\subsetneq M_S(j))\},
+\]
+với $t_0=0<t_1<\cdots<t_k<t_{k+1}=n$. Chia $[1,n]$ thành
+\[
+  [t_0+1,t_1], [t_1+1,t_2], \ldots, [t_k+1,t_{k+1}].
+\]
+
+Với khoảng con $[t_i+1,t_{i+1}]$, theo bổ đề 4.2,
+$\forall j\in[t_i+1,t_{i+1}-1]$, $M_S(j)\subseteq[t_i+1,t_{i+1}]$. Theo định
+lý 4.2, $[t_i+1,t_{i+1}]\in S$.
+
+Nếu các $M_S(t)$, $t\in T$, đôi một khác nhau, theo bổ đề 4.6,
+$M_S(t_i)=[t_{i-1}+1,t_{i+1}]$. Theo định lý 4.2, phép chia này thỏa
+$S\supseteq\{[l_i,r_j]\mid 1\le i\le j\le k\}$, nên là phép chia hợp.
+
+Ngược lại, $k\ge2$ và theo bổ đề 4.4, $\forall t\in T$, $M_S(t)=[1,n]$. Theo
+định lý 4.2, phép chia này thỏa
+\[
+  S\cap\{[l_i,r_j]\mid 1\le i\le j\le k\}
+  =\{[l_i,r_i]\mid i\in[1,k]\}\cup\{[1,n]\},
+\]
+nên là phép chia tách.
+
+Trong cả hai trường hợp đều có
+$M_S(t_i)\supseteq[t_{i-1}+1,t_{i+1}]$. Với
+\[
+  [l',r']\in S\setminus
+  \bigcup_{i=1}^k \{[l,r]\mid [l,r]\subseteq[l_i,r_i]\},
+\]
+giả sử $t_i+1\le l'\le t_{i+1}\le t_j+1\le r'\le t_{j+1}$. Theo định lý 4.2,
+$[l',r']\supseteq M_S(t_{i+1})$ và $[l',r']\supseteq M_S(t_j)$, do đó
+$[l',r']=[t_i+1,t_{j+1}]$. Suy ra phép chia thỏa điều kiện đã nêu.
+\hfill$\square$
+
+\paragraph{\term{Định lý 4.4}.}
+Phép chia trong định lý 4.3 là duy nhất.
+
+\paragraph{\term{Chứng minh}.}
+Giả sử trên $S$, khoảng $[1,n]$ có hai phép chia:
+\[
+  [l_{i,1},r_{i,1}], [l_{i,2},r_{i,2}],\ldots,[l_{i,k_i},r_{i,k_i}]
+  \quad (i\in[1,2],\ k_i\ge2).
+\]
+Tìm $i$ nhỏ nhất sao cho $[l_{1,i},r_{1,i}]\ne[l_{2,i},r_{2,i}]$; không mất
+tổng quát, giả sử $r_{1,i}<r_{2,i}$.
+
+Nếu phép chia 1 là phép chia hợp, thì khi $i=1$, đối với phép chia 2, khoảng
+$[r_{1,i}+1,n]$ vừa không bị một khoảng con $[l_{2,j},r_{2,j}]$ chứa, vừa
+không thể biểu diễn thành hợp của một số khoảng con nguyên vẹn, mâu thuẫn. Khi
+$i\ge2$, đối với phép chia 2, khoảng $[1,r_{1,i}]$ cũng gây mâu thuẫn tương tự.
+
+Nếu phép chia 1 là phép chia tách, thì khoảng $[l_{2,i},r_{2,i}]$ vừa không bị
+một khoảng con $[l_{1,i},r_{1,i}]$ chứa, vừa không phải $[1,n]$, mâu thuẫn.
+Vì vậy giả thiết ban đầu không đúng. \hfill$\square$
+
+\subsubsection*{4.3. Cây tách--hợp}
+
+Cây tách--hợp do Liu Cheng'ao nêu ra trong trao đổi học viên WC2019 và cho
+thuật toán xây dựng tuyến tính; có thể xem tài liệu~[3]. Định nghĩa ở đây hơi
+khác định nghĩa trong slide trao đổi ban đầu, nhưng bản chất là như nhau.
+
+\paragraph{\term{Định nghĩa 4.6} (cây tách--hợp).}
+Cây tách--hợp của một tập khoảng là cây có gốc gồm ba loại nút:
+\begin{itemize}
+  \item Nút lá $(L,i)$, biểu diễn khoảng $[i,i]$.
+  \item Nút hợp $(J,l,r)$, biểu diễn khoảng $[l,r]$.
+  \item Nút tách $(C,l,r)$, biểu diễn khoảng $[l,r]$.
+\end{itemize}
+
+Cây tách--hợp của tập khoảng $S$ phải thỏa các ràng buộc sau:
+\begin{itemize}
+  \item Nút gốc biểu diễn khoảng $[1,n]$.
+  \item Mọi khoảng do nút biểu diễn đều thuộc $S$.
+  \item Mỗi nút không phải lá có ít nhất hai con, và các khoảng do các con này
+  biểu diễn tạo thành một phép chia của khoảng do nút đó biểu diễn. Riêng nút
+  tách có ít nhất ba con.
+  \item Với nút không phải lá $(c,u,v)$, $c\in\{J,C\}$, giả sử các khoảng do
+  con của nó biểu diễn là
+  $[l_1,r_1],[l_2,r_2],\ldots,[l_k,r_k]$,
+  $k\ge2$, $l_1=u$, $r_k=v$, $l_i\le r_i$, $r_i+1=l_{i+1}$. Mọi khoảng trong
+  $S$ nằm trong $[u,v]$ hoặc bị chứa trong một khoảng con $[l_i,r_i]$, hoặc có
+  thể biểu diễn thành hợp của một số khoảng con nguyên vẹn:
+  \[
+    S\cap\{[l,r]\mid [l,r]\subseteq[u,v]\}
+    \subseteq
+    \bigcup_{i=1}^k \{[l,r]\mid [l,r]\subseteq[l_i,r_i]\}
+    \cup \{[l_i,r_j]\mid 1\le i\le j\le k\}.
+  \]
+  \item Với nút hợp $(J,u,v)$, $S$ chứa mọi khoảng có thể biểu diễn thành hợp
+  của một số khoảng con nguyên vẹn:
+  \[
+    S\supseteq\{[l_i,r_j]\mid 1\le i\le j\le k\}.
+  \]
+  \item Với nút tách $(C,u,v)$, $k\ge3$ và trong $S$, những khoảng có thể biểu
+  diễn thành hợp của một số khoảng con nguyên vẹn chỉ gồm các khoảng con và
+  khoảng toàn bộ:
+  \[
+    S\cap\{[l_i,r_j]\mid 1\le i\le j\le k\}
+    =\{[l_i,r_i]\mid i\in[1,k]\}\cup\{[u,v]\}.
+  \]
+\end{itemize}
+Ở đây $L$ viết tắt của leaf, $J$ của join, và $C$ của cut.
+
+\paragraph{\term{Định lý 4.5}.}
+Với tập khoảng $S$ đóng loại I, II và III, cây tách--hợp của $S$ tồn tại và
+duy nhất.
+
+\paragraph{\term{Chứng minh}.}
+Khi $n=1$, cây chỉ gồm một nút lá $(L,1)$ thỏa điều kiện, và hiển nhiên không
+có cây nào khác.
+
+Giả sử kết luận đúng với $n\le N$ ($N\ge1$). Khi $n=N+1\ge2$, chia $[1,n]$
+theo định lý 4.3 thành $k$ khoảng con
+$[l_1,r_1],\ldots,[l_k,r_k]$. Dễ kiểm tra rằng với mọi $i\in[1,k]$,
+\[
+  S\cap\{[l,r]\mid [l,r]\subseteq[l_i,r_i]\},
+\]
+sau khi tịnh tiến các phần tử, vẫn đóng loại I, II và III. Theo giả thiết quy
+nạp, mỗi tập con này có cây tách--hợp duy nhất.
+
+Nếu $S$ chứa mọi khoảng có thể biểu diễn thành hợp của một số khoảng con
+nguyên vẹn, tạo nút hợp $(J,1,n)$. Ngược lại, trong $S$, các khoảng có thể
+biểu diễn thành hợp của một số khoảng con nguyên vẹn chỉ là
+$[l_1,r_1],\ldots,[l_k,r_k]$ và $[1,n]$; tạo nút tách $(C,1,n)$. Gắn gốc của
+$k$ cây con sau khi tịnh tiến về vị trí ban đầu làm $k$ con của nút mới. Dễ
+kiểm tra cây thu được thỏa điều kiện, nên cây tách--hợp của $S$ tồn tại.
+
+Khi $n=N+1\ge2$, các khoảng do con của gốc biểu diễn tạo thành phép chia trong
+định lý 4.3. Theo định lý 4.4, phép chia này duy nhất, nên với mọi cây
+tách--hợp của $S$, kiểu của gốc và các khoảng do con của gốc biểu diễn đều
+giống nhau. Theo giả thiết quy nạp, mỗi cây con cũng duy nhất, do đó cây
+tách--hợp của $S$ duy nhất. \hfill$\square$
+
+\paragraph{\term{Định lý 4.6}.}
+Với tập khoảng $S$, cây tách--hợp của $S$ tồn tại khi và chỉ khi $S$ đóng loại
+I, II và III.
+
+\paragraph{\term{Chứng minh}.}
+Chiều đủ đã được định lý 4.5 cho.
+
+Chiều cần: giả sử cây tách--hợp của $S$ tồn tại. Vì trong cây chắc chắn có
+$n$ nút lá $(L,i)$, $i\in[1,n]$, và nút gốc biểu diễn $[1,n]$, ta có
+$[1,n]\in S$ và $\forall i\in[1,n]$, $\{i\}\in S$, nên $S$ chính quy.
+
+Với hai khoảng $[l_1,r_1]$, $[l_2,r_2]$ có giao không rỗng, gọi $u$ là nút sâu
+nhất có khoảng biểu diễn chứa $[l_1,r_1]$, và $v$ là nút sâu nhất có khoảng
+biểu diễn chứa $[l_2,r_2]$. Lấy $i\in[l_1,r_1]\cap[l_2,r_2]$. Vì $u$ và $v$
+đều là tổ tiên của $(L,i)$, chúng có quan hệ tổ tiên--hậu duệ; không mất tổng
+quát, nếu $u\ne v$ thì $u$ là tổ tiên của $v$.
+
+Nếu $u=v$, xét theo loại của $u$. Nếu $u$ là lá hoặc nút tách, thì
+$[l_1,r_1]$ và $[l_2,r_2]$ đều chính là khoảng do $u$ biểu diễn, nên hợp và
+giao của chúng đều thuộc $S$. Nếu $u$ là nút hợp, thì $[l_1,r_1]\cap[l_2,r_2]$
+và $[l_1,r_1]\cup[l_2,r_2]$ đều là hợp của một số khoảng con trong phép chia
+của $u$, nên thuộc $S$.
+
+Nếu $u$ là tổ tiên của $v$, thì
+$[l_1,r_1]\cup[l_2,r_2]=[l_1,r_1]\in S$.
+Vì vậy $S$ đóng loại I và II.
+
+Nếu $[l_1,r_1]$ và $[l_2,r_2]$ không chứa nhau, thì $u=v$ và $u$ là nút hợp.
+Khi đó $[l_1,r_1]\setminus[l_2,r_2]$ là hợp của một số khoảng con trong phép
+chia của khoảng do $u$ biểu diễn, nên theo tính chất của nút hợp, nó thuộc
+$S$. Do đó $S$ đóng loại III. \hfill$\square$
+
+Ví dụ, với
+\[
+  S=\{[1,9],[1,2],[3,6],[5,6],[7,9],[7,8],[8,9]\}
+  \cup\{[i,i]\mid i\in[1,9]\},
+\]
+cây tách--hợp có gốc là nút tách $C,1,9$; các nút trong cây gồm các nút hợp
+$J,1,2$, $J,5,6$, $J,7,9$, nút tách $C,3,6$, và các lá $L,1,\ldots,L,9$.
+
+\subsubsection*{4.4. Xây dựng cây tách--hợp}
+
+Trong bài toán thực tế, dãy khoảng cực tiểu của tập khoảng thường không dễ tìm
+nhanh, vì vậy ta đưa vào dãy khoảng cực tiểu giả.
+
+\paragraph{\term{Định nghĩa 4.7} (dãy khoảng cực tiểu giả).}
+Dãy khoảng $([l_1,r_1],\ldots,[l_{n-1},r_{n-1}])$ là dãy khoảng cực tiểu giả
+của tập khoảng đóng loại I và II $S$ khi và chỉ khi
+\[
+  \forall i\in[1,n-1],\quad [l_i,r_i]\supseteq[i,i+1],
+\]
+và
+\[
+  \forall 1\le u\le v\le n,\quad
+  [u,v]\in S
+  \Longleftrightarrow
+  \bigl(\forall i\in[u,v-1],\ [l_i,r_i]\subseteq[u,v]\bigr).
+\]
+Nói cách khác, dãy khoảng cực tiểu giả có tính chất của khoảng cực tiểu được
+mô tả trong định lý 4.2.
+
+\paragraph{\term{4.4.1. Thuật toán thô}.}
+Cho dãy khoảng cực tiểu giả của tập khoảng đóng loại I, II và III $S$, có thể
+dùng phương pháp tham lam gộp dần để xây dựng cây tách--hợp của $S$.
+
+\paragraph{\term{Thuật toán 1} (xây dựng thô cây tách--hợp từ dãy khoảng cực tiểu giả).}
+Yêu cầu:
+$([l_1,r_1],\ldots,[l_{n-1},r_{n-1}])$ là dãy khoảng cực tiểu giả của $S$.
+Kết quả: ngăn xếp $s$ cuối cùng chứa nút gốc của cây tách--hợp.
+\begin{enumerate}
+  \item $s\leftarrow$ ngăn xếp rỗng.
+  \item Với $i=1$ đến $n$:
+  \item \quad $u\leftarrow \operatorname{Node}(L,i,i,\varnothing)$, lần lượt
+  biểu thị kiểu, trái, phải và danh sách con.
+  \item \quad $sufmin\leftarrow i$, $sufmax\leftarrow i$, $m\leftarrow |s|$.
+  \item \quad Với $j=m$ giảm đến $1$:
+  \item \quad\quad $sufmin\leftarrow\min\{sufmin,l_{s_j.right}\}$.
+  \item \quad\quad $sufmax\leftarrow\max\{sufmax,r_{s_j.right}\}$.
+  \item \quad\quad Nếu $sufmin\ge s_j.left$ và $sufmax\le i$:
+  \item \quad\quad\quad Nếu $j=|s|$:
+  \item \quad\quad\quad\quad Nếu $s_j.type=J$ và
+  $sufmin\ge s_j.child_{|s_j.child|}.left$, thêm $u$ vào con của $s_j$,
+  đặt $s_j.right\leftarrow i$, $u\leftarrow s_j$.
+  \item \quad\quad\quad\quad Ngược lại, đặt
+  $u\leftarrow\operatorname{Node}(J,s_j.left,i,(s_j,u))$.
+  \item \quad\quad\quad Ngược lại, đặt
+  $u\leftarrow\operatorname{Node}(C,s_j.left,i,(s_j,s_{j+1},\ldots,s_{|s|},u))$.
+  \item \quad\quad\quad Trong khi $|s|\ge j$, lấy phần tử khỏi $s$.
+  \item \quad Đưa $u$ vào $s$.
+\end{enumerate}
+
+Có thể thấy các nút mới mà thuật toán tạo ra luôn biểu diễn các khoảng thuộc
+$S$. Với một nút không phải lá trong cây tách--hợp của $S$, thuật toán không
+gộp các nút thuộc các cây con khác nhau, đồng thời thiết lập đúng nút hợp và
+nút tách. Vì vậy thuật toán luôn cho kết quả đúng.
+
+\paragraph{\term{4.4.2. Thuật toán tuyến tính}.}
+Do tổng số nút của cây tách--hợp là $O(n)$, nút thắt của thuật toán thô là
+tìm nút mới cần tạo.
+
+Trong thuật toán thô, nếu $sufmax>i$, thì với $i$ hiện tại không thể tạo nút
+mới nữa, nên có thể thoát ngay khỏi vòng lặp trong. Nếu
+$l_{s_j.right}<s_j.left$, thì $s_j$ về sau không thể làm đầu trái của một nút
+mới nào nữa, nên không cần xét lại. Dùng hai ý tưởng tối ưu này, ta thu được
+thuật toán tuyến tính.
+
+\paragraph{\term{Thuật toán 2} (xây dựng tuyến tính cây tách--hợp từ dãy khoảng cực tiểu giả).}
+Yêu cầu:
+$([l_1,r_1],\ldots,[l_{n-1},r_{n-1}])$ là dãy khoảng cực tiểu giả của $S$.
+Kết quả: ngăn xếp $s$ cuối cùng chứa nút gốc của cây tách--hợp.
+\begin{enumerate}
+  \item Đặt $l_n\leftarrow1$, $s\leftarrow$ ngăn xếp rỗng,
+  $t\leftarrow$ ngăn xếp rỗng.
+  \item Với $i=1$ đến $n$:
+  \item \quad $u\leftarrow\operatorname{Node}(L,i,i,\varnothing)$.
+  \item \quad Trong khi $t$ không rỗng và $r_{t.top()}\le i$:
+  \item \quad\quad $j\leftarrow |s|$.
+  \item \quad\quad Trong khi $s_j.left>t.top()$, đặt $j\leftarrow j-1$.
+  \item \quad\quad Nếu $j=|s|$:
+  \item \quad\quad\quad Nếu $s_j.type=J$ và
+  $l_{s_j.right}\ge s_j.child_{|s_j.child|}.left$, thêm $u$ vào con của $s_j$,
+  đặt $s_j.right\leftarrow i$, $u\leftarrow s_j$.
+  \item \quad\quad\quad Ngược lại, đặt
+  $u\leftarrow\operatorname{Node}(J,s_j.left,i,(s_j,u))$.
+  \item \quad\quad Nếu không, đặt
+  $u\leftarrow\operatorname{Node}(C,s_j.left,i,(s_j,s_{j+1},\ldots,s_{|s|},u))$.
+  \item \quad\quad Trong khi $|s|\ge j$, lấy phần tử khỏi $s$.
+  \item \quad\quad Lấy phần tử khỏi $t$.
+  \item \quad Đưa $u$ vào $s$.
+  \item \quad Đưa $u.left$ vào $t$.
+  \item \quad Trong khi $t.top()>l_i$, lấy phần tử khỏi $t$.
+  \item \quad Đặt $r_{t.top()}\leftarrow\max\{r_{t.top()},r_i\}$.
+\end{enumerate}
+
+Có thể kiểm tra thuật toán tuyến tính trên tương đương với thuật toán thô, nên
+nó luôn cho kết quả đúng.
+
+\subsubsection*{4.5. Tổng thông tin tại đầu trái ứng với đầu phải}
+
+Cho tập khoảng $S$ và $n$ thông tin $a_1,a_2,\ldots,a_n$. Phép gộp thông tin
+thỏa tính chất nửa nhóm, tức là đóng và kết hợp; ký hiệu phép gộp là $\times$.
+Cần với mỗi $r\in[1,n]$ tính
+\[
+  \prod_{l\in[1,r],\ [l,r]\in S} a_l.
+\]
+
+Với tập khoảng đóng loại I, II và III, có thể dựng cây tách--hợp rồi giải
+bằng một lần DFS.
+
+Với tập khoảng đóng loại I và II, nếu phép gộp thông tin thỏa tính chất nhóm,
+tức ngoài tính chất nửa nhóm còn có đơn vị và mỗi phần tử có nghịch đảo, thì
+có thuật toán tuyến tính. Ký hiệu đơn vị là $1$, nghịch đảo của $a$ là
+$a^{-1}$.
+
+\paragraph{\term{Thuật toán 3} (tuyến tính để tìm tích thông tin tại đầu trái ứng với đầu phải).}
+Yêu cầu:
+$([l_1,r_1],\ldots,[l_{n-1},r_{n-1}])$ là dãy khoảng cực tiểu giả của $S$, và
+phép nhân của các $a_i$ thỏa tính chất nhóm. Kết quả:
+\[
+  b_i=\prod_{j\in[1,i],\ [i,j]\in S} a_j.
+\]
+\begin{enumerate}
+  \item Với $i=1$ đến $n-1$, đặt $c_i\leftarrow0$.
+  \item $t\leftarrow$ ngăn xếp rỗng.
+  \item Với $i=n-1$ giảm đến $1$:
+  \item \quad Đưa $i$ vào $t$.
+  \item \quad Trong khi $t.top()<r_i-1$:
+  \item \quad\quad $c_{t.top()}\leftarrow i$.
+  \item \quad\quad Lấy phần tử khỏi $t$.
+  \item $s\leftarrow$ ngăn xếp rỗng, đưa $0$ vào $s$.
+  \item $p_0\leftarrow1$, $b_1\leftarrow a_1$.
+  \item Với $i=1$ đến $n-1$:
+  \item \quad $p_i\leftarrow p_{s.top()}\times a_i$.
+  \item \quad Đưa $i$ vào $s$.
+  \item \quad Trong khi $s.top()>l_i$:
+  \item \quad\quad $\operatorname{Erase}(s.top())$.
+  \item \quad\quad Lấy phần tử khỏi $s$.
+  \item \quad $v\leftarrow\operatorname{Query}(c_i)$.
+  \item \quad $b_{i+1}\leftarrow p_v^{-1}\times p_{s.top()}\times a_{i+1}$.
+\end{enumerate}
+
+\paragraph{\term{Giải thích}.}
+Trong thuật toán, $c_i$ là $k$ lớn nhất trong $[1,i]$ sao cho $r_k>i+1$; nếu
+không tồn tại thì $c_i=0$. Ràng buộc trên $r$ trong dãy khoảng cực tiểu giả
+được chuyển thành $j>c_i$, còn ràng buộc trên $l$ được chuyển thành thao tác
+lấy khỏi đỉnh ngăn xếp $s$. Thuật toán cần một cấu trúc dữ liệu:
+\begin{itemize}
+  \item Duy trì một xâu $01$ độ dài $n+1$, ban đầu toàn $1$.
+  \item $\operatorname{Erase}(x)$: đổi $s_x$ thành $0$.
+  \item $\operatorname{Query}(x)$: truy vấn $y$ lớn nhất sao cho
+  $y\le x$ và $s_y=1$.
+\end{itemize}
+
+\paragraph{\term{Cài đặt cấu trúc dữ liệu}.}
+Trong mô hình Word RAM, có thể dùng DSU nén bit để cài đặt cấu trúc dữ liệu
+này. Đại khái, chia xâu $s$ thành các khối $w$ bit, xử lý trong khối bằng phép
+toán bit trong $O(1)$, còn giữa các khối dùng DSU có nén đường đi và gộp theo
+kích thước. Theo~[2], độ phức tạp là
+$O(n\alpha(n,n/w))=O(n)$.
+
+Thuật toán trên, cũng như cách giải bằng cây tách--hợp, đều là trực tuyến:
+có thể lần lượt tính đáp án cho $r=1,2,\ldots,n$. Khi tính đáp án cho
+$r=r_0$, không cần biết $a_{r_0+1},\ldots,a_n$.
+
+\subsection*{5. Phân tích thêm về đoạn liên tiếp}
+
+Tập liên thông của dây chuyền, tức hoán vị, là chính quy và đóng loại I, II,
+III. Tập liên thông của cây là chính quy và đóng loại I, II. Tập liên thông
+của đồ thị là chính quy và đóng loại I.
+
+Vì giao của một số họ tập cùng thỏa một trong các tính chất chính quy, đóng
+loại I, đóng loại II, đóng loại III vẫn thỏa tính chất đó, ta có thể trực tiếp
+suy ra tính chất của một số tổ hợp cấu trúc.
+
+\subsubsection*{5.1. Hai dây chuyền}
+
+\paragraph{\term{5.1.1. Tính chất}.}
+Đánh số lại các phần tử trên một dây chuyền theo thứ tự $1,2,\ldots,n$, ta
+thu được rằng đoạn liên tiếp của hai dây chuyền tương đương với đoạn liên tiếp
+của hoán vị. Tương tự, mọi tổ hợp chứa dây chuyền đều có thể chuyển đổi theo
+cách này.
+
+Tập đoạn liên tiếp của hai dây chuyền là chính quy và đóng loại I, II, III,
+nghĩa là có thể dùng cây tách--hợp để mô tả đoạn liên tiếp của hoán vị.
+
+Một dãy khoảng cực tiểu giả của tập đoạn liên tiếp của hoán vị $p$ là
+\[
+  \left(
+    \left[
+      \min_{j\in A_i}p_j^{-1},
+      \max_{j\in A_i}p_j^{-1}
+    \right]
+  \right)_{i\in[1,n-1]},
+\]
+trong đó
+\[
+  A_i=[\min\{p_i,p_{i+1}\},\max\{p_i,p_{i+1}\}].
+\]
+
+\paragraph{\term{5.1.2. Độ phức tạp}.}
+\term{Định lý 5.1.} Với một cây tách--hợp, nếu mọi nút tách của nó đều có ít
+nhất bốn con, thì tồn tại một hoán vị $p$ sao cho cây tách--hợp của tập đoạn
+liên tiếp của $p$ chính là cây đã cho.
+
+Định nghĩa
+$\operatorname{combine}(p,q_1,q_2,\ldots,q_{|p|})$ là hoán vị duy nhất thu
+được bằng cách cộng cùng một số vào toàn bộ mỗi $q_i$ rồi ghép theo thứ tự,
+sao cho thứ tự tương đối giữa các $q_i$ khớp với $p$. Ví dụ:
+\[
+  \operatorname{combine}((1,3,2),(1,2),(2,1),(1))=(1,2,5,4,3).
+\]
+Định nghĩa
+\[
+  \operatorname{flip}(p)=(|p|+1-p_i)_{i\in[1,|p|]}.
+\]
+Ví dụ $\operatorname{flip}((1,4,2,3))=(4,1,3,2)$.
+
+Với một cây tách--hợp thỏa điều kiện, có thể xây dựng $p$ như sau:
+\begin{itemize}
+  \item Nếu gốc là lá, đặt $p=(1)$.
+  \item Ngược lại, giả sử các cây con được xây dựng thành
+  $p_1,\ldots,p_k$.
+  \item Nếu gốc là nút hợp, đặt
+  \[
+    p=\operatorname{combine}((1,\ldots,k),
+    \operatorname{flip}(p_1),\ldots,\operatorname{flip}(p_k)).
+  \]
+  \item Nếu gốc là nút tách, đặt
+  \[
+    p=\operatorname{combine}(q,
+    \operatorname{flip}(p_1),\ldots,\operatorname{flip}(p_k)),
+  \]
+  trong đó
+  \[
+    q=
+    \begin{cases}
+      (2,4,\ldots,k,1,3,\ldots,k-1), & 2\mid k,\\
+      (2,4,\ldots,k-1,1,k,3,\ldots,k-2), & 2\nmid k.
+    \end{cases}
+  \]
+\end{itemize}
+
+\subsubsection*{5.2. Nhiều dây chuyền hơn}
+
+\paragraph{\term{5.2.1. Tính chất}.}
+\term{Định nghĩa 5.1} (đoạn liên tiếp của nhiều hoán vị). Với dãy gồm $m$
+hoán vị $p=(p_1,\ldots,p_m)$, nếu khoảng $[l,r]$ là đoạn liên tiếp của mọi
+$p_i$, thì gọi $[l,r]$ là đoạn liên tiếp của $p$.
+
+Đoạn liên tiếp của $k$ dây chuyền ($k\ge3$) tương đương với đoạn liên tiếp của
+$k-1$ hoán vị.
+
+Tập đoạn liên tiếp của $k$ dây chuyền là chính quy và đóng loại I, II, III,
+nghĩa là vẫn có thể dùng cây tách--hợp để mô tả đoạn liên tiếp của nhiều hoán
+vị.
+
+Một dãy khoảng cực tiểu giả của tập đoạn liên tiếp của dãy hoán vị $p$ là dãy
+thu được bằng cách lấy hợp theo từng vị trí của các dãy khoảng cực tiểu giả
+của từng hoán vị $p_i$.
+
+\paragraph{\term{5.2.2. Độ phức tạp}.}
+\term{Định lý 5.2.} Với mọi cây tách--hợp, tồn tại hai hoán vị $p_1,p_2$ sao
+cho cây tách--hợp của tập đoạn liên tiếp của $(p_1,p_2)$ chính là cây đó.
+
+Vì mọi tập khoảng đóng loại I, II, III đều tương ứng với một cây tách--hợp duy
+nhất, định lý này thực chất chỉ ra rằng tập đoạn liên tiếp của hai hoán vị có
+thể là mọi tập khoảng đóng loại I, II, III.
+
+Với một cây tách--hợp thỏa điều kiện, có thể xây dựng cặp hoán vị $(p,q)$ như
+sau:
+\begin{itemize}
+  \item Nếu gốc là lá, đặt $(p,q)=((1),(1))$.
+  \item Ngược lại, giả sử các cây con được xây dựng thành các cặp hoán vị
+  $(p_1,q_1),\ldots,(p_k,q_k)$.
+  \item Nếu gốc là nút hợp, đặt
+  \[
+    p=\operatorname{combine}((1,\ldots,k),
+    \operatorname{flip}(p_1),\ldots,\operatorname{flip}(p_k)),
+  \]
+  \[
+    q=\operatorname{combine}((1,\ldots,k),
+    \operatorname{flip}(q_1),\ldots,\operatorname{flip}(q_k)).
+  \]
+  \item Nếu gốc là nút tách, đặt
+  \[
+    p=\operatorname{combine}(p',
+    \operatorname{flip}(p_1),\ldots,\operatorname{flip}(p_k)),
+  \]
+  \[
+    q=\operatorname{combine}(q',
+    \operatorname{flip}(q_1),\ldots,\operatorname{flip}(q_k)),
+  \]
+  trong đó
+  \[
+    p'=
+    \begin{cases}
+      (2,3,1), & k=3,\\
+      (2,4,\ldots,k,1,3,\ldots,k-1), & k\ge4,\ 2\mid k,\\
+      (2,4,\ldots,k-1,1,k,3,\ldots,k-2), & k\ge4,\ 2\nmid k,
+    \end{cases}
+  \]
+  và
+  \[
+    q'=
+    \begin{cases}
+      (3,1,2), & k=3,\\
+      (2,4,\ldots,k,1,3,\ldots,k-1), & k\ge4,\ 2\mid k,\\
+      (2,4,\ldots,k-1,1,k,3,\ldots,k-2), & k\ge4,\ 2\nmid k.
+    \end{cases}
+  \]
+\end{itemize}
+
+Chẳng hạn, với cây tách--hợp ở ví dụ trước, có thể xây dựng hai hoán vị
+\[
+  (5,4,9,8,6,7,2,1,3),\qquad (9,8,4,3,2,1,5,7,6).
+\]
+
+\subsubsection*{5.3. Dây chuyền và cây}
+
+\paragraph{\term{5.3.1. Tính chất}.}
+\term{Định nghĩa 5.2} (đoạn liên tiếp của cây). Với cây $T=(V,E)$,
+$V=[1,n]$, nếu khoảng $[l,r]$ thỏa đồ thị con cảm sinh của $T$ trên tập đỉnh
+$[l,r]$ là đồ thị liên thông, thì gọi $[l,r]$ là đoạn liên tiếp của $T$.
+
+Tổ hợp ``dây chuyền, cây'' tương đương với đoạn liên tiếp của cây.
+
+Tập đoạn liên tiếp của tổ hợp ``dây chuyền, cây'' là chính quy và đóng loại I,
+II, nghĩa là có thể dùng $n-1$ khoảng cực tiểu để mô tả đoạn liên tiếp của
+cây.
+
+Một dãy khoảng cực tiểu giả của tập đoạn liên tiếp của cây là
+\[
+  \bigl([\min \operatorname{path}(i,i+1),
+  \max \operatorname{path}(i,i+1)]\bigr)_{i\in[1,n-1]},
+\]
+trong đó $\operatorname{path}(i,i+1)$ biểu thị tập đỉnh trên đường đi từ $i$
+đến $i+1$ trong cây.
+
+\paragraph{\term{5.3.2. Độ phức tạp}.}
+Tập đoạn liên tiếp của cây không đóng loại III.
+
+Xét cây $T=(V,E)$, $V=\{1,2,3,4\}$,
+$E=\{(1,3),(2,3),(3,4)\}$. Các khoảng $[1,3]$ và $[3,4]$ đều là đoạn liên tiếp
+của nó, nhưng
+\[
+  [1,3]\setminus[3,4]=[1,2]
+\]
+không phải đoạn liên tiếp của nó.
+
+\subsubsection*{5.4. Dây chuyền và nhiều cây}
+
+\paragraph{\term{5.4.1. Tính chất}.}
+\term{Định nghĩa 5.3} (đoạn liên tiếp của nhiều cây). Với dãy gồm $m$ cây
+$T=(T_1,\ldots,T_m)$, $V(T_i)=[1,n]$, nếu khoảng $[l,r]$ là đoạn liên tiếp của
+mọi $T_i$, thì gọi $[l,r]$ là đoạn liên tiếp của $T$.
+
+Tổ hợp ``dây chuyền, nhiều cây'' tương đương với đoạn liên tiếp của nhiều cây.
+
+Tập đoạn liên tiếp của tổ hợp này là chính quy và đóng loại I, II, nghĩa là có
+thể dùng $n-1$ khoảng cực tiểu để mô tả đoạn liên tiếp của nhiều cây.
+
+Một dãy khoảng cực tiểu giả của tập đoạn liên tiếp của dãy cây $T$ là dãy thu
+được bằng cách lấy hợp theo từng vị trí của các dãy khoảng cực tiểu giả của
+từng cây $T_i$.
+
+\paragraph{\term{5.4.2. Độ phức tạp}.}
+Với dãy gồm $n-1$ khoảng $A=(A_1,\ldots,A_{n-1})$, $A_i=[u_i,v_i]$, nếu với
+mọi $i\in[1,n-1]$ đều có $A_i\supseteq[i,i+1]$ và
+\[
+  \forall j\in[u_i,v_i-1],\quad A_j\subseteq A_i,
+\]
+thì gọi $A$ là hợp lệ.
+
+Từ định nghĩa khoảng cực tiểu và bổ đề 4.2, dãy khoảng cực tiểu $M_S$ của tập
+khoảng đóng loại I và II là hợp lệ.
+
+\term{Định lý 5.3.} Với mọi dãy hợp lệ $A$ gồm $n-1$ khoảng, tồn tại hai cây
+$T_1,T_2$ sao cho dãy khoảng cực tiểu của tập đoạn liên tiếp của $(T_1,T_2)$
+chính là $A$.
+
+Vì mọi tập khoảng đóng loại I và II đều tương ứng với một dãy khoảng cực tiểu,
+và dãy khoảng cực tiểu luôn hợp lệ, định lý này thực chất chỉ ra rằng tập đoạn
+liên tiếp của hai cây có thể là mọi tập khoảng đóng loại I và II.
+
+Với một dãy khoảng cực tiểu
+$([l_1,r_1],\ldots,[l_{n-1},r_{n-1}])$, đặt
+\[
+  V=[1,n],\quad
+  E_1=\{(l_i,i+1)\mid i\in[1,n-1]\},
+\]
+\[
+  E_2=\{(r_i,i)\mid i\in[1,n-1]\},\quad
+  T_1=(V,E_1),\quad T_2=(V,E_2).
+\]
+Có thể kiểm tra dãy khoảng cực tiểu của tập đoạn liên tiếp của $(T_1,T_2)$
+chính là $([l_1,r_1],\ldots,[l_{n-1},r_{n-1}])$.
+
+\subsubsection*{5.5. Dây chuyền và đồ thị}
+
+\paragraph{\term{5.5.1. Tính chất}.}
+\term{Định nghĩa 5.4} (đoạn liên tiếp của đồ thị). Với đồ thị $G=(V,E)$,
+$V=[1,n]$, nếu khoảng $[l,r]$ thỏa đồ thị con cảm sinh của $G$ trên tập đỉnh
+$[l,r]$ là đồ thị liên thông, thì gọi $[l,r]$ là đoạn liên tiếp của $G$.
+
+Tổ hợp ``dây chuyền, đồ thị'' tương đương với đoạn liên tiếp của đồ thị.
+
+Tập đoạn liên tiếp của tổ hợp này là chính quy và đóng loại I.
+
+\paragraph{\term{5.5.2. Độ phức tạp}.}
+Tập đoạn liên tiếp của đồ thị không đóng loại II.
+
+Xét đồ thị $G=(V,E)$, $V=\{1,2,3,4\}$,
+$E=\{(1,2),(2,4),(4,3),(3,1)\}$. Các khoảng $[1,3]$ và $[2,4]$ đều là đoạn
+liên tiếp của nó, nhưng
+\[
+  [1,3]\cap[2,4]=[2,3]
+\]
+không phải đoạn liên tiếp của nó.
+
+\subsubsection*{5.6. Hai cây}
+
+\paragraph{\term{5.6.1. Tính chất}.}
+Tập đoạn liên tiếp của hai cây là chính quy và đóng loại I, II. Nhưng vì
+không có dây chuyền, ta không thể đánh số lại các phần tử sao cho đoạn liên
+tiếp trở thành khoảng.
+
+\paragraph{\term{5.6.2. Độ phức tạp}.}
+Đếm đoạn liên tiếp của hai cây là \#P-complete.
+
+Theo~[1], đếm số phản dây chuyền trên một tập có thứ tự bộ phận cho trước là
+\#P-complete. Do đó chỉ cần quy giảm trong thời gian đa thức bài toán đếm phản
+dây chuyền về bài toán đếm đoạn liên tiếp của hai cây, ta chứng minh được đếm
+đoạn liên tiếp của hai cây là \#P-complete.
+
+Giả sử tập có thứ tự bộ phận cho trước là $(S,\preceq)$. Để tiện, đặt
+$S=\{1,2,\ldots,n\}$. Đặt
+\[
+  \{x_{i,1},x_{i,2},\ldots,x_{i,k_i}\}
+  =\{j\in S\mid i\preceq j,\ i\ne j\}.
+\]
+Xây dựng tập đỉnh
+\[
+  V=\{a\}\cup\{b_i\mid i\in S\}\cup\{c_i\mid i\in S\}
+  \cup\{d_i\mid i\in S\}
+  \cup\{e_{i,j}\mid i,j\in S,\ i\ne j,\ i\preceq j\}.
+\]
+Đặt
+\[
+  (h_{i,1},h_{i,2},\ldots,h_{i,k_i+4})
+  =(a,b_i,d_i,e_{i,x_{i,1}},e_{i,x_{i,2}},\ldots,e_{i,x_{i,k_i}},c_i).
+\]
+Xây dựng tập cạnh
+\[
+  E_1=\bigcup_{i\in S}\{(h_{i,j},h_{i,j+1})\mid j\in[1,k_i+3]\},
+\]
+\[
+  E_2=\bigcup_{i\in S}\{(a,d_i),(a,c_i),(c_i,b_i)\}
+  \cup
+  \bigcup_{i,j\in S,\ i\ne j,\ i\preceq j}\{(e_{i,j},b_j)\}.
+\]
+Số đoạn liên tiếp của hai cây $T_1=(V,E_1)$, $T_2=(V,E_2)$ trừ đi $|V|$ chính
+là số phản dây chuyền của $(S,\preceq)$.
+
+Nguyên nhân là mọi đoạn liên tiếp không tầm thường, tức đoạn có ít nhất hai
+phần tử, tương ứng một-một với phản dây chuyền.
+
+\paragraph{\term{Dạng của đoạn liên tiếp}.}
+Mọi đoạn liên tiếp không tầm thường đều có thể viết dưới dạng
+\[
+  \{a\}\cup\{b_i\mid i\in A\}\cup\{c_i\mid i\in A\}
+  \cup\{d_i\mid i\in A\}
+  \cup\{e_{i,j}\mid i\in A,\ j\in S,\ i\ne j,\ i\preceq j\},
+\]
+trong đó $\varnothing\ne A\subseteq S$.
+
+\paragraph{\term{Từ đoạn liên tiếp sang phản dây chuyền}.}
+Đoạn liên tiếp không tầm thường ở dạng trên tương ứng với phản dây chuyền
+\[
+  \{i\mid i\in A,\ \forall j\preceq i,\ j\notin A\}.
+\]
+
+\paragraph{\term{Từ phản dây chuyền sang đoạn liên tiếp}.}
+Phản dây chuyền $A$ tương ứng với đoạn liên tiếp không tầm thường
+\[
+  \{a\}\cup\{b_i\mid i\in B\}\cup\{c_i\mid i\in B\}
+  \cup\{d_i\mid i\in B\}
+  \cup\{e_{i,j}\mid i\in B,\ j\in S,\ i\ne j,\ i\preceq j\},
+\]
+trong đó
+\[
+  B=\{i\mid \exists j\in A,\ j\preceq i\}.
+\]
+
+Quá trình trên quy giảm bài toán đếm phản dây chuyền của tập có thứ tự bộ phận
+gồm $n$ phần tử về bài toán đếm đoạn liên tiếp của hai cây có $O(n^2)$ đỉnh.
+Vì vậy đếm đoạn liên tiếp của hai cây là \#P-complete; điều này có nghĩa là
+nếu tồn tại thuật toán đa thức cho bài toán này thì $P=NP$.
+
+\subsection*{6. Tổng kết}
+
+Độ phức tạp hoặc độ khó của các bài toán và cấu trúc trong bài viết có thể
+biểu diễn xấp xỉ như sau:
+\[
+\begin{array}{c@{\quad}c@{\quad}c@{\quad}c@{\quad}c}
+\text{hai dây chuyền} & \text{nhiều dây chuyền} &
+\text{dây chuyền, cây} & \text{dây chuyền, đồ thị} & \text{hai cây}\\
+\text{dễ} & & & & \text{khó}\\
+\text{đơn giản} & & & & \text{phức tạp}\\
+\text{đóng I, II, III} & \text{đóng I, II, III} &
+\text{đóng I, II} & \text{đã biết thuật toán đa thức} & {}
+\end{array}
+\]
+Hai dây chuyền và nhiều dây chuyền được mô tả bằng cây tách--hợp; dây chuyền
+với cây hoặc nhiều cây được mô tả bằng dãy khoảng cực tiểu.
+
+Bài viết chỉ ra bản chất của một lớp bài toán đoạn liên tiếp: giao của các tập
+con ``liên thông'' trên nhiều cấu trúc. Bài viết dùng dãy khoảng cực tiểu để
+mô tả tập khoảng $S$ đóng loại I và II, đồng thời đưa ra thuật toán tuyến tính
+để, với một đầu phải $r$, tính tổng thông tin tại mọi đầu trái $l$ thỏa
+$[l,r]\in S$. Tuy nhiên thuật toán này cần thông tin được duy trì có nghịch
+đảo, nên còn khá hạn chế. Do năng lực có hạn, tác giả chưa tìm được thuật
+toán cho thông tin nửa nhóm hoặc chứng minh rằng thuật toán như vậy không tồn
+tại.
+
+Ngoài ra, bài viết cũng đưa ra điều kiện cần và đủ để tập khoảng $S$ có cây
+tách--hợp, tức là $S$ đóng loại I, II và III. Cuối cùng, bài viết dùng thuật
+toán trên tập khoảng để giải các bài toán đoạn liên tiếp, đồng thời chứng
+minh độ phức tạp hoặc độ khó của một số bài toán đoạn liên tiếp, chẳng hạn
+đếm số đoạn liên tiếp của hai cây là \#P-complete.
+
+Hy vọng bài viết giúp người đọc hiểu sâu hơn về đoạn liên tiếp và tiếp tục
+nghiên cứu thêm.
+
+\subsection*{7. Lời cảm ơn}
+
+Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+Xin cảm ơn các huấn luyện viên đội tuyển quốc gia Yang Yaoliang, Peng Sijin và
+Zhang Yibin đã chỉ đạo. Xin cảm ơn cha mẹ đã nuôi dưỡng và giáo dục tác giả.
+Xin cảm ơn nhà trường đã bồi dưỡng, cảm ơn các thầy Fu Shuibo, Ying Ping'an,
+Yu Ting, Lin Naijie, Dong Yi đã giảng dạy, và cảm ơn các bạn học đã giúp đỡ.
+Xin cảm ơn các bạn học tại Trường Trung học Trấn Hải đã đọc kiểm bản thảo.
+Xin cảm ơn Liu Cheng'ao đã trao đổi với tác giả và đem lại cảm hứng cho bài
+viết.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Scott Provan and Michael O. Ball. The complexity of counting cuts and
+  of computing the probability that a graph is connected. \emph{SIAM Journal
+  on Computing}, 12, 1983.
+  \item Jan van Leeuwen and Robert E. Tarjan. Worst-case analysis of set union
+  algorithms. \emph{Journal of the ACM}, 31:245--281, 1984.
+  \item Liu Cheng'ao. Cấu trúc dữ liệu đơn giản cho đoạn liên tiếp. Trao đổi
+  học viên WC2019, 2019.
+\end{enumerate}
 
 \end{document}

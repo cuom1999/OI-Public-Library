@@ -34,6 +34,24 @@ liệu trong OI Public Library, kể cả những tệp gốc chỉ có PDF.
 5. Sau khi thêm hoặc sửa tệp trong `vi/sources/`, chạy `make` từ thư mục
    `vi/` và sửa lỗi biên dịch trước khi coi bản dịch là xong.
 
+## Mức hoàn thiện
+
+Manifest chỉ kiểm tra xem mỗi tài liệu nguồn đã có tệp LaTeX tiếng Việt tương
+ứng hay chưa; nó không tự đánh giá độ đầy đủ của bản dịch. Với các PDF tuyển
+tập dài, không được xem bản chỉ dịch bìa, mục lục và ghi chú trích xuất là bản
+dịch hoàn chỉnh.
+
+Các tuyển tập gần đây như `国家集训队2023论文集.pdf`,
+`国家集训队2024论文集.pdf` và `国家集训队2025论文集.pdf` cần được xử lý theo
+từng bài:
+
+- nếu lớp văn bản PDF đọc được, dịch lần lượt từng bài, giữ cấu trúc định
+  nghĩa, định lý, chứng minh, công thức và ví dụ;
+- nếu lớp văn bản hỏng hoặc là ảnh scan, ghi rõ đây chỉ là bản mục lục tạm
+  thời và đưa vào hàng đợi OCR trong `TODO.md`;
+- sau mỗi lô dịch, biên dịch lại PDF và cập nhật ghi chú trạng thái trong tệp
+  LaTeX tương ứng.
+
 ## Trạng thái hiện tại
 
 - `sources/graph-theory/2-sat.tex`: dịch từ PDF "2-SAT 解法浅析" của Zhao

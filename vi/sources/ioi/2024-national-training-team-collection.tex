@@ -19,7 +19,8 @@ PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc n
 dàn trang bằng Adobe InDesign; phần bìa và mục lục có lớp văn bản đọc được,
 nhưng nhiều trang thân bài trích xuất thành mojibake và sinh cảnh báo phông
 chữ. Bản LaTeX này chuyển ngữ phần nhận diện tập sách và toàn bộ mục lục, đồng
-thời ghi lại các chủ đề chính có thể xác nhận chắc chắn.
+thời dịch bài đầu tiên của Zhou Kangyang về bài toán tính tổng hàm nhân tính
+dựa trên OCR và đối chiếu ảnh trang PDF.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -63,6 +64,869 @@ văn bản trích xuất được không ghi riêng tên huấn luyện viên.
 \end{tabular}
 \end{center}
 
+\section*{Bài 1. Một số tiến triển về bài toán tính tổng hàm nhân tính}
+\addcontentsline{toc}{section}{Bài 1. Một số tiến triển về bài toán tính tổng hàm nhân tính}
+
+\begin{center}
+Zhou Kangyang, Trường Văn Uyên thuộc Tập đoàn Giáo dục Trung học Học Quân,
+Hàng Châu
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Tính tổng hàm nhân tính là một lớp bài toán quan trọng trong số học. Với bài
+toán này, các nghiên cứu trước đây chủ yếu hướng tới giảm số lượng thừa số
+\(\log\) trong độ phức tạp \(\widetilde O(n^{2/3})\).\footnote{Một nghiên cứu
+liên quan: \url{https://negiizhao.blog.uoj.ac/blog/7165}.} Sau khi suy nghĩ,
+tác giả nhận thấy có thể đạt độ phức tạp thời gian
+\(O(n^{1/2}\operatorname{poly}\log n)\).\footnote{Bản đầu được viết ngày
+2023-07-11 và công bố tại
+\url{https://www.cnblogs.com/zkyJuruo/p/17544928.html}.}
+
+Bài viết này giới thiệu thuật toán đó và các tối ưu của nó.
+
+\subsection*{1. Kiến thức chuẩn bị}
+
+\subsubsection*{1.1. Định nghĩa và quy ước}
+
+\paragraph{\term{Định nghĩa 1.1}.}
+Hàm số học là hàm có miền xác định là tập số nguyên dương và miền giá trị là
+tập số phức.
+
+Với một hàm số học \(f\), ta quy ước
+\[
+  S_f(n)=\sum_{i=1}^{n} f(i).
+\]
+
+\paragraph{\term{Định nghĩa 1.2}.}
+Hàm nhân tính là một hàm số học \(f(n)\) xác định trên các số nguyên dương,
+thỏa
+\[
+  f(1)=1,\qquad
+  \gcd(a,b)=1 \Longrightarrow f(ab)=f(a)f(b).
+\]
+
+Với một hàm nhân tính \(f\), chỉ cần biết mọi giá trị \(f(p^k)\) với
+\(p\in\mathbb P\), \(k\in\mathbb Z^+\), ta có thể xác định toàn bộ hàm \(f\).
+Một số hàm nhân tính thường gặp có giá trị trên \(p^k\) như sau:
+\begin{itemize}
+  \item hàm \(\epsilon\) (hàm đơn vị), thỏa \(\epsilon(p^k)=0\);
+  \item hàm \(\mu\), thỏa \(\mu(p^k)=-[k=1]\);
+  \item hàm \(\varphi\), thỏa \(\varphi(p^k)=(p-1)p^{k-1}\);
+  \item hàm \(I\), thỏa \(I(p^k)=1\);
+  \item hàm \(\operatorname{id}_t\), thỏa
+  \(\operatorname{id}_t(p^k)=p^{kt}\).
+\end{itemize}
+
+\paragraph{\term{Định nghĩa 1.3}.}
+Với hai hàm số học \(f,g\), định nghĩa tích chập Dirichlet của chúng là
+\[
+  (f*g)(x)=\sum_{d\mid x} f(d)g\left(\frac{x}{d}\right).
+\]
+
+Nếu xem tích chập Dirichlet là phép nhân của các hàm số học, và phép cộng trực
+tiếp của hàm là phép cộng, thì phép cộng và phép nhân trên các hàm số học thỏa
+giao hoán, kết hợp và phân phối.
+
+\paragraph{\term{Định lý 1.1}.}
+Tích chập Dirichlet \(h\) của hai hàm nhân tính \(f,g\) cũng là một hàm nhân
+tính.
+
+\paragraph{\term{Chứng minh}.}
+Chỉ cần chứng minh với mọi \(\gcd(x,y)=1\) ta có \(h(xy)=h(x)h(y)\):
+\[
+\begin{aligned}
+  h(xy)
+  &= \sum_{d\mid xy} f(d)g\left(\frac{xy}{d}\right) \\
+  &= \sum_{u\mid x,\ v\mid y} f(uv)g\left(\frac{xy}{uv}\right) \\
+  &= \sum_{u\mid x} f(u)g\left(\frac{x}{u}\right)
+     \sum_{v\mid y} f(v)g\left(\frac{y}{v}\right) \\
+  &= h(x)h(y).
+\end{aligned}
+\]
+
+\subsubsection*{1.2. Powerful Number}
+
+\paragraph{\term{Định nghĩa 1.4}.}
+Với một số nguyên dương \(m\), nếu với mọi thừa số nguyên tố \(p\) của \(m\) đều
+có \(p^2\mid m\), thì gọi \(m\) là một \emph{Powerful Number}.
+
+Trong phần sau, ta viết tắt \emph{Powerful Number} là PN. Trong công thức,
+\(PN\) biểu thị tập tất cả các PN.
+
+\paragraph{\term{Định lý 1.2}.}
+Mọi PN đều có thể biểu diễn dưới dạng \(a^2b^3\), trong đó \(a,b\) là các số
+nguyên dương.
+
+\paragraph{\term{Chứng minh}.}
+Giả sử
+\[
+  x=\prod_i p_i^{\alpha_i}
+\]
+là một PN. Chỉ cần biểu diễn từng \(p_i^{\alpha_i}\) dưới dạng
+\(a_i^2b_i^3\), rồi lấy \(a=\prod_i a_i\), \(b=\prod_i b_i\).
+
+Nếu \(\alpha_i\) lẻ, lấy
+\[
+  a_i=p_i^{(\alpha_i-3)/2},\qquad b_i=p_i;
+\]
+nếu \(\alpha_i\) chẵn, lấy
+\[
+  a_i=p_i^{\alpha_i/2},\qquad b_i=1.
+\]
+
+\paragraph{\term{Định lý 1.3}.}
+Số lượng PN không vượt quá \(n\) là \(O(\sqrt n)\).
+
+\paragraph{\term{Chứng minh}.}
+Biểu diễn mọi PN không vượt quá \(n\) dưới dạng \(a^2b^3\). Khi liệt kê \(a\),
+số PN không vượt quá
+\[
+  \sum_{a=1}^{\sqrt n}\left(\frac{n}{a^2}\right)^{1/3}.
+\]
+Tổng này có thể ước lượng bởi
+\[
+  \int_1^{\sqrt n}\left(\frac{n}{x^2}\right)^{1/3}\,dx
+  = n^{1/3}\int_1^{\sqrt n} x^{-2/3}\,dx
+  = n^{1/3}(3n^{1/6}-3),
+\]
+tức ở cấp \(O(\sqrt n)\).
+
+Sàng tuyến tính mọi số nguyên tố không vượt quá \(\sqrt n\), rồi DFS trên các
+số nguyên tố sẽ tìm được mọi PN không vượt quá \(n\). Độ phức tạp bằng số PN,
+tức \(O(\sqrt n)\).
+
+\paragraph{\term{Ví dụ 1.1} (phần \(n=1\) của UOJ Long Round 7,
+\emph{Mã kiểm tra}).}
+Cho \(c\). Hàm nhân tính \(q(x)\) thỏa
+\[
+  q(p^k)=p^{c\lfloor k/2\rfloor}.
+\]
+Tính \(\sum_{i=1}^{m} q(i)\), đáp án lấy modulo \(2^{32}\), với
+\(m\le 1.2\times 10^{11}\).
+
+Thiết kế hàm nhân tính \(f(x)\) thỏa \(f(p)=q(p)\), và dựng hàm nhân tính
+\(g\) thỏa \(g*f=q\). Với số nguyên tố \(p\),
+\[
+  g(p)f(1)+g(1)f(p)=q(p),
+\]
+suy ra \(g(p)=0\). Vì vậy \(g\) chỉ có giá trị khác không tại các PN.
+
+Ta có
+\[
+\begin{aligned}
+  \sum_{i=1}^{m} q(i)
+  &= \sum_{i=1}^{m}\sum_{jk=i} g(j)f(k) \\
+  &= \sum_{\substack{j\in PN\\j\le m}} g(j)
+     \sum_{k=1}^{\lfloor m/j\rfloor} f(k) \\
+  &= \sum_{\substack{j\in PN\\j\le m}} g(j)\left\lfloor\frac{m}{j}\right\rfloor.
+\end{aligned}
+\]
+
+Tiền xử lý \(g(p^k)\) cho từng \(p^k\). Từ
+\[
+  q(p^k)=\sum_{i=0}^{k} f(p^i)g(p^{k-i})
+\]
+có thể giải \(g(p^k)\) theo thứ tự tăng dần của \(k\), đồng thời duy trì giá
+trị hàm \(g\) trong lúc DFS tìm PN. Như vậy bài toán được giải trong
+\(O(\sqrt m)\).
+
+\subsubsection*{1.3. Sàng Du Jiao}
+
+Với một số hàm nhân tính đặc biệt như \(\mu\) và \(\varphi\), ta có thể xây
+dựng tích chập Dirichlet để tính tổng tiền tố trong thời gian \(O(n^{2/3})\).
+Trong cộng đồng thi tin học Trung Quốc, thuật toán kiểu này được gọi là
+``sàng Du Jiao''.
+
+Với hàm \(\mu\), ta có \(\mu*I=\epsilon\).
+
+Xét bài toán tổng quát hơn. Nếu có các hàm số học \(A,B,C\) thỏa
+\[
+  A(1)=B(1)=C(1)=1,\qquad A*B=C,
+\]
+và ta tính nhanh được các giá trị điểm của \(S_B\), \(S_C\), thì làm sao tính
+\(S_A(n)\)?
+
+Chú ý rằng
+\[
+\begin{aligned}
+  \sum_{i=1}^{n} C(i)
+  &= \sum_{i=1}^{n}\sum_{jk=i} A(j)B(k) \\
+  &= \sum_{k=1}^{n} B(k)\sum_{j=1}^{\lfloor n/k\rfloor} A(j) \\
+  &= S_A(n)+\sum_{k=2}^{n} B(k)S_A\left(\left\lfloor\frac{n}{k}\right\rfloor\right).
+\end{aligned}
+\]
+Do đó
+\[
+  S_A(n)=S_C(n)-\sum_{k=2}^{n}
+  B(k)S_A\left(\left\lfloor\frac{n}{k}\right\rfloor\right),
+\]
+có thể tính \(S_A(n)\) bằng đệ quy. Lại có
+\[
+  \left\lfloor\frac{\lfloor n/a\rfloor}{b}\right\rfloor
+  = \left\lfloor\frac{n}{ab}\right\rfloor,
+\]
+nên trong quá trình đệ quy, các giá trị thật sự cần tính chỉ là
+\[
+  S_A\left(\left\lfloor\frac{n}{k}\right\rfloor\right)
+  \qquad (k\in\mathbb Z^+).
+\]
+
+\paragraph{\term{Định lý 1.4}.}
+Với số nguyên dương \(n\), tập
+\[
+  \left\{\left\lfloor\frac{n}{i}\right\rfloor\mid i\in\mathbb Z^+\right\}
+\]
+có kích thước \(O(\sqrt n)\).
+
+\paragraph{\term{Chứng minh}.}
+Với \(k\le\sqrt n\), chỉ có \(\sqrt n\) giá trị
+\(\lfloor n/k\rfloor\), hiển nhiên là \(O(\sqrt n)\) loại. Với
+\(k>\sqrt n\), ta có \(\lfloor n/k\rfloor\le\sqrt n\), nên cũng chỉ có
+\(O(\sqrt n)\) loại.
+
+Vì vậy ta chỉ cần tính \(O(\sqrt n)\) giá trị điểm của \(S_A\).
+
+Khi tính một \(S_A(m)\), gom các đoạn liên tiếp có cùng giá trị
+\(\lfloor m/k\rfloor\) lại với nhau (tức chia khối theo phép chia nguyên), ta
+có thể đệ quy tới các bài toán con trong \(O(\sqrt m)\).
+
+Với \(m\le n^{2/3}\), ta xử lý trước \(n^{2/3}\) giá trị điểm đầu của \(A\).
+Với \(m>n^{2/3}\), dùng công thức đệ quy ở trên. Phần này có độ phức tạp
+\[
+  O\left(\sum_{i=1}^{n^{1/3}}\sqrt{\frac{n}{i}}\right)
+  = O\left(\int_1^{n^{1/3}}\sqrt{\frac{n}{x}}\,dx\right)
+  = O(n^{2/3}).
+\]
+Tổng độ phức tạp là \(O(n^{2/3})\) cộng với phần xử lý trước \(O(n^{2/3})\) giá
+trị đầu của \(A\). Với \(\mu\) và \(\varphi\), phần xử lý trước này đều làm
+được trong \(O(n^{2/3})\).
+
+\paragraph{\term{Định nghĩa 1.5}.}
+Định nghĩa \term{sàng khối} của hàm số học \(f\) đối với \(n\) là các giá trị
+điểm của \(S_f(n)\) trên tập
+\[
+  \left\{\left\lfloor\frac{n}{i}\right\rfloor\mid i\in\mathbb Z^+\right\}.
+\]
+
+Trong quá trình trên, ta dùng sàng khối của \(B\) và \(C\) đối với \(n\) để
+tìm sàng khối của \(A\) đối với \(n\). Hiển nhiên, nếu biết sàng khối của
+\(A\) và \(B\) đối với \(n\), ta cũng có thể tìm sàng khối của \(C\) đối với
+\(n\). Ta gọi \(C\) là \term{tích chập sàng khối} của \(A\) và \(B\). Các phép
+toán trên sàng khối vẫn thỏa giao hoán, kết hợp và phân phối.
+
+\subsection*{2. Tích chập sàng khối}
+
+Với các hàm số học \(A,B,C\) thỏa
+\[
+  A(1)=B(1)=C(1)=1,\qquad A*B=C,
+\]
+sàng Du Jiao ở trên đã dùng sàng khối của \(B,C\) đối với \(n\) để giải sàng
+khối của \(A\) đối với \(n\).
+
+Ở đây trước hết xét bài toán đơn giản hơn: đã biết sàng khối của \(A,B\) đối
+với \(n\), hãy tính sàng khối của \(C=A*B\) đối với \(n\). Bài toán này thực
+ra có thể giải trong \(O(n^{1/2}\operatorname{poly}\log n)\). Trong phần dưới,
+mặc định sàng khối là sàng khối đối với \(n\).
+
+Ta cần tính các tổng tiền tố trên mọi \(\lfloor n/t\rfloor\) của
+\[
+  C(z)=\sum_{xy=z} A(x)B(y).
+\]
+
+Trước hết xét trường hợp \(x>\sqrt n\); trường hợp \(y>\sqrt n\) là đối xứng.
+Nếu \(xy\le\lfloor n/t\rfloor\) thì \(x\le n/(ty)\). Do đó khi liệt kê
+\(t,y\), các \(x\) có đóng góp là một đoạn tiền tố. Phần này có độ phức tạp
+\(O(\sqrt n\log n)\).
+
+Như vậy chỉ còn cần xử lý trường hợp \(x\le\sqrt n\) và \(y\le\sqrt n\).
+Điều kiện \(xy\le n/t\) tương đương
+\[
+  \ln x+\ln y\le \ln\left(\frac{n}{t}\right).
+\]
+Ta làm một ước lượng như sau. Chọn một độ dài khối nguyên \(S\) với
+\(3\le S\le n\), và cho rằng
+\[
+  \ln x+\ln y\le \ln\left(\frac{n}{t}\right)
+\]
+khi và chỉ khi
+\[
+  \lfloor S\ln x\rfloor+\lfloor S\ln y\rfloor
+  \le S\ln\left(\frac{n}{t}\right).
+\]
+Ước lượng này có thể làm bằng nhân đa thức. Thiết kế hai đa thức \(F(z),G(z)\)
+sao cho \([z^k]F(z)\) là tổng các \(A(x)\) thỏa
+\(\lfloor S\ln x\rfloor=k\), và \([z^k]G(z)\) là tổng các \(B(x)\) thỏa
+\(\lfloor S\ln x\rfloor=k\). Tính \(H(z)=F(z)G(z)\), khi đó hệ số
+\([z^k]H(z)\) là tổng \(A(x)B(y)\) với
+\(\lfloor S\ln x\rfloor+\lfloor S\ln y\rfloor=k\). Chỉ cần làm một phép chập
+độ dài \(S\ln n\).
+
+Nhưng làm như vậy hiển nhiên không đúng hoàn toàn. Nó chỉ sai khi
+\[
+  \ln x+\ln y\le \ln\left(\frac{n}{t}\right)
+  \quad\text{và}\quad
+  \lfloor S\ln x\rfloor+\lfloor S\ln y\rfloor
+  > S\ln\left(\frac{n}{t}\right).
+\]
+Khi đó
+\[
+  S\ln x+S\ln y\in
+  \left(S\ln\left(\frac{n}{t}\right)-2,\,
+        S\ln\left(\frac{n}{t}\right)\right],
+\]
+nên
+\[
+  \ln x+\ln y+\ln t\in
+  \left(\ln n-\frac{2}{S},\,\ln n\right],
+\]
+tức
+\[
+  xyt\in (ne^{-2/S},n].
+\]
+Trong đó \(e^{-2/S}\) ở cấp \(1-O(1/S)\). Vì vậy \(xyt\) nằm trong một đoạn có
+độ dài \(O(n/S)\).
+
+Giả sử đoạn này là \([n-L,n]\). Dùng sàng đoạn để lấy phân tích thừa số nguyên
+tố của mọi số trong đoạn. Cụ thể hơn, trước hết sàng mọi số nguyên tố nhỏ không
+vượt quá \(\sqrt n\). Với mỗi số nguyên tố, ta tìm được các bội của nó trong
+\([n-L,n]\), từ đó sàng ra mọi thừa số nguyên tố \(\le\sqrt n\) của các số
+trong đoạn. Một số có nhiều nhất một thừa số nguyên tố \(>\sqrt n\), nên chỉ
+cần xét phần còn lại sau khi chia hết các số nguyên tố nhỏ.
+
+Sau khi có phân tích thừa số nguyên tố, DFS trên các thừa số nguyên tố sẽ nhanh
+chóng tìm được mọi bộ \((x,y,t)\) có thể. Với một bộ \((x,y,t)\), kiểm tra trong
+\(O(1)\) xem nó có bị ước lượng sai hay không. Với một
+\(v\in[n-L,n]\), thời gian đóng góp là \(d_3(v)\), trong đó
+\[
+  d_3(v)=\sum_{xyz=v}1.
+\]
+Theo kết quả trong số học giải tích \([1]\),
+\[
+  \sum_{i\le n} d_3(i)=nP_3(\ln n)+O(n^{43/96+\epsilon}),
+\]
+nên
+\[
+  \sum_{i=n-L}^{n} d_3(i)=LP_3(\ln n)+O(n^{43/96+\epsilon}),
+\]
+trong đó \(P_3\) là một đa thức bậc hai. Bản thân đầu ra của thuật toán đã có
+\(O(\sqrt n)\), lớn hơn \(O(n^{43/96+\epsilon})\), nên có thể bỏ qua phần độ
+phức tạp này. Phần còn lại có độ phức tạp
+\[
+  O(L\log^2 n)=O\left(\frac{n}{S}\log^2 n\right).
+\]
+Tổng độ phức tạp là
+\[
+  O\left(S\log^2 n+\frac{n}{S}\log^2 n\right).
+\]
+Lấy \(S=\sqrt n\) thu được độ phức tạp thời gian
+\[
+  O(\sqrt n\log^2 n).
+\]
+
+\subsection*{3. Tính tổng hàm nhân tính}
+
+Với một hàm nhân tính \(f\) thỏa một số tính chất đặc biệt, chẳng hạn
+\[
+  f(p^k)=p^k(p^k-1),
+\]
+làm sao tính sàng khối của \(f\)?
+
+Trước hết, giá trị \(f(p^k)\) với \(k\ge 2\) không quá quan trọng. Nếu có một
+hàm nhân tính khác \(g\) thỏa \(f(p)=g(p)\), và tổng tiền tố của \(g\) dễ tính,
+thì chỉ cần thiết kế hàm nhân tính \(h\) thỏa \(h*g=f\). Theo kết luận ở trên,
+\(h\) chỉ có giá trị tại PN, và các giá trị đó có thể tính trong \(O(\sqrt n)\).
+Vì vậy dễ dàng tính sàng khối của \(h\) trong \(O(\sqrt n)\), rồi dùng tích
+chập sàng khối của \(h\) và \(g\) để tính sàng khối của \(f\).
+
+Ta trước hết thiết kế một hàm số học \(q\) chỉ khác không tại các số nguyên tố
+và thỏa \(q(p)=f(p)\).
+
+Với một hàm số học \(q\) có \(q(1)=0\), định nghĩa
+\[
+  \exp(q)=\sum_{i=0}^{\infty}\frac{q^i}{i!},
+\]
+trong đó phép chập là tích chập sàng khối. Xét \(d=\exp(q)\). Với
+\[
+  x=\prod_{i=1}^{k} p_i^{\alpha_i},
+\]
+hàm \(d(x)\) chỉ có đóng góp từ hạng
+\[
+  q^{\sum_{i=1}^{k}\alpha_i},
+\]
+và giá trị bằng
+\[
+  \frac{\prod_{i=1}^{k} q(p_i)^{\alpha_i}}
+       {\left(\sum_{i=1}^{k}\alpha_i\right)!}
+  \binom{\sum_{i=1}^{k}\alpha_i}{\alpha_1,\alpha_2,\ldots,\alpha_k}
+  =
+  \frac{\prod_{i=1}^{k} q(p_i)^{\alpha_i}}
+       {\prod_{i=1}^{k}\alpha_i!}.
+\]
+
+Do đó \(d\) là một hàm nhân tính và
+\[
+  d(p^k)=\frac{f(p)^k}{k!},
+\]
+đặc biệt \(d(p)=f(p)\). Như vậy, nếu tính được sàng khối của \(q\), ta có thể
+dùng \(\log n\) lần tích chập sàng khối (khi \(i>\log n\), \(q^i\) không còn
+giá trị trong \(n\) hạng đầu) để tính sàng khối của \(d\), từ đó suy ra sàng
+khối của \(f\).
+
+Làm sao tính sàng khối của \(q\)? Xét một ý tưởng tương tự sàng Min\_25. Tách
+hàm \(q\) thành tổng có trọng số của vài \(q_i\), rồi dùng sàng khối của các
+\(q_i\) để tính sàng khối của \(q\). Ví dụ, nếu
+\[
+  q(p)=p(p-1),
+\]
+ta có thể tách thành
+\[
+  q_1(p)=p^2,\qquad q_2(p)=p,\qquad q=q_1-q_2.
+\]
+
+Khi \(q(p)\) là đa thức bậc hằng theo \(p\), ta đều có thể tách như vậy.
+
+Làm sao tính sàng khối của \(q_i\)? Ta làm ngược lại. Lấy \(q_1(p)=p^2\) làm
+ví dụ. Với hàm nhân tính \(d\) thỏa
+\[
+  d(p^k)=q_1(p)^k,
+\]
+ta có \(d(x)=x^2\), nên sàng khối rất dễ tính. Với hàm nhân tính \(d\) thỏa
+\[
+  d(p^k)=\frac{q_1(p)^k}{k!},
+\]
+do nó có cùng giá trị tại các điểm \(p\) với hàm trước, ta có thể dùng PN để
+chuyển đổi lẫn nhau trong độ phức tạp của một lần tích chập sàng khối. Vì vậy
+sàng khối của nó cũng tính được.
+
+Hàm \(d\) thỏa \(d(p^k)=q_1(p)^k/k!\) chính là \(\exp(q_1)\). Điều này gợi ý
+dùng một ý tưởng tương tự \(\ln\) để suy ngược \(q_1\) từ \(d\).
+
+Với một hàm số học \(d\) có \(d(1)=1\), định nghĩa
+\[
+  \ln(d)=\sum_{i=1}^{\infty}
+  \frac{(-1)^{i-1}(d-\epsilon)^i}{i}.
+\]
+Ta có \(q_1=\ln(d)\).
+
+\paragraph{\term{Chứng minh}.}
+Chỉ cần lần lượt chứng minh \(\exp(\ln(d))=d\) và hàm \(q\) thỏa
+\(\exp(q)=d\) là duy nhất.
+
+Trước hết chứng minh \(\exp(\ln(d))=d\):
+\[
+  \exp(\ln(d))
+  =
+  \sum_{j=0}^{\infty}
+  \frac{\left(\sum_{i=1}^{\infty}
+  \frac{(-1)^{i-1}(d-\epsilon)^i}{i}\right)^j}{j!}.
+\]
+Dùng tính phân phối và kết hợp của sàng khối để khai triển, ta sẽ nhận được
+biểu thức dạng \(\sum_i a_i d^i\). Có thể dùng đa thức \(A(z)\) để mô tả nó,
+trong đó \([z^k]A(z)=a_k\). Định nghĩa của \(\exp\) và \(\ln\) trong tích chập
+sàng khối tương ứng với đa thức:
+\[
+  \exp(z)=\sum_{i=0}^{\infty}\frac{z^i}{i!},\qquad
+  \ln(1+z)=\sum_{i=1}^{\infty}\frac{(-1)^{i-1}z^i}{i}.
+\]
+Vì \(A(z)=\exp(\ln z)=z\), nên \(a_i=[i=1]\), do đó \(\exp(\ln(d))=d\).
+
+Nếu \(\exp(q)=d\), tức
+\[
+  \epsilon+q+\sum_{i=2}^{\infty}\frac{q^i}{i!}=d,
+\]
+ta có thể xác định lần lượt giá trị \(q(i)\) theo thứ tự tăng dần. Đặt
+\[
+  p=\sum_{i=2}^{\infty}\frac{q^i}{i!},
+\]
+khi đó \(p(i)\) chỉ liên quan tới \(q(j)\) với \(j<i\), nên có thể dùng
+\[
+  q(i)=d(i)-[i=1]-p(i)
+\]
+để giải \(q(i)\). Do đó \(q\) được xác định duy nhất.
+
+Trong công thức \(\ln\) ở trên cũng chỉ cần liệt kê \(i\le\log n\), vì vậy
+cũng chỉ cần \(\log n\) lần tích chập sàng khối.
+
+Do đó thuật toán này có độ phức tạp thời gian
+\[
+  O(\sqrt n\log^3 n).
+\]
+
+\subsection*{4. Tối ưu}
+
+Dù ta đã có một thuật toán \(O(n^{1/2}\operatorname{poly}\log n)\), nó vẫn quá
+chậm để dùng thực tế trong OI. Có tối ưu được không?
+
+Dưới đây là một số hướng tối ưu đơn giản, có thể hạ độ phức tạp thời gian của
+thuật toán xuống
+\[
+  O\left(\frac{\sqrt n\log^2 n}{\sqrt{\log\log n}}\right).
+\]
+
+\subsubsection*{4.1. Tối ưu \(\exp\)}
+
+Khi tính \(\exp(f)\), với \(f\) chỉ có giá trị tại các số nguyên tố, ta phải
+làm \(\log n\) lần tích chập sàng khối; điều này khá lãng phí. Xét cách tối
+ưu.
+
+Trước hết tách \(f\) thành phần có chỉ số \(\le\sqrt n\), gọi là \(f_0\), và
+phần có chỉ số \(>\sqrt n\), gọi là \(f_1\). Khi đó
+\[
+  \exp(f)=\exp(f_0+f_1)=\exp(f_0)\exp(f_1).
+\]
+Vì \(\exp(f_1)=\epsilon+f_1\) dễ tính, phần khó là \(\exp(f_0)\).
+
+Khi tính \(\exp(f_0)\), \( \sqrt n \) hạng đầu của kết quả cuối có thể tính
+trực tiếp; khó khăn nằm ở phần \(>\sqrt n\).
+
+Xét cách tính trực tiếp bằng phương pháp lấy phần nguyên rồi sửa sai ở trên.
+Chọn số nguyên \(S\), và cộng \(f_{0,i}\) vào vị trí
+\(v_{\lfloor S\ln i\rfloor}\). Sau đó trực tiếp lấy \(\exp\) đa thức theo
+\(v\).
+
+Khi nào cách này sai? Giả sử
+\[
+  m=\prod_{i=1}^{k}p_i^{\alpha_i}.
+\]
+Nếu vị trí của \(m\) bị ước lượng sai, đặt \(t=\lfloor n/m\rfloor\), thì
+\[
+  \sum_{i=1}^{k}\alpha_i\lfloor S\ln p_i\rfloor
+  \in
+  \left(S\ln\left(\frac{n}{t}\right),\,
+        S\ln\left(\frac{n}{t}\right)+\sum_{i=1}^{k}\alpha_i\right).
+\]
+Suy ra
+\[
+  \sum_{i=1}^{k}\alpha_i\ln p_i+\ln t-\ln n
+  \in
+  \left[-\frac{\sum_{i=1}^{k}\alpha_i}{S},\,0\right],
+\]
+tức
+\[
+  \ln(mt)\in
+  \left[\ln n-\frac{\sum_i\alpha_i}{S},\,\ln n\right].
+\]
+Đây là một đoạn có độ dài
+\[
+  O\left(\frac{n\log n}{S}\right),
+\]
+vì vậy chỉ các \(mt\) trong đoạn này mới bị ước lượng sai.
+
+Dùng sàng đoạn để sàng mọi thừa số nguyên tố \(\le\sqrt n\) trong đoạn đó. Sau
+khi sàng ra thừa số nguyên tố, DFS trên các thừa số nguyên tố sẽ nhanh chóng
+tìm các cặp \((m,t)\); trong lúc DFS cũng có thể đồng thời tìm giá trị hàm tại
+\(m\). Độ phức tạp DFS cùng cấp với số cặp.
+
+Số cặp không vượt quá
+\[
+  O\left(\sum_{m=1}^{\sqrt n}\frac{n\log n}{Sm}\right)
+  =
+  O\left(\frac{n\log^2 n}{S}\right).
+\]
+Phần đa thức phía trước có độ phức tạp \(O(S\log^2 n)\). Lấy \(S=\sqrt n\) thu
+được độ phức tạp \(O(\sqrt n\log^2 n)\).
+
+Ta còn có thể chọn một ngưỡng \(L\) và xử lý riêng các thừa số nguyên tố
+\(\le L\). Khi tính \(\exp(f_0)\), không xét các thừa số \(\le L\), tức đặt
+chúng về \(0\) ở các vị trí tương ứng trong \(f_0\). Sau khi tính xong, thêm
+lần lượt các thừa số nguyên tố đó vào.
+
+Khi thêm số nguyên tố \(p\), giả sử đáp án trước đó là \(d\), thì đáp án mới
+là
+\[
+  d'(n)=\sum_{k=0}^{\log_p n}
+  f(p^k)d\left(\left\lfloor\frac{n}{p^k}\right\rfloor\right).
+\]
+Chi phí cần thiết là \(\sqrt n\log_p n\). Tổng chi phí thêm vào là
+\[
+  \sum_{\substack{p\le L\\p\in\mathbb P}}
+  \frac{\sqrt n\log n}{\log p}
+  =
+  O\left(\frac{L\sqrt n\log n}{\log L}\right).
+\]
+
+Sau khi loại bỏ các thừa số nguyên tố \(\le L\), mỗi \(m\) ở trên chỉ còn thừa
+số nguyên tố \(>L\). Nếu
+\[
+  m=\prod_{i=1}^{k}p_i^{\alpha_i},
+\]
+thì
+\[
+  \sum_{i=1}^{k}\alpha_i\le\log_L n.
+\]
+Vì vậy độ dài đoạn có thể ước lượng sai giảm xuống
+\[
+  O\left(\frac{n\log n}{S\log L}\right).
+\]
+Khi đó độ phức tạp tính \(\exp(f_0)\) trở thành
+\[
+  O\left(\frac{n\log n\log_L n}{S}+S\log^2 n\right).
+\]
+Lấy
+\[
+  S=\sqrt{\frac{n}{\log L}},
+\]
+ta được độ phức tạp
+\[
+  O\left(\frac{\sqrt n\log^2 n}{\sqrt{\log L}}\right).
+\]
+Lấy \(L=\log n\), độ phức tạp thời gian là
+\[
+  O\left(\frac{\sqrt n\log^2 n}{\sqrt{\log\log n}}\right).
+\]
+
+\subsubsection*{4.2. Tối ưu \(\ln\)}
+
+Khi tính \(\ln\), ta cần biến một hàm nhân tính thỏa
+\[
+  f(p^k)=\frac{f(p)^k}{k!}
+\]
+thành một hàm số học \(g\) chỉ có giá trị tại \(p\) và thỏa \(g(p)=f(p)\).
+
+Từ tính chất ở trên có thể trực tiếp lấy \(\sqrt n\) hạng đầu của
+\(g=\ln(f)\). Gọi hàm số học chỉ giữ \(\sqrt n\) hạng đầu của \(g\) là \(g_0\),
+và đặt \(g_1=g-g_0\). Khi đó
+\[
+  \exp(g_0+g_1)=\exp(g_0)\exp(g_1).
+\]
+Chú ý rằng tích chập của hai \(g_1\) có hạng thấp nhất \(>n\), nên mọi giá trị
+trên sàng khối đều bằng \(0\) và không cần tính. Vì vậy
+\[
+  f=\exp(g_0)+\exp(g_0)g_1.
+\]
+Sau khi tính \(h=\exp(g_0)\), chỉ cần giải
+\[
+  f-h=hg_1.
+\]
+
+Bây giờ ta cần giải một bài toán chia trên sàng khối. Với các hàm số học
+\(A,B,C\) thỏa \(B(1)=1\) và \(A*B=C\), làm sao lấy sàng khối của \(A\) từ
+sàng khối của \(B,C\)?
+
+Trước hết, \(\sqrt n\) hạng đầu của \(A\) dễ giải trong
+\(O(\sqrt n\log n)\). Đặt \(A=A_0+A_1\), trong đó \(A_0\) chỉ giữ giá trị của
+\(A\) tại các vị trí \(\le\sqrt n\), còn \(A_1\) chỉ giữ giá trị tại các vị trí
+\(>\sqrt n\). Khi đó
+\[
+  C=A_0B+A_1B.
+\]
+Dùng một lần tích chập sàng khối để lấy \(A_0B\), đặt \(D=C-A_0B\); ta chỉ cần
+giải \(A_1B=D\).
+
+Với mọi \(k\),
+\[
+  D\left(\left\lfloor\frac{n}{k}\right\rfloor\right)
+  =
+  \sum_{i=1}^{\infty} B(i)
+  S_{A_1}\left(\left\lfloor\frac{n}{ik}\right\rfloor\right).
+\]
+Vì \(S_{A_1}(\lfloor n/(ik)\rfloor)\) chỉ có giá trị khi
+\(ik\le\sqrt n\), tổng số \(i\) cần liệt kê là
+\[
+  \sum_{k=1}^{\sqrt n}\left\lfloor\frac{\sqrt n}{k}\right\rfloor
+  =
+  O(\sqrt n\log n).
+\]
+Do đó thời gian là \(O(\sqrt n\log n)\).
+
+Tới đây, ta đã thực hiện được phép \(\ln\) trên sàng khối bằng một lần
+\(\exp\) của hàm chỉ có giá trị tại số nguyên tố, một lần tích chập sàng khối,
+và thêm \(O(\sqrt n\log n)\) độ phức tạp phụ.
+
+\subsubsection*{4.3. Tối ưu tích chập sàng khối}
+
+Lúc này nút thắt độ phức tạp lại nằm ở tích chập sàng khối. Tích chập sàng
+khối có thể làm tốt hơn không? Cũng có thể.
+
+Trong phần sửa sai của ước lượng tích chập sàng khối, với mỗi
+\(m\in[n-L,n]\), ta cần liệt kê mọi bộ ba \((x,y,t)\) thỏa \(xyt=m\). Cố định
+\(m\), liệu phần này có thể tốt hơn \(d_3(m)\)?
+
+Quan sát các giá trị ta thật sự quan tâm:
+\begin{itemize}
+  \item giá trị của \(xy\) và \(t\), vì chúng ảnh hưởng tới vị trí cần sửa;
+  \item giá trị của \(\lfloor S\ln x\rfloor+\lfloor S\ln y\rfloor\), vì nó
+  ảnh hưởng tới việc vị trí \(xy\) có được cập nhật hay không.
+\end{itemize}
+
+Chú ý tính chất
+\[
+  S\ln(xy)\le
+  \lfloor S\ln x\rfloor+\lfloor S\ln y\rfloor
+  < S\ln(xy)+2.
+\]
+Vì vậy khi đã xác định \(xy\), giá trị
+\(\lfloor S\ln x\rfloor+\lfloor S\ln y\rfloor\) chỉ có hai khả năng. Do đó với
+\(x,y\), ta chỉ cần biết
+\[
+  w_x=\lfloor S\ln x\rfloor\bmod 2,\qquad
+  w_y=\lfloor S\ln y\rfloor\bmod 2.
+\]
+
+Ta cần làm một phép chập để các đóng góp \(x,y\) đi vào \(xy\). Giả sử phân
+tích thừa số nguyên tố của \(m\) là
+\[
+  m=\prod_{i=1}^{k}p_i^{\alpha_i}.
+\]
+Phép chập ở trên thực chất là một phép chập \(k\)-chiều; miền giá trị của chiều
+thứ \(i\) là \([0,\alpha_i]\). Tuy phép chập còn chịu ảnh hưởng của \(w\), chỉ
+cần liệt kê bốn trường hợp \(w_x=0/1\), \(w_y=0/1\) và làm phép chập nhiều
+chiều thông thường, hoặc dùng phản diễn đơn vị căn bậc hai: với
+\(c=1,-1\), dùng
+\[
+  c^{w_x}c^{w_y}=c^{(w_x+w_y)\bmod 2}
+\]
+để giảm còn hai phép chập.
+
+Bài toán chập đa thức nhiều biến có thể tham khảo luận văn đội tuyển tập huấn
+năm 2021 của Li Baitian \([2]\). Thời gian một lần là
+\[
+  d(m)\omega(m)\log d(m).
+\]
+
+Xét cách phân tích độ phức tạp. Chọn một hằng số \(l\). Số thừa số nguyên tố
+\(>n^{1/l}\) chỉ là \(O(l)\), và đóng góp của chúng vào \(\omega(m)\) cũng như
+\(\log d(m)\) đều không quá hằng số, nên có thể bỏ qua.
+
+Với hạng \(\log d(m)\), có thể dùng
+\[
+  \sum_{i=1}^{k}\sum_{e=1}^{\alpha_i}\frac1e
+\]
+để ước lượng. Ngoài ra, nếu \(p^t\Vert m\), thì
+\[
+  (t+1)d\left(\frac{m}{p^t}\right)\le d(m),
+\]
+nên có thể ước lượng \(d(ipq^e)\) với \(p,q\in\mathbb P\) bởi \(O(d(i)e)\).
+
+Với một \(m\), phần \(d(m)\log d(m)\omega(m)\) có thể viết ở cấp
+\[
+  O\left(d(m)
+  \left(\sum_{\substack{p\mid m\\p\in\mathbb P}}1\right)
+  \left(\sum_{\substack{q\in\mathbb P,\ e\ge 1\\q^e\Vert m}}\frac1e\right)
+  \right).
+\]
+Trường hợp \(p=q\) có thể bỏ qua trong phân tích độ phức tạp. Ta có thể ước
+lượng tiếp bởi
+\[
+  O\left(
+  \sum_{\substack{p\mid m,\ p\in\mathbb P}}
+  \sum_{\substack{q\in\mathbb P,\ e\ge 1\\q^e\Vert m,\ p\ne q}}
+  e\cdot d\left(\frac{m}{pq^e}\right)
+  \right).
+\]
+Do đó có thể phân tích bằng tổng
+\[
+\begin{aligned}
+&\sum_{m\in[n-L,n]}
+  \sum_{\substack{p<n^{1/l}\\p\in\mathbb P,\ p\mid m}}
+  \sum_{\substack{q<n^{1/l}\\q\in\mathbb P,\ e\ge 1,\ p\ne q}}
+  d\left(\frac{m}{pq^e}\right)\\
+&\le
+  \sum_{\substack{p\le n^{1/l}\\p\in\mathbb P}}
+  \sum_{\substack{q\le n^{1/l}\\q\in\mathbb P,\ e\ge 1}}
+  \sum_{i\in\left[\frac{n-L}{pq^e},\,\frac{n}{pq^e}\right]} d(i).
+\end{aligned}
+\]
+
+Chú ý rằng \(p,q,e\) chỉ có \(O(n^{2/l}/\ln n)\) khả năng, nên tiếp tục dùng
+ước lượng tổng tiền tố hàm ước trong số học giải tích \([1]\):
+\[
+  \sum_{i\in[L,R]}d(i)
+  =
+  (R-L+1)\log R+O(R^{131/416}).
+\]
+Chỉ cần hằng số \(l\) thỏa
+\[
+  \frac{2}{l}+\frac{131}{416}<\frac12,
+\]
+ta có thể bỏ qua \(O(R^{131/416})\).
+
+Vì vậy có thể ước lượng độ phức tạp tiếp thành
+\[
+  \sum_{\substack{p\le n^{1/l}\\p\in\mathbb P}}
+  \sum_{\substack{q\le n^{1/l}\\q\in\mathbb P,\ e\ge 1}}
+  \frac{L}{pq^e}.
+\]
+Do
+\[
+  \sum_{\substack{p\le S\\p\in\mathbb P}}\frac1p
+  = O(\log\log S),
+\]
+và
+\[
+  \sum_{\substack{p\le S\\p\in\mathbb P,\ e\ge 1}}\frac1{p^e}
+\]
+không vượt quá hai lần tổng trước, phần độ phức tạp này ước lượng được là
+\[
+  L(\log\log n)^2.
+\]
+
+Tổng độ phức tạp là
+\[
+  \frac{n\log^2 n}{S}+S(\log\log n)^2.
+\]
+Khi lấy
+\[
+  S=\frac{\sqrt n\log n}{\log\log n},
+\]
+độ phức tạp thời gian là
+\[
+  O(\sqrt n\log n\log\log n).
+\]
+
+\subsection*{5. Tổng kết}
+
+Trong bài viết này, tác giả thu được một phương pháp sàng có tính mở rộng khá
+tốt, đưa tích chập sàng khối, phép chia sàng khối, tổng tiền tố sàng khối của
+hàm nhân tính và bài toán thống kê tiền tố số nguyên tố về độ phức tạp thời
+gian \(O(\sqrt n\operatorname{polylog} n)\). Hai bài toán sau cần thỏa một số
+điều kiện, chẳng hạn \(f(p)\) là đa thức bậc hằng theo \(p\), hoặc một vài tính
+chất đặc biệt khác. Bài viết cũng thảo luận tối ưu phương pháp này, đưa tích
+chập sàng khối và phép chia sàng khối của hàm số học về
+\[
+  O(\sqrt n\log n\log\log n),
+\]
+đồng thời đưa tổng tiền tố sàng khối của hàm nhân tính và thống kê tiền tố số
+nguyên tố về
+\[
+  O\left(\frac{\sqrt n\log^2 n}{\sqrt{\log\log n}}\right).
+\]
+
+Tuy độ phức tạp thời gian tốt hơn, do hằng số lớn và có nhiều thừa số \(\log\),
+cách làm này trong phạm vi dữ liệu OI hiện nay vẫn không thể vượt qua sàng
+Min\_25. Tác giả hy vọng người đọc tiếp tục suy nghĩ và nghiên cứu bài toán
+tính tổng hàm nhân tính, và mong sẽ xuất hiện các cách làm thực dụng hơn.
+
+\subsection*{6. Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+Cảm ơn các huấn luyện viên đội tuyển tập huấn quốc gia, Peng Sijin và Yang
+Yaoliang, đã hướng dẫn.
+
+Cảm ơn các thầy ở Trường Trung học Học Quân, trong đó có Xu Xianyou, đã quan
+tâm và hướng dẫn.
+
+Cảm ơn gia đình đã đồng hành và ủng hộ.
+
+Cảm ơn các bạn học và anh chị trong đội bạn đã giúp đỡ và đồng hành.
+
+Cảm ơn các bạn học Zhang Yongxuan, Zhang Hengyi và những người khác đã đọc bản
+thảo và góp ý cho bài viết này.
+
+Cảm ơn các thầy cô và bạn học khác đã giúp đỡ tác giả.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item \href{https://en.wikipedia.org/wiki/Divisor_summatory_function}{Divisor
+  summatory function}.
+  \item Li Baitian. \emph{Khung lý thuyết tính toán hàm sinh trong thi tin
+  học}. Tập luận văn đội tuyển quốc gia Trung Quốc Olympic Tin học năm 2021,
+  2021.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục, tập năm 2024 bao phủ các nhóm chủ đề sau:
@@ -76,12 +940,13 @@ Từ mục lục, tập năm 2024 bao phủ các nhóm chủ đề sau:
   \item lattice, phân tích đa thức hệ số nguyên, chu trình tỉ lệ nhỏ nhất và các báo cáo ra đề.
 \end{itemize}
 
-\section{Ghi chú về trích xuất}
+\section{Ghi chú về OCR}
 
-Phần mục lục của tập 2024 trích xuất được rõ ràng, nhưng phần thân bài không
-ổn định: nhiều đoạn trở thành mojibake và công cụ PDF báo các cảnh báo về
-trọng lượng phông chữ. Vì vậy bản dịch này không suy diễn nội dung chi tiết từ
-những đoạn thân bài hỏng mã hóa. Để dịch đầy đủ từng luận văn cần OCR tiếng
-Trung hoặc bản PDF có lớp văn bản Unicode đáng tin cậy hơn.
+Phần mục lục của tập 2024 trích xuất được rõ ràng, nhưng lớp văn bản thân bài
+không ổn định: nhiều đoạn trở thành mojibake và công cụ PDF báo cảnh báo phông
+chữ. Bài đầu tiên ở trên được dịch từ OCR tại \texttt{/tmp/oipl-ocr/2024-p9-18.txt}
+và đối chiếu với ảnh render các trang PDF 9--18. Một số công thức dài trong
+phần 4 được giữ ở mức có thể xác nhận từ ảnh trang; các biến phụ như \(\omega(m)\)
+được hiểu theo ký hiệu chuẩn là số lượng thừa số nguyên tố phân biệt.
 
 \end{document}
