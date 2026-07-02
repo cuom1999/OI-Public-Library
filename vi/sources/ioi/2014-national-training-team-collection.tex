@@ -18,7 +18,8 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2014. Phần
 mục lục và đầu sách có lớp văn bản đọc được, nhưng thân bài dùng ánh xạ phông
 chữ khiến kết quả trích xuất bị biến dạng. Bản dịch này chuyển ngữ phần đầu
-sách và mục lục, đồng thời ghi lại các chủ đề chính có thể xác nhận được.
+sách, mục lục và bài đầu tiên bằng cách kết hợp mục lục trích xuất được với
+OCR từ các trang đã render.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -51,27 +52,357 @@ xuất bản là China Computer Federation.
 \end{tabular}
 \end{center}
 
-\section{Chủ đề chính}
+\section{Báo cáo ra đề \emph{MSS}}
 
-Từ mục lục, tập năm 2014 bao phủ một phổ khá rộng:
+\begin{center}
+Wang Ziyu, Trường Trung học số 1 Shengli, Đông Doanh
+\end{center}
+
+\subsection{Mô tả bài toán}
+
+\subsubsection{Phát biểu}
+
+Trên mặt phẳng có \(N\) điểm. Mỗi điểm có một trọng số; ban đầu mỗi điểm thuộc
+một tập khác nhau. Gọi tập hiện tại thứ \(i\) là \(S_i\). Cần duy trì một cấu
+trúc dữ liệu hỗ trợ bốn loại thao tác sau.
+
 \begin{itemize}
-  \item báo cáo ra đề và phân tích bài thi;
-  \item hình học và đa giác;
-  \item nhóm hoán vị, phụ thuộc tuyến tính và bài toán đại số;
-  \item palindrome, cây đoạn, chia khối và cây động;
-  \item thuật toán ngẫu nhiên, tối ưu hằng số, phép toán bit;
-  \item kỹ thuật tìm nghiệm tốt thứ \(k\).
+  \item \texttt{Merge x y}: chuyển mọi điểm trong tập \(S_x\) sang tập \(S_y\).
+  \item \texttt{Split i d v}, với \(d\in\{0,1\}\): tạo hai tập mới
+  \(S_{c+1}\) và \(S_{c+2}\), trong đó \(c\) là số tập hiện có, kể cả các tập
+  rỗng sinh ra trước đó. Sau đó, trong tập \(S_i\), các điểm có tọa độ chiều
+  thứ \(d\) không vượt quá \(v\) được chuyển vào \(S_{c+1}\), còn các điểm có
+  tọa độ lớn hơn \(v\) được chuyển vào \(S_{c+2}\).
+  \item \texttt{Query i}: hỏi giá trị lớn nhất, nhỏ nhất và tổng trọng số của
+  các điểm trong tập \(S_i\).
+  \item \texttt{Add i d}: cộng \(d\) vào trọng số của mọi điểm trong tập
+  \(S_i\).
 \end{itemize}
 
-Các trang đầu của bài \emph{MSS} còn trích xuất được một số lệnh thao tác như
-\texttt{Merge}, \texttt{Split}, \texttt{Query}, \texttt{Add}, cùng các ràng
-buộc \(N,Q\). Tuy nhiên câu chữ giải thích bị hỏng mã hóa, nên bản dịch này
-không suy diễn chi tiết thuật toán từ các đoạn không đáng tin cậy.
+Để thuận tiện, với mỗi \(d\in\{0,1\}\), mọi điểm trong dữ liệu vào có tọa độ
+chiều thứ \(d\) đôi một khác nhau. Mọi tập được nhắc tới trong các thao tác đều
+không rỗng.
+
+\subsubsection{Dữ liệu vào}
+
+Dòng đầu chứa một số nguyên, biểu thị số điểm. Tiếp theo là \(N\) dòng, mỗi dòng
+gồm ba số nguyên lần lượt là hai tọa độ và trọng số của một điểm. Sau đó là một
+số nguyên \(Q\), biểu thị số thao tác. Tiếp theo là \(Q\) dòng, mỗi dòng mô tả
+một thao tác theo định dạng ở trên.
+
+\subsubsection{Dữ liệu ra}
+
+Với mỗi thao tác \texttt{Query}, in ra ba số nguyên, lần lượt là trọng số lớn
+nhất, trọng số nhỏ nhất và tổng trọng số trong tập được hỏi.
+
+\subsubsection{Ví dụ}
+
+\paragraph{Dữ liệu vào}
+\begin{verbatim}
+5
+4 7 3
+18 16 2
+14 13 1
+10 2 10
+3 8 5
+11
+Merge 2 3
+Merge 4 5
+Split 2 1 13
+Query 4
+Query 6
+Add 6 2
+Query 6
+Merge 6 4
+Split 6 0 10
+Query 9
+Split 8 0 3
+\end{verbatim}
+
+\paragraph{Dữ liệu ra}
+\begin{verbatim}
+10 5 15
+1 1 1
+3 3 3
+3 3 3
+\end{verbatim}
+
+\subsubsection{Quy mô dữ liệu và ràng buộc}
+
+Dữ liệu được chia thành năm nhóm:
+\begin{itemize}
+  \item nhóm A chiếm \(10\%\): \(N,Q\le 500\);
+  \item nhóm B chiếm \(20\%\): dữ liệu không có thao tác tách;
+  \item nhóm C chiếm \(10\%\): sau khi thao tác tách đầu tiên xuất hiện thì
+  không còn thao tác gộp;
+  \item nhóm D chiếm \(20\%\): các điểm thỏa một quan hệ đặc biệt khiến bài
+  toán suy biến về một chiều;
+  \item nhóm E không có đặc trưng bổ sung.
+\end{itemize}
+
+Ở các nhóm B đến E, \(N\le 50000\), \(Q\le 100000\). Giới hạn thời gian là
+3 giây và giới hạn bộ nhớ là 512 MB. Dòng ràng buộc của nhóm D trong bản OCR
+khá nhiễu; phần lời giải phía sau cho thấy nhóm này là trường hợp các điểm có
+thứ tự một chiều tương thích, nên có thể chuyển mọi thao tác tách về cùng một
+trục.
+
+\subsection{Phân tích bài toán}
+
+\subsubsection{Các thuật toán đơn giản}
+
+\paragraph{Mô phỏng.}
+Với nhóm A, có thể mô phỏng trực tiếp các tập điểm. Độ phức tạp thời gian là
+\(O(NQ)\).
+
+\paragraph{Gộp theo heuristic.}
+Với nhóm B, vì không có thao tác tách, có thể dùng gộp theo kích thước: mỗi tập
+được duy trì bằng một cây cân bằng. Khi gộp hai tập, ta chèn toàn bộ điểm của
+tập nhỏ hơn vào cây cân bằng của tập lớn hơn. Mỗi lần một điểm bị chèn lại, kích
+thước tập chứa nó ít nhất tăng gấp đôi; do đó mỗi điểm bị chèn lại nhiều nhất
+\(O(\log N)\) lần. Độ phức tạp là \(O(N\log^2 N+Q)\).
+
+\paragraph{Tách theo heuristic.}
+Với nhóm C, trước hết dùng gộp theo heuristic để xử lý toàn bộ thao tác gộp
+trước khi thao tác tách đầu tiên xuất hiện. Sau đó, nếu mỗi thao tác tách có thể
+thực hiện trong thời gian
+\[
+  O\bigl(T\cdot \lvert\text{tập nhỏ hơn sau khi tách}\rvert\bigr),
+\]
+trong đó \(T\) không phụ thuộc vào kích thước tập nhỏ hơn, thì phân tích ngược
+lại giống hệt gộp theo heuristic.
+
+Nếu mỗi lần chỉ tách theo một tọa độ, ta chỉ cần lập cây cân bằng theo thứ tự
+tọa độ đó. Quay lại bài này, với mỗi tập ta lập hai cây cân bằng, lần lượt sắp
+theo hoành độ và tung độ. Khi tách, dùng cây theo chiều được hỏi để lấy tập nhỏ
+hơn; trong cây còn lại, xóa các điểm tương ứng rồi dựng lại. Khi đó
+\(T=O(\log N)\), nên độ phức tạp là \(O(N\log^2N+Q)\).
+
+\subsubsection{Thuật toán một chiều}
+
+Trong nhóm D, vì các điểm có thứ tự tương thích theo một chiều, mọi phép tách
+theo tung độ có thể chuyển thành phép tách theo hoành độ. Do đó có thể xem bài
+toán là duy trì các tập số trên một đường thẳng.
+
+\paragraph{Dựa trên cây cân bằng.}
+Ta tiếp tục thử dùng cây cân bằng để duy trì giá trị trong từng tập. Cây cân
+bằng hỗ trợ tách trong \(O(\log N)\) và gộp trong \(O(\log N)\) khi hai tập có
+khoảng giá trị không giao nhau; vấn đề còn lại là gộp khi các khoảng giá trị có
+thể xen kẽ nhau.
+
+Thuật toán gộp có thể viết như sau.
+\begin{verbatim}
+merge(x, y):
+  if x = nil: return y
+  if y = nil: return x
+  if x.min > y.min: swap(x, y)
+  return merge(merge(splitL(x, y.min), y), splitR(x, y.min))
+\end{verbatim}
+
+Ở đây \texttt{merge0(a,b)} trả về hợp của hai cây cân bằng \(a,b\) khi phạm vi
+giá trị của chúng không giao nhau; \texttt{splitL(a,v)} trả về cây gồm các phần
+tử của \(a\) có giá trị không vượt quá \(v\); \texttt{splitR(a,v)} trả về cây
+gồm các phần tử của \(a\) có giá trị lớn hơn \(v\).
+
+Ta xét độ phức tạp của thuật toán. Cần chứng minh rằng tổng chi phí của \(Q_1\)
+thao tác tách và \(Q_2\) thao tác gộp là
+\[
+  O\bigl((N+Q_1)\log^2 N\bigr).
+\]
+
+Định nghĩa
+\[
+  W(X,Y)=\sum_{a\in X,b\in Y}
+  \bigl[\,|\operatorname{rank}(X\cup Y,a)-
+  \operatorname{rank}(X\cup Y,b)|=1\,\bigr],
+\]
+trong đó \(\operatorname{rank}(S,x)\) là thứ hạng theo giá trị của \(x\) trong
+\(S\). Nói không hoàn toàn hình thức, \(W(X,Y)\) là số đoạn, trừ đi \(1\), thu
+được sau khi gộp \(X\) và \(Y\) rồi nén các phần tử vốn thuộc cùng một tập thành
+một đoạn. Một thao tác gộp có chi phí \(O(W(X,Y)\log N)\).
+
+Gọi \(U\) là hợp của tất cả các tập. Với một phần tử \(x\) thuộc tập \(S\), đặt
+\[
+\begin{aligned}
+g_0(x)&=\operatorname{rank}(U,x)-
+       \operatorname{rank}(U,\operatorname{prev}(S,x)),\\
+g_1(x)&=\operatorname{rank}(U,\operatorname{succ}(S,x))-
+       \operatorname{rank}(U,x),
+\end{aligned}
+\]
+trong đó \(\operatorname{prev}(S,x)\) và \(\operatorname{succ}(S,x)\) lần lượt
+là phần tử trước và sau của \(x\) trong tập \(S\); nếu không tồn tại thì dùng
+\(\min(U)\) hoặc \(\max(U)\).
+
+Sau thao tác thứ \(i\), định nghĩa thế năng của cấu trúc dữ liệu là
+\[
+  \Phi_i=c\log N\sum_{x\in U}\bigl(\log g_0(x)+\log g_1(x)\bigr),
+\]
+với \(c\) là hằng số sẽ chọn sau. Ban đầu
+\(\Phi_0=cN\log^2N\).
+
+Một thao tác tách có chi phí thực \(O(\log N)\). Vì chỉ có một giá trị \(g_0\)
+và một giá trị \(g_1\) tăng, phần tăng thế năng không vượt quá \(2c\log^2N\).
+
+Xét thao tác gộp \(X\) và \(Y\). Đặt
+\[
+\begin{aligned}
+P_X&=\{x\in X\mid \operatorname{prev}(X,x)\ne
+      \operatorname{prev}(X\cup Y,x)\}\cup\{\min(X)\},\\
+S_X&=\{x\in X\mid \operatorname{succ}(X,x)\ne
+      \operatorname{succ}(X\cup Y,x)\}\cup\{\max(X)\}.
+\end{aligned}
+\]
+Sau khi gộp \(X,Y\) và nén các điểm vốn thuộc cùng một tập thành đoạn,
+\(P_X\) chứa mọi đầu trái của các đoạn đến từ \(X\), còn \(S_X\) chứa mọi đầu
+phải. Định nghĩa tương tự \(P_Y,S_Y\). Khi đó
+\[
+  |P_X|+|P_Y|=W(X,Y)+1.
+\]
+
+Với các cặp biên kề nhau sau khi gộp, trong hai đại lượng \(g_0\) và \(g_1\) sẽ
+có một đại lượng giảm ít nhất còn một nửa giá trị cũ. Vì có \(W(X,Y)-1\) cặp
+như vậy, phần biến thiên thế năng do gộp không vượt quá
+\[
+  -c\bigl(W(X,Y)-1\bigr)\log N.
+\]
+Chọn \(c\) đủ lớn, tổng chi phí mọi thao tác được chặn bởi
+\[
+\begin{aligned}
+\Phi_0
+&+\sum_{i=1}^{Q_1}O(\log N+c\log^2N)\\
+&+\sum_{i=1}^{Q_2}
+\Bigl(-c\bigl(W(X_i,Y_i)-1\bigr)\log N
+      +O(W(X_i,Y_i)\log N)\Bigr)\\
+&=O\bigl((Q_1+N)\log^2N\bigr).
+\end{aligned}
+\]
+
+\paragraph{Dựa trên cây đoạn.}
+Một cách khác là dùng cây đoạn động để duy trì từng tập. Cây đoạn động hỗ trợ
+gộp; sau khi rời rạc hóa tọa độ, thao tác tách tốn \(O(\log N)\). Cần chứng
+minh tổng chi phí của \(Q_1\) thao tác tách và \(Q_2\) thao tác gộp là
+\[
+  O\bigl((N+Q_1)\log N\bigr).
+\]
+
+Gọi \(\operatorname{size}(T)\) là số nút của cây đoạn động biểu diễn tập \(T\).
+Chi phí gộp hai tập \(X,Y\) là
+\[
+  O\bigl(\operatorname{size}(X)+\operatorname{size}(Y)-
+  \operatorname{size}(X\cup Y)\bigr).
+\]
+Định nghĩa thế năng sau thao tác thứ \(i\):
+\[
+  \Phi_i=c\sum_{S\in\mathcal{S}_i}\operatorname{size}(S),
+\]
+trong đó \(\mathcal{S}_i\) là họ các tập hiện tại. Một thao tác tách có chi phí
+thực \(O(\log N)\) và chỉ làm tăng thế năng thêm \(O(c\log N)\). Một thao tác
+gộp \(X,Y\) làm thế năng giảm
+\[
+  c\bigl(\operatorname{size}(X)+\operatorname{size}(Y)-
+  \operatorname{size}(X\cup Y)\bigr).
+\]
+Thế năng ban đầu là \(cN\log N\). Chọn \(c\) đủ lớn, tổng chi phí không vượt quá
+\[
+\begin{aligned}
+\Phi_0
+&+\sum_{i=1}^{Q_1}(O(\log N)+c\log N)\\
+&+\sum_{i=1}^{Q_2}
+\Bigl(O(\operatorname{size}(X_i)+\operatorname{size}(Y_i)-
+\operatorname{size}(X_i\cup Y_i))\\
+&\qquad\qquad
+-c(\operatorname{size}(X_i)+\operatorname{size}(Y_i)-
+\operatorname{size}(X_i\cup Y_i))\Bigr)\\
+&=O((N+Q)\log N).
+\end{aligned}
+\]
+Từ đó nhóm D được giải với độ phức tạp \(O((N+Q)\log N)\).
+
+\paragraph{Thuật toán thay thế.}
+Đây là một bài toán kinh điển. Tài liệu tham khảo \([3]\) đưa ra thuật toán
+trung bình \(O(\log N)\) dựa trên \emph{biased skip list}, nhưng cả phân tích
+lẫn hiện thực đều phức tạp hơn; độc giả quan tâm có thể tự tham khảo.
+
+\subsubsection{Thuật toán tổng quát}
+
+Xét phạm vi áp dụng của thuật toán một chiều. Định nghĩa quan hệ thứ tự riêng
+phần trên tập điểm:
+\[
+  (x_1,y_1)<(x_2,y_2)\quad\text{khi và chỉ khi}\quad x_1<x_2,\ y_1<y_2.
+\]
+Nếu hợp của mọi tập hiện tại \(U\), theo quan hệ này, là một chuỗi, thì thuật
+toán một chiều áp dụng được: do \(y\) tăng đơn điệu theo \(x\), mọi phép chia
+theo tọa độ \(y\) đều có thể chuyển thành phép chia theo tọa độ \(x\). Tương tự,
+khi \(U\) là một phản chuỗi, tức \(y\) giảm đơn điệu theo \(x\), thuật toán một
+chiều cũng áp dụng được.
+
+Trong trường hợp tổng quát, chia \(U\) thành một số tập con \(U_1,\ldots,U_K\)
+sao cho theo thứ tự riêng phần ở trên, mỗi \(U_i\) là một chuỗi hoặc phản
+chuỗi. Với mỗi \(U_i\), xét giao của nó với từng tập hiện tại:
+\[
+  \{S\cap U_i\mid S\in\mathcal{S}\}.
+\]
+Khi đó các thao tác gộp, tách và hỏi đều có thể xử lý độc lập trên từng \(U_i\),
+và mỗi \(U_i\) được duy trì bằng thuật toán một chiều.
+
+Độ phức tạp của cách này là \(O((N+Q)K\log N)\). Còn cần chứng minh
+\(K=O(\sqrt N)\).
+
+\paragraph{Bổ đề 1.}
+Trong một tập có thứ tự riêng phần \(P\) kích thước \(N\), hoặc tồn tại một
+chuỗi kích thước \(\sqrt N\), hoặc tồn tại một phản chuỗi kích thước
+\(\sqrt N\).
+
+\paragraph{Chứng minh.}
+Giả sử \(P\) không chứa chuỗi độ dài \(L\). Theo định lý Dilworth, \(P\) có thể
+được chia thành không quá \(L-1\) phản chuỗi. Vì vậy tồn tại một phản chuỗi có
+kích thước ít nhất \(N/(L-1)\). Chọn \(L=\lceil\sqrt N\rceil\) là đủ.
+
+\paragraph{Bổ đề 2.}
+Một tập có thứ tự riêng phần \(U\) kích thước \(N\) có thể được chia thành
+\(O(\sqrt N)\) chuỗi hoặc phản chuỗi.
+
+\paragraph{Chứng minh.}
+Chia đệ quy: mỗi lần xóa khỏi tập còn lại một chuỗi dài nhất hoặc một phản
+chuỗi dài nhất. Nếu tập còn lại có kích thước \(n\), theo bổ đề 1 có thể xóa
+ít nhất \(\sqrt n\) phần tử. Số phần trong phép chia thỏa
+\[
+  T(N)=T(N-\sqrt N)+1<T(N/2)+O(\sqrt N)=O(\sqrt N).
+\]
+
+Như vậy bài toán được giải với độ phức tạp
+\[
+  O((N+Q)\sqrt N\log N).
+\]
+
+\subsection{Kết luận}
+
+Kiến thức dùng trong bài chỉ gồm cấu trúc dữ liệu cơ bản và phân tích khấu hao,
+đều thuộc phạm vi của thí sinh NOI. Tuy nhiên, việc tìm ra thuật toán tổng quát
+đòi hỏi năng lực phân tích khá tốt.
+
+Đối với \(40\) điểm cuối, tuy còn tồn tại những cách giải khác, tác giả cho rằng
+cách chia tập có thứ tự riêng phần được trình bày ở đây thú vị và giàu tính gợi
+mở hơn. Khi đối tượng trong bài toán thỏa một quan hệ thứ tự riêng phần khác,
+chẳng hạn quan hệ bao hàm giữa các đoạn, những phương pháp tương tự đáng được
+cân nhắc.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Liu Rujia, Huang Liang, \emph{Nghệ thuật thuật toán và thi tin học},
+  Nhà xuất bản Đại học Thanh Hoa.
+  \item Richard A. Brualdi, \emph{Introductory Combinatorics}, 5th ed.,
+  Prentice Hall.
+  \item John Iacono, Ozgur Ozkan, ``Mergeable Dictionaries''.
+\end{enumerate}
 
 \section*{Ghi chú về nguồn}
 
 Tệp PDF có 228 trang. \texttt{pdftotext} đọc tốt phần mục lục nhưng phần thân
-chủ yếu trở thành ký tự mojibake do ánh xạ phông chữ. Để dịch đầy đủ từng bài,
-cần OCR tiếng Trung hoặc bản nguồn có lớp văn bản Unicode đúng.
+chủ yếu trở thành ký tự mojibake do ánh xạ phông chữ. Bài \emph{MSS} được dịch
+từ các trang render bằng \texttt{pdftoppm} và OCR bằng \texttt{tesseract}. Một
+số ký hiệu trong phần ràng buộc nhóm D bị nhiễu, nên bản dịch ghi rõ phần suy
+ra từ lời giải thay vì chép một công thức không chắc chắn.
 
 \end{document}

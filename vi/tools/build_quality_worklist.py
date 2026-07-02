@@ -20,6 +20,40 @@ def strip_latex(text: str) -> str:
     return " ".join(text.split())
 
 
+def braced_argument(text: str, open_brace: int) -> tuple[str, int] | None:
+    if open_brace >= len(text) or text[open_brace] != "{":
+        return None
+    depth = 0
+    for pos in range(open_brace, len(text)):
+        char = text[pos]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[open_brace + 1 : pos], pos + 1
+    return None
+
+
+def section_titles(text: str) -> list[str]:
+    titles: list[str] = []
+    for match in re.finditer(r"\\section\*?", text):
+        pos = match.end()
+        while pos < len(text) and text[pos].isspace():
+            pos += 1
+        if pos < len(text) and text[pos] == "[":
+            close = text.find("]", pos)
+            if close == -1:
+                continue
+            pos = close + 1
+            while pos < len(text) and text[pos].isspace():
+                pos += 1
+        arg = braced_argument(text, pos)
+        if arg is not None:
+            titles.append(strip_latex(arg[0]))
+    return titles
+
+
 def toc_rows(text: str) -> list[tuple[str, str, str]]:
     rows: list[tuple[str, str, str]] = []
     for line in text.splitlines():
@@ -33,17 +67,31 @@ def toc_rows(text: str) -> list[tuple[str, str, str]]:
     return rows
 
 
+def toc_block(text: str) -> tuple[str, int]:
+    section = r"\section{Mục lục đã dịch}"
+    start = text.find(section)
+    if start == -1:
+        start = 0
+    begin = text.find(r"\begin{center}", start)
+    if begin == -1:
+        return text, 0
+    end_marker = r"\end{center}"
+    end = text.find(end_marker, begin)
+    if end == -1:
+        return text[begin:], begin
+    return text[begin : end + len(end_marker)], end + len(end_marker)
+
+
 def body_after_toc(text: str) -> str:
-    marker = r"\end{center}"
-    pos = text.find(marker)
-    return text[pos + len(marker) :] if pos != -1 else text
+    _, end = toc_block(text)
+    return text[end:] if end else text
 
 
 def article_started(title: str, body: str) -> bool:
     plain = strip_latex(title)
     if not plain:
         return False
-    return plain in strip_latex(body)
+    return any(plain == heading or plain in heading for heading in section_titles(body))
 
 
 def main() -> None:
@@ -60,7 +108,7 @@ def main() -> None:
     total = started = 0
     for path in COLLECTIONS:
         text = path.read_text(encoding="utf-8", errors="replace")
-        rows = toc_rows(text)
+        rows = toc_rows(toc_block(text)[0])
         if not rows:
             continue
         rel = path.relative_to(VI)
