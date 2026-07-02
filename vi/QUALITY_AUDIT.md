@@ -4,6 +4,10 @@ This audit is separate from `MANIFEST.md`. The manifest tracks whether a source
 document has a Vietnamese LaTeX file; it does not prove that the file is a full
 translation.
 
+For annual national training-team collections, `QUALITY_WORKLIST.md` expands
+this audit into an article-by-article queue generated from the translated
+tables of contents.
+
 ## High-Confidence Undertranslated Files
 
 These files currently compile, but they are not full translations of their
@@ -11,9 +15,9 @@ source documents.
 
 | Priority | Translation | Source pages | Current state | Extraction status | Required work |
 | ---: | --- | ---: | --- | --- | --- |
-| 1 | `sources/ioi/2022-national-training-team-collection.tex` | 246 | Cover/ToC/topic note only | `pdftotext` is essentially blank; Tesseract OCR is readable but noisy | OCR and translate article by article, starting with the first DAG path-info article. |
-| 2 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | Cover/ToC/topic note only | `pdftotext` extracts readable Unicode Chinese | Translate article by article; no OCR needed for first pass. |
-| 3 | `sources/ioi/2020-national-training-team-collection.tex` | 196 | Cover/ToC/topic note only | `pdftotext` extracts readable Unicode Chinese | Translate article by article. |
+| 1 | `sources/ioi/2022-national-training-team-collection.tex` | 246 | ToC plus first article translated | `pdftotext` is essentially blank; Tesseract OCR is readable but noisy | Continue OCR-backed translation from article 2 onward. |
+| 2 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | ToC plus first article translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 2 onward; no OCR needed for first pass. |
+| 3 | `sources/ioi/2020-national-training-team-collection.tex` | 196 | ToC plus first article translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 2 onward. |
 | 4 | `sources/ioi/2017-national-training-team-collection.tex` | 204 | Cover/ToC/topic note only | `pdftotext` extracts readable Unicode Chinese | Translate article by article. |
 | 5 | `sources/ioi/2019-national-training-team-collection.tex` | 231 | Cover/ToC/topic note only | `pdftotext` extracts body text but includes watermark noise | Translate article by article after filtering watermark text. |
 | 6 | `sources/ioi/2013-national-training-team-collection.tex` | 137 | Cover/ToC/topic note only | ToC and some body text are readable; earlier note overstated body mojibake | Re-test per article and translate from readable text or OCR fallback. |

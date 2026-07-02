@@ -24,3 +24,5 @@ tương ứng trong `build/`.
 - `TRANSLATION.md`: quy ước dịch thuật và quy trình xử lý PDF-only.
 - `QUALITY_AUDIT.md`: danh sách các tệp đã có bản LaTeX nhưng chưa đủ chất
   lượng hoặc mới là ghi chú mục lục/tóm tắt.
+- `QUALITY_WORKLIST.md`: hàng đợi chi tiết theo từng bài trong các tuyển tập
+  dài; sinh bằng `tools/build_quality_worklist.py`.
