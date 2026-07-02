@@ -19,7 +19,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2015. Tệp được
 tạo bằng pdfTeX nhưng lớp văn bản không ánh xạ đúng về Unicode: ngay cả mục
 lục khi trích xuất bằng \texttt{pdftotext} cũng trở thành mojibake. Bản dịch
-này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và hai
+này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và ba
 bài đầu tiên của tập sách, được OCR từ ảnh trang.
 \end{abstract}
 
@@ -36,7 +36,9 @@ sau đó đối chiếu trực quan ở các trang biên. Hiện bản dịch đ
 bài đầu tiên: bài ``Mở rộng suffix automaton trên trie'' dùng các trang PDF vật
 lý 5--20, tương ứng trang in 1--16; bài ``Bàn về ứng dụng tư tưởng heuristic
 trong thi tin học'' dùng các trang PDF vật lý 21--40, tương ứng trang in
-17--36. Trang PDF vật lý 41, trang in 37, là đầu bài kế tiếp về khớp chuỗi.
+17--36; bài ``Bàn về một số phương pháp khớp chuỗi'' dùng các trang PDF vật lý
+41--69, tương ứng trang in 37--65. Trang PDF vật lý 70, trang in 66, là trang
+trắng; trang PDF vật lý 71, trang in 67, là đầu bài kế tiếp về suffix automaton.
 
 \section{Mục lục đã dịch}
 
@@ -46,7 +48,7 @@ trong thi tin học'' dùng các trang PDF vật lý 21--40, tương ứng trang
 \hline
 1 & Mở rộng suffix automaton trên trie & Liu Yanyi, Trường Yali, Trường Sa, Hồ Nam \\
 17 & Bàn về ứng dụng tư tưởng heuristic trong thi tin học & Ren Zhizhou, Trường Trung học số 1 Thiệu Hưng \\
-37 & Bàn về một số phương pháp khớp chuỗi & Wang Shenghao, Trường Trung học số 1 Thiệu Hưng \\
+37 & Bàn về một số phương pháp khớp chuỗi & Wang Jianhao, Trường Trung học số 1 Thiệu Hưng \\
 67 & Suffix automaton và ứng dụng & Zhang Tianyang, Trường Trung học số 1 Trường Sa, Hồ Nam \\
 81 & Phép toán trên hàm sinh và bài toán đếm tổ hợp & Jin Ce, Trường Học Quân Hàng Châu, Chiết Giang \\
 103 & Báo cáo ra đề \emph{ydc's bonus} & Liu Jiancheng, Trường Yali, Trường Sa \\
@@ -1454,6 +1456,1008 @@ Xin cảm ơn các thầy cô và bạn học khác từng giúp đỡ, gợi ý
   \item Jiang Jinye, \emph{Công cụ mạnh cho giải lặp: tối ưu và ứng dụng thuật toán SPFA}, luận văn đội tuyển quốc gia 2009.
   \item Zhou Erjin, \emph{Bàn về ứng dụng hàm ước lượng trong thi tin học}, luận văn đội tuyển quốc gia 2009.
   \item Yu Yili, \emph{Một số phương pháp tìm nghiệm tốt thứ \(k\)}, luận văn đội tuyển quốc gia 2014.
+\end{enumerate}
+
+\section{Bàn về một số phương pháp khớp chuỗi}
+
+\begin{center}
+\textbf{Wang Jianhao}\\
+Trường Trung học số 1 Thiệu Hưng
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài toán khớp chuỗi là một bài toán kinh điển trong thi tin học. Bài viết phân
+loại và tổng kết các cách giải cho lớp bài toán này. Trước hết tác giả điểm lại
+một số cấu trúc và thuật toán thường dùng, sau đó tập trung giới thiệu một cấu
+trúc khớp chuỗi mới là \emph{Border Tree}, từ đó rút ra một cách giải tổng quát
+cho một lớp bài toán khớp chuỗi. Mỗi thuật toán và kỹ thuật đều đi kèm ví dụ để
+thuận tiện cho việc hiểu và phân tích.
+
+\subsection{Dẫn nhập}
+
+Bài toán khớp chuỗi thường xuất hiện trong xử lý văn bản. Trong thời đại dữ liệu
+lớn, nhiều lĩnh vực phải xử lý các thao tác đa dạng trên lượng dữ liệu lớn. Bài
+toán khớp chuỗi trong thi tin học là một mô hình tiêu biểu của kiểu vấn đề đó;
+bài viết này giới thiệu một số cách giải cho chúng.
+
+Mục 2 nhắc lại các định nghĩa về chuỗi để thuận tiện cho phần sau. Tiếp đó, bài
+viết tổng kết ngắn gọn một số cấu trúc và thuật toán, chia chúng thành hai nhóm:
+cách giải dựa trên tiền tố và cách giải dựa trên hậu tố.
+
+Mục 3 giới thiệu các cấu trúc, thuật toán tiền tố gồm trie, KMP và AC automaton.
+Mục 4 giới thiệu các cấu trúc hậu tố gồm suffix array, suffix tree, suffix
+cactus và suffix automaton. Mục 5 trình bày chi tiết cấu trúc mới Border Tree.
+Mục 6 dùng Border Tree để đưa ra một cách giải tổng quát cho một lớp bài toán
+khớp chuỗi.
+
+Nội dung ở Mục 3 và Mục 4 khá phổ biến, một số thuật toán cũng đã từng được
+trình bày trong các luận văn đội tuyển quốc gia trước đây, nên ở đây tác giả
+chỉ tóm tắt và phân tích một số bài toán kinh điển. Mục 5 và Mục 6 được trình
+bày kỹ hơn. Border Tree là một cấu trúc tương đối mới; các ứng dụng nêu ra
+trong bài viết nhằm gợi mở để độc giả quan tâm tiếp tục nghiên cứu.
+
+\subsection{Định nghĩa}
+
+Để tiện mô tả, trước hết nêu một số định nghĩa.
+
+\paragraph{Định nghĩa 2.1 (tiền tố, hậu tố, xâu con, Border, LBorder).}
+Xét xâu \(s=s_1s_2\ldots s_n\) có độ dài \(n\).
+
+Với \(1\le i\le j\le n\), ký hiệu \(s[i:j]=s_is_{i+1}\ldots s_j\). Khi
+\(i>j\), quy ước \(s[i:j]\) là xâu rỗng. Nếu \(u=s[i:j]\), ta gọi \(u\) là một
+xâu con của \(s\).
+
+Với \(1\le i\le n\), \(s[i:n]\) là một hậu tố của \(s\), ký hiệu
+\(\mathrm{suf}[i]\); \(s[1:i]\) là một tiền tố của \(s\), ký hiệu
+\(\mathrm{pre}[i]\).
+
+Với \(1\le i<n\), nếu \(s[1:i]=s[n-i+1:n]\), thì \(s[1:i]\) là một
+\emph{Border} của \(s\). Thông thường xâu rỗng cũng được xem là một Border.
+Trong mọi Border của \(s\), Border dài nhất được gọi là \emph{LBorder} của
+\(s\). Tương tự có thể nói \(\mathrm{pre}[i]\) có LBorder, hay một xâu con có
+LBorder.
+
+\paragraph{Định nghĩa 2.2 (xâu tuần hoàn, gốc, độ dài chu kỳ).}
+Với xâu \(s=s_1s_2\ldots s_n\), nếu LBorder của \(s\) có độ dài \(L\), thì
+\(s[L+1:n]\) được gọi là một gốc của \(s\). Nếu \(2L>n\), ta gọi \(s\) là xâu
+tuần hoàn. Khi \(s\) là xâu tuần hoàn, độ dài của gốc được gọi là độ dài chu kỳ.
+
+\paragraph{Định nghĩa 2.3 (xâu lặp).}
+Nếu một xâu \(t\) nhận được bằng cách lặp một xâu \(s\) nguyên số lần
+\(k>1\), thì \(t\) được gọi là xâu lặp, ký hiệu \(t=s^k\). Rõ ràng xâu lặp là
+một lớp đặc biệt của xâu tuần hoàn.
+
+\subsection{Các cách giải theo tiền tố}
+
+Trong các phương pháp khớp chuỗi của thi tin học, có một số cấu trúc và thuật
+toán dựa trên việc tận dụng hiệu quả thông tin tiền tố để khớp nhanh. Bài viết
+gọi chúng là nhóm cách giải theo tiền tố. Mục này giới thiệu ba cấu trúc tiền tố
+và các biến thể của chúng.
+
+\subsubsection{Trie}
+
+Trie là cây tra cứu từ; dưới đây gọi là cây chữ cái. Cây chữ cái hỗ trợ tìm kiếm
+và khớp nhiều xâu mẫu. Định nghĩa và phương pháp xây dựng có thể xem trong luận
+văn đội tuyển quốc gia năm 2004 của Zhu Zeyuan hoặc luận văn năm 2009 của Dong
+Huaxing.
+
+Cây chữ cái là một cây có gốc, mỗi cạnh biểu diễn một ký tự. Ghép các ký tự trên
+đường đi từ gốc tới một đỉnh theo thứ tự duyệt sẽ thu được một xâu \(w\). Vì
+vậy mỗi đỉnh trên cây chữ cái biểu diễn một xâu; gốc biểu diễn xâu rỗng.
+
+Thông thường, khi khớp nhiều xâu mẫu, ta chèn từng xâu mẫu vào cây chữ cái. Theo
+định nghĩa của trie, mọi tiền tố của mỗi xâu mẫu đều được một đỉnh biểu diễn.
+Nhờ đó ta có thể dùng tính chất cây để giải nhanh nhiều bài toán khớp chuỗi,
+chẳng hạn tính nhanh tiền tố chung dài nhất của hai xâu mẫu.
+
+\paragraph{Ví dụ 1 (USACO 2012 Dec Gold, \emph{First}).}
+Cho \(m\) xâu. Thứ tự từ điển của 26 chữ cái thường có thể được chọn tùy ý. Hỏi
+mỗi xâu có thể trở thành xâu nhỏ nhất theo thứ tự từ điển trong một cách chọn
+thứ tự chữ cái nào đó hay không. Các xâu đôi một khác nhau.
+
+Dữ liệu:
+\[
+  1<m<30000,\qquad 1<\text{tổng độ dài các xâu}<300000.
+\]
+Giới hạn thời gian là \(1\) giây.
+
+Trước hết xây trie cho \(m\) xâu. Với xâu thứ \(i\), giả sử đỉnh \(u\) của
+trie biểu diễn xâu đó. Để xâu thứ \(i\) có thể là xâu nhỏ nhất theo một thứ tự
+từ điển nào đó, trước hết không được có xâu khác là tiền tố của nó. Ngoài ra,
+trên đường từ gốc tới \(u\), mỗi ký tự được chọn phải nhỏ hơn mọi ký tự khác ở
+cùng tầng có thể gây cạnh tranh.
+
+Với mỗi xâu, lấy các ràng buộc này ra rồi kiểm tra chúng có mâu thuẫn hay không.
+Khi cài đặt, xem mỗi ràng buộc là một cạnh có hướng giữa hai chữ cái và kiểm tra
+đồ thị có chu trình hay không. Độ phức tạp là
+\[
+  O(26^2m+26\cdot \text{tổng độ dài các xâu}).
+\]
+
+\subsubsection{KMP}
+
+Trong thi tin học thường gặp bài toán khớp một xâu mẫu với một xâu chính. Cách
+làm vét cạn bắt đầu so từ ký tự đầu tiên; nếu bằng nhau thì so tiếp, đến khi
+gặp ký tự khác nhau. Lúc đó nó đơn giản bỏ toàn bộ thông tin đã khớp và thử lại
+từ vị trí kế tiếp của xâu chính với ký tự đầu tiên của xâu mẫu. Việc bỏ thông
+tin khớp trước đó gây lãng phí lớn và làm hiệu suất thấp.
+
+Thuật toán KMP tăng tốc quá trình khớp xâu mẫu với xâu chính. Chi tiết của KMP
+có thể xem trong luận văn đội tuyển quốc gia năm 2004 của Zhu Zeyuan. Dưới đây
+nêu định nghĩa mảng thất bại của xâu mẫu.
+
+\paragraph{Định nghĩa 3.1 (mảng thất bại).}
+Cho xâu mẫu \(s=s_1s_2\ldots s_n\) có độ dài \(n\). Đặt
+\[
+  \mathrm{next}[i]=|\mathrm{LBorder}(s[1:i])|.
+\]
+Mảng \(\mathrm{next}\) được gọi là mảng thất bại của \(s\).
+
+Ý tưởng cốt lõi của KMP là tiền xử lý mảng thất bại trên xâu mẫu, rồi với xâu
+chính, dựa vào mảng này để tính với mỗi vị trí kết thúc thì có thể khớp tối đa
+bao nhiêu ký tự của xâu mẫu. Thời gian của KMP là tuyến tính.
+
+\paragraph{KMP automaton.}
+Sau khi có mảng \(\mathrm{next}\), nếu nối cạnh từ \(i\) tới \(\mathrm{next}[i]\)
+thì toàn bộ cấu trúc tạo thành một cây \(n+1\) đỉnh. Trong đó đỉnh \(0\) là gốc,
+đỉnh \(i\) biểu diễn \(\mathrm{pre}[i]\). Các đỉnh trên đường từ gốc tới đỉnh
+\(i\) chính là các Border của \(s[1:i]\). Vì vậy có thể dựa vào cây này để xây
+mảng chuyển cho mỗi đỉnh, cho biết nếu sau xâu hiện tại thêm một ký tự thì xâu
+mới có thể khớp nhiều nhất bao nhiêu ký tự của mẫu. Khi khớp xâu, ta dùng mảng
+chuyển để tính nhanh. Cấu trúc này được gọi là KMP automaton.
+
+\paragraph{Ví dụ 2 (NOI 2014, \emph{Zoo}).}
+Có \(T\) bộ dữ liệu. Mỗi bộ cho một xâu mẫu \(s=s_1s_2\ldots s_n\). Với mỗi
+\(\mathrm{pre}[i]\), cần đếm số Border không rỗng \(B\) thỏa
+\[
+  2|B|\le i.
+\]
+Gọi số đó là \(\mathrm{num}[i]\), yêu cầu tính mảng \(\mathrm{num}\).
+
+Dữ liệu:
+\[
+  1<T<5,\qquad 1<n<1000000.
+\]
+Giới hạn thời gian là \(1\) giây.
+
+Một cách giải là xây mảng \(\mathrm{next}\), rồi từ đó xây cây trong KMP
+automaton. Với mỗi đỉnh, ta chỉ cần biết trên đường từ gốc tới đỉnh đó có bao
+nhiêu đỉnh có nhãn không vượt quá một nửa nhãn hiện tại. Vì nhãn trên đường đi
+tăng đơn điệu, có thể nhị phân trực tiếp. Mảng \(\mathrm{next}\) được tính trong
+thời gian tuyến tính, nên tổng độ phức tạp là \(O(Tn\log n)\).
+
+\subsubsection{AC automaton}
+
+AC automaton có thể xem là cấu trúc kết hợp trie và KMP automaton. Để xây AC
+automaton cho nhiều xâu mẫu, trước hết xây trie, rồi giống KMP automaton, xây
+mảng \(\mathrm{next}\) để tạo cây và mảng chuyển. Tuy nhiên mảng
+\(\mathrm{next}\) này dành cho nhiều xâu, khác với mảng \(\mathrm{next}\) của
+KMP automaton. Trong AC automaton, cây tạo bởi các cạnh kiểu này được gọi là
+\emph{fail tree}. Trên fail tree, một đỉnh biểu diễn một xâu, còn các đỉnh
+trong cây con của nó biểu diễn những xâu có xâu đó làm hậu tố. Dựa vào fail tree
+ta xây được mảng chuyển của từng đỉnh và khớp nhanh khi quét xâu.
+
+Tính chất và cách xây AC automaton có thể xem trong luận văn đội tuyển quốc gia
+năm 2004 của Zhu Zeyuan. Nhờ kết hợp tính chất của trie và KMP automaton, AC
+automaton giải được các bài toán khớp nhiều mẫu phức tạp hơn.
+
+\paragraph{Ví dụ 3 (COCI 2015, \emph{Divljak}).}
+Ban đầu cho \(n\) xâu \(s_1,s_2,\ldots,s_n\). Có một tập xâu \(T\), ban đầu
+rỗng. Có \(q\) thao tác thuộc hai loại:
+\begin{enumerate}
+  \item thêm một xâu \(p\) vào tập \(T\);
+  \item chọn một xâu \(s_i\), hỏi trong \(T\) có bao nhiêu xâu chứa \(s_i\) làm
+  xâu con.
+\end{enumerate}
+Đặt \(\mathrm{sum}\) là tổng độ dài các xâu ban đầu và
+\[
+  \mathrm{sum}_p=\sum |p|
+\]
+trên các xâu được thêm.
+
+Dữ liệu:
+\[
+  1<n,q<100000,\qquad 1<\mathrm{sum},\mathrm{sum}_p<2000000.
+\]
+Giới hạn thời gian là \(1\) giây.
+
+Trước hết xây AC automaton cho \(s_1,s_2,\ldots,s_n\), thu được fail tree và
+mảng chuyển. Giả sử trên fail tree, đỉnh \(u_i\) biểu diễn xâu \(s_i\).
+
+Ta chuyển đổi thao tác như sau. Với thao tác thêm xâu \(p\), xem như tô cùng một
+màu cho các đỉnh của AC automaton biểu diễn các tiền tố của \(p\). Với thao tác
+hỏi xâu \(s_i\), đáp án là số màu khác nhau trong cây con của \(u_i\) trên fail
+tree. Chuyển đổi này suy ra trực tiếp từ tính chất của AC automaton.
+
+Khi cài đặt, dùng thứ tự DFS của fail tree để thống kê. Mỗi cây con tương ứng
+một đoạn liên tiếp trên thứ tự DFS. Sau mỗi lần tô màu, nếu một cây con có điểm
+mang màu đó, tổng trọng số trên đoạn DFS tương ứng cần tăng một. Với thao tác
+hỏi, lấy đoạn DFS của cây con \(u_i\) rồi dùng Fenwick tree để lấy tổng đoạn.
+
+Với thao tác thêm, lấy ra các đỉnh cần tô; số lượng là \(O(|p|)\). Khử trùng,
+sắp theo thứ tự DFS, sau đó cộng \(1\) tại mỗi đỉnh và trừ \(1\) tại LCA của
+hai đỉnh kề nhau trong danh sách. Sau thao tác này, trong mỗi cây con, nếu có
+đỉnh được tô thì chỉ đỉnh có thứ tự DFS nhỏ nhất đóng góp \(1\). Có thể hiểu
+cách làm này qua hình dạng của virtual tree.
+
+Nhờ đó bài toán giải được trong
+\[
+  O(26\mathrm{sum}+\mathrm{sum}_p\log \mathrm{sum}
+    +\mathrm{sum}\log \mathrm{sum})
+\]
+thời gian.
+
+\subsection{Các cách giải theo hậu tố}
+
+Trong các phương pháp khớp chuỗi, nhóm hậu tố giữ vị trí quan trọng. So với nhóm
+tiền tố, các cấu trúc hậu tố thường cao cấp và phức tạp hơn, đồng thời giải
+được các bài toán khó hơn. Mục này giới thiệu bốn cấu trúc dữ liệu hậu tố:
+suffix array, suffix tree, suffix cactus và suffix automaton.
+
+\subsubsection{Suffix array}
+
+Suffix array là một cấu trúc dữ liệu rất tốt trong xử lý chuỗi, được ứng dụng
+rộng rãi ở nhiều loại bài toán.
+
+Ý tưởng cốt lõi là với xâu mẫu \(b\), sắp xếp mọi hậu tố của \(b\) theo thứ tự
+từ điển và ghi bằng mảng \(\mathrm{sa}\). Trong đó \(\mathrm{sa}_i\) là vị trí
+của hậu tố đứng thứ \(i\) theo thứ tự từ điển. Tương ứng có mảng
+\(\mathrm{rank}\), trong đó \(\mathrm{rank}_i\) là vị trí của hậu tố
+\(\mathrm{suf}[i]\) trong mảng \(\mathrm{sa}\). Sau khi có \(\mathrm{sa}\) và
+\(\mathrm{rank}\), ta dùng tính chất của suffix array để tính mảng
+\(\mathrm{height}\) trong thời gian tuyến tính; \(\mathrm{height}_i\) là độ dài
+LCP của hai hậu tố \(\mathrm{sa}_{i-1}\) và \(\mathrm{sa}_i\). Mảng
+\(\mathrm{height}\) giúp tính hiệu quả nhiều bài toán, ví dụ LCP của hai hậu tố.
+
+Suffix array có thể xây bằng thuật toán nhân đôi hoặc DC3. Do khuôn khổ bài
+viết, phần này không trình bày chi tiết tính chất và cách xây suffix array; độc
+giả quan tâm có thể xem luận văn đội tuyển quốc gia năm 2004 của Xu Zhilei hoặc
+luận văn năm 2009 của Luo Suiqian.
+
+\paragraph{Bài toán 1: LCP.}
+Cho xâu \(b\) độ dài \(n\). Có \(q\) truy vấn; mỗi truy vấn cho hai xâu con của
+\(b\), hỏi độ dài tiền tố chung dài nhất của chúng.
+
+Trước hết xây suffix array của \(b\) trong \(O(n\log n)\), thu được
+\(\mathrm{sa}\), \(\mathrm{rank}\) và \(\mathrm{height}\). Với mỗi truy vấn LCP
+của hai xâu con, kéo chúng thành hai hậu tố, lấy LCP của hai hậu tố rồi lấy
+\(\min\) với độ dài hai xâu con. LCP của hai hậu tố trở thành truy vấn RMQ trên
+mảng \(\mathrm{height}\). Tiền xử lý sparse table trong \(O(n\log n)\), mỗi
+truy vấn trả lời trong \(O(1)\). Tổng độ phức tạp là \(O(n\log n+q)\).
+
+\paragraph{Bài toán 2: ghép xâu con.}
+Cho xâu \(b\) độ dài \(n\). Có \(q\) truy vấn; mỗi truy vấn chọn hai xâu con
+\(a\) và \(c\) của \(b\), đặt \(s=ac\), hỏi \(s\) có phải xâu con của \(b\)
+không. Nếu có, cần đưa ra một vị trí hợp lệ.
+
+Xây suffix array của \(b\) trong \(O(n\log n)\). Nếu \(s\) là xâu con của \(b\),
+thì \(s\) là tiền tố của một hậu tố nào đó của \(b\). Trước hết tìm toàn bộ hậu
+tố có tiền tố \(a\); theo định nghĩa suffix array, các hậu tố này tạo thành một
+đoạn liên tiếp trên \(\mathrm{sa}\), tìm được bằng nhị phân. Trên đoạn đó, tiếp
+tục nhị phân theo thứ tự từ điển để tìm hậu tố có tiền tố \(ac\). Trong quá
+trình nhị phân, dùng mảng \(\mathrm{rank}\) và phép tính LCP \(O(1)\) từ bài
+toán 1 để so sánh nhanh. Vì vậy mỗi truy vấn mất \(O(\log n)\), tổng độ phức
+tạp là \(O(n\log n+q\log n)\).
+
+\paragraph{Bài toán 3: tiền tố lớn nhất trên đoạn.}
+Cho xâu \(b\) độ dài \(n\). Có \(q\) truy vấn; mỗi truy vấn cho một đoạn
+\([l,r]\), yêu cầu tính
+\[
+  \max_{l\le i\le r}\mathrm{LCP}(\mathrm{suf}[i],b).
+\]
+
+Xây suffix array của \(b\) trong \(O(n\log n)\), thu được \(\mathrm{sa}\),
+\(\mathrm{rank}\) và \(\mathrm{height}\). Bài toán trở thành RMQ trên các giá
+trị \(\mathrm{LCP}(\mathrm{suf}[i],b)\). Tương tự bài toán 1, tiền xử lý sparse
+table trong \(O(n\log n)\), mỗi truy vấn trả lời \(O(1)\). Tổng độ phức tạp là
+\(O(n\log n+q)\).
+
+Một mở rộng là vừa tính giá trị lớn nhất vừa đếm số vị trí đạt giá trị đó. Khi
+đó không dùng trực tiếp sparse table kiểu chỉ lấy min/max đơn giản nữa; có thể
+dùng nhân đôi để trả lời mỗi truy vấn trong \(O(\log n)\). Độ phức tạp trở thành
+\(O(n\log n+q\log n)\).
+
+\subsubsection{Suffix tree}
+
+Suffix tree là cấu trúc dữ liệu kinh điển cho xử lý chuỗi. Bản chất của suffix
+tree là trie. Với một xâu \(b\) độ dài \(n\), nếu đưa tất cả hậu tố của nó vào
+trie thì thu được suffix tree của \(b\). Tuy nhiên trie trực tiếp có thể có
+\(O(n^2)\) đỉnh, nên cần nén các đường đi. Ban đầu mỗi cạnh của trie biểu diễn
+một ký tự; sau khi nén, mỗi cạnh biểu diễn một xâu. Nếu thêm ký tự kết thúc vào
+cuối \(b\), xây trie của mọi hậu tố rồi gộp các đỉnh chỉ có một con với con của
+nó, ta thu được cây có \(O(n)\) đỉnh.
+
+Phân tích tính chất và cách xây suffix tree có thể xem trong luận văn đội tuyển
+quốc gia năm 2004 của Zhu Zeyuan.
+
+Sau khi xây suffix tree, có thể thấy mảng \(\mathrm{sa}\) ở mục trước chính là
+thứ tự DFS của các lá trong suffix tree. Vì vậy có thể dùng suffix tree để xây
+suffix array. Ngược lại, mục sau giới thiệu một cách xây suffix tree từ suffix
+array. Hai cấu trúc này có thể chuyển đổi qua lại; các bài toán suffix array
+giải được thì suffix tree cũng hỗ trợ được. Vì thế phần này không phân tích ví
+dụ riêng.
+
+\subsubsection{Suffix cactus}
+
+Suffix cactus, giống suffix array, cũng dựa trên suffix tree. Nó cũng là cấu
+trúc dạng cây tương tự suffix tree. Trong suffix tree, ta gộp các đỉnh chỉ có
+một con với con của chúng; còn trong suffix cactus, ta gộp mỗi đỉnh không phải
+lá với một con của nó, tạo thành một khối liên thông gọi là một nhánh.
+
+Để xây suffix cactus, trước hết xây suffix array. Dựa vào định nghĩa của
+\(\mathrm{sa}\) và \(\mathrm{height}\), khi duyệt \(\mathrm{sa}\) tăng dần, duy
+trì một ngăn xếp đơn điệu giảm của mảng \(\mathrm{height}\). Mỗi lần duyệt tới
+vị trí \(i\), nối \(\mathrm{sa}_i\) với phần tử hiện ở đỉnh ngăn xếp.
+
+Do khuôn khổ bài viết, tính đúng đắn của cách xây dựng trên không được trình bày
+chi tiết. Tính chất cụ thể của suffix cactus có thể xem trong tài liệu giao lưu
+trại đông năm 2014 của Wang Yuetong, Xu Duo và Xu Zihan.
+
+Từ suffix array có thể thu được suffix cactus. Nếu cắt mỗi nhánh của suffix
+cactus tại các vị trí nối cạnh, ta nhận được suffix tree. Vì vậy chỉ cần ghi lại
+vị trí nối cạnh khi dựng suffix cactus, ta có thể xây suffix tree từ suffix array
+trong thời gian tuyến tính.
+
+\subsubsection{Suffix automaton}
+
+Cây của suffix automaton là suffix tree của xâu mẫu đảo ngược. Vì suffix tree là
+một trie nén, suffix automaton cũng hỗ trợ duy trì nhiều xâu mẫu. Do đó ta có
+một cách khác để xây suffix tree của một xâu mẫu: trước hết xây suffix automaton,
+rồi xây suffix tree từ suffix automaton. Suffix automaton có thể được xây bằng
+phương pháp tăng dần. Do khuôn khổ bài viết, cách xây và phân tích tính chất có
+thể xem trong tài liệu giao lưu trại đông năm 2012 của Chen Lijie.
+
+\paragraph{Ví dụ 7 (ZJOI 2015, \emph{Vùng đất huyễn tưởng được chư thần ưu ái}).}
+Cho một cây \(n\) đỉnh, mỗi đỉnh mang một ký tự. Mỗi lần chọn hai đỉnh \(x,y\),
+ghép các ký tự trên đường đi từ \(x\) tới \(y\) theo thứ tự để được một xâu. Hỏi
+tất cả các đường đi như vậy tạo ra bao nhiêu xâu khác nhau. Số lá của cây không
+vượt quá \(20\), kích thước bảng chữ cái không vượt quá \(10\).
+
+Dữ liệu:
+\[
+  1<n<100000.
+\]
+Giới hạn thời gian là \(1\) giây.
+
+Cách vét cạn: vì chỉ có \(20\) lá, lấy xâu trên đường đi giữa mọi cặp lá. Mọi
+xâu con của các xâu giữa lá đều tương ứng với một đường đi trên cây, và mỗi
+đường đi đều được một xâu con như vậy biểu diễn. Do đó có thể xây suffix
+automaton cho \(400\) xâu này rồi đếm số xâu con khác nhau trên automaton. Mỗi
+xâu có độ dài \(O(n)\), nên độ phức tạp là \(O(20^2n\cdot 10)\).
+
+Cách tốt hơn là xét từng lá làm điểm xuất phát. Nếu lấy một lá làm gốc, toàn bộ
+xâu từ lá đó tới các lá khác có thể hiểu là duyệt qua cả cây một lần. Vì vậy
+tổng độ dài xâu khi cố định một lá làm gốc là \(O(n)\). Độ phức tạp trở thành
+\(O(20n\cdot 10)\).
+
+\subsection{Border Tree}
+
+Mục này giới thiệu cấu trúc dữ liệu Border Tree. Cấu trúc này dựa trên KMP
+automaton và xử lý hiệu quả một lớp bài toán khớp một xâu mẫu.
+
+Xét xâu mẫu \(b\) độ dài \(m\). Nếu xây KMP automaton cho \(b\), chiều sâu của
+cây trong automaton có thể đạt \(O(m)\). Border Tree là một biến thể của cây đó:
+nó gộp một số tiền tố cùng loại, làm chiều sâu giảm xuống \(O(\log m)\). Nói
+cách khác, mỗi đỉnh của Border Tree không còn biểu diễn một tiền tố duy nhất mà
+biểu diễn một nhóm tiền tố; nhóm đó gọi là \emph{Border Group}.
+
+\subsubsection{Border Group}
+
+Số Border của \(b[1:i]\) có thể đạt \(O(i)\), chẳng hạn \(b[1:i]=11\ldots1\).
+Ta cần nén lượng thông tin này. Ý tưởng cơ bản là phân loại Border sao cho số
+loại Border của \(b[1:i]\) chỉ còn \(O(\log i)\).
+
+\paragraph{Định nghĩa 5.1 (Border Group).}
+Các Border của \(b[1:i]\) được chia thành một dãy
+\[
+  g=[B_1,B_2,\ldots,B_{|g|}],\qquad 1\le |g|\le O(\log i).
+\]
+Mỗi \(B_j\) là một dãy các Border, và mọi Border trong \(B_j\) dài hơn mọi
+Border trong \(B_{j+1}\).
+
+Mỗi \(B_j\) có một trong hai dạng:
+\[
+  [x]\quad (k_j=2),
+\]
+hoặc
+\[
+  [x^k r,\ x^{k-1}r,\ \ldots,\ xr]\quad (k_j>1),
+\]
+trong đó \(x^kr\) là một Border của \(b[1:i]\), còn \(r\) là một tiền tố của
+\(x\). Ta gọi mỗi \(B_j\) là một Border Group, và \(g\) là dãy BG.
+
+\paragraph{Ví dụ 8.}
+Cho
+\[
+  b=\texttt{bababbababcbababbabab}.
+\]
+Các Border là
+\[
+  [\texttt{bababbabab},\ \texttt{babab},\ \texttt{bab},\ \texttt{b}].
+\]
+Có thể chia chúng thành ba nhóm:
+\[
+  [\texttt{bababbabab}],\quad
+  [\texttt{babab},\ \texttt{bab}],\quad
+  [\texttt{b}].
+\]
+Nhóm thứ nhất có thể viết với \(r=\texttt{babab},x=\varepsilon\); nhóm thứ hai
+với \(r=\texttt{ab},x=\texttt{b}\); nhóm thứ ba với \(r=\texttt{b},x=\varepsilon\).
+
+Dãy BG được xây theo ý tưởng: dùng Border Group để phân phối mọi Border vào các
+dãy khác nhau; trong cùng một Border Group, các Border có cùng \(x\) và \(r\).
+Quy trình:
+\begin{enumerate}
+  \item Lấy \(a=\mathrm{LBorder}_i\), phân tích \(a=x^kr\), rồi đưa
+  \(x^kr,x^{k-1}r,\ldots,xr\) vào \(B_1\).
+  \item Đặt \(s=xr\). Nếu \(s\) là xâu tuần hoàn thì lấy LBorder của \(s\) làm
+  phần tử đầu của \(B_2\); nếu không thì lấy chính \(s\) làm phần tử đầu của
+  \(B_2\).
+  \item Lặp lại cho đến khi cả \(x\) và LBorder đều rỗng.
+\end{enumerate}
+
+Cách xây này bảo đảm \(1\le |g|\le O(\log m)\). Lý do là ở bước 2, nếu \(s\)
+tuần hoàn thì \(s\) là phần tử đầu của Border Group kế tiếp. Theo định nghĩa,
+\(|r|<|x|\), nên \(|s|<\frac{k+1}{k}|x|\); trường hợp lớn nhất khi \(k=2\), do
+đó với mọi \(k\) đều có \(|s|<\frac32|x|\). Nếu \(s\) không tuần hoàn, phần tử
+đầu của nhóm kế tiếp là \(\mathrm{LBorder}(s)\). Theo định nghĩa LBorder,
+\[
+  2|\mathrm{LBorder}(s)|<|s|.
+\]
+Vì \(|s|=|xr|\), độ dài phần tử đầu giảm theo hằng số, nên số nhóm là
+\(O(\log m)\).
+
+\subsubsection{Xây Border Tree}
+
+Để xây Border Tree, trước hết xây KMP automaton, sau đó chuyển cây trong
+automaton thành Border Tree.
+
+Với mỗi đỉnh \(i\) của KMP automaton, định nghĩa bộ ba \((x_i,y_i,z_i)\):
+\begin{enumerate}
+  \item Nếu \(b[1:i]\) là xâu tuần hoàn và \(b[1:i]=x^kr\) với \(k>1\), đặt
+  \((x_i,y_i,z_i)=(|r|,|x|,k)\).
+  \item Nếu \(b[1:i]\) không tuần hoàn và \(b[1:i]=xr\), đặt
+  \((x_i,y_i,z_i)=(|r|,|x|,1)\).
+  \item Nếu \(b[1:i]\) không tuần hoàn nhưng có đúng một con \(j\) thỏa
+  \(z_j=2\), đặt \((x_i,y_i,z_i)=(x_j,y_j,1)\).
+\end{enumerate}
+
+Trong trường hợp 3, định lý sau bảo đảm nhiều nhất chỉ có một con \(j\) thỏa
+\(z_j=2\).
+
+\paragraph{Định lý 5.1.}
+Mỗi xâu không tuần hoàn \(s=b[1:i]\) không thể có từ hai con trở lên là xâu tuần
+hoàn.
+
+\paragraph{Chứng minh.}
+Giả sử ngược lại \(s\) có ít nhất hai con là xâu tuần hoàn. Khi đó dựa trên hai
+con tuần hoàn đó, có thể biểu diễn
+\[
+  s=x^kr=y^\ell t,
+\]
+với \(|x|<|y|\) và \(|y|\bmod |x|\ne 0\). Nếu \(|y|\bmod |x|=0\), thì \(s\)
+cũng có dạng tuần hoàn, mâu thuẫn giả thiết.
+
+Đặt \(d=\gcd(|x|,|y|)\). Khi đó \(s\) có một cách biểu diễn với chu kỳ độ dài
+\(d\). Điều này dẫn đến \(|x|\bmod d=0\), mâu thuẫn với điều kiện đã chọn. Vậy
+giả thiết sai.
+
+Bộ ba \((x_i,y_i,z_i)\) có thể tính trong thời gian tuyến tính bằng hai lượt
+duyệt:
+\begin{enumerate}
+  \item Lượt duyệt thứ nhất xử lý các đỉnh thuộc trường hợp 1 và 2 theo định
+  nghĩa Border Group:
+  \[
+    x_i=|r|,\qquad y_i=|x|,\qquad z_i=\left\lfloor\frac{i}{|x|}\right\rfloor.
+  \]
+  \item Lượt duyệt thứ hai xử lý trường hợp 3 và cập nhật \((x_i,y_i,z_i)\).
+\end{enumerate}
+
+Trường hợp 3 có ý nghĩa duy trì Border Group dạng \(x^kr\). Ví dụ, với
+\[
+  b=\texttt{abaaba},
+\]
+ban đầu \((x_3,y_3,z_3)=(1,2,1)\), nhưng vì
+\((x_6,y_6,z_6)=(0,3,2)\), nên \((x_3,y_3,z_3)\) được đổi thành
+\((0,3,1)\).
+
+Sau khi mỗi đỉnh trong KMP automaton có một bộ ba, ta sửa cây của automaton để
+xây Border Tree. Những đỉnh có cùng \(x,y\) thuộc cùng một loại theo định nghĩa
+Border Group; chỉ giữ lại đỉnh có \(z\) nhỏ nhất và ghi thông tin của các đỉnh
+còn lại vào đó. Chẳng hạn nếu trong một loại có đỉnh biểu diễn \(r\) thì giữ
+đỉnh đó, nếu không thì giữ đỉnh biểu diễn \(xr\). Cuối cùng duyệt thêm một lần
+để thu được Border Tree.
+
+\subsubsection{Phân tích tính chất}
+
+Mỗi đỉnh \(i\) trong Border Tree tương ứng với một Border Group, có thể viết
+dưới dạng
+\[
+  [x_i^{z_i}r_i,\ x_i^{z_i-1}r_i,\ldots,x_ir_i].
+\]
+
+Tuy nhiên, với một đỉnh \(i\), các Border Group trên đường từ gốc tới \(i\)
+không nhất thiết biểu diễn chính xác mọi Border của \(b[1:i]\). Có thể có nhóm
+chứa cả những xâu không phải Border thật của \(b[1:i]\). Do đó khi cần tìm mọi
+Border của \(b[1:i]\), ta phải duy trì thêm một cận độ dài \(x\) trong quá trình
+duyệt lên tổ tiên để lọc các phần tử hợp lệ.
+
+Ký hiệu \(\mathrm{fa}[i]\) là cha của \(i\) trong Border Tree. Trong Border
+Group của \(\mathrm{fa}[i]\), các Border thật của \(b[1:i]\) có dạng
+\[
+  x_j^tr_j
+\]
+với số mũ \(t\) nằm trong một đoạn liên tiếp; biên trên của đoạn được lấy từ bộ
+ba tương ứng với \(\mathrm{next}[i]\) trong KMP automaton. Vì vậy khi duyệt các
+Border Group trên đường đi, ta chỉ cần cập nhật cận này.
+
+\subsubsection{Ví dụ}
+
+Cho
+\[
+  b=\texttt{babababcbabab},
+\]
+độ dài \(13\). Trong bản gốc, Hình 1 là cây của KMP automaton và Hình 2 là
+Border Tree tương ứng. Cây ban đầu có \(14\) đỉnh, chiều sâu \(5\). Sau khi phân
+loại Border và xây Border Tree, cây còn \(10\) đỉnh, chiều sâu \(3\). Các đỉnh
+hình vuông trong cây KMP automaton được co lại khi xây Border Tree.
+
+Bảng trong bản gốc so sánh trạng thái của từng đỉnh trong KMP automaton với bộ
+ba \((x_i,y_i,z_i)\) của Border Tree. Ý nghĩa chính là: các đỉnh biểu diễn các
+Border cùng dạng \(x^zr\) được gộp theo cùng \(x,y\), chỉ giữ thông tin cần
+thiết để khi truy vấn có thể sinh lại các Border hợp lệ.
+
+\subsection{Một lớp bài toán khớp văn bản}
+
+Như đã biết, khớp xâu văn bản động với xâu mẫu tĩnh là một bài toán kinh điển.
+Mục này đưa ra một cách giải tổng quát hiệu quả dựa trên Border Tree. Nội dung
+về Border Tree đã được trình bày ở mục trước.
+
+\subsubsection{Các bài toán con}
+
+Xét xâu mẫu \(b\) độ dài \(m\). Trước khi xử lý lớp bài toán này, cần giải ba
+bài toán con trên \(b\):
+\begin{enumerate}
+  \item \textbf{LCP.} Trên \(b\), cho hai xâu con, hỏi độ dài tiền tố chung dài
+  nhất. Cách giải xem ở Ví dụ 4. Tiền xử lý \(O(m\log m)\), mỗi truy vấn
+  \(O(1)\).
+  \item \textbf{Ghép xâu con.} Trên \(b\), cho hai xâu con \(b'\) và \(b''\),
+  đặt \(s=b'b''\), hỏi \(s\) có phải xâu con của \(b\) hay không; nếu có, đưa
+  ra một vị trí hợp lệ. Cách giải xem ở Ví dụ 5. Tiền xử lý \(O(m\log m)\), mỗi
+  truy vấn \(O(\log m)\).
+  \item \textbf{Tiền tố lớn nhất trên đoạn.} Trên \(b\), cho một đoạn
+  \([l,r]\), tính
+  \[
+    \max_{l\le i\le r}\mathrm{LCP}(\mathrm{suf}[i],b).
+  \]
+  Cách giải xem ở Ví dụ 6. Tiền xử lý \(O(m\log m)\), mỗi truy vấn \(O(1)\).
+  Nếu còn cần đếm số vị trí đạt cực đại, mỗi truy vấn mất \(O(\log m)\).
+\end{enumerate}
+
+\subsubsection{Chuyển đổi mô hình}
+
+Trước hết đơn giản hóa bài toán khớp văn bản động với mẫu tĩnh thành bài toán
+cơ sở: cho xâu văn bản \(a\) và xâu mẫu \(b\), sau mỗi lần sửa \(a\), cần khớp
+\(a\) với \(b\). Thao tác sửa có thể là đổi một ký tự, chèn một ký tự hoặc xóa
+một ký tự trong \(a\).
+
+Chuyển bài toán khớp \(a\) với \(b\) thành tính hàm sau. Định nghĩa
+\[
+  F(a,b)=(x,y),
+\]
+trong đó
+\[
+  x=\max_{1\le i\le |a|}\mathrm{LCP}(a[i:|a|],b),
+\]
+còn \(y\) là số vị trí \(i\) đạt giá trị lớn nhất đó. Bài toán trở thành: khi
+\(a\) thay đổi động và \(b\) tĩnh, duy trì \(F(a,b)\). Trong phần sau, \(a\) là
+xâu văn bản và \(b\) là xâu mẫu.
+
+\subsubsection{Phủ}
+
+Mục này đưa ra khái niệm \emph{phủ}. Giả sử xâu mẫu \(b\) có độ dài \(m\), xâu
+văn bản \(a\) có độ dài \(n\). Ý tưởng cơ bản là dùng các xâu con của \(b\) để
+phủ chính xác \(a\).
+
+\paragraph{Định nghĩa 6.1.}
+Một phủ \(S\) của \(a\) theo \(b\) là một dãy xâu
+\[
+  [v_1,v_2,\ldots,v_t],
+\]
+trong đó mỗi \(v_i\) là một phần tử phủ, thỏa:
+\[
+  v_1v_2\cdots v_t=a,
+\]
+và với mọi \(1\le i\le t\):
+\begin{itemize}
+  \item \emph{tính chất xâu con}: \(v_i\) là xâu con của \(b\);
+  \item \emph{tính chất cực đại}: nếu \(i<t\), thì \(v_iv_{i+1}\) không phải xâu
+  con của \(b\).
+\end{itemize}
+Đặc biệt, nếu một ký tự của \(a\) không xuất hiện trong \(b\), ta cũng xem ký tự
+đó là một \(v_i\), nhưng trong \(b\) nó tương ứng với xâu rỗng.
+
+Một xâu có thể có nhiều cách phủ hợp lệ; khi cài đặt chỉ cần chọn một cách bất
+kỳ. Có thể hiểu đơn giản là dãy \(v_i\) chia \(a\) thành các khối nhỏ. Với mỗi
+\(v_i\), dùng bộ ba \((s_i,l_i,r_i)\) để biểu diễn:
+\begin{itemize}
+  \item nếu \(v_i\) tương ứng với xâu con của \(b\), thì
+  \(v_i=b[l_i:r_i]\);
+  \item nếu \(v_i\) là ký tự không xuất hiện trong \(b\), đặt \(l_i=r_i=0\);
+  \item \(s_i\) là vị trí của \(v_i\) trong \(a\), tức
+  \(s_i=1+\sum_{j<i}|v_j|\).
+\end{itemize}
+
+Khởi tạo phủ \(S\) như sau:
+\begin{enumerate}
+  \item Tạo mảng \(c\) theo bảng chữ cái. Với ký tự \(i\), nếu nó xuất hiện ở vị
+  trí \(x\) trong \(b\), đặt \(c_i=x\), nếu không đặt \(c_i=0\).
+  \item Duyệt từng ký tự \(a_i\). Nếu \(c_{a_i}=0\), ký tự đó không xuất hiện
+  trong \(b\); nếu không, tạo \(v_i=(i,c_{a_i},c_{a_i})\).
+  \item Cách dựng này chưa thỏa tính chất cực đại. Duyệt theo thứ tự tăng của
+  \(s_i\), lần lượt kiểm tra \(v_iv_{i+1}\) có phải xâu con của \(b\) hay không;
+  nếu có thì gộp, nếu không thì giữ nguyên. Phép kiểm tra dùng bài toán con 2.
+\end{enumerate}
+
+Sau khi có phủ ban đầu, xét cách duy trì động. Dưới đây chỉ mô tả thao tác đổi
+một ký tự; chèn và xóa tương tự. Khi đổi vị trí \(x\) thành ký tự \(y\):
+\begin{enumerate}
+  \item Tìm phần tử \(v_i\) đang phủ vị trí \(x\). Vì phủ là chính xác, phần tử
+  này là duy nhất.
+  \item Tách \(v_i\) thành ba phần trái, giữa, phải:
+  \[
+  \begin{aligned}
+    v_l&=(s_i,l_i,l_i+x-s_i-1),\\
+    v_m&=(x,0,0),\\
+    v_r&=(x+1,l_i+x+1-s_i,r_i).
+  \end{aligned}
+  \]
+  Phần giữa đúng là vị trí \(x\). Theo ký tự mới, đặt nó thành phần tử tương
+  ứng với \(y\), rồi xóa các phần có độ dài \(0\) trong \(a\).
+  \item Do tính chất cực đại, sau khi tách chỉ các phần kề \(v_l\) và \(v_r\)
+  mới có khả năng thay đổi; đưa chúng vào danh sách cần xét.
+  \item Lúc này chỉ có hằng số phần tử có thể chưa cực đại. Duyệt theo thứ tự
+  tăng của \(s_i\), dùng bài toán con 2 để kiểm tra hai phần kề nhau có gộp được
+  không, từ đó tái dựng các phần tử cho thỏa tính chất cực đại.
+\end{enumerate}
+
+\paragraph{Ví dụ 10.}
+Cho
+\[
+  a=\texttt{cbabbabbbacb},\qquad b=\texttt{abbacb}.
+\]
+Phủ ban đầu là
+\[
+  [\texttt{cb},\ \texttt{abba},\ \texttt{bb},\ \texttt{bacb}].
+\]
+Nếu đổi ký tự thứ \(4\) của \(a\) thành \(\texttt{c}\), phần tử phủ vị trí này
+là \(\texttt{abba}\). Tách nó thành \(\texttt{a}\), \(\texttt{b}\),
+\(\texttt{ba}\), đổi phần giữa thành \(\texttt{c}\), rồi gộp được
+\(\texttt{a}\) với \(\texttt{c}\). Phủ mới là
+\[
+  [\texttt{cb},\ \texttt{ac},\ \texttt{ba},\ \texttt{bb},\ \texttt{bacb}],
+\]
+thỏa định nghĩa.
+
+\paragraph{Phân tích độ phức tạp.}
+Bài toán con 2 cần tiền xử lý \(O(m\log m)\), mỗi truy vấn \(O(\log m)\). Khi
+khởi tạo, ta thực hiện \(O(n)\) lần kiểm tra kiểu bài toán con 2, nên tốn
+\(O(n\log m)\). Với \(q\) lần sửa, mỗi lần duy trì phủ chỉ cần hằng số lần kiểm
+tra, tốn \(O(q\log m)\).
+
+Cần một cấu trúc dữ liệu hỗ trợ chèn, xóa, tìm tiền nhiệm, hậu nhiệm và tìm vị
+trí đầu tiên có chỉ số không nhỏ hơn một giá trị cho trước. Nếu dùng cây tìm
+kiếm nhị phân để duy trì phủ \(S\), mỗi thao tác tốn \(O(\log n)\). Vì mỗi lần
+sửa chỉ thực hiện hằng số thao tác trên cây, thời gian duy trì phủ là
+\[
+  O(q\log n+q\log m).
+\]
+Kết hợp lại, bài toán duy trì phủ giải được trong
+\[
+  O((n+m+q)\log m+q\log n).
+\]
+Nếu ghi trực tiếp \(s_i\) làm chỉ số, có thể dùng cây đoạn thay cây tìm kiếm
+nhị phân; độ phức tạp không đổi nhưng hằng số nhỏ hơn. Tốt hơn nữa, dùng van
+Emde Boas tree thay cây tìm kiếm nhị phân thì thao tác trên cấu trúc thứ tự có
+thể giảm xuống \(O(\log\log n)\).
+
+\subsubsection{Kỹ thuật tính toán}
+
+Mục trước đã cho cách duy trì phủ \(S\) hiệu quả. Mục này đơn giản hóa bài toán
+để giới thiệu kỹ thuật tính \(F(a,b)\) dựa trên Border Tree và phủ \(S\).
+
+\paragraph{Bài toán đơn giản hóa.}
+Bản chất của \(F(a,b)\) là biểu diễn giá trị lớn nhất của
+\[
+  \mathrm{LCP}(a[i:|a|],b)\qquad (1\le i\le |a|)
+\]
+và số vị trí đạt giá trị đó thành một cặp. Phủ \(S\) chia \(a\) thành các khối
+\(v_1,\ldots,v_t\), trong đó \(v_i=b[l_i:r_i]\) nếu nó xuất hiện trong \(b\).
+Với mỗi khối, đặt \(w_i\) là cặp gồm giá trị lớn nhất và số lần đạt giá trị lớn
+nhất của
+\[
+  \mathrm{LCP}(v_i[j:|v_i|]\cdot v_{i+1}\cdots v_t,b)
+\]
+trên các vị trí \(j\) trong \(v_i\). Khi đã biết các \(w_i\), ta gộp chúng để
+thu được \(F(a,b)\).
+
+Do tính chất cực đại của phủ, giá trị \(w_i\) không đổi nếu phần đuôi
+\(v_{i+1}\cdots v_t\) được rút gọn theo cùng thông tin biên cần thiết. Mục trước
+đã cho cách tìm tiền nhiệm và hậu nhiệm của một phần tử phủ trong \(O(\log n)\),
+nên mỗi lần cần tính \(w_i\), ta chỉ mất \(O(\log n)\) để tìm các phần tử kề.
+
+Vì vậy bài toán tính \(F(a,b)\) được rút về tính từng \(w_i\). Với \(w_i\), ta
+xét xâu
+\[
+  s=s_1s_2s_3,
+\]
+trong đó \(s_1\) là một xâu con của \(b\), còn \(s_2s_3\) là phần được ghép từ
+các phần tử kế tiếp. Cần gộp giá trị lớn nhất và số lần đạt của
+\[
+  \mathrm{LCP}(s[i:|s|],b)\qquad (1\le i\le |s_1|).
+\]
+
+\paragraph{Bài toán mới.}
+Đặt \(s=s_1s'\) và \(s_1=b[L:R]\). Cần tính giá trị lớn nhất
+\(\mathrm{Max}\) và số lần đạt \(\mathrm{Num}\) của
+\[
+  \mathrm{LCP}(s[i:|s|],b)\qquad (1\le i\le |s_1|).
+\]
+Với mỗi \(i\), đặt
+\[
+  j=i+\mathrm{LCP}(s[i:|s|],b)-1.
+\]
+Khi đó \(s[i:j]\) là một tiền tố của \(b\). Nếu \(s_1\) chỉ là một ký tự và ký
+tự đó không xuất hiện trong \(b\), thì \(\mathrm{Max}=0,\mathrm{Num}=1\).
+Trường hợp còn lại chia theo \(j<|s_1|\) và \(j\ge |s_1|\).
+
+\paragraph{Trường hợp 1: \(j<|s_1|\).}
+Khi \(j<|s_1|\), bài toán chuyển thành
+\[
+  \max \mathrm{LCP}(s_1[i:|s_1|],b).
+\]
+Vì \(s_1=b[L:R]\), các hậu tố \(s_1[i:|s_1|]\) tương ứng với đoạn con trong
+\(b\). Nếu không có ràng buộc \(j<|s_1|\), ta có thể dùng trực tiếp bài toán con
+3. Ràng buộc này yêu cầu vị trí khớp xa nhất trong \(b\) phải nằm nghiêm ngặt
+trước \(R\).
+
+Cách đơn giản là khi tính bài toán con 3, chỉ xét các hậu tố có vị trí khớp xa
+nhất trong \(b\) nhỏ hơn \(R\). Xét mọi Border của \(b[L:R]\), tìm \(x\) lớn
+nhất sao cho \(b[1:x]\) là Border của \(b[L:R]\) và
+\[
+  0<x<R-L+1.
+\]
+Khi đó chỉ cần làm bài toán con 3 trên đoạn \([L,R-x]\); đoạn còn lại
+\([R-x+1,R]\) cho đáp án nhỏ hơn \(x\) nên có thể bỏ qua.
+
+Để tối đa hóa \(x\), có thể xây KMP automaton rồi từ đỉnh \(R\) nhảy lên gốc
+bằng nhân đôi. Cũng có thể dùng Border Tree: vì chiều sâu Border Tree là
+\(O(\log m)\), duyệt trực tiếp các Border Group trên đường lên gốc vẫn bảo đảm
+độ phức tạp.
+
+\paragraph{Ví dụ 11.}
+Cho
+\[
+  a=\texttt{babaca},\qquad b=\texttt{abcabacabc}.
+\]
+Phủ hiện tại là
+\[
+  [\texttt{b},\ \texttt{abaca}],
+\]
+trong đó \(v_1=\texttt{b}\), \(v_2=\texttt{abaca}\), và \(v_2\) tương ứng với bộ
+ba \((2,4,8)\) trong \(b\). Khi cần tính \(w_2\), ta có
+\(\mathrm{LCP}(v_2,b)=2\), tiền tố tương ứng là \(\texttt{ab}\), thuộc trường
+hợp 1.
+
+Xét đoạn \([4,8]\) trong \(b\). Nếu trực tiếp làm bài toán con 3 trên
+\([4,8]\), đáp án sai sẽ là \(3\), ứng với tiền tố \(\texttt{abc}\) và đoạn
+khớp \([8,10]\). Cần tìm \(x\) như trên; ở ví dụ này \(x=1\). Làm bài toán con
+3 trên \([4,8-x]\) thu được đáp án \(2\), tiền tố \(\texttt{ab}\), đoạn khớp
+\([3,5]\), vị trí xa nhất nhỏ hơn \(8\). Vì vậy với \(w_2\),
+\[
+  \mathrm{Max}=2,\qquad \mathrm{Num}=1.
+\]
+
+\paragraph{Trường hợp 2: \(j\ge |s_1|\).}
+Vì \(s_1\) là xâu con của \(b\), tìm một đoạn \([L,R]\) sao cho
+\[
+  s_1=b[L:R].
+\]
+Nếu \(j\ge |s_1|\), thì phần khớp vượt qua cuối \(s_1\), nên
+\[
+  s_1[i:|s_1|]
+\]
+phải là một Border của \(b[L:R]\). Một cách vét cạn là xây KMP automaton, duyệt
+mọi Border của \(b[L:R]\). Với mỗi Border có độ dài hợp lệ, ghép Border đó với
+phần \(s'\) ở sau để được xâu mới rồi tính LCP với \(b\). Vì xâu mới được ghép
+từ ba xâu con của \(b\), chỉ cần dùng hằng số lần bài toán con 1 để tính được
+giá trị; khi đó \(\mathrm{Num}=1\).
+
+Nhược điểm là chiều sâu KMP automaton có thể đạt \(O(m)\), nên vét cạn mỗi lần
+có thể tốn \(O(m)\). Dùng Border Tree để tối ưu: nếu xử lý được cả một Border
+Group trong \(O(1)\), độ phức tạp mỗi lần chỉ còn \(O(\log m)\).
+
+Xét một Border Group có dạng
+\[
+  [x^kr,\ x^{k-1}r,\ldots,xr].
+\]
+Bản chất của chuyển đổi là thay vì xét từng Border trong KMP automaton, ta xét
+cả nhóm Border có cùng tính chất. Nếu Border Group đặc biệt có \(r\) rỗng, ta
+xem \(x^0r\) là xâu rỗng và xử lý riêng Border rỗng; phần còn lại của nhóm vẫn
+có cùng dạng.
+
+Gọi phần sau \(s'\) là xâu cần ghép sau Border. Có hai loại chính:
+\begin{enumerate}
+  \item Nếu \(s'\) là xâu tuần hoàn có độ dài chu kỳ \(|x|\), đặt
+  \[
+    \mathrm{len}=\mathrm{LCP}(s',b[|x|+1:|b|]).
+  \]
+  Với một Border trong nhóm, độ dài khớp nhận được có dạng
+  \[
+    \min\{|b|,\ |x^tr|+\mathrm{len}\}.
+  \]
+  Trực giác là khi LCP còn nằm trong phần tuần hoàn của \(b\), các Border trong
+  cùng nhóm chỉ khác số lần lặp \(x\), còn phần ghép sau đóng góp cùng một
+  \(\mathrm{len}\). Nếu độ dài khớp lớn nhất đạt \(|b|\), thì \(\mathrm{Max}=|b|\)
+  và \(\mathrm{Num}\) là số giá trị \(t\) hợp lệ; nếu không, \(\mathrm{Max}\) là
+  độ dài khớp lớn nhất và \(\mathrm{Num}=1\).
+  \item Nếu không thuộc loại trên, tồn tại vị trí sai khác đầu tiên \(q\). Từ
+  thông tin Border Group và một số phép tính LCP, ta xác định được Border nào
+  cho khớp dài nhất. Việc phân tích chia thành các trường hợp theo vị trí của
+  \(q\) trong khối tuần hoàn; mỗi trường hợp hoặc trả lời trực tiếp, hoặc rút
+  về loại 1 trên một đoạn ngắn hơn.
+\end{enumerate}
+
+\paragraph{Ví dụ 12.}
+Cho
+\[
+  b=\texttt{ababababa},\quad s_1=\texttt{ababab},\quad
+  s_2=\texttt{ab},\quad s_3=\texttt{ba}.
+\]
+Khi đó \(s'=\texttt{abba}\). Vì \(s_1\) là xâu con của \(b\), có thể chọn
+\([L,R]=[3,8]\). Trong KMP automaton, các Border của \(b[1:8]\) có độ dài hợp
+lệ là
+\[
+  \texttt{ababab},\quad \texttt{abab},\quad \texttt{ab}.
+\]
+Ghép chúng với \(s'\) lần lượt cho các độ dài khớp \(8,6,4\), nên
+\(\mathrm{Max}=8,\mathrm{Num}=1\).
+
+Trong Border Tree, mọi Border của \(b[1:8]\) thuộc cùng một Border Group, có bộ
+ba \((0,2,4)\). Vì \(b\) là xâu tuần hoàn với chu kỳ \(2\), đây là loại 1. Nhóm
+gồm ba Border \(\texttt{ababab},\texttt{abab},\texttt{ab}\). Từ Border
+\(\texttt{ab}\), tính vét cạn được độ dài khớp cơ sở và \(\mathrm{len}=2\);
+công thức trên cho ngay độ dài \(8,6\) của hai Border còn lại.
+
+\paragraph{Ví dụ 13.}
+Cho
+\[
+  b=\texttt{ababababacde},\quad s_1=\texttt{ababab},\quad
+  s_2=\texttt{ababac},\quad s_3=\texttt{de}.
+\]
+Khi đó \(s'=\texttt{ababacde}\), và có thể chọn \([L,R]=[3,8]\). Trong Border
+Tree, mọi Border của \(b[1:8]\) cũng thuộc Border Group có bộ ba \((0,2,4)\),
+nhưng \(b\) không còn là xâu tuần hoàn hoàn toàn, nên thuộc loại 2. Nhóm có ba
+Border:
+\[
+  \texttt{ababab},\quad \texttt{abab},\quad \texttt{ab}.
+\]
+Tính theo các đại lượng trong phân tích loại 2 cho thấy Border
+\(\texttt{abab}\) cho giá trị tốt nhất, vì vậy
+\[
+  \mathrm{Max}=12,\qquad \mathrm{Num}=1.
+\]
+
+\paragraph{Phân tích độ phức tạp.}
+Theo phân tích của hai trường hợp trên, nếu dùng Border Tree, số Border Group
+cần duyệt là \(O(\log m)\). Mỗi Border Group được xử lý bằng cách phân loại và
+chuyển đổi cụ thể, về mặt độ phức tạp tương đương hằng số lần gọi bài toán con
+1. Vì bài toán con 1 trả lời \(O(1)\), tính một \(w_i\) tốn \(O(\log m)\).
+
+Kết hợp với phân tích duy trì phủ, bài toán khớp văn bản động \(a\) với mẫu tĩnh
+\(b\), tức duy trì \(F(a,b)\), giải được trong
+\[
+  O((n+m+q)\log m+q\log n).
+\]
+
+\subsubsection{Ví dụ}
+
+\paragraph{Ví dụ 14 (kiểm tra lẫn nhau đội tuyển 2015, \emph{Sone2}).}
+Cho xâu chính \(a\) độ dài \(n\) và xâu mẫu \(b\) độ dài \(m\). Có \(q\) thao
+tác thuộc bốn loại:
+\begin{enumerate}
+  \item sửa một vị trí của \(a\), rồi hỏi \(F(a,b)\);
+  \item chọn một đoạn \([L,R]\) của \(a\), hỏi \(F(a[L:R],b)\);
+  \item bài toán con 1;
+  \item bài toán con 2.
+\end{enumerate}
+Dữ liệu:
+\[
+  1<n,m,q,\Sigma<100000.
+\]
+Giới hạn thời gian là \(2\) giây.
+
+Trong bài này, ngoài thao tác loại 2, các phép tính khác đã được nêu ở trên. Với
+loại 2, ý tưởng đơn giản là duy trì phủ \(S'\) của xâu \(a[L:R]\) rồi tính trên
+đó. Vì \(a[L:R]\) là xâu con của \(a\), bỏ hai phần tử đầu và cuối có thể bị cắt
+ra thì phần còn lại của \(S'\) là một dãy con liên tiếp của phủ \(S\). Do đó với
+loại 2 chỉ cần xử lý riêng hai phần tử đầu cuối, còn phần giữa lấy trực tiếp từ
+\(S\) bằng cấu trúc dữ liệu. Nhờ vậy có thể dựng \(S'\) trong
+\[
+  O(\log n+\log m)
+\]
+cho mỗi truy vấn. Nếu đồng thời duy trì các giá trị \(w_i\), có thể tính ngay
+đáp án từ \(S'\). Tổng độ phức tạp vẫn là
+\[
+  O((n+m+q)\log m+q\log n).
+\]
+
+Bài này còn có một phần điểm trong đó xâu mẫu là ngẫu nhiên. Khi \(b\) ngẫu
+nhiên, chiều sâu của KMP automaton dựng trên \(b\) là \(O(\log m)\). Vì thế ở
+dữ liệu này không cần dùng Border Tree; có thể dùng trực tiếp KMP automaton thay
+thế. Độ phức tạp tiệm cận không giảm, nhưng độ khó cài đặt giảm đáng kể.
+
+Có thể tăng cường bài toán như sau. Cho một cây \(n\) đỉnh, mỗi đỉnh có một ký
+tự. Với một đường đi trên cây, ghép ký tự các đỉnh theo thứ tự để được xâu
+\(a\). Cho thêm xâu mẫu \(b\) độ dài \(m\). Mỗi thao tác đổi ký tự của một đỉnh
+trên cây và hỏi \(F(a,b)\) cho một đường đi. Tăng cường hơn nữa, cây có thể trở
+thành cây động.
+
+Cách giải là dùng Link-Cut Tree để duy trì phủ \(S\). Trong mỗi splay, duy trì
+phủ \(S'\) của xâu tạo bởi heavy path tương ứng. Mỗi thao tác \texttt{access}
+ghép hoặc tách các splay, chỉ làm tái dựng hằng số phần tử \(v_i\) và \(w_i\).
+Vì vậy bài toán trên cây có thể giải trong
+\[
+  O((n+m)\log m+q\log n\log m).
+\]
+
+\subsection{Lời cảm ơn}
+
+Xin cảm ơn Hiệp hội Máy tính Trung Quốc đã cung cấp nền tảng học tập và giao
+lưu.
+
+Xin cảm ơn các thầy Chen Heli, Dong Yehua, You Guanghui và Shao Hongxiang của
+Trường Trung học số 1 Thiệu Hưng đã nhiều năm quan tâm và hướng dẫn tôi.
+
+Xin cảm ơn các huấn luyện viên đội tuyển quốc gia Yu Linyun và Chen Xuji đã chỉ
+dẫn.
+
+Xin cảm ơn các anh Yu Yili, Dong Anhua và He Qizheng của Đại học Thanh Hoa đã
+giúp đỡ tôi.
+
+Xin cảm ơn các bạn Zhang Hengjie, Ren Zhizhou và Jia Yuekai của Trường Trung học
+số 1 Thiệu Hưng đã giúp đỡ và gợi mở cho tôi.
+
+Xin cảm ơn các bạn Yang Jiacheng, Guo Yu, Shao Jiechang, Weng Tiandong, Tao
+Yuanzheng, Hong Huadun và các bạn khác ở Trường Trung học số 1 Thiệu Hưng đã
+giúp đỡ và gợi mở cho tôi.
+
+Xin cảm ơn bạn Jia Yuekai của Trường Trung học số 1 Thiệu Hưng đã đọc duyệt bài
+viết này.
+
+Xin cảm ơn các thầy cô và bạn học khác từng giúp đỡ, gợi ý cho tôi.
+
+Xin cảm ơn cha mẹ đã quan tâm và chăm sóc tôi.
+
+\subsection*{Tài liệu tham khảo của bài viết}
+
+\begin{enumerate}[label={[\arabic*]},leftmargin=3em]
+  \item Wikipedia, Suffix array.
+  \item Zhu Zeyuan, \emph{Thuật toán khớp nhiều xâu và những gợi mở của nó}.
+  \item Yang Yu, \emph{Một lớp ứng dụng của hashing trong thi tin học}.
+  \item Luo Suiqian, \emph{Suffix array: công cụ mạnh để xử lý chuỗi}.
+  \item Dong Huaxing, \emph{Bàn về ứng dụng trie trong thi tin học}.
+  \item Chen Lijie, \emph{Suffix Automaton}.
+  \item Wang Yuetong, Xu Duo and Xu Zihan, \emph{Suffix Cactus}.
+  \item Amihood Amir, Gad M. Landau, Moshe Lewenstein and Dina Sokol,
+  ``Dynamic Text and Static Pattern Matching''.
+  \item Mokhtar S. Bazaraa, John J. Jarvis and Hanif D. Sherali,
+  \emph{Linear Programming and Network Flows}, 4th ed., John Wiley \& Sons.
+  \item Liu Rujia and Huang Liang, \emph{Nghệ thuật thuật toán và thi tin học},
+  Tsinghua University Press.
+  \item Liu Rujia, \emph{Nhập môn kinh điển về thi thuật toán}, Tsinghua
+  University Press.
 \end{enumerate}
 
 \end{document}

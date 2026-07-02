@@ -20,18 +20,21 @@ PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc n
 bìa và mục lục có lớp văn bản đọc được, nhưng ngay từ bài đầu tiên phần thân
 đã bị lỗi ánh xạ phông chữ và trích xuất thành mojibake. Bản dịch này chuyển
 ngữ các thông tin đầu sách, mục lục, bài đầu tiên của Ren Zhizhou về một số
-phương pháp tính tổng hàm nhân tính, và bài thứ hai của Jiang Zhihao về một số
-phương pháp mô hình hóa bằng luồng mạng. Phần thân các bài được dựng từ OCR và
+phương pháp tính tổng hàm nhân tính, bài thứ hai của Jiang Zhihao về một số
+phương pháp mô hình hóa bằng luồng mạng, và bài thứ ba của Dong Kefan về quy
+hoạch tuyến tính cùng bài toán đối ngẫu. Phần thân các bài được dựng từ OCR và
 đối chiếu công thức với lớp văn bản PDF.
 \end{abstract}
 
 \section{Trạng thái và ghi chú trích xuất}
 
-Đã dịch hai bài đầu tiên trong tập luận văn. Bài 1 dùng trang vật lý 5--20 của
+Đã dịch ba bài đầu tiên trong tập luận văn. Bài 1 dùng trang vật lý 5--20 của
 PDF nguồn, tương ứng trang in 1--16. Bài 2 dùng trang vật lý 21--35, tương ứng
 trang in 17--31; trang vật lý 36, tương ứng trang in 32, là trang trắng ngăn
 cách trước bài kế tiếp. Bài 3 bắt đầu ở trang vật lý 37, tương ứng trang in
-33. Phần thân bài 2 có lớp văn bản bị mojibake, nên được OCR bằng
+33, và kết thúc ở trang vật lý 66, tương ứng trang in 62; bài kế tiếp bắt đầu
+ở trang in 63. Phần thân các bài 2 và 3 có lớp văn bản bị mojibake, nên được
+OCR bằng
 \texttt{pdftoppm} và \texttt{tesseract -l chi\_sim+eng}, rồi lọc nhiễu thủ
 công khi dựng bản dịch.
 
@@ -1513,5 +1516,1145 @@ và tinh tế hơn.
   hướng dẫn luyện tập}, Nhà xuất bản Đại học Thanh Hoa.
   \item PHVA, \emph{Ứng dụng mô hình cắt nhỏ nhất trong thi tin học}.
 \end{enumerate}
+
+\section*{Bài 3. Bàn sơ lược về quy hoạch tuyến tính và bài toán đối ngẫu}
+\addcontentsline{toc}{section}{Bài 3. Bàn sơ lược về quy hoạch tuyến tính và bài toán đối ngẫu}
+
+\begin{center}
+Dong Kefan, Trường Trung học số 1 Phúc Châu, Phúc Kiến
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Quy hoạch tuyến tính là một mô hình toán học quan trọng và có phạm vi ứng dụng
+rộng. Trong thi tin học, nhiều bài toán có thể được biểu diễn trực quan bằng
+quy hoạch tuyến tính. Bài viết này thảo luận tính chất của lớp bài toán đó từ
+góc nhìn quy hoạch tuyến tính, rồi dùng nguyên lý đối ngẫu của quy hoạch tuyến
+tính để chuyển hóa mô hình, qua đó giải bài toán hiệu quả hơn.
+
+\subsection*{1. Dẫn nhập}
+
+Trong thi tin học, các lời giải của một loạt bài toán quy hoạch tuyến tính mà
+đại diện là luồng mạng thường rất linh hoạt. Bài viết này biểu diễn những bài
+toán như vậy dưới dạng quy hoạch tuyến tính để hiểu chúng ở tầng sâu hơn, với
+hy vọng đem lại phần nào gợi ý cho các bạn tham gia thi tin học.
+
+Phần đầu của bài viết giới thiệu định nghĩa quy hoạch tuyến tính, phương pháp
+đơn hình để giải quy hoạch tuyến tính tổng quát, và cách biểu diễn bài toán
+thành mô hình quy hoạch tuyến tính. Phần sau giới thiệu đối ngẫu; thông qua
+các ví dụ, ta mô tả một hướng suy nghĩ mới: lấy mô hình quy hoạch tuyến tính
+làm điểm xuất phát, dùng tính đối ngẫu để chuyển đổi mô hình, từ đó giải bài
+toán hiệu quả.
+
+\subsection*{2. Quy hoạch tuyến tính}
+
+\subsubsection*{2.1. Định nghĩa}
+
+Trong các bài toán tối ưu hóa, có một lớp bài toán mà mọi ràng buộc cũng như
+hàm mục tiêu đều là hàm tuyến tính theo các biến. Ta gọi đó là bài toán quy
+hoạch tuyến tính. Để tiện trình bày, trước hết đưa ra một vài định nghĩa.
+
+\paragraph{\term{Định nghĩa 2.1}.}
+Cho các số thực \(a_1,a_2,\ldots,a_n\) và các biến \(x_1,x_2,\ldots,x_n\).
+Một hàm tuyến tính trên các biến này được định nghĩa là
+\[
+  f(x_1,x_2,\ldots,x_n)=\sum_{i=1}^{n} a_i x_i.
+\]
+Các công thức
+\[
+  f(x_1,x_2,\ldots,x_n)=b,\qquad
+  f(x_1,x_2,\ldots,x_n)\le b,\qquad
+  f(x_1,x_2,\ldots,x_n)\ge b
+\]
+được gọi là các \term{ràng buộc tuyến tính}.
+
+Bài toán quy hoạch tuyến tính yêu cầu cực đại hóa hoặc cực tiểu hóa một hàm
+tuyến tính chịu sự chi phối của một số hữu hạn ràng buộc tuyến tính.
+
+Một nghiệm thỏa mọi ràng buộc được gọi là \term{nghiệm khả thi}; nghiệm khả
+thi làm hàm mục tiêu đạt tối ưu được gọi là \term{nghiệm tối ưu}; miền gồm
+mọi nghiệm khả thi được gọi là \term{không gian nghiệm}.
+
+\subsubsection*{2.2. Tính chất của quy hoạch tuyến tính}
+
+Để mô tả tính chất và thuật toán của quy hoạch tuyến tính, ta cần dùng một
+dạng chuẩn hơn.
+
+\paragraph{\term{Định nghĩa 2.2} (dạng chuẩn).}
+Quy hoạch tuyến tính dạng chuẩn có dạng
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & \displaystyle \sum_{j=1}^{n} c_jx_j,\\[0.4em]
+\text{thỏa} & \displaystyle \sum_{j=1}^{n} a_{ij}x_j\le b_i,
+  \qquad i=1,2,\ldots,m,\\[0.4em]
+& x_j\ge 0,\qquad j=1,2,\ldots,n.
+\end{array}
+\]
+
+Dễ thấy sau một vài phép biến đổi đơn giản, mọi bài toán quy hoạch tuyến tính
+đều có thể mô tả bằng dạng chuẩn. Nếu hàm mục tiêu cần lấy cực tiểu, ta đổi
+dấu nó để thành cực đại. Ràng buộc \(f(x_1,x_2,\ldots,x_n)=b\) có thể tách
+thành \(f(x_1,x_2,\ldots,x_n)\le b\) và \(-f(x_1,x_2,\ldots,x_n)\le -b\).
+Ràng buộc \(f(x_1,x_2,\ldots,x_n)\ge b\) có thể viết thành
+\(-f(x_1,x_2,\ldots,x_n)\le -b\). Một biến không bị chặn dấu \(x\) có thể tách
+thành hai biến không âm \(x_0,x_1\) sao cho \(x=x_0-x_1\).
+
+Dạng chuẩn cũng có thể viết bằng ma trận:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & c^T x,\\
+\text{thỏa} & Ax\le b,\\
+& x\ge 0.
+\end{array}\tag{2.2.1}
+\]
+Ở đây \(x\le y\) nghĩa là với mọi tọa độ tương ứng đều có \(x_i\le y_i\).
+
+Dạng chuẩn ngắn gọn, rõ ràng. Nhưng để giải quy hoạch tuyến tính, ta muốn các
+ràng buộc đều là đẳng thức, nhờ đó tránh vấn đề đổi chiều dấu bất đẳng thức
+khi xử lý hệ số âm. Vì vậy ta giới thiệu một dạng biểu diễn khác: dạng nới
+lỏng.
+
+\paragraph{\term{Định nghĩa 2.3} (dạng nới lỏng).}
+Quy hoạch tuyến tính dạng nới lỏng có dạng
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & \displaystyle \sum_{j=1}^{n} c_jx_j,\\[0.4em]
+\text{thỏa} &
+  \displaystyle x_{i+n}=b_i-\sum_{j=1}^{n}a_{ij}x_j,
+  \qquad i=1,2,\ldots,m,\\[0.4em]
+& x_j\ge 0,\qquad j=1,2,\ldots,n+m.
+\end{array}
+\]
+
+Việc chuyển dạng chuẩn sang dạng nới lỏng là tự nhiên. Với một ràng buộc
+\(f_i(x_1,x_2,\ldots,x_n)\le b_i\), thêm biến
+\(x_{i+n}=b_i-f_i(x_1,x_2,\ldots,x_n)\); khi đó bất đẳng thức ban đầu biến
+thành đẳng thức \(x_{i+n}=b_i-f_i(x_1,x_2,\ldots,x_n)\ge 0\), và mọi biến
+vẫn lấy giá trị thực không âm.
+
+Không gian nghiệm của một quy hoạch tuyến tính là giao của nhiều miền nghiệm
+bất đẳng thức tuyến tính. Mỗi miền nghiệm của một bất đẳng thức tuyến tính là
+một miền lồi,\footnote{Một cách hiểu trực quan: với hai điểm bất kỳ trong
+miền, mọi điểm trên đoạn thẳng nối chúng cũng thuộc miền.} nên bằng quy nạp,
+không gian nghiệm của quy hoạch tuyến tính cũng là một miền lồi.
+
+Vì không gian nghiệm là miền lồi, giá trị của nghiệm tối ưu cục bộ là duy
+nhất\footnote{Tạm thời không xét trường hợp quy hoạch tuyến tính không bị
+chặn, tức giá trị tối ưu có thể tiến tới vô hạn. Nghiệm tối ưu cục bộ có thể
+không duy nhất, chẳng hạn là cả một biên song song với hàm mục tiêu, nhưng
+giá trị của chúng nhất định bằng nhau.} và bằng giá trị tối ưu toàn cục. Khi
+ta đi tham lam trong miền này bằng một thuật toán kiểu leo núi để tìm giá trị
+tối ưu, ta không cần lo thuật toán dừng ở một nghiệm tối ưu cục bộ sai. Tính
+chất đó dẫn tới một phương pháp tổng quát để giải quy hoạch tuyến tính:
+phương pháp đơn hình.
+
+\subsection*{3. Đơn hình}
+
+\subsubsection*{3.1. Mô tả thuật toán}
+
+Ý tưởng cơ bản của phương pháp đơn hình là dùng phép thay biến để di chuyển
+trong không gian nghiệm dọc theo biên, theo hướng làm tăng hàm mục tiêu. Thao
+tác lõi là thao tác \term{xoay trục} (\emph{pivot}), tức thay đổi vai trò của
+các biến.
+
+Trước hết đặt một vài khái niệm:
+\begin{itemize}
+  \item \term{Biến cơ sở}: mọi biến nằm ở vế trái của các đẳng thức trong
+  dạng nới lỏng.
+  \item \term{Biến phi cơ sở}: mọi biến nằm ở vế phải của các đẳng thức trong
+  dạng nới lỏng.
+\end{itemize}
+
+Một tập biến cơ sở và phi cơ sở của quy hoạch tuyến tính ngầm xác định một
+\term{nghiệm cơ bản}: mọi biến cơ sở lấy giá trị bằng hằng số ở vế phải,
+\footnote{Trường hợp hằng số âm sẽ được xét ở phần sau.} mọi biến phi cơ sở
+lấy giá trị \(0\). Trong thuật toán đơn hình, ta chỉ xét các nghiệm cơ bản.
+
+Thuật toán đơn hình có hai thao tác chính: thao tác xoay trục và thao tác
+\texttt{simplex}. Xoay trục chọn một biến cơ sở \(x_B\) và một biến phi cơ sở
+\(x_N\), rồi hoán đổi chúng; \(x_N\) gọi là biến vào, \(x_B\) gọi là biến ra.
+Cụ thể, nếu ban đầu có
+\[
+  x_B=b_i-\sum_{j=1}^{n}a_{ij}x_j,
+\]
+thì
+\[
+  x_N=\frac{b_i-\sum_{j\ne N}a_{ij}x_j-x_B}{a_{iN}}.
+\]
+Thay \(x_N\) trong hàm mục tiêu và mọi ràng buộc khác bằng biểu thức này, khi
+đó vế phải không còn xuất hiện \(x_N\). Dĩ nhiên khi chọn \(x_N\) phải bảo
+đảm \(a_{iN}\ne 0\).
+
+Thao tác \texttt{simplex} là quá trình chính của thuật toán đơn hình: xuất
+phát từ một nghiệm cơ bản, qua một dãy phép xoay trục để đi tới nghiệm tối
+ưu. Bằng cách chọn biến vào và biến ra thích hợp, mỗi phép xoay trục đều làm
+tăng hàm mục tiêu cho tới khi đạt tối ưu toàn cục.
+
+Xét ví dụ sau:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & 3x_1+x_2+2x_3,\\
+\text{thỏa} & x_4=30-x_1-x_2-3x_3,\\
+& x_5=24-2x_1-2x_2-5x_3,\\
+& x_6=36-4x_1-x_2-2x_3,\\
+& x_j\ge 0,\qquad j=1,2,\ldots,6.
+\end{array}\tag{3.1}
+\]
+Nghiệm cơ bản ban đầu là
+\[
+  (x_1,x_2,\ldots,x_6)=(0,0,0,30,24,36).
+\]
+Gọi hàm mục tiêu là \(z\), khi đó \(z=0\).
+
+Bước đầu chọn \(x_1\) làm biến vào, vì hệ số của \(x_1\) trong hàm mục tiêu
+dương. Do mọi biến đều không âm, \(x_1\) không thể tăng vô hạn. Ba ràng buộc
+lần lượt cho \(x_1\le 30\), \(x_1\le 12\), \(x_1\le 9\). Ràng buộc chặt nhất
+là ràng buộc thứ ba, nên chọn \(x_6\) làm biến ra. Viết lại ràng buộc thứ ba
+rồi thế vào các biểu thức còn lại, ta được
+\[
+\begin{array}{ll}
+\text{cực đại hóa} &
+  27+\frac{x_2}{4}+\frac{x_3}{2}-\frac{3x_6}{4},\\[0.4em]
+\text{thỏa} &
+  x_4=21-\frac{3x_2}{4}-\frac{5x_3}{2}+\frac{x_6}{4},\\[0.4em]
+& x_5=6-\frac{3x_2}{2}-4x_3+\frac{x_6}{2},\\[0.4em]
+& x_1=9-\frac{x_2}{4}-\frac{x_3}{2}-\frac{x_6}{4},\\[0.4em]
+& x_j\ge 0,\qquad j=1,2,\ldots,6.
+\end{array}
+\]
+Hệ mới vẫn là dạng nới lỏng tương đương với hệ cũ, và nghiệm cơ bản mới là
+\((9,0,0,21,6,0)\), làm \(z=27\).
+
+Vì trong hàm mục tiêu vẫn còn biến có hệ số dương, ta tiếp tục tăng. Chọn
+\(x_2\) làm biến vào; ràng buộc chặt nhất khi đó đưa \(x_5\) ra. Sau phép
+xoay trục, lại chọn \(x_3\) làm biến vào. Ba ràng buộc lúc này cho các chặn
+trên lần lượt là \(\infty,4,13/2\), nên \(x_2\) ra. Kết quả:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} &
+  28-\frac{x_3}{6}-\frac{x_5}{6}-\frac{2x_6}{3},\\[0.4em]
+\text{thỏa} &
+  x_4=18-\frac{5x_5}{6},\\[0.4em]
+& x_2=4-\frac{8x_3}{3}-\frac{2x_5}{3}+\frac{x_6}{3},\\[0.4em]
+& x_1=8+\frac{x_3}{6}+\frac{x_5}{6}-\frac{x_6}{3},\\[0.4em]
+& x_j\ge 0,\qquad j=1,2,\ldots,6.
+\end{array}
+\]
+Nghiệm cơ bản tương ứng là \((8,4,0,18,0,0)\). Lúc này mọi hệ số của biến
+trong hàm mục tiêu đều không dương, nên ta đã tìm được một điểm tối ưu cục
+bộ; theo tính chất của quy hoạch tuyến tính, đó chính là nghiệm tối ưu toàn
+cục.
+
+Dưới đây là giả mã của thuật toán đơn hình; \(A,b,c\) có ý nghĩa như trong
+(2.2.1).
+
+\begin{verbatim}
+Algorithm 1 Simplex(A,b,c)
+1: initialization(A,b,c)
+2: while exists e such that c_e > 0 do
+3:     find l with A_{l,e} > 0 minimizing b_l / A_{l,e}
+4:     if no such l exists then
+5:         return Unbounded
+6:     else
+7:         pivot(A,b,c,l,e)
+8:     endif
+9: end while
+\end{verbatim}
+
+Dòng 4--5 xử lý trường hợp biến vào không bị ràng buộc, khi đó quy hoạch tuyến
+tính không bị chặn. Nếu không, ta tìm ràng buộc chặt nhất và xoay trục.
+Thao tác \texttt{initialization} dùng để tìm một nghiệm cơ bản ban đầu. Thông
+thường nếu \(b_i\ge 0\) với mọi \(i\), ta có thể bỏ qua bước này và bắt đầu
+từ nghiệm cơ bản \((0,0,\ldots,0,b_1,b_2,\ldots,b_m)\). Vì mỗi bước xoay trục
+đều chọn ràng buộc chặt nhất, sau xoay trục vẫn có \(b_i\ge 0\) với mọi \(i\).
+
+Tư tưởng cơ bản của khởi tạo là đưa vào một quy hoạch tuyến tính phụ:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & -x_0,\\
+\text{thỏa} &
+  x_{i+n}=b_i-\displaystyle\sum_{j=1}^{n}a_{ij}x_j+x_0,
+  \qquad i=1,2,\ldots,m,\\
+& x_j\ge 0,\qquad j=0,1,\ldots,n+m.
+\end{array}
+\]
+Nếu quy hoạch tuyến tính phụ có nghiệm tối ưu \(x_0=0\), xóa \(x_0\) khỏi mô
+hình sẽ không ảnh hưởng tới các ràng buộc; sau đó đổi hàm mục tiêu về hàm ban
+đầu, ta nhận được một quy hoạch tuyến tính tương đương với bài toán gốc và có
+\(b_i\ge 0\). Như vậy hoàn tất khởi tạo.
+
+Nghiệm ban đầu của quy hoạch phụ rất dễ dựng. Vì \(x_0\) có hệ số \(+1\) trong
+mọi ràng buộc, chọn \(x_0\) làm biến vào và chọn ràng buộc có \(b_i\) nhỏ nhất
+làm biến ra, rồi xoay trục một lần. Khi đó quy hoạch phụ có một nghiệm cơ bản
+khả thi, và ta chỉ cần chạy \texttt{simplex}.
+
+Ví dụ:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & 2x_1-x_2,\\
+\text{thỏa} & x_3=2-2x_1+x_2,\\
+& x_4=-4-x_1+5x_2,\\
+& x_j\ge 0,\qquad j=1,2,\ldots,4.
+\end{array}\tag{3.2}
+\]
+Mô hình này không có nghiệm cơ bản ban đầu khả thi, nên đưa vào bài toán phụ
+với \(x_0\). Giá trị \(b_i\) nhỏ nhất là \(-4\), vì thế xoay trục với \(x_0\)
+vào và \(x_4\) ra. Sau đó chạy \texttt{simplex} cho bài toán phụ; khi nghiệm
+tối ưu có \(x_0=0\), xóa \(x_0\) và khôi phục hàm mục tiêu \(2x_1-x_2\). Ta
+thu được một dạng nới lỏng có nghiệm cơ bản khả thi, tương đương với (3.2).
+Trong ví dụ, nghiệm cơ bản tương ứng với bài toán gốc là
+\((x_1,x_2,x_3,x_4)=(0,2,4,0)\), thỏa mọi ràng buộc của (3.2).
+
+Nếu cuối cùng \(x_0\) là biến phi cơ sở thì có thể xóa trực tiếp. Nếu \(x_0\)
+là biến cơ sở, cần xoay trục thêm một lần để đưa \(x_0\) ra; vì \(x_0=0\), có
+thể chọn tùy ý một biến phi cơ sở ở vế phải của đẳng thức chứa \(x_0\).
+
+\subsubsection*{3.2. Độ phức tạp của phương pháp đơn hình}
+
+Khởi tạo và \texttt{simplex} có cùng bậc độ phức tạp, nên chỉ cần xét
+\texttt{simplex}. Một phép \texttt{pivot} là phép thế và thay biến, có độ phức
+tạp \(O(nm)\). Tuy nhiên số lần \texttt{pivot} không bị chặn bởi một đa thức.
+Dù vậy trong thực tế, thuật toán đơn hình thường tìm nghiệm tối ưu rất nhanh.
+
+Cần chú ý rằng phần lớn đề OI sinh ra các ràng buộc có cấu trúc riêng. Khởi
+tạo có thể phá hỏng cấu trúc đó, làm tăng thời gian chạy không cần thiết, lại
+khá rườm rà. Vì vậy tác giả không khuyến nghị dùng khởi tạo trong thi đấu; ở
+các ví dụ sau sẽ giới thiệu một số cách tránh bước này.
+
+Điều đó không có nghĩa là quy hoạch tuyến tính không giải được trong thời
+gian đa thức. Thuật toán ellipsoid và thuật toán điểm trong đều là các thuật
+toán đa thức cho quy hoạch tuyến tính. Ta nêu định lý sau mà không chứng minh:
+
+\paragraph{\term{Định lý 3.1}.}
+Bài toán quy hoạch tuyến tính tổng quát có thể giải trong thời gian đa thức.
+
+Dù vậy, thuật toán đơn hình dễ cài đặt và thời gian chạy thực tế không kém
+rõ rệt so với các thuật toán trên, nên vẫn là một phương pháp tốt để giải quy
+hoạch tuyến tính.
+
+\subsection*{4. Biểu diễn bài toán thành quy hoạch tuyến tính}
+
+\subsubsection*{4.1. Một ví dụ}
+
+\paragraph{\term{Ví dụ 1} (precious stones).}
+Hai người \(A,B\) tìm được \(n\) viên đá trong hang. Viên thứ \(i\) có giá trị
+\(A_i\) đối với \(A\), và \(B_i\) đối với \(B\). Đá có thể cắt, và cả hai đều
+coi giá trị của đá là đồng đều, tức giá trị tỉ lệ với thể tích. Họ muốn chia
+đá sao cho giá trị mỗi người nhận được bằng nhau. Hỏi giá trị lớn nhất mỗi
+người có thể nhận là bao nhiêu.
+\[
+  n\le 50,\qquad 0<A_i,B_i<100.
+\]
+
+Giả sử phần \(p_i\) của viên đá thứ \(i\) được chia cho \(A\), phần còn lại
+cho \(B\). Khi đó
+\[
+  V_A=\sum_{i=1}^{n}p_iA_i,\qquad
+  V_B=\sum_{i=1}^{n}(1-p_i)B_i.
+\]
+Ta muốn cực đại hóa giá trị chung khi \(V_A=V_B\). Có thể nới lỏng thành
+\(V_A\le V_B\): nếu \(V_A<V_B\), chuyển một phần đá mà \(B\) nhận được sang
+\(A\) sẽ không làm giảm \(A\)'s value và không vi phạm ràng buộc, nên mục tiêu
+vẫn tăng hoặc không giảm. Do đó nhận được quy hoạch tuyến tính
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & \displaystyle \sum_{i=1}^{n}p_iA_i,\\[0.4em]
+\text{thỏa} &
+  \displaystyle \sum_{i=1}^{n}p_i(A_i+B_i)\le \sum_{i=1}^{n}B_i,\\[0.4em]
+& p_i\le 1,\qquad i=1,2,\ldots,n,\\
+& p_i\ge 0,\qquad i=1,2,\ldots,n.
+\end{array}
+\]
+Mô hình đã nới lỏng này không cần khởi tạo; chỉ cần chạy trực tiếp thuật toán
+đơn hình.
+
+\subsubsection*{4.2. Bài toán luồng cực đại}
+
+Trong bài toán luồng cực đại, mọi đỉnh trừ nguồn và đích đều thỏa bảo toàn
+luồng: tổng luồng vào bằng tổng luồng ra. Mỗi cạnh có luồng không vượt quá
+dung lượng. Gọi \(c(u,v)\) là dung lượng cạnh \((u,v)\), \(f(u,v)\) là lưu
+lượng. Để bài toán gọn hơn, ta thêm một cạnh từ đích \(t\) về nguồn \(s\) có
+dung lượng vô hạn; khi đó bảo toàn luồng đúng với mọi đỉnh, và \(f(t,s)\) là
+giá trị luồng từ nguồn tới đích. Với tập đỉnh \(V\), tập cạnh \(E\), ta có:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & f(t,s),\\
+\text{thỏa} & f(u,v)\le c(u,v),\qquad (u,v)\in E,\\
+& \displaystyle \sum_{v}f(v,u)=\sum_{v}f(u,v),\qquad u\in V,\\
+& f(u,v)\ge 0,\qquad (u,v)\in E\cup\{(t,s)\}.
+\end{array}
+\]
+
+\subsubsection*{4.3. Bài toán luồng chi phí nhỏ nhất}
+
+Ở đây ta chỉ yêu cầu chi phí nhỏ nhất, không cần ràng buộc luồng cực đại. Mỗi
+cạnh có chi phí \(w(u,v)\):
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & \displaystyle \sum_{(u,v)\in E} f(u,v)w(u,v),\\
+\text{thỏa} & f(u,v)\le c(u,v),\qquad (u,v)\in E,\\
+& \displaystyle \sum_{v}f(v,u)=\sum_{v}f(u,v),
+  \qquad u\in V-\{s,t\},\\
+& f(u,v)\ge 0,\qquad (u,v)\in E\cup\{(t,s)\}.
+\end{array}
+\]
+Trong mô hình luồng mạng, mỗi biến \(f(u,v)\) xuất hiện trong ràng buộc dung
+lượng và trong các phương trình bảo toàn luồng của hai đầu mút. Trong hai
+phương trình bảo toàn đó, hệ số của \(f(u,v)\) lần lượt là \(+1\) và \(-1\).
+
+\subsubsection*{4.4. Bài toán luồng nhiều loại hàng}
+
+Xét biến thể sau của luồng cực đại. Có \(n\) cặp nguồn--đích
+\((s_i,t_i)\), \(i=1,2,\ldots,n\). Mỗi cặp ứng với một loại hàng khác nhau,
+nhưng tất cả dùng chung một mạng vận chuyển. Với mỗi cặp \((s_i,t_i)\), yêu
+cầu luồng giữa chúng không nhỏ hơn \(d_i\). Hỏi có nghiệm khả thi hay không.
+
+Với bài toán này, mọi đỉnh phải bảo toàn luồng riêng cho từng loại hàng; trên
+mỗi cạnh, tổng luồng của mọi loại hàng không vượt quá dung lượng. Vì chỉ cần
+kiểm tra khả thi, hàm mục tiêu là rỗng:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & 0,\\
+\text{thỏa} &
+  \displaystyle \sum_i f_i(u,v)\le c(u,v),\qquad (u,v)\in E,\\
+& \displaystyle \sum_v f_i(v,u)=\sum_v f_i(u,v),
+  \qquad u\in V,\ i=1,2,\ldots,n,\\
+& f_i(t_i,s_i)\ge d_i,\qquad i=1,2,\ldots,n,\\
+& f_i(u,v)\ge 0,\qquad
+  (u,v)\in E\cup\{(t_i,s_i)\mid 1\le i\le n\}.
+\end{array}
+\]
+Lời giải đa thức duy nhất được biết cho bài toán này là biểu diễn nó thành
+quy hoạch tuyến tính rồi giải quy hoạch tuyến tính đó trong thời gian đa
+thức.
+
+\subsection*{5. Quy hoạch tuyến tính nguyên}
+
+Trong quy hoạch tuyến tính có một lớp đặc biệt mà biến chỉ được lấy giá trị
+nguyên thay vì số thực. Đó là \term{quy hoạch tuyến tính nguyên}.
+
+Quy hoạch tuyến tính nguyên là bài toán NP-hard, nên trong thi tin học việc
+giải quy hoạch tuyến tính nguyên tổng quát là không thực tế. Tuy nhiên, có
+một số bài toán đặc biệt bảo đảm đáp án khi biến lấy giá trị nguyên trùng với
+đáp án khi biến lấy giá trị thực. Ví dụ luồng cực đại và luồng chi phí nhỏ
+nhất với dung lượng nguyên: tuy phát biểu bài toán không yêu cầu lưu lượng là
+số nguyên, do cấu trúc đặc biệt của bài toán, luôn tồn tại nghiệm tối ưu mà
+mọi cạnh có lưu lượng nguyên. Điều này có thể suy ra từ các bước của thuật
+toán luồng mạng.
+
+Nhưng không phải bài toán nào cũng có tính chất đó. Nếu khi ấy ta dùng đơn
+hình để giải quy hoạch tuyến tính tổng quát, nghiệm thu được thường không đạt
+được dưới các ràng buộc của bài toán gốc. Sau đây là một ví dụ mà tác giả cho
+rằng cần hoài nghi.
+
+\paragraph{\term{Ví dụ 2} (Volunteer Recruitment bản tăng cường).}
+Một cuộc thi kéo dài \(N\) ngày. Có \(M\) loại tình nguyện viên; thời gian làm
+việc của mỗi loại gồm vài đoạn liên tiếp. Loại \(i\) có thể làm việc trong
+\(p_i\) đoạn, mỗi đoạn từ ngày \(s_{ij}\) tới ngày \(t_{ij}\); tuyển một
+người loại này tốn chi phí \(c_i\). Ngày thứ \(i\) cần số tình nguyện viên làm
+việc không nhỏ hơn \(w_i\). Hãy tìm chi phí nhỏ nhất.
+\[
+  N\le 1000,\qquad M\le 10000.
+\]
+
+Đề bài rõ ràng yêu cầu số tình nguyện viên tuyển vào là số nguyên, nên đây là
+một quy hoạch tuyến tính nguyên. Bài gốc \emph{Volunteer Recruitment} chỉ có
+mỗi loại tình nguyện viên làm việc trên một đoạn liên tiếp, có thể chuyển
+thành mô hình luồng mạng, nên khi dùng đơn hình vẫn bảo đảm nghiệm thực bằng
+nghiệm của bài gốc. Nhưng bài tăng cường này không có bảo đảm đó.
+
+Chẳng hạn cuộc thi có ba ngày và ba loại tình nguyện viên. Loại thứ nhất làm
+ngày \([1,1]\) và \([2,2]\), chi phí \(1\). Loại thứ hai làm ngày \([1,1]\)
+và \([3,3]\), chi phí \(1\). Loại thứ ba làm ngày \([2,2]\) và \([3,3]\), chi
+phí \(1\). Mỗi ngày cần ít nhất một người.
+
+Nghiệm nguyên tối ưu là tuyển hai loại bất kỳ, mỗi loại một người, chi phí
+\(2\). Nhưng nếu nới lỏng biến sang số thực, nghiệm tối ưu là tuyển mỗi loại
+\(0.5\) người, chi phí \(1.5\). Nghiệm này đúng là làm mỗi ngày có tổng số
+tình nguyện viên bằng \(1\), nhưng không phù hợp với phát biểu bài toán gốc.
+
+Tác giả không có cách tốt để giải quyết vấn đề này. Tuy nhiên nhìn vào tình
+hình nộp bài, phần lớn người giải đều dùng đơn hình để qua bài này; tác giả
+không hiểu rõ nguyên nhân.
+
+\subsection*{6. Bài toán đối ngẫu}
+
+\subsubsection*{6.1. Dẫn nhập}
+
+Xét quy hoạch tuyến tính sau:
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & 7x_1+x_2+5x_3,\\
+\text{thỏa} & x_1-x_2+3x_3\ge 10,\\
+& 5x_1+2x_2-x_3\ge 6,\\
+& x_i\ge 0,\qquad i=1,2,3.
+\end{array}
+\]
+Dễ thấy
+\[
+  7x_1+x_2+5x_3\ge x_1-x_2+3x_3\ge 10,
+\]
+do so sánh từng hệ số biến. Nghĩa là giá trị hàm mục tiêu ít nhất là \(10\).
+
+Có thể dùng cùng phương pháp để nhận được một cận dưới chặt hơn không? Nếu
+xét đồng thời hai ràng buộc:
+\[
+  7x_1+x_2+5x_3
+  \ge (x_1-x_2+3x_3)+(5x_1+2x_2-x_3)
+  \ge 10+6.
+\]
+Ta muốn tối đa hóa cận dưới thu được theo cách này. Cận dưới đó có dạng
+\[
+\begin{aligned}
+  f(y_1,y_2)
+  &=y_1(x_1-x_2+3x_3)+y_2(5x_1+2x_2-x_3)\\
+  &=(y_1+5y_2)x_1+(-y_1+2y_2)x_2+(3y_1-y_2)x_3,
+  \qquad y_1,y_2\ge 0.
+\end{aligned}
+\]
+Nếu
+\[
+  y_1+5y_2\le 7,\qquad -y_1+2y_2\le 1,\qquad 3y_1-y_2\le 5,
+\]
+thì nhờ tính không âm của biến, ta có
+\[
+  7x_1+x_2+5x_3\ge f(y_1,y_2)\ge 10y_1+6y_2.
+\]
+Để cận dưới lớn nhất, cần cực đại hóa \(10y_1+6y_2\), và bài toán này lại là
+một quy hoạch tuyến tính:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & 10y_1+6y_2,\\
+\text{thỏa} & y_1+5y_2\le 7,\\
+& -y_1+2y_2\le 1,\\
+& 3y_1-y_2\le 5,\\
+& y_i\ge 0,\qquad i=1,2.
+\end{array}
+\]
+Bài toán mới này gọi là \term{bài toán đối ngẫu} của bài toán ban đầu. Nếu
+lấy đối ngẫu của bài toán đối ngẫu, ta trở lại bài toán gốc; quá trình đối
+ngẫu là tương hỗ. Một bài toán cực đại có thể đối ngẫu thành một bài toán cực
+tiểu, và ngược lại.
+
+\paragraph{\term{Định nghĩa 6.1} (bài toán đối ngẫu).}
+Cho một quy hoạch tuyến tính nguyên thủy:
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & \displaystyle \sum_{j=1}^{n} c_jx_j,\\[0.4em]
+\text{thỏa} & \displaystyle \sum_{j=1}^{n}a_{ij}x_j\ge b_i,
+  \qquad i=1,2,\ldots,m,\\[0.4em]
+& x_j\ge 0,\qquad j=1,2,\ldots,n.
+\end{array}
+\]
+Đối ngẫu của nó là
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & \displaystyle \sum_{i=1}^{m} b_iy_i,\\[0.4em]
+\text{thỏa} & \displaystyle \sum_{i=1}^{m}a_{ij}y_i\le c_j,
+  \qquad j=1,2,\ldots,n,\\[0.4em]
+& y_i\ge 0,\qquad i=1,2,\ldots,m.
+\end{array}
+\]
+Dùng ma trận, có thể viết trực quan hơn:
+\[
+\begin{array}{ll@{\qquad\qquad}ll}
+\text{cực tiểu hóa} & c^Tx
+& \text{cực đại hóa} & b^Ty,\\
+\text{thỏa} & Ax\ge b
+& \text{thỏa} & A^Ty\le c,\\
+& x\ge 0 && y\ge 0.
+\end{array}
+\]
+Hai bài toán trên đối ngẫu với nhau; \(A^T\) là ma trận chuyển vị của \(A\).
+
+\subsubsection*{6.2. Tính đối ngẫu của quy hoạch tuyến tính}
+
+Trước hết phát biểu hình thức hóa kết luận ở phần trên.
+
+\paragraph{\term{Định lý 6.1} (đối ngẫu yếu).}
+Giả sử \(x=(x_1,\ldots,x_n)\) là một nghiệm khả thi của bài toán nguyên thủy,
+và \(y=(y_1,\ldots,y_m)\) là một nghiệm khả thi của bài toán đối ngẫu. Khi đó
+\[
+  \sum_{j=1}^{n}c_jx_j\ge \sum_{i=1}^{m}b_iy_i.
+\]
+
+\paragraph{\term{Chứng minh}.}
+Vì \(y\) khả thi cho bài toán đối ngẫu,
+\[
+  c_j\ge \sum_{i=1}^{m}a_{ij}y_i.
+\]
+Lại có \(x_j\ge 0\), nên
+\[
+  \sum_{j=1}^{n}c_jx_j
+  \ge \sum_{j=1}^{n}\left(\sum_{i=1}^{m}a_{ij}y_i\right)x_j.
+\]
+Tương tự, vì \(x\) khả thi cho bài toán nguyên thủy và \(y_i\ge 0\),
+\[
+  \sum_{i=1}^{m}\left(\sum_{j=1}^{n}a_{ij}x_j\right)y_i
+  \ge \sum_{i=1}^{m}b_iy_i.
+\]
+Mệnh đề suy ra từ đẳng thức hiển nhiên
+\[
+  \sum_{j=1}^{n}\left(\sum_{i=1}^{m}a_{ij}y_i\right)x_j
+  =
+  \sum_{i=1}^{m}\left(\sum_{j=1}^{n}a_{ij}x_j\right)y_i.
+\]
+
+Định lý trên chỉ nói rằng bài toán đối ngẫu cho ta một cận dưới của nghiệm
+tối ưu nguyên thủy. Định lý tiếp theo nói rằng cận dưới đó luôn đạt được.
+
+\paragraph{\term{Định lý 6.2} (đối ngẫu mạnh).}
+Giả sử \(x^*=(x_1^*,\ldots,x_n^*)\) và
+\(y^*=(y_1^*,\ldots,y_m^*)\) lần lượt là nghiệm tối ưu của bài toán nguyên
+thủy và bài toán đối ngẫu. Khi đó
+\[
+  \sum_{j=1}^{n}c_jx_j^*
+  =
+  \sum_{i=1}^{m}b_iy_i^*.
+\]
+Chứng minh định lý này khá rườm rà, ở đây bỏ qua; tài liệu tham khảo [1] có
+chứng minh chi tiết.
+
+Từ hai định lý trên, nếu \(x,y\) lần lượt là nghiệm tối ưu của hai bài toán
+đối ngẫu, thì trong chứng minh đối ngẫu yếu mọi dấu bằng đều phải xảy ra. Điều
+này dẫn tới định lý sau.
+
+\paragraph{\term{Định lý 6.3} (bù trừ lỏng).}
+Giả sử \(x,y\) lần lượt là nghiệm khả thi của bài toán nguyên thủy và đối
+ngẫu. Khi đó \(x,y\) đều tối ưu khi và chỉ khi đồng thời thỏa:
+\begin{itemize}
+  \item Với mọi \(1\le j\le n\): hoặc \(x_j=0\), hoặc
+  \(\sum_i a_{ij}y_i=c_j\).
+  \item Với mọi \(1\le i\le m\): hoặc \(y_i=0\), hoặc
+  \(\sum_j a_{ij}x_j=b_i\).
+\end{itemize}
+
+Nguyên lý đối ngẫu nối một bài toán cực đại với một bài toán cực tiểu tương
+ứng. Trong quá trình đối ngẫu, mỗi ràng buộc của bài toán gốc, tức mỗi hàng
+của ma trận gốc, sinh ra một biến trong bài toán đối ngẫu, tức một cột của ma
+trận chuyển vị; mỗi biến của bài toán gốc biến thành một ràng buộc trong bài
+toán đối ngẫu. Định lý 6.2 cho biết hai giá trị tối ưu bằng nhau, còn Định lý
+6.3 cung cấp quan hệ giữa nghiệm tối ưu của hai phía.
+
+Xét thêm những ràng buộc không hoàn toàn chuẩn. Nếu bài toán gốc có ràng buộc
+\(\sum_j a_{rj}x_j=b_r\), ta có thể tách nó thành
+\(\sum_j a_{rj}x_j\ge b_r\) và \(-\sum_j a_{rj}x_j\ge -b_r\). Giả sử hai
+ràng buộc này sinh ra các biến đối ngẫu \(y_r,y'_r\), đều không âm. Trong
+ràng buộc thứ \(j\) của bài toán đối ngẫu sẽ xuất hiện
+\[
+  \sum_{i\ne r}a_{ij}y_i+a_{rj}y_r-a_{rj}y'_r
+  =
+  \sum_{i\ne r}a_{ij}y_i+a_{rj}(y_r-y'_r).
+\]
+Nếu đặt \(w_r=y_r-y'_r\), thì \(w_r\) không bị chặn dấu. Nghĩa là một ràng
+buộc đẳng thức sau khi đối ngẫu trở thành một biến không bị chặn dấu. Tương
+tự, ràng buộc \(\sum_j a_{rj}x_j\le b_r\) sau khi đối ngẫu sinh ra một biến
+không dương.
+
+\subsubsection*{6.3. Đối ngẫu của một số bài toán kinh điển}
+
+\paragraph{\term{6.3.1. Luồng cực đại}.}
+Người đã học luồng mạng đều biết đối ngẫu của luồng cực đại là cắt nhỏ nhất.
+Ta chứng minh điều này.
+
+Mô hình tuyến tính của luồng cực đại đã nêu ở Mục 4.2:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & f(t,s),\\
+\text{thỏa} & f(u,v)\le c(u,v),\qquad (u,v)\in E,\\
+& \displaystyle \sum_v f(v,u)=\sum_v f(u,v),\qquad u\in V,\\
+& f(u,v)\ge 0,\qquad (u,v)\in E\cup\{(t,s)\}.
+\end{array}
+\]
+Bài toán cắt nhỏ nhất có thể biểu diễn thành quy hoạch tuyến tính:
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & \displaystyle \sum_{(u,v)\in E} c(u,v)d_{uv},\\
+\text{thỏa} & d_{uv}-p_u+p_v\ge 0,\qquad (u,v)\in E,\\
+& p_s-p_t\ge 1,\\
+& p_u,d_{uv}\in\{0,1\}.
+\end{array}
+\]
+Một lát cắt chia tập đỉnh thành hai tập rời nhau \(S,T\), trong đó
+\(s\in S,t\in T\). Đặt \(p_u=[u\in S]\) và
+\(d_{uv}=\max\{p_u-p_v,0\}\), lát cắt tương ứng với một nghiệm khả thi của mô
+hình trên. Ngược lại, trong nghiệm tối ưu, nếu \(p_u=1,p_v=0\) thì phải có
+\(d_{uv}=1\), còn các trường hợp khác có thể lấy \(d_{uv}=0\). Vì thế nghiệm
+tối ưu của quy hoạch tuyến tính này tương ứng với một lát cắt nhỏ nhất.
+
+Xét bài toán đối ngẫu của luồng cực đại. Gọi \(d_{uv}\) là biến sinh ra từ
+ràng buộc dung lượng của cạnh \((u,v)\), và \(p_u\) là biến sinh ra từ bảo
+toàn luồng tại đỉnh \(u\). Bài toán đối ngẫu là
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & \displaystyle \sum_{(u,v)\in E}c(u,v)d_{uv},\\
+\text{thỏa} & d_{uv}-p_u+p_v\ge 0,\qquad (u,v)\in E,\\
+& p_s-p_t\ge 1,\\
+& d_{uv}\ge 0,\qquad (u,v)\in E.
+\end{array}
+\]
+So với mô hình cắt nhỏ nhất, nó chỉ thiếu ràng buộc \(p_u,d_{uv}\in\{0,1\}\).
+Có thể chứng minh luôn tồn tại một nghiệm tối ưu thỏa ràng buộc nguyên này;
+phần chứng minh không liên quan trực tiếp tới chủ đề chính nên được đưa vào
+phụ lục. Ta nhận được kết luận:
+
+\paragraph{\term{Định lý 6.4} (định lý luồng cực đại--cắt nhỏ nhất).}
+Trong mạng luồng có nguồn \(s\) và đích \(t\), giá trị luồng cực đại từ
+\(s\) tới \(t\) bằng dung lượng cắt nhỏ nhất giữa \(s\) và \(t\).
+
+\paragraph{\term{6.3.2. Ghép cặp trọng số lớn nhất trên đồ thị hai phía}.}
+Bài toán ghép cặp trọng số lớn nhất trên đồ thị hai phía có thể viết:
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & \displaystyle \sum_{(u,v)\in E}c_{uv}d_{uv},\\
+\text{thỏa} & \displaystyle \sum_{v\in Y}d_{uv}\le 1,\qquad u\in X,\\
+& \displaystyle \sum_{u\in X}d_{uv}\le 1,\qquad v\in Y,\\
+& d_{uv}\in\{0,1\}.
+\end{array}
+\]
+Ở đây \(d_{uv}\) biểu thị cạnh \((u,v)\) có được chọn hay không, \(c_{uv}\) là
+trọng số ghép, còn \(X,Y\) là hai phía của đồ thị. Tương tự cắt nhỏ nhất, bỏ
+ràng buộc nguyên không làm thay đổi đáp án.\footnote{Vì có thể tìm được một
+nghiệm nguyên có giá trị hàm mục tiêu bằng nghiệm tối ưu.}
+
+Gọi \(p_u,p_v\) là các biến đối ngẫu tương ứng với hai loại ràng buộc trên.
+Đối ngẫu là
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & \displaystyle \sum_{u\in X}p_u+\sum_{v\in Y}p_v,\\
+\text{thỏa} & p_u+p_v\ge c_{uv},\qquad u\in X,\ v\in Y,\\
+& p_u,p_v\ge 0.
+\end{array}
+\]
+Diễn giải tổ hợp của bài toán này là: gán cho mỗi đỉnh một \term{nhãn đỉnh};
+với mỗi cạnh, tổng nhãn của hai đầu mút không nhỏ hơn trọng số cạnh; mọi nhãn
+không âm; cực tiểu hóa tổng nhãn. Ta gọi đây là bài toán tổng nhãn đỉnh nhỏ
+nhất. Do đồ thị không đổi, có kết luận:
+
+\paragraph{\term{Định lý 6.5}.}
+Trong một đồ thị hai phía có trọng số, trọng số ghép cặp lớn nhất bằng tổng
+nhãn đỉnh nhỏ nhất.
+
+Xét phiên bản yếu hơn, khi mọi cạnh có trọng số \(1\), bài toán gốc là ghép
+cặp cực đại hai phía. Nếu nghiệm đối ngẫu được yêu cầu nguyên, ràng buộc đối
+ngẫu nói rằng với mỗi cạnh, ít nhất một trong hai đầu mút phải có nhãn \(1\),
+tức ít nhất một đỉnh được chọn để \term{phủ} cạnh đó. Vì thế:
+
+\paragraph{\term{Định lý 6.6}.}
+Trong đồ thị hai phía, kích thước ghép cặp cực đại bằng kích thước phủ đỉnh
+nhỏ nhất.
+
+Bài toán ghép cặp trọng số lớn nhất hai phía có thể giải hiệu quả bằng thuật
+toán KM hoặc trực tiếp bằng luồng chi phí nhỏ nhất. Thông thường ta có xu
+hướng chuyển bài toán tổng nhãn đỉnh nhỏ nhất thành bài toán ghép cặp trọng
+số lớn nhất để giải.
+
+\paragraph{\term{Ví dụ 3} (AMS minimum spanning tree).}
+Cho một đồ thị vô hướng có trọng số \(G\) và một cây khung \(T\) trên đồ thị
+đó. Có thể sửa trọng số của một cạnh; chi phí bằng trị tuyệt đối của độ thay
+đổi trọng số. Hãy sửa sao cho \(T\) trở thành một cây khung nhỏ nhất của
+\(G\), với tổng chi phí nhỏ nhất.
+\[
+  n<50,\qquad m<800.
+\]
+
+Để \(T\) trở thành cây khung nhỏ nhất, thao tác trên cạnh cây chỉ cần giảm
+trọng số, còn trên cạnh ngoài cây chỉ cần tăng trọng số. Xét một cạnh ngoài
+cây \(e\) nối hai đỉnh \(u,v\). Nếu \(T\) là cây khung nhỏ nhất, trọng số của
+\(e\) phải không nhỏ hơn trọng số của bất kỳ cạnh nào trên đường đi \(u\)--\(v\)
+trong cây. Nếu cạnh cây \(t\) nằm trên đường đi đó, cần
+\[
+  V(e)+A_e\ge V(t)-A_t,
+\]
+tức
+\[
+  A_t+A_e\ge V(t)-V(e).
+\]
+Xem mỗi cạnh của đồ thị gốc là một đỉnh, chia theo việc cạnh đó có nằm trong
+\(T\) hay không; đây là một đồ thị hai phía. Nếu coi \(A_t,A_e\) là nhãn đỉnh,
+ràng buộc trên yêu cầu tổng nhãn không nhỏ hơn \(V(t)-V(e)\). Do đó bài toán
+trở thành tổng nhãn đỉnh nhỏ nhất, rồi chuyển thành ghép cặp trọng số lớn
+nhất trên đồ thị hai phía.
+
+\subsubsection*{6.4. Ứng dụng nguyên lý đối ngẫu trong thi tin học}
+
+\paragraph{\term{6.4.1. Tìm nghiệm cơ bản ban đầu}.}
+
+\paragraph{\term{Ví dụ 4} (Flight Distance).}
+Cho một đồ thị có hướng \(n\) đỉnh, \(m\) cạnh; cạnh \((u,v)\) có độ dài
+\(w_{uv}\). Có thể tăng hoặc giảm trọng số một cạnh, chi phí bằng độ thay đổi
+trọng số. Sau thao tác, yêu cầu với mọi cạnh trực tiếp nối hai đỉnh, độ dài
+cạnh đó không vượt quá độ dài đường đi ngắn nhất giữa hai đỉnh. Hãy tìm chi
+phí nhỏ nhất và in dưới dạng phân số.
+\[
+  n<10,\qquad m<20.
+\]
+
+Gọi \(E\) là tập cạnh. Với mỗi cạnh \((u,v)\), dùng \(t_{uv}^+\) và
+\(t_{uv}^-\) lần lượt biểu diễn lượng tăng và giảm trọng số. Sau thao tác,
+trọng số cạnh là \(w_{uv}+t_{uv}^+-t_{uv}^-\). Gọi \(d_{uv}\) là độ dài đường
+đi ngắn nhất từ \(u\) tới \(v\) sau thao tác. Vì đề bài yêu cầu cạnh trực
+tiếp không dài hơn đường đi ngắn nhất, đồng thời đường đi ngắn nhất giữa hai
+đầu mút cũng không thể nhỏ hơn chính cạnh trực tiếp, ta có
+\[
+  d_{uv}=w_{uv}+t_{uv}^+-t_{uv}^-.
+\]
+Ngoài ra các khoảng cách ngắn nhất phải thỏa
+\[
+  d_{uv}\le w_{ui}+t_{ui}^+-t_{ui}^-+d_{iv}
+  \qquad (u\ne v,\ (u,i)\in E).
+\]
+Từ đó viết được quy hoạch tuyến tính:
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} &
+  \displaystyle \sum_{(u,v)\in E}(t_{uv}^+ + t_{uv}^-),\\
+\text{thỏa} &
+  d_{uv}-t_{uv}^+ + t_{uv}^- = w_{uv},\qquad (u,v)\in E,\\
+& -d_{uv}+t_{uv}^+ - t_{uv}^- = -w_{uv},\qquad (u,v)\in E,\\
+& t_{ui}^+-t_{ui}^-+d_{iv}-d_{uv}\ge -w_{ui},
+  \qquad u\ne v,\ (u,i)\in E,\\
+& d_{uv},t_{uv}^+,t_{uv}^-\ge 0.
+\end{array}
+\]
+Nếu giải trực tiếp, cần khởi tạo đơn hình. Nhưng vì mọi hệ số trong hàm mục
+tiêu đều không âm, sau khi lấy đối ngẫu, mọi hằng số ràng buộc đều không âm;
+vì vậy có thể chạy đơn hình trên bài toán đối ngẫu mà không cần khởi tạo.
+Đáp án cần dạng phân số, nên khi cài đặt cần dùng một lớp phân số.
+
+\paragraph{\term{6.4.2. Chuyển mô hình quy hoạch tuyến tính thành giao nửa mặt phẳng}.}
+Khi một quy hoạch tuyến tính chỉ có hai biến, mỗi ràng buộc giới hạn tập
+nghiệm vào một nửa mặt phẳng trong mặt phẳng hai chiều. Không gian nghiệm của
+quy hoạch tuyến tính khi đó là giao của các nửa mặt phẳng tương ứng.
+
+\paragraph{\term{Ví dụ 5} (Equations).}
+Cho ba mảng độ dài \(n\): \(a_i,b_i,c_i\), và \(m\) truy vấn. Mỗi truy vấn cho
+hai tham số \(s,t\). Hãy tìm các số thực không âm \(x_i\) thỏa
+\[
+  \sum_{i=1}^{n}a_ix_i=s,\qquad
+  \sum_{i=1}^{n}b_ix_i=t,
+\]
+đồng thời cực đại hóa \(\sum_i c_ix_i\). Với mỗi truy vấn, in giá trị lớn
+nhất đó hoặc kết luận vô nghiệm.
+\[
+  n\le 10^5,\qquad m\le 10^4,\qquad
+  1\le a_i,b_i,c_i,s,t\le 10^4.
+\]
+
+Với mỗi truy vấn, mô hình nguyên thủy là
+\[
+\begin{array}{ll}
+\text{cực đại hóa} & \displaystyle \sum_{i=1}^{n}c_ix_i,\\
+\text{thỏa} & \displaystyle \sum_{i=1}^{n}a_ix_i=s,\\
+& \displaystyle \sum_{i=1}^{n}b_ix_i=t,\\
+& x_i\ge 0,\qquad i=1,2,\ldots,n.
+\end{array}
+\]
+Mô hình này chỉ có hai ràng buộc, nên sau khi đối ngẫu chỉ có hai biến, gọi là
+\(x,y\):
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & sx+ty,\\
+\text{thỏa} & a_ix+b_iy\ge c_i,\qquad i=1,2,\ldots,n,\\
+& x,y\in\mathbb{R}.
+\end{array}
+\]
+Mỗi ràng buộc \(a_ix+b_iy\ge c_i\) là một nửa mặt phẳng. Tiền xử lý giao nửa
+mặt phẳng của toàn bộ các ràng buộc; với mỗi truy vấn, cần tìm điểm trong
+giao này làm \(sx+ty\) nhỏ nhất. Nếu \(sx+ty\) không bị chặn dưới, bài toán
+gốc vô nghiệm. Tổng độ phức tạp có thể đạt \(O((n+m)\log n)\).
+
+\paragraph{\term{6.4.3. Chuyển mô hình quy hoạch tuyến tính thành luồng mạng}.}
+Trong bài toán luồng chi phí nhỏ nhất, ma trận quy hoạch tuyến tính thỏa rằng
+mỗi cột có đúng hai vị trí khác không, và hai giá trị đó lần lượt là \(+1\) và
+\(-1\). Khi đó mỗi biến có thể xem là lưu lượng trên một cạnh, còn mỗi hàng là
+một phương trình bảo toàn luồng tại một đỉnh. Cách dựng cụ thể được trình bày
+trong ví dụ sau.
+
+Thông thường, sau khi dựng được mô hình luồng mạng, dùng thuật toán luồng
+mạng sẽ nhanh hơn giải trực tiếp bằng đơn hình, vì các thuật toán luồng khai
+thác cấu trúc đặc biệt của bài toán, còn đơn hình tổng quát bỏ qua cấu trúc
+đó. Đây là lý do ta muốn chuyển quy hoạch tuyến tính thành luồng mạng.
+
+\paragraph{\term{Ví dụ 6} (Chefbook).}
+Cho một đồ thị có hướng \(n\) đỉnh, \(m\) cạnh. Cạnh \((u,v)\) ban đầu có
+trọng số \(L_{uv}\), cùng các giới hạn \(S_{uv},T_{uv}\). Mỗi thao tác có thể
+chọn một trong hai loại:
+tăng toàn bộ trọng số các cạnh ra khỏi một đỉnh \(u\) thêm \(P_u\), hoặc giảm
+toàn bộ trọng số các cạnh vào một đỉnh \(u\) đi \(Q_u\), trong đó \(P_u,Q_u\)
+là số dương tùy ý. Mỗi loại thao tác tại mỗi đỉnh chỉ được thực hiện một lần,
+và có thể thực hiện cả hai loại tại cùng một đỉnh. Gọi trọng số cuối cùng của
+cạnh là \(L^*_{uv}\); yêu cầu \(S_{uv}\le L^*_{uv}\le T_{uv}\), đồng thời cực
+đại hóa \(\sum L^*_{uv}\) và in phương án.
+\[
+  n\le 100,\qquad m<n^2.
+\]
+
+Mỗi ràng buộc viết được thành
+\[
+  S_{uv}\le L_{uv}+P_u-Q_v\le T_{uv},\qquad (u,v)\in E,
+\]
+và cần cực đại hóa \(\sum_{(u,v)\in E}(L_{uv}+P_u-Q_v)\). Bỏ qua hằng số trong
+hàm mục tiêu, gộp hạng tử theo đỉnh, hệ số của \(P_u\) là bậc ra
+\(\deg_{\mathrm{out}}[u]\), còn hệ số của \(Q_u\) là âm bậc vào
+\(-\deg_{\mathrm{in}}[u]\). Ta có
+\[
+\begin{array}{ll}
+\text{cực đại hóa} &
+  \displaystyle \sum_u(P_u\deg_{\mathrm{out}}[u]
+  -Q_u\deg_{\mathrm{in}}[u]),\\
+\text{thỏa} & P_u-Q_v\le T_{uv}-L_{uv},\qquad (u,v)\in E,\\
+& -P_u+Q_v\le L_{uv}-S_{uv},\qquad (u,v)\in E,\\
+& P_u,Q_u\ge 0,\qquad u\in V.
+\end{array}
+\]
+Ma trận của quy hoạch này có đúng hai hệ số khác không trên mỗi hàng và chúng
+lần lượt là \(+1,-1\). Lấy đối ngẫu. Dùng \(x_{uv}\) cho loại ràng buộc thứ
+nhất, \(y_{uv}\) cho loại thứ hai:
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} &
+  \displaystyle \sum_{(u,v)\in E}
+  \big((T_{uv}-L_{uv})x_{uv}+(L_{uv}-S_{uv})y_{uv}\big),\\
+\text{thỏa} &
+  \displaystyle \sum_v(x_{uv}-y_{uv})\ge \deg_{\mathrm{out}}[u],
+  \qquad u\in V,\\
+& \displaystyle \sum_u(-x_{uv}+y_{uv})\ge -\deg_{\mathrm{in}}[v],
+  \qquad v\in V,\\
+& x_{uv},y_{uv}\ge 0,\qquad (u,v)\in E.
+\end{array}
+\]
+Đưa bất đẳng thức về đẳng thức bằng biến phụ:
+\[
+  \sum_v(x_{uv}-y_{uv})-\deg_{\mathrm{out}}[u]-a_u=0,
+\]
+\[
+  \sum_u(-x_{uv}+y_{uv})+\deg_{\mathrm{in}}[v]-b_v=0.
+\]
+Sau biến đổi này, mỗi biến có thể xem là một cạnh: giá trị biến là lưu lượng,
+chi phí cạnh là hệ số của biến trong hàm mục tiêu, mỗi ràng buộc là một đỉnh.
+Nếu biến có hệ số \(+1\) trong một ràng buộc, cạnh đi vào đỉnh đó; nếu hệ số
+\(-1\), cạnh đi ra. Như vậy mô hình tương đương với luồng chi phí.
+
+Cách dựng tổng quát là: với mỗi cạnh \((u,v)\in E\), thêm cạnh
+\(u\to v+n\) chi phí \(T_{uv}-L_{uv}\), dung lượng vô hạn ứng với
+\(x_{uv}\), và cạnh \(v+n\to u\) chi phí \(L_{uv}-S_{uv}\), dung lượng vô hạn
+ứng với \(y_{uv}\). Các biến phụ chỉ xuất hiện một lần thì nối tới nguồn hoặc
+đích với chi phí \(0\). Các hằng số \(-\deg_{\mathrm{out}}[u]\) và
+\(\deg_{\mathrm{in}}[v]\) được xử lý bằng các cạnh có chặn dưới lưu lượng. Khi
+đó bài toán trở thành luồng chi phí cực đại có chặn dưới.
+
+Bài này còn có cách xử lý khéo hơn. Vì ma trận thỏa tổng mỗi cột bằng \(0\),
+kể cả cột hằng số, mọi nghiệm khả thi thực ra phải thỏa dấu bằng trong hai
+loại ràng buộc:
+\[
+  \sum_v(x_{uv}-y_{uv})=\deg_{\mathrm{out}}[u],\qquad
+  \sum_u(-x_{uv}+y_{uv})=-\deg_{\mathrm{in}}[v].
+\]
+Do tổng vế phải của mọi ràng buộc là \(0\) và tổng vế trái cũng là \(0\), nếu
+có bất kỳ ràng buộc nào chặt hơn dấu bằng thì cộng tất cả sẽ mâu thuẫn. Vì
+thế không cần thêm biến phụ. Hơn nữa tổng dung lượng ra và vào phù hợp, ngoài
+các cạnh này không có luồng khả thi khác, nên chỉ cần chạy luồng chi phí cực
+đại để bảo đảm mọi đẳng thức, không cần đặt chặn dưới; mô hình ít cạnh hơn và
+chạy nhanh hơn.
+
+Sau khi tìm được đáp án, còn phải in phương án. Ta đã biết một nghiệm tối ưu
+của bài toán đối ngẫu, tức lưu lượng trên các cạnh. Theo Định lý 6.3, nếu
+\(x_{uv}>0\) thì nghiệm tối ưu của bài toán gốc phải thỏa
+\(P_u-Q_v=T_{uv}-L_{uv}\); nếu \(y_{uv}>0\) thì phải thỏa
+\(P_u-Q_v=L_{uv}-S_{uv}\). Ngoài ra còn có các ràng buộc ban đầu
+\[
+  L_{uv}-S_{uv}\le P_u-Q_v\le T_{uv}-L_{uv}.
+\]
+Đây là một hệ ràng buộc hiệu, có thể giải bằng đường đi ngắn nhất. Với
+\(P_u-Q_v\le T_{uv}-L_{uv}\), nối cạnh tương ứng trong đồ thị ràng buộc hiệu;
+với ràng buộc ngược cũng nối tương tự. Đẳng thức được tách thành hai bất đẳng
+thức. Chạy thuật toán đường đi ngắn nhất từ một điểm tùy ý, nhãn khoảng cách
+của các đỉnh sẽ cho một nghiệm tối ưu. Để bảo đảm \(P,Q\) không âm, cộng cùng
+một hằng số lớn vào mọi \(P,Q\); điều này không ảnh hưởng tới đáp án và các
+ràng buộc.
+
+Với bài này, tác giả so sánh thời gian chạy giữa đơn hình và luồng mạng trên
+10 bộ dữ liệu \(n=50,m=1000\): thuật toán luồng chi phí mất khoảng \(60\) ms,
+trong khi đơn hình mất khoảng \(1630\) ms. Điều đó cho thấy cấu trúc đặc biệt
+của bài toán ảnh hưởng rất lớn tới thời gian chạy.
+
+\paragraph{\term{Ví dụ 7} (Orz the MST).}
+Cho một đồ thị vô hướng liên thông \(n\) đỉnh, \(m\) cạnh. Với mỗi cạnh, tăng
+trọng số thêm \(1\) tốn chi phí \(a_i\), giảm trọng số đi \(1\) tốn chi phí
+\(b_i\). Đã chỉ định một cây khung của đồ thị. Hãy sửa trọng số sao cho cây
+khung đó trở thành cây khung nhỏ nhất, với tổng chi phí nhỏ nhất.
+\[
+  n<300,\qquad m<1000.
+\]
+
+Tương tự Ví dụ 3, chia cạnh theo việc có thuộc cây \(T\) hay không. Gọi tập
+cạnh cây là \(T\), cạnh ngoài cây là \(E\setminus T\). Giả sử cạnh cây \(i\)
+giảm \(x_i\), cạnh ngoài cây \(j\) tăng \(y_j\). Nếu \(i\) được cạnh \(j\)
+phủ, tức \(i\) nằm trên đường đi trong cây giữa hai đầu của \(j\), thì cần
+\[
+  w_i-x_i\le w_j+y_j,\qquad\text{tức}\qquad x_i+y_j\ge w_i-w_j.
+\]
+Đặt \(\operatorname{cover}(i,j)\) cho quan hệ phủ, mô hình là
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} &
+  \displaystyle \sum_{i\in T}b_ix_i+\sum_{j\in E\setminus T}a_jy_j,\\
+\text{thỏa} &
+  x_i+y_j\ge w_i-w_j,\qquad
+  i\in T,\ j\in E\setminus T,\ \operatorname{cover}(i,j)=1,\\
+& x_i,y_j\ge 0.
+\end{array}
+\]
+Lấy đối ngẫu với biến \(s_{ij}\):
+\[
+\begin{array}{ll}
+\text{cực đại hóa} &
+  \displaystyle \sum_{\operatorname{cover}(i,j)=1}(w_i-w_j)s_{ij},\\
+\text{thỏa} &
+  \displaystyle \sum_{j:\operatorname{cover}(i,j)=1}s_{ij}\le b_i,
+  \qquad i\in T,\\
+& \displaystyle \sum_{i:\operatorname{cover}(i,j)=1}s_{ij}\le a_j,
+  \qquad j\in E\setminus T,\\
+& s_{ij}\ge 0.
+\end{array}
+\]
+Xem ràng buộc thứ nhất là chặn bậc ra của phía trái, ràng buộc thứ hai là
+chặn bậc vào của phía phải. Với đỉnh trái \(i\), nối nguồn tới \(i\) dung
+lượng \(b_i\), chi phí \(0\). Với đỉnh phải \(j\), nối \(j\) tới đích dung
+lượng \(a_j\), chi phí \(0\). Nếu \(i\) được \(j\) phủ, nối \(i\to j\) chi
+phí \(w_i-w_j\), dung lượng vô hạn, rồi chạy luồng chi phí cực đại. Mô hình
+đối ngẫu này chính là bài toán ghép cặp nhiều lần tối ưu trên đồ thị hai
+phía.
+
+\paragraph{\term{Ví dụ 8} (Defense Line).}
+Chiến tuyến là một dãy độ dài \(n\). Cần xây tháp trên dãy; xây một tháp tại
+vị trí \(i\) tốn chi phí \(c_i\), và mỗi vị trí có thể xây tùy ý nhiều tháp.
+Có \(m\) ràng buộc, mỗi ràng buộc có dạng: trên đoạn \([l_i,r_i]\) phải có
+ít nhất \(d_i\) tháp. Hãy tìm chi phí nhỏ nhất thỏa mọi ràng buộc.
+\[
+  n<1000,\qquad m<10000.
+\]
+
+Mỗi ràng buộc là tổng số tháp trên một đoạn. Để dùng mô hình luồng, đặt biến
+tiền tố \(S_i=\sum_{j=1}^{i}x_j\). Khi đó tổng trên đoạn biến thành hiệu của
+hai biến:
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & \displaystyle \sum_{j=1}^{n}c_j(S_j-S_{j-1}),\\
+\text{thỏa} & S_{r_i}-S_{l_i-1}\ge d_i,\qquad i=1,2,\ldots,m,\\
+& S_j-S_{j-1}\ge 0,\qquad j=1,2,\ldots,n,\\
+& S_j\ge 0,\qquad j=0,1,\ldots,n.
+\end{array}
+\]
+Đối ngẫu của mô hình này có cấu trúc mỗi biến xuất hiện trong hai ràng buộc,
+có thể chuyển thành bài toán luồng mạng trên các đỉnh tiền tố.
+
+\paragraph{\term{6.4.4. Tiểu kết}.}
+Khâu quan trọng nhất để giải hiệu quả một số bài toán quy hoạch tuyến tính là
+khai thác tính chất riêng của mô hình cụ thể. Ví dụ, quy hoạch tuyến tính chỉ
+có hai biến có thể giải bằng giao nửa mặt phẳng; mô hình mà mỗi biến chỉ xuất
+hiện trong hai ràng buộc và tổng hệ số bằng \(0\) có thể giải bằng luồng
+mạng. Nguyên lý đối ngẫu là một công cụ để khai thác các tính chất như vậy.
+
+\subsection*{7. Tổng kết}
+
+Nhìn các bài toán thi tin học từ góc độ quy hoạch tuyến tính làm mô tả bài
+toán rõ ràng hơn, đồng thời đem lại một cách giải mới. Nhưng sau khi tổng
+quát hóa bài toán, ta khó tránh khỏi việc đánh mất tính chất riêng của bài
+toán, khiến việc giải hiệu quả trở nên khó hơn.
+
+Bằng cách tổng kết biểu diễn quy hoạch tuyến tính của những bài toán có cấu
+trúc đặc biệt, như luồng mạng, ta có thể chuyển một số quy hoạch tuyến tính
+đặc biệt thành các bài toán khác, rồi dùng thuật toán chuyên biệt cho các bài
+toán đó để giải hiệu quả. Như vậy ta vừa có thể nhìn bài toán từ góc độ tổng
+quát, vừa tận dụng tốt cấu trúc riêng để đạt mục tiêu giải bài nhanh.
+
+\subsection*{Lời cảm ơn}
+
+Xin cảm ơn cha mẹ đã nuôi dưỡng. Xin cảm ơn cô Chen Ying, huấn luyện viên Yu
+Linyun, đàn anh Huang Haoshuo, đàn anh Zhang Ruicai đã chỉ dẫn; cảm ơn Zhou
+Qihao và các bạn học khác đã góp ý và giúp đỡ bài viết này. Xin cảm ơn CCF đã
+cung cấp cơ hội học tập và giao lưu.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford
+  Stein, \emph{Introduction to Algorithms}, second edition.
+  \item Dimitris Bertsimas, John N. Tsitsiklis, \emph{Introduction to Linear
+  Optimization}.
+  \item Luca Trevisan, Stanford University CS261: Optimization, Handout 15.
+  \item Vijay V. Vazirani, \emph{Approximation Algorithms}: Chapter 10,
+  Introduction to LP-Duality; Chapter 13, The primal-dual schema.
+  \item Hu Botao, \emph{Ứng dụng mô hình cắt nhỏ nhất trong thi tin học}.
+  \item Cao Qinxiang, \emph{Quy hoạch tuyến tính và luồng mạng}.
+\end{enumerate}
+
+\subsection*{Phụ lục}
+
+\subsubsection*{Quan hệ giữa nghiệm tối ưu của quy hoạch tuyến tính đối ngẫu luồng cực đại và lát cắt}
+
+Quy hoạch tuyến tính đối ngẫu của luồng cực đại là
+\[
+\begin{array}{ll}
+\text{cực tiểu hóa} & \displaystyle \sum_{(u,v)\in E}c_{uv}d_{uv},\\
+\text{thỏa} & d_{uv}-p_u+p_v\ge 0,\qquad (u,v)\in E,\\
+& p_s-p_t\ge 1,\\
+& d_{uv}\ge 0.
+\end{array}
+\]
+Gọi nghiệm tối ưu là \((d^*_{uv},p^*_u)\), giá trị tối ưu là
+\[
+  z^*=\sum_{(u,v)\in E}c_{uv}d^*_{uv}.
+\]
+Để chứng minh tồn tại một lát cắt có dung lượng \(z^*\), trước hết cần chứng
+minh tồn tại nghiệm \((d_{uv},p_u)\) sao cho
+\[
+  \sum c_{uv}d_{uv}=\sum c_{uv}d^*_{uv}
+  \quad\text{và}\quad 0\le p_u\le 1.
+\]
+
+Vì \(p_u\) không xuất hiện trong hàm mục tiêu, và trong ràng buộc \(p_u\) chỉ
+xuất hiện qua hiệu \(p_u-p_v\), có thể giả sử \(p_t^*=0\). Xét nghiệm
+\[
+  (d_{uv},p_u)=(d^*_{uv},\min\{p^*_u,1\}).
+\]
+Giá trị hàm mục tiêu không đổi. Ta kiểm tra ràng buộc
+\(d_{uv}-p_u+p_v\ge 0\):
+\begin{itemize}
+  \item Nếu \(p_u^*>1,p_v^*>1\), ràng buộc tương đương \(d_{uv}\ge 0\).
+  \item Nếu \(p_u^*>1,p_v^*\le 1\), do \(p_u^*>p_u\), suy ra
+  \(d_{uv}-p_u+p_v>d^*_{uv}-p_u^*+p_v^*\ge 0\).
+  \item Nếu \(p_u^*\le 1,p_v^*>1\), có \(p_u\le p_v\), nên
+  \(d_{uv}\ge 0\ge p_u-p_v\).
+\end{itemize}
+Các trường hợp khác tương tự, nên nghiệm mới vẫn khả thi và tối ưu. Tương tự
+có thể chứng minh tồn tại nghiệm tối ưu thỏa \(p_u\ge 0\).
+
+Bây giờ chứng minh tồn tại lát cắt \(\operatorname{cut}(s,t)\) sao cho
+\(\operatorname{cut}(s,t)\le z^*\). Một lát cắt có thể biểu diễn bằng tập
+\(S\) thỏa \(s\in S,t\notin S\), chia tập đỉnh thành \(S\) và \(V\setminus S\).
+Lấy \(x\) là biến ngẫu nhiên phân bố đều trên \((0,1]\), và định nghĩa
+\[
+  S_x=\{u\mid p_u\ge x\}.
+\]
+Tập \(S_x\) ứng với một lát cắt \(\operatorname{cut}_x(s,t)\). Ta xét kỳ vọng
+dung lượng lát cắt này.
+
+Nhờ tính tuyến tính của kỳ vọng, xét riêng từng cạnh \((u,v)\). Cạnh được
+tính vào lát cắt khi và chỉ khi \(u\in S_x\) và \(v\notin S_x\). Nếu
+\(p_u\ge p_v\), đóng góp kỳ vọng là \(c_{uv}(p_u-p_v)\); nếu không thì bằng
+\(0\). Trong mô hình cắt nhỏ nhất tuyến tính có ràng buộc
+\[
+  d_{uv}\ge \max\{0,p_u-p_v\},
+\]
+nên
+\[
+  \mathbb{E}\bigl(|\operatorname{cut}_x(s,t)|\bigr)
+  \le \sum_{(u,v)\in E}c_{uv}d_{uv}=z^*.
+\]
+Vì kỳ vọng là trung bình của mọi phương án, tồn tại \(x\in(0,1]\) sao cho
+\(|\operatorname{cut}_x(s,t)|\le z^*\). Chứng minh hoàn tất.
 
 \end{document}

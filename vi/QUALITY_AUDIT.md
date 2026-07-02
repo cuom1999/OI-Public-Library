@@ -15,11 +15,11 @@ source documents.
 
 | Priority | Translation | Source pages | Current state | Extraction status | Required work |
 | ---: | --- | ---: | --- | --- | --- |
-| 1 | `sources/ioi/2013-national-training-team-collection.tex` | 137 | ToC plus first two articles translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 3 onward. |
-| 2 | `sources/ioi/2014-national-training-team-collection.tex` | 228 | ToC plus first two articles translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 3 onward. |
-| 3 | `sources/ioi/2016-national-training-team-collection.tex` | 234 | ToC plus first two articles translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 3 onward. |
-| 4 | `sources/ioi/2015-national-training-team-collection.tex` | 291 | ToC plus first two articles translated | `pdftotext` is mojibake even near the ToC; OCR works with visual checks | Continue OCR-backed translation from article 3 onward. |
-| 5 | `sources/ioi/2023-national-training-team-collection.tex` | 249 | ToC plus first four articles translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 5 onward. |
+| 1 | `sources/ioi/2013-national-training-team-collection.tex` | 137 | ToC plus first three articles translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 4 onward. |
+| 2 | `sources/ioi/2014-national-training-team-collection.tex` | 228 | ToC plus first three articles translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 4 onward. |
+| 3 | `sources/ioi/2016-national-training-team-collection.tex` | 234 | ToC plus first three articles translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 4 onward. |
+| 4 | `sources/ioi/2015-national-training-team-collection.tex` | 291 | ToC plus first three articles translated | `pdftotext` is mojibake even near the ToC; OCR works with visual checks | Continue OCR-backed translation from article 4 onward. |
+| 5 | `sources/ioi/2023-national-training-team-collection.tex` | 249 | ToC plus first six articles translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 7 onward. |
 | 6 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first article translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue with OCR-backed article translations. |
 | 7 | `sources/ioi/2025-national-training-team-collection.tex` | 168 | ToC plus first article translated | `pdftotext` is readable but two-up layout interleaves pages | Continue from article 2 onward, splitting/cropping pages where needed. |
 
