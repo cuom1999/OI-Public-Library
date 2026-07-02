@@ -33,7 +33,8 @@ một số tập trước đó, lớp văn bản của tập này trích xuất 
 \texttt{pdftotext}. Bản LaTeX này chuyển ngữ phần nhận diện tập sách, toàn bộ
 mục lục, bài đầu tiên của Mao Xiao về công thức truy hồi của dãy số, và bài
 thứ hai của Yang Jiaqi về matching trên đồ thị tổng quát bằng đại số tuyến
-tính, cùng bài thứ ba của Yuan Yutao về bài toán tính tổng đa thức.
+tính, bài thứ ba của Yuan Yutao về bài toán tính tổng đa thức, và bài thứ tư
+của Zhong Zhixian về bài toán tập độc lập trong thi tin học.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -1811,6 +1812,1093 @@ Cảm ơn các bạn học đã giúp đỡ tôi.
   University Press.
 \end{enumerate}
 
+\section{Bàn về bài toán tập độc lập trong thi tin học}
+
+\begin{center}
+Zhong Zhixian, Trường Trung học số 1 Phúc Châu, tỉnh Phúc Kiến
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Tìm thuật toán tốt hơn cho các bài toán NP-hard là một nội dung quan trọng của
+tin học. Trong đó, các bài toán liên quan đến tập độc lập khá thường gặp và
+cũng nhiều lần xuất hiện trong thi tin học. Bài viết này bắt đầu từ các tính
+chất của tập độc lập, rồi giới thiệu vài lớp thuật toán tập độc lập dựa trên
+nhiều tư tưởng khác nhau. Với đồ thị tổng quát, trên cơ sở thuật toán tìm kiếm,
+bài viết đề xuất thuật toán tối ưu bằng quy hoạch động, đồng thời phân tích và
+kiểm thử hiệu suất của vài thuật toán trên dữ liệu ngẫu nhiên. Với đồ thị đặc
+biệt, bài viết giới thiệu hai tư tưởng thuật toán cho đồ thị đặc biệt, đề xuất
+tư tưởng giải bài toán tập độc lập trên ``đồ thị \(k\)-xương rồng'' và các ứng
+dụng mở rộng của nó.
+\end{abstract}
+
+\subsection{Lời nói đầu}
+
+Không ít bài toán liên quan đến tập độc lập, như tập độc lập lớn nhất, tập độc
+lập có trọng số lớn nhất, đếm tập độc lập, đều là các bài toán NP-hard kinh
+điển trong lý thuyết đồ thị và xuất hiện rộng rãi trong thi tin học. Tuy nhiên
+hiệu suất của các thuật toán giải bài toán tập độc lập thường không cao. Vì
+vậy, tôi đã nghiên cứu sâu hơn lớp bài toán này, với hy vọng dùng được phương
+pháp hiệu quả hơn để giải chúng.
+
+Nghiên cứu trong bài viết này chia làm hai phần. Phần thứ nhất giới thiệu hai
+thuật toán giải bài toán tập độc lập trên đồ thị tổng quát: thuật toán tập độc
+lập dựa trên tìm kiếm tập độc lập cực đại và thuật toán tập độc lập dựa trên
+quy hoạch động. Phần thứ hai giới thiệu thuật toán tập độc lập cho hai loại đồ
+thị đặc biệt, lần lượt dựa trên tư tưởng matching đồ thị và tư tưởng chia giai
+đoạn trên đồ thị.
+
+\subsection{Định nghĩa và quy ước}
+
+Bài toán tập độc lập có nhiều dạng. Để tiện mô tả, dưới đây đưa ra một số định
+nghĩa.
+
+\paragraph{Định nghĩa 2.1.}
+Với đồ thị vô hướng \(G=(V,E)\) và hai đỉnh \(u,v\in V\), nếu \((u,v)\in E\)
+thì gọi \(u,v\) là \term{kề nhau} (adjacent). \term{Lân cận} (neighborhood)
+của đỉnh \(v\in V\) được định nghĩa là tập các đỉnh trong \(V\) kề với \(v\),
+ký hiệu \(N(v)\). Ngoài ra, \(N_G(v)\) biểu thị lân cận của \(v\) trong đồ thị
+\(G\).
+
+\paragraph{Định nghĩa 2.2.}
+\term{Bậc} (degree) của đỉnh \(v\), ký hiệu \(\deg(v)\), được định nghĩa là
+kích thước của \(N(v)\), tức \(\deg(v)=|N(v)|\). Ngoài ra, \(\deg_G(v)\) biểu
+thị bậc của \(v\) trong đồ thị \(G\).
+
+\paragraph{Định nghĩa 2.3.}
+Một \term{tập độc lập} (independent set) của đồ thị vô hướng \(G=(V,E)\) được
+định nghĩa là một tập con của \(V\) sao cho mọi cặp đỉnh trong tập con đó đều
+không kề nhau. Nói hình thức, \(I\) là một tập độc lập của \(G\) khi và chỉ khi
+\(I\subseteq V\) và với mọi \(u,v\in I\), \((u,v)\notin E\).
+
+\paragraph{Định nghĩa 2.4.}
+Một \term{tập độc lập lớn nhất} (maximum independent set) của đồ thị vô hướng
+\(G=(V,E)\) là một tập độc lập \(I\) trong \(G\) có số đỉnh \(|I|\) lớn nhất.
+
+\paragraph{Định nghĩa 2.5.}
+\term{Số độc lập} (independence number) của đồ thị vô hướng \(G=(V,E)\) được
+định nghĩa là số đỉnh \(|I|\) của một tập độc lập lớn nhất \(I\) của \(G\), ký
+hiệu \(\alpha(G)\).
+
+\paragraph{Định nghĩa 2.6.}
+\term{Đồ thị con cảm sinh} (induced subgraph)\footnote{Đồ thị con cảm sinh có
+hai loại: cảm sinh bởi đỉnh và cảm sinh bởi cạnh. Trong bài này đều chỉ loại
+thứ nhất.} của đồ thị vô hướng \(G=(V,E)\) trên \(S\subseteq V\) được định
+nghĩa là đồ thị có tập đỉnh là \(S\) và tập cạnh gồm các cạnh có cả hai đầu mút
+nằm trong \(S\), ký hiệu \(G[S]\).
+
+Mọi bài toán trong bài này đều lấy bài toán tập độc lập lớn nhất làm ví dụ:
+với đồ thị vô hướng \(G=(V,E)\) cho trước, hãy tìm một tập độc lập lớn nhất
+\(I\) của \(G\).
+
+Để tiện, quy ước \(n\) là bậc của đồ thị \(G\) (tức số đỉnh), \(m\) là số cạnh
+của \(G\), tức \(n=|V|,m=|E|\).
+
+\subsection{Bài toán tập độc lập trên đồ thị tổng quát}
+
+Hiện nay, đa số bài toán liên quan đến tập độc lập trên đồ thị tổng quát không
+có thuật toán thời gian đa thức, mà chỉ có thể dùng các thuật toán mũ với độ
+phức tạp tương đối tốt.
+
+Thực ra đã có không ít thuật toán tìm tập độc lập lớn nhất của đồ thị với độ
+phức tạp lý thuyết rất tốt, có thể nhanh chóng tính tập độc lập lớn nhất của
+đồ thị vô hướng hàng trăm đỉnh\footnote{Năm 2001, Robson đề xuất một thuật
+toán tìm tập độc lập lớn nhất có độ phức tạp xấp xỉ
+\(\Oh(1.1888^n)\), xem Tài liệu tham khảo [2].}. Nhưng các thuật toán ấy
+thường quá phức tạp khi cài đặt, khó áp dụng trong thi tin học. Tác giả chọn
+nghiên cứu một số thuật toán tương đối hiệu quả và dễ cài đặt hơn.
+
+\subsubsection{Thuật toán tập độc lập dựa trên tìm kiếm tập độc lập cực đại}
+
+\paragraph{Thuật toán tìm kiếm ngây thơ.}
+Thuật toán tìm kiếm ngây thơ nhất rất đơn giản: dùng tìm kiếm theo chiều sâu để
+liệt kê các tập con \(I\subseteq V\), tức theo một thứ tự nào đó liệt kê mỗi
+đỉnh \(v\in V\) có thuộc \(I\) hay không; hễ tồn tại \((u,v)\in E\) sao cho
+\(u,v\in I\) thì quay lui. Trong tất cả các tập độc lập \(I\) được liệt kê, in
+ra một tập có \(|I|\) lớn nhất. Độ phức tạp của thuật toán là \(\Oh(2^n m)\),
+quá kém hiệu quả.
+
+Riêng với bài toán tập độc lập lớn nhất, có thể thêm vài phép cắt nhánh. Ví dụ:
+
+\begin{enumerate}
+  \item Nếu \(\deg(v)=0\), không có cạnh nào liên thuộc với \(v\), nên luôn có
+  thể cho \(v\in I\).
+
+  \item Nếu \(\deg(v)=1\), xét đỉnh \(u\) duy nhất liên thuộc với \(v\). Nếu
+  \(u\notin I\), ta luôn có thể cho \(v\in I\); ngược lại, xóa \(u\) khỏi \(I\)
+  và thêm \(v\) vào, kích thước của \(I\) không đổi. Vì vậy luôn có thể cho
+  \(v\in I\).
+
+  \item Khi tìm kiếm, ghi lại giá trị lớn nhất \(a\) của kích thước tập độc lập
+  hiện đã tìm được. Ký hiệu \(P\) là tập các đỉnh trong \(V-I\) không kề với
+  đỉnh nào của \(I\). Khi \(|I|+|P|\le a\), có thể cắt nhánh theo tính tối ưu.
+\end{enumerate}
+
+Tuy nhiên sau khi thêm các phép cắt nhánh này, độ phức tạp vẫn còn rất cao và
+khó chấp nhận.
+
+\paragraph{Tập độc lập cực đại và thuật toán Bron--Kerbosch.}
+Thuật toán tìm kiếm ngây thơ quá kém hiệu quả. Có cách nào tốt để tối ưu không?
+Ta đưa ra khái niệm tập độc lập cực đại:
+
+\paragraph{Định nghĩa 3.1.}
+Một \term{tập độc lập cực đại} (maximal independent set) của đồ thị vô hướng
+\(G=(V,E)\) là một tập độc lập \(I\) của \(G\) sao cho với mọi đỉnh
+\(v\in V-I\), tập \(I+\{v\}\) không phải là tập độc lập.
+
+Thông thường, số tập độc lập cực đại của một đồ thị ít hơn số tập độc lập rất
+nhiều. Ví dụ, đường đi gồm \(50\) đỉnh có \(32\,951\,280\,099\) tập độc lập,
+nhưng chỉ có \(1\,221\,537\) tập độc lập cực đại. Ngoài ra, không ít bài toán
+tối ưu tổ hợp liên quan đến tập độc lập có thể chỉ xét tập độc lập cực đại;
+bài toán tập độc lập lớn nhất là một ví dụ như vậy.
+
+\paragraph{Định lý 3.1.}
+Mỗi tập độc lập lớn nhất đều là tập độc lập cực đại.
+
+\paragraph{Chứng minh.}
+Giả sử \(I\) là một tập độc lập lớn nhất. Với \(v\in V-I\) bất kỳ, nếu
+\(I+\{v\}\) là tập độc lập, thì vì \(|I+\{v\}|=|I|+1>|I|\), \(I+\{v\}\) là một
+tập độc lập lớn hơn \(I\). Nói cách khác, \(I\) không phải là tập độc lập lớn
+nhất, mâu thuẫn với giả thiết. Vì vậy \(I\) nhất định là tập độc lập cực đại.
+\qedmark
+
+Do đó, nếu tìm được mọi tập độc lập cực đại của \(G\), ta sẽ tìm được tập độc
+lập lớn nhất của \(G\).
+
+Có nhiều thuật toán tìm tập độc lập cực đại; trong đó thuật toán
+Bron--Kerbosch là một thuật toán cài đặt tương đối gọn. Dưới đây giới thiệu
+thuật toán Bron--Kerbosch để tìm tập độc lập cực đại.
+
+Thuật toán Bron--Kerbosch có thể tìm mọi tập độc lập cực đại của đồ thị vô
+hướng bất kỳ \(G\). Tư tưởng cơ bản của nó vẫn là tối ưu tìm kiếm. Mã giả như
+sau\footnote{Thuật toán Bron--Kerbosch có nhiều cách cài đặt; bài này giới
+thiệu một trong số đó.}:
+
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.78\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 1} BronKerbosch\((R,P,X)\)}\\
+1: & \textbf{if} \(P=X=\varnothing\) \textbf{then}\\
+2: & \quad print \(R\)\\
+3: & \textbf{end if}\\
+4: & Chọn đỉnh \(u\in P\cup X\) sao cho
+      \(|P\cap(\{u\}\cup N(u))|\) nhỏ nhất\\
+5: & \textbf{for all} \(v\in P\cap(\{u\}\cup N(u))\) \textbf{do}\\
+6: & \quad BronKerbosch\((R\cup\{v\},P-(\{v\}\cup N(v)),X-(\{v\}\cup N(v)))\)\\
+7: & \quad \(P\gets P-\{v\}\)\\
+8: & \quad \(X\gets X\cup\{v\}\)\\
+9: & \textbf{end for}=0
+\end{tabular}
+\end{center}
+
+Gọi hàm BronKerbosch\((R,P,X)\) sẽ in ra mọi tập độc lập cực đại chứa tất cả
+các đỉnh trong \(R\), chứa tùy ý nhiều đỉnh trong \(P\), và không chứa đỉnh nào
+trong \(X\). Gọi BronKerbosch\((\varnothing,V,\varnothing)\) sẽ thu được mọi
+tập độc lập cực đại của \(G\).
+
+Khi cài đặt, tập hợp có thể được lưu bằng nén bit: dùng một mảng \(A\) gồm
+\(\lceil n/64\rceil\) số nguyên \(64\) bit để lưu một tập \(A'\) kích thước
+\(n\), trong đó \(x\in A'\) khi và chỉ khi
+\[
+  A[\lfloor x/64\rfloor]\ {\rm AND}\ 2^{x\bmod 64}>0
+\]
+(chỉ số mảng \(A\) bắt đầu từ \(0\)). Vì trong bài toán tập độc lập, bậc \(n\)
+của đồ thị sẽ không quá lớn, kích thước mảng nén bit có thể xem xấp xỉ như một
+hằng số.
+
+Điểm mấu chốt nhất của thuật toán trên là pivoting. Trong quá trình thuật toán
+có một bước chọn đỉnh \(u\in P\cup X\) sao cho
+\(|P\cap(\{u\}\cup N(u))|\) nhỏ nhất; \(u\) được gọi là đỉnh pivot. Sau đó liệt
+kê đỉnh đầu tiên \(v\) trong \(\{u\}\cup N(u)\) thuộc tập độc lập \(R\). Đó là
+quá trình pivoting.
+
+Vì sao phải làm như vậy?
+
+Nếu trực tiếp tìm kiếm tập độc lập cực đại, hiệu suất sẽ rất thấp vì thuật toán
+sẽ duyệt qua rất nhiều tập không cực đại. Chẳng hạn khi \(G\) là đồ thị không
+\(n\) đỉnh\footnote{Đồ thị không được định nghĩa là đồ thị không có cạnh, tức
+\(G=(V,E)\) là đồ thị không khi và chỉ khi \(E=\varnothing\).}, hiển nhiên
+\(V\) là tập độc lập cực đại duy nhất của \(G\). Nhưng khi tìm kiếm ngây thơ
+liệt kê một đỉnh nào đó không thuộc tập độc lập cực đại, dù không thể tìm ra
+tập độc lập cực đại, thuật toán vẫn sẽ tiếp tục tìm kiếm, lãng phí rất nhiều
+thời gian. Tính đúng đắn của pivoting dựa trên định lý sau:
+
+\paragraph{Định lý 3.2.}
+Với đồ thị vô hướng \(G=(V,E)\) và \(v\in V\), mọi tập độc lập cực đại \(I\)
+của \(G\) đều thỏa \(I\cap(\{v\}\cup N(v))\ne\varnothing\).
+
+\paragraph{Chứng minh.}
+Giả sử tồn tại tập độc lập cực đại \(I\) thỏa
+\(I\cap(\{v\}\cup N(v))=\varnothing\). Khi đó với mọi \(u\in I\),
+\(u\notin\{v\}\cup N(v)\), tức \(u\ne v\) và \((u,v)\notin E\).
+
+Vì vậy \(I\cup\{v\}\) cũng là một tập độc lập, và \(I\subset I\cup\{v\}\). Điều
+này nói rằng \(I\) không cực đại, mâu thuẫn. \qedmark
+
+Như vậy ta đã chứng minh tính đúng đắn của định lý. Dù cách này vẫn sẽ duyệt
+qua một số tập không cực đại, các tập như thế rõ ràng đã ít hơn rất nhiều.
+
+\paragraph{Số lượng tập độc lập cực đại.}
+Trước đó ta chỉ biết trực giác rằng số tập độc lập cực đại tương đối ít. Ở đây
+ta đưa ra cận trên cho số lần gọi đệ quy của thuật toán Bron--Kerbosch:
+
+\paragraph{Định lý 3.3.}
+Số lần gọi đệ quy của thuật toán Bron--Kerbosch là \(\Oh(3^{n/3})\).
+
+Chứng minh của định lý này khá phức tạp, bài viết lược bỏ\footnote{Bạn đọc có
+hứng thú có thể đọc Tài liệu tham khảo [3].}.
+
+Từ đó có thể thu được hệ quả:
+
+\paragraph{Định lý 3.4.}
+Số tập độc lập cực đại của đồ thị vô hướng \(n\) đỉnh là \(\Oh(3^{n/3})\).
+
+Cận trên này rất dễ đạt tới: chỉ cần dựng \(\lfloor n/3\rfloor\) tam giác độc
+lập lẫn nhau. Nhưng khi đồ thị được sinh ngẫu nhiên, cận trên này còn rất
+lỏng. Để minh họa điểm đó, tác giả đã nghiên cứu số tập độc lập cực đại của đồ
+thị ngẫu nhiên.
+
+Sinh ngẫu nhiên một đồ thị \(G=(V,E)\) trong các đồ thị vô hướng đơn \(n\) đỉnh
+có \(m\) cạnh. Ký hiệu \(x\) là số tập độc lập cực đại của \(G\), tức
+\[
+  x=\sum_{S\subseteq V} [S\text{ là tập độc lập cực đại}].
+\]
+
+Xét cách tính kỳ vọng \(\mathbb{E}(x)\). Điều kiện để \(S\) là tập độc lập cực
+đại của \(G\) là:
+
+\begin{itemize}
+  \item \(S\) là tập độc lập, tức với mọi \(u,v\in S\), \((u,v)\notin E\);
+
+  \item với mọi \(v\in V-S\), \(S\cup\{v\}\) không phải là tập độc lập, tức mỗi
+  đỉnh trong \(V-S\) kề với ít nhất một đỉnh trong \(S\).
+\end{itemize}
+
+Dùng nguyên lý bao hàm--loại trừ, liệt kê \(k\) đỉnh trong \(V-S\) không kề với
+đỉnh nào của \(S\). Ký hiệu \(i=|S|\). Khi đó \(n-i-k\) đỉnh còn lại có thể nối
+cạnh với các đỉnh trong \(S\), và hai đỉnh bất kỳ trong \(V-S\) (tổng cộng
+\(\frac12(n-i)(n-i-1)\) cặp đỉnh) cũng có thể nối cạnh. Vậy số đồ thị \(G\)
+thỏa \(S\) là tập độc lập cực đại là
+\[
+  \sum_{k=0}^{n-i}(-1)^k\binom{n-i}{k}
+  \binom{(n-i-k)i+\frac{(n-i)(n-i-1)}{2}}{m}.
+\]
+
+Do số đồ thị đơn \(n\) đỉnh có \(m\) cạnh là
+\(\binom{n(n-1)/2}{m}\), ta có
+\[
+\begin{aligned}
+  \mathbb{E}(x)
+    &=\sum_{S\subseteq V}P([S\text{ là tập độc lập cực đại}])\\
+    &=\sum_{i=0}^{n}\sum_{\substack{S\subseteq V\\ |S|=i}}
+      \binom{n(n-1)/2}{m}^{-1}
+      \sum_{k=0}^{n-i}(-1)^k\binom{n-i}{k}
+      \binom{(n-i-k)i+\frac{(n-i)(n-i-1)}{2}}{m}\\
+    &=\binom{n(n-1)/2}{m}^{-1}\sum_{i=0}^{n}\binom{n}{i}
+      \sum_{k=0}^{n-i}(-1)^k\binom{n-i}{k}
+      \binom{(n-i-k)i+\frac{(n-i)(n-i-1)}{2}}{m}.
+\end{aligned}
+\]
+
+Dưới đây là một số kết quả tính toán, đã làm tròn:
+
+\begin{center}
+\small
+\begin{tabular}{c r r r r r}
+\(\mathbb{E}(x)\) & \(m=n\) & \(m=\lfloor\sqrt3 n\rfloor\) & \(m=2n\) &
+\(m=3n\) & \(m=n^2/4\)\\
+\hline
+\(n=20\) & 84 & 101 & 99 & 81 & 49\\
+\(n=30\) & 706 & 933 & 909 & 691 & 157\\
+\(n=40\) & \(5.95\times10^3\) & \(8.67\times10^3\) &
+  \(8.40\times10^3\) & \(5.88\times10^3\) & 403\\
+\(n=50\) & \(5.02\times10^4\) & \(8.07\times10^4\) &
+  \(7.76\times10^4\) & \(5.01\times10^4\) & 891\\
+\(n=60\) & \(4.23\times10^5\) & \(7.51\times10^5\) &
+  \(7.18\times10^5\) & \(4.27\times10^5\) & 1779\\
+\(n=70\) & \(3.57\times10^6\) & \(6.99\times10^6\) &
+  \(6.64\times10^6\) & \(3.63\times10^6\) & 3291\\
+\(n=80\) & \(3.01\times10^7\) & \(6.51\times10^7\) &
+  \(6.14\times10^7\) & \(3.10\times10^7\) & 5730\\
+\(n=90\) & \(2.54\times10^8\) & \(6.06\times10^8\) &
+  \(5.68\times10^8\) & \(2.64\times10^8\) & 9506\\
+\(n=100\) & \(2.15\times10^9\) & \(5.64\times10^9\) &
+  \(5.25\times10^9\) & \(2.25\times10^9\) & 15154
+\end{tabular}
+\end{center}
+
+Có thể thấy trong trường hợp ngẫu nhiên, số tập độc lập cực đại nhỏ hơn
+\(3^{n/3}\) rất nhiều. Ngoài ra, khi \(m\) gần \(\sqrt3 n\), kỳ vọng
+\(\mathbb{E}(x)\) của số tập độc lập cực đại \(x\) là lớn nhất; còn với đồ thị
+quá dày, số tập độc lập lại khá ít.
+
+Theo kết luận này còn có thể suy ra xác suất \(x\ge k\cdot\mathbb{E}(x)\)
+không vượt quá \(1/k\), nên trong đa số trường hợp, số tập độc lập cực đại của
+đồ thị ngẫu nhiên sẽ không lớn hơn kỳ vọng quá nhiều\footnote{Vì tác giả chưa
+nghiên cứu phương sai của \(x\), không thể thu được mô tả chính xác hơn về
+phân bố của \(x\).}.
+
+Cần chú ý rằng độ phức tạp của thuật toán Bron--Kerbosch không liên quan trực
+tiếp đến số tập độc lập cực đại, nên dùng kỳ vọng số tập độc lập cực đại để
+phân tích thời gian chạy kỳ vọng của thuật toán Bron--Kerbosch là không chính
+xác. Thực tế có những thuật toán tìm kiếm tập độc lập cực đại có độ phức tạp
+liên quan trực tiếp đến số tập độc lập cực đại, nhưng chúng vượt ra ngoài phạm
+vi bài này; bạn đọc có hứng thú có thể tự tìm hiểu.
+
+\paragraph{Ứng dụng.}
+Sau khi giới thiệu tính chất và thuật toán của tập độc lập cực đại, ta hãy xem
+nó có những ứng dụng nào.
+
+\paragraph{Ví dụ 1 (Bài toán tô màu 3 cho đồ thị).}
+Cho đồ thị vô hướng đơn \(G=(V,E)\) bậc \(n\). Dùng ba màu tô các đỉnh trong
+\(V\) sao cho hai đầu mút \(u,v\) của mỗi cạnh \((u,v)\in E\) có màu khác
+nhau. \(n\le 40\).
+
+Bài toán tô màu 3 cho đồ thị cũng là một bài toán NP-hard nổi tiếng. Thuật
+toán ngây thơ mỗi lần liệt kê màu của một đỉnh kề với đỉnh đã xác định màu,
+cần liệt kê \(\Oh(2^n)\) trường hợp, không thể qua dữ liệu \(n=40\). Làm thế
+nào để giải hiệu quả hơn?
+
+Trước hết đưa ra một định lý:
+
+\paragraph{Định lý 3.5.}
+Đồ thị vô hướng \(G=(V,E)\) tô được bằng 3 màu khi và chỉ khi \(G\) tồn tại một
+tập độc lập cực đại \(I\) sao cho đồ thị \(G-I\) là đồ thị hai phía\footnote{Đồ
+thị vô hướng \(G=(V,E)\) là đồ thị hai phía (bipartite graph) nếu có thể chia
+\(V\) thành hai tập \(S\) và \(V-S\) sao cho hai đầu mút của mỗi cạnh không nằm
+trong cùng một tập, tức với mọi \((u,v)\in E\), \(u\in S,v\in V-S\) hoặc
+\(u\in V-S,v\in S\).}.
+
+\paragraph{Chứng minh.}
+(Tính đủ) Giả sử \(I\) là một tập độc lập cực đại của \(G\) và \(G-I\) là đồ
+thị hai phía. Theo tính chất của đồ thị hai phía, tồn tại tập đỉnh
+\(X\subseteq V-I\). Ký hiệu \(Y=V-I-X\), sao cho với mọi \(u,v\in X\) hoặc
+\(u,v\in Y\), ta có \((u,v)\notin E\).
+
+Vì \(I\) là tập độc lập của \(G\), nên với mọi \(u,v\in I\), ta có
+\((u,v)\notin E\).
+
+Do đó tô các đỉnh trong \(I\) bằng màu \(1\), các đỉnh trong \(X\) bằng màu
+\(2\), các đỉnh trong \(Y\) bằng màu \(3\) là một phương án hợp lệ.
+
+(Tính cần) Giả sử \(G=(V,E)\) tô được bằng 3 màu. Ký hiệu \(X,Y,Z\) lần lượt là
+tập các đỉnh được tô màu \(1,2,3\).
+
+Theo định nghĩa, với mọi \((u,v)\in E\), hai đỉnh \(u,v\) không thuộc cùng một
+tập trong ba tập này, nên \(X,Y,Z\) đều là tập độc lập.
+
+Nếu \(X\) không phải là tập độc lập cực đại, thì tồn tại \(v\in V-X\) sao cho
+\(X+\{v\}\) là tập độc lập. Thêm \(v\) vào tập \(X\); đồng thời, nếu \(v\in Y\)
+thì xóa \(v\) khỏi \(Y\), ngược lại \(v\in Z\) và xóa \(v\) khỏi \(Z\). Lặp quá
+trình này cho đến khi \(X\) là tập độc lập cực đại.
+
+Hiển nhiên lúc này \(Y,Z\) vẫn là các tập độc lập của \(G\), tức với
+\(u,v\in Y\) hoặc \(u,v\in Z\), ta có \((u,v)\notin E\). Vì vậy \(G[Y\cup Z]\)
+là đồ thị hai phía. Bài toán được chứng minh. \qedmark
+
+Kiểm tra một đồ thị có phải đồ thị hai phía hay không và tô màu nó có thể thực
+hiện trong \(\Oh(m)\) thời gian. Vì vậy chỉ cần liệt kê mọi tập độc lập cực
+đại \(I\) của đồ thị \(G\), rồi kiểm tra đồ thị \(G-I\) có phải đồ thị hai
+phía hay không:
+
+\begin{enumerate}
+  \item Nếu với mọi tập độc lập cực đại \(I\), đồ thị \(G-I\) đều không phải
+  đồ thị hai phía, thì đồ thị \(G\) không tô được bằng 3 màu.
+
+  \item Nếu tồn tại một tập độc lập cực đại \(I\) sao cho đồ thị \(G-I\) là đồ
+  thị hai phía, thì đồ thị \(G\) tô được bằng 3 màu: tô các đỉnh trong \(I\)
+  bằng màu \(1\), còn \(G-I\) được tô hai phía bằng màu \(2\) và \(3\).
+\end{enumerate}
+
+Trong bài này, vì \(G\) là đồ thị đơn, \(m=\Oh(n^2)\), nên độ phức tạp thời
+gian của thuật toán là \(\Oh(3^{n/3}n^2)\).
+
+\paragraph{Ví dụ 2 (Mùa thể thao của Tiểu Q, test 10).}
+Cho một hệ \(m\) phương trình đồng dư tuyến tính \(n\) ẩn
+\[
+\begin{cases}
+a_{0,0}x_0+a_{0,1}x_1+\cdots+a_{0,n-1}x_{n-1}\equiv c_0\pmod {b_0},\\
+a_{1,0}x_0+a_{1,1}x_1+\cdots+a_{1,n-1}x_{n-1}\equiv c_1\pmod {b_1},\\
+\cdots\\
+a_{m-1,0}x_0+a_{m-1,1}x_1+\cdots+a_{m-1,n-1}x_{n-1}
+  \equiv c_{m-1}\pmod {b_{m-1}}.
+\end{cases}
+\]
+Hãy tìm một nghiệm \((x_1,x_2,\ldots,x_n)\) thỏa mãn càng nhiều phương trình
+càng tốt. Đây là bài nộp đáp án.\footnote{Nguồn bài: bài 3 của WC2013.}
+
+Trong ví dụ này chỉ thảo luận test 10. Ở test này, bằng cách lập mô hình đồ
+thị, xem mỗi phương trình là một đỉnh và nối cạnh giữa hai phương trình xung
+đột nhau, ta có thể chuyển thành bài toán tập độc lập lớn nhất trên một đồ thị
+vô hướng có số đỉnh \(n=90\), số cạnh \(m=223\). Vì quá trình chuyển đổi cụ thể
+vượt khỏi phạm vi bài viết, nên lược bỏ.
+
+Dùng thuật toán Bron--Kerbosch để tìm mọi tập độc lập cực đại, rồi in ra tập
+lớn nhất trong số đó. Cách làm này hiệu quả ra sao?
+
+Tác giả so sánh thuật toán tìm kiếm ngây thơ Simple-Search và thuật toán tìm
+kiếm dựa trên tập độc lập cực đại Maximal-Search. Hai thuật toán chỉ dùng phép
+cắt nhánh cơ bản nhất: nếu ngay cả khi thêm tất cả các đỉnh còn lại vào \(I\),
+kích thước tập thu được cũng không vượt quá tập độc lập lớn nhất hiện đã tìm
+được, thì cắt nhánh. Vì mục đích kiểm thử chỉ là xem Maximal-Search có hiệu
+suất chạy tốt hơn Simple-Search hay không, ở đây không thêm các phép cắt nhánh
+khác phụ thuộc vào tính chất của bài toán.
+
+Với Simple-Search, chương trình của tác giả chạy vài giờ vẫn chỉ tìm được tập
+độc lập kích thước \(33\), và chương trình chưa kết thúc. Còn với
+Maximal-Search, chương trình của tác giả chỉ mất chưa đến \(1\) phút để tìm
+được một tập độc lập kích thước \(34\), và chỉ mất \(3\) phút để chứng minh số
+độc lập của đồ thị thật sự bằng \(34\). Có thể thấy dùng tập độc lập cực đại để
+tìm kiếm quả thật có thể nâng cao hiệu suất chạy rất nhiều.
+
+Bằng cách thêm nhiều tối ưu cắt nhánh hơn, có thể rút ngắn thêm thời gian chạy
+của thuật toán; bạn đọc có hứng thú có thể thử.
+
+\subsubsection{Thuật toán tập độc lập dựa trên quy hoạch động}
+
+Quy hoạch động là một phương pháp xử lý bài toán hiệu quả và linh hoạt. Trong
+bài toán tập độc lập, quy hoạch động không chỉ giải được các bài toán tối ưu
+như tập độc lập lớn nhất, tập độc lập trọng số lớn nhất, mà còn giải được bài
+toán đếm như đếm tập độc lập. Dưới đây vẫn lấy bài toán tập độc lập lớn nhất
+làm ví dụ, nhưng để thể hiện tính phổ dụng của quy hoạch động, phần thảo luận
+tiếp theo sẽ không thêm các phép cắt nhánh chỉ dành cho bài toán tối ưu, như
+cắt nhánh theo tính tối ưu.
+
+\paragraph{Thuật toán.}
+Nếu muốn dùng quy hoạch động để giải bài toán tập độc lập, ta cần chuyển bài
+toán thành các bài toán con có quy mô nhỏ hơn. Với tập độc lập, ta có hai định
+lý sau:
+
+\paragraph{Định lý 3.6.}
+Với đồ thị vô hướng \(G=(V,E)\) và \(V'\subseteq V\), với mọi \(I\subseteq V'\),
+\(I\) là tập độc lập của \(G\) khi và chỉ khi \(I\) là tập độc lập của
+\(G[V']\).
+
+\paragraph{Chứng minh.}
+(Tính đủ) Khi \(I\) là tập độc lập của \(G[V']\), với mọi \((u,v)\in E\), nếu
+\(u,v\in V'\) thì hiển nhiên \(u,v\) không đồng thời thuộc \(I\); nếu một trong
+\(u,v\) không thuộc \(V'\), giả sử \(u\notin V'\), thì \(u\notin I\). Vì vậy
+\(I\) là tập độc lập của \(G\).
+
+(Tính cần) Khi \(I\) là tập độc lập của \(G\), vì mỗi cạnh của \(G[V']\) đều
+thuộc \(G\), mỗi cạnh của \(G[V']\) có ít nhất một đầu mút không thuộc \(I\).
+Do đó \(I\) là tập độc lập của \(G[V']\). \qedmark
+
+\paragraph{Định lý 3.7.}
+Với đồ thị vô hướng \(G=(V,E)\) và \(v\in V\), nếu \(I\subseteq V\) và
+\(v\in I\), thì \(I\) là tập độc lập của \(G\) khi và chỉ khi \(I-\{v\}\) là
+tập độc lập của \(G[V-\{v\}-N(v)]\).
+
+\paragraph{Chứng minh.}
+Ký hiệu \(T=V-\{v\}-N(v)\).
+
+(Tính đủ) Khi \(I\) là tập độc lập của \(G\), \(N(v)\cap I=\varnothing\), nên
+\(I-\{v\}\subseteq T\). Vì mọi cặp đỉnh trong \(I\) không kề nhau trong \(G\),
+\(I-\{v\}\subseteq I\), và \(G[T]\subseteq G\), nên \(I-\{v\}\) là tập độc lập
+của \(G[T]\).
+
+(Tính cần) Khi \(I-\{v\}\) là tập độc lập của \(G[T]\), vì
+\(I-\{v\}\subseteq V-\{v\}-N(v)\), nên \(N(v)\cap I=\varnothing\). Mặt khác,
+các cạnh mà \(G\) có thêm so với \(G[T]\) đều kề với \(v\) hoặc với các đỉnh
+trong \(N(v)\), nên \(I\) là tập độc lập của \(G\). \qedmark
+
+Theo hai định lý trên, ta có thể dùng quy hoạch động nén trạng thái để tìm số
+độc lập \(\alpha(G)\) của đồ thị vô hướng bất kỳ \(G=(V,E)\).
+
+Với tập đỉnh \(S\subseteq V\), định nghĩa \(f(S)\) là số độc lập của đồ thị con
+cảm sinh bởi \(S\) trên \(G\), tức \(f(S)=\alpha(G[S])\); hiển nhiên
+\(f(\varnothing)=0\).
+
+Xét trường hợp \(S\ne\varnothing\). Lấy tùy ý \(v\in S\), xét một tập
+\(I\subseteq S\). Nếu \(v\notin I\), thì \(I\) là tập độc lập của \(G[S]\) khi
+và chỉ khi \(I\) là tập độc lập của \(G[S-\{v\}]\). Nếu \(v\in I\), thì \(I\)
+là tập độc lập của \(G[S]\) khi và chỉ khi \(I-\{v\}\) là tập độc lập của
+\(G[S-\{v\}-N(v)]\). Từ đó có:
+\[
+  f(S)=
+  \begin{cases}
+    0, & S=\varnothing,\\
+    \max\{f(S-\{v\}),f(S-\{v\}-N(v))+1\},
+      & \forall v\in S,\ S\ne\varnothing.
+  \end{cases}
+  \tag{3.1}
+\]
+
+Khi cài đặt, đánh số các đỉnh trong đồ thị là \(0,1,\ldots,n-1\); đỉnh \(v\)
+có thể chọn là đỉnh có số hiệu lớn nhất trong \(S\). Tương tự, có thể dùng kỹ
+thuật nén bit để lưu tập \(S\). Ngoài ra, có thể dùng tìm kiếm có nhớ để tính
+\(f\), trạng thái được lưu bằng Hash Table.
+
+Thuật toán này không chỉ tìm được số độc lập, mà còn tìm được một tập độc lập
+lớn nhất. Xem mã giả sau, trong đó hàm \(f\) là hàm tìm kiếm có nhớ được định
+nghĩa theo công thức (3.1):
+
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.78\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 2} Subset-Dynamic-Programming}\\
+1: & \(S=V\)\\
+2: & \(I=\varnothing\)\\
+3: & \textbf{while} \(S\ne\varnothing\) \textbf{do}\\
+4: & \quad Cho \(v\) là đỉnh có số hiệu lớn nhất trong \(S\)\\
+5: & \quad \textbf{if} \(f(S-\{v\})>f(S-\{v\}-N(v))+1\) \textbf{then}\\
+6: & \qquad \(S\gets S-\{v\}\)\\
+7: & \quad \textbf{else}\\
+8: & \qquad \(S\gets S-\{v\}-N(v)\)\\
+9: & \qquad \(I\gets I+\{v\}\)\\
+10: & \quad \textbf{end if}\\
+11: & \textbf{end while}\\
+12: & \textbf{return} \(I=0\)
+\end{tabular}
+\end{center}
+
+Nếu cài đặt trực tiếp, độ phức tạp là \(\Oh(2^{n/2})\), giả sử mỗi thao tác với
+Hash Table tốn \(\Oh(1)\) thời gian. Lý do là trong \(n/2\) tầng đệ quy đầu,
+mỗi tầng nhiều nhất có \(2\) nhánh; sau khi đệ quy quá \(n/2\) tầng, \(S\) chỉ
+còn chứa các đỉnh trong nửa đầu theo số hiệu, nên tổng độ phức tạp là
+\(\Oh(2^{n/2})\).
+
+Với \(n\) bất kỳ, đều có thể dựng đồ thị \(G\) khiến thuật toán này có độ phức
+tạp \(\Theta(2^{n/2})\): nối đỉnh \(0\) với \(\lfloor n/2\rfloor\), đỉnh \(1\)
+với \(\lfloor n/2\rfloor+1\), \(\ldots\), đỉnh \(\lfloor n/2\rfloor-1\) với
+\(2\lfloor n/2\rfloor-1\). Khi đó \(\lfloor n/2\rfloor\) tầng đệ quy đầu đều
+có \(2\) nhánh, và mọi nhánh đều khác nhau.
+
+\paragraph{Ví dụ 3 (Đếm clique).}
+Cho đồ thị vô hướng đơn \(G=(V,E)\). Hỏi \(G\) có bao nhiêu clique. Một clique
+được định nghĩa là một tập đỉnh \(S\subseteq V\) sao cho hai đỉnh bất kỳ trong
+\(S\) đều có cạnh nối. \(n\le 50\).
+
+Ký hiệu \(\overline G\) là đồ thị bù của \(G\). Không khó thấy \(S\) là clique
+của \(G\) khi và chỉ khi \(S\) là tập độc lập của \(\overline G\).
+
+Điều này là vì nếu \(S\) là clique của \(G\), các đỉnh trong \(S\) đôi một kề
+nhau trong \(G\), nên đôi một không kề nhau trong \(\overline G\), tức \(S\) là
+tập độc lập của \(\overline G\). Ngược lại, nếu \(S\) không phải clique của
+\(G\), tức tồn tại hai đỉnh \(u,v\) không kề nhau trong \(G\), thì \(u,v\) kề
+nhau trong \(\overline G\). Nói cách khác, \(S\) không phải tập độc lập của
+\(\overline G\).
+
+Vì vậy bài toán chuyển thành bài toán đếm tập độc lập: tìm số tập độc lập của
+\(\overline G\). Hiển nhiên dạng bài toán đếm này không thể dùng chiến lược tối
+ưu tìm kiếm, nhưng dùng thuật toán Subset-Dynamic-Programming nêu trên thì có
+thể giải trong thời gian \(\Oh(2^{n/2})\).
+
+\paragraph{Tối ưu hiệu suất.}
+Qua kiểm thử thực tế, hiệu suất của thuật toán Subset-Dynamic-Programming không
+bằng thuật toán tìm kiếm đã tối ưu. Vì sao? Xét bài toán tập độc lập lớn nhất:
+độ phức tạp tệ nhất của thuật toán này là \(\Oh(2^{n/2})\), nhưng khi cắt
+nhánh tìm kiếm, đỉnh bậc \(1\) có thể được xử lý trực tiếp, nên chỉ cần
+\(\Oh(n)\) thời gian. Có thể tương tự cách tối ưu thuật toán tìm kiếm để dùng
+một số phép ``cắt nhánh'' tối ưu DP nói trên không?
+
+Câu trả lời là có. Tuy nhiên tác giả không định lặp lại những tối ưu trước đó:
+đã dùng thuật toán dựa trên DP thì nên nghiên cứu các tối ưu phổ dụng hơn. Ví
+dụ, khi tìm tập độc lập trọng số lớn nhất, xử lý trực tiếp đỉnh bậc \(1\) là
+sai. Sau khi nghiên cứu, tác giả thấy các tối ưu sau có thể nâng cao hiệu suất
+DP rất nhiều:
+
+\begin{enumerate}
+  \item Trong công thức chuyển trạng thái, đỉnh \(v\) không lấy đỉnh có số hiệu
+  lớn nhất trong \(S\), mà lấy đỉnh bậc lớn nhất trong \(G[S]\), chú ý là đồ thị
+  con cảm sinh chứ không phải đồ thị gốc.
+
+  \item Khi đồ thị \(G[S]\) không liên thông, ký hiệu tập đỉnh của các thành
+  phần liên thông lần lượt là \(S_1,S_2,\ldots,S_k\). Vì mỗi thành phần liên
+  thông độc lập với nhau, có thể chuyển thành các bài toán con nhỏ hơn:
+  \[
+    f(S)=\sum_{i=1}^{k}f(S_i).
+  \]
+
+  \item Khi đồ thị \(G[S]\) không chứa chu trình, có thể đổi sang quy hoạch
+  động trên cây để giải.
+\end{enumerate}
+
+Thuật toán DP sau tối ưu được ký hiệu là
+Optimized-Subset-Dynamic-Programming. Tác giả không thể phân tích độ phức tạp
+của thuật toán này trong trường hợp xấu nhất, nhưng qua kiểm thử trên đồ thị
+ngẫu nhiên, Optimized-Subset-Dynamic-Programming nhanh hơn
+Subset-Dynamic-Programming trước đó rất nhiều. Trong đó tối ưu 1 và 2 có hiệu
+quả rõ rệt, nhất là với đồ thị khá thưa. Lý do là khi liên tục xóa các đỉnh
+bậc lớn trong đồ thị thưa, đồ thị con cảm sinh \(G[S]\) rất dễ trở nên không
+liên thông.
+
+\paragraph{Ví dụ 4 (Mùa thể thao của Tiểu Q, test 10).}
+Đề bài xem Ví dụ 2.
+
+Phần trên đã nhắc đến thời gian cần thiết để dùng Maximal-Search tìm nghiệm tối
+ưu của bài toán này. Bây giờ ta thử dùng thuật toán tập độc lập dựa trên quy
+hoạch động Subset-Dynamic-Programming. Đáng tiếc là kiểm thử cho thấy hiệu suất
+chạy của thuật toán này không cao, và do số trạng thái quá nhiều, mức tiêu thụ
+bộ nhớ cũng không thể chấp nhận.
+
+Ta thử tiếp Optimized-Subset-Dynamic-Programming. Điều đáng ngạc nhiên là hiệu
+suất chạy của thuật toán này rất cao: qua kiểm thử của tác giả, thuật toán chỉ
+mất \(1\) giây để thu được nghiệm tối ưu, tức một tập độc lập kích thước
+\(34\). Hơn nữa trong quá trình chạy, thuật toán không dùng bất kỳ tối ưu nào
+phụ thuộc vào tính chất riêng của bài toán, như cắt nhánh theo tính tối ưu. Có
+thể thấy trên đồ thị thưa, Optimized-Subset-Dynamic-Programming quả thật là một
+thuật toán xuất sắc.
+
+\paragraph{Liên hệ với thuật toán tìm kiếm.}
+Thực ra, nếu bỏ phần ghi nhớ khỏi thuật toán này, tức không dùng Hash Table để
+lưu giá trị \(f\), ta thu được một thuật toán tìm kiếm có tối ưu. Thuật toán
+tìm kiếm này, ký hiệu Optimized-Search, vẫn nhanh hơn thuật toán tìm kiếm ngây
+thơ Simple-Search, nhưng chậm hơn Optimized-Subset-Dynamic-Programming.
+
+Optimized-Subset-Dynamic-Programming kết hợp các tư tưởng tối ưu của tìm kiếm
+và quy hoạch động; nó không chỉ có tính phổ dụng khá mạnh mà độ khó cài đặt
+cũng nhỏ.
+
+Tuy nhiên Optimized-Subset-Dynamic-Programming có một nhược điểm: độ phức tạp
+không gian khá lớn. Còn thuật toán tìm kiếm Optimized-Search có không gian cấp
+đa thức và có thể chạy trong thời gian dài hơn. Vì vậy có thể chỉ ghi nhớ giá
+trị \(f(S)\) của các \(S\) nhỏ, phần còn lại dùng phương pháp tìm kiếm; như thế
+có thể giải bài toán với yêu cầu không gian thấp hơn.
+
+\paragraph{Kiểm thử và so sánh.}
+Sau khi nghiên cứu thuật toán quy hoạch động và các tối ưu nói trên, tác giả
+đã cài đặt thuật toán này (cùng phiên bản đã tối ưu) và các thuật toán dựa trên
+tìm kiếm trước đó, rồi dùng đồ thị ngẫu nhiên để kiểm thử hiệu suất chạy kỳ
+vọng của chúng. Trong hàng đầu của bảng sau, \(n,m\) biểu thị đồ thị ngẫu nhiên
+\(n\) đỉnh \(m\) cạnh; cột cuối \(90,223\) biểu thị đồ thị tương ứng với test
+10 của bài \emph{Mùa thể thao của Tiểu Q} trong WC2013. Thời gian trong bảng
+biểu thị ước lượng thời gian chạy kỳ vọng của thuật toán trên đồ thị tương
+ứng; dấu ``-'' nghĩa là thời gian chạy quá dài, chưa đo được.
+
+\begin{center}
+\small
+\begin{tabular}{l r r r r}
+\textbf{Thuật toán} & \(40,60\) & \(50,85\) & \(60,120\) & \(90,223\)\\
+\hline
+Simple-Search & \(2\)s & - & - & -\\
+Maximal-Search & \(<0.01\)s & \(<0.1\)s & \(1\)s & -\\
+Subset-Dynamic-Programming & \(<0.01\)s & \(<0.1\)s & \(1\)s & -\\
+Optimized-Subset-Dynamic-Programming-1 &
+  \(<0.01\)s & \(<0.01\)s & \(<0.01\)s & \(1\)s\\
+Optimized-Subset-Dynamic-Programming-2 &
+  \(<0.01\)s & \(<0.01\)s & \(<0.01\)s & \(1\)s
+\end{tabular}
+\end{center}
+
+Maximal-Search và Subset-Dynamic-Programming lần lượt dùng các tối ưu ``cắt
+nhánh tìm kiếm'' và ``ghi nhớ'', hiệu quả của chúng khá gần nhau.
+Optimized-Subset-Dynamic-Programming kết hợp ưu điểm của cả hai, nên hiệu suất
+nghiêm ngặt cao hơn hai thuật toán này. Điều đáng nói là khác biệt giữa
+Optimized-Subset-Dynamic-Programming-1 và
+Optimized-Subset-Dynamic-Programming-2 nằm ở việc thuật toán sau thêm tối ưu 3,
+tức đổi sang DP trên cây. Dù tối ưu 3 trông rất hiệu quả vì biến bài toán cấp
+mũ thành bài toán thời gian tuyến tính, qua kiểm thử, hiệu suất chạy của hai
+thuật toán gần như không khác biệt.
+
+\subsection{Bài toán tập độc lập trên đồ thị đặc biệt}
+
+Phần trên giới thiệu tư tưởng cơ bản để giải tập độc lập trên đồ thị tổng quát:
+tối ưu tìm kiếm và quy hoạch động. Các phương pháp này đều có độ phức tạp cấp
+mũ. Trong mục này, ta sẽ bàn tiếp bài toán tập độc lập trên đồ thị đặc biệt:
+khi bản thân đồ thị có một tính chất đặc biệt nào đó, liệu có thể giải cùng bài
+toán bằng độ phức tạp đa thức hay không?
+
+\subsubsection{Thuật toán tập độc lập lớn nhất dựa trên tư tưởng matching đồ thị}
+
+\paragraph{Tập độc lập lớn nhất của đồ thị hai phía.}
+Tập độc lập lớn nhất của đồ thị hai phía là một bài toán kinh điển. Ta có định
+lý sau:
+
+\paragraph{Định lý 4.1.}
+Với đồ thị hai phía \(n\) đỉnh \(G\), \(\alpha(G)=n-\nu(G)\), trong đó
+\(\alpha(G)\) và \(\nu(G)\) lần lượt là số độc lập và số matching của đồ thị
+\(G\).
+
+Chứng minh của định lý này có thể tìm thấy trong nhiều tài liệu, nên ở đây
+lược bỏ.
+
+Dùng thuật toán Hungary hoặc luồng mạng để tìm một số matching \(\nu(G)\) của
+đồ thị hai phía \(G=(X,Y,E)\), ta thu được số độc lập \(\alpha(G)\) của \(G\).
+Ngoài ra, sau khi dựng mạng luồng, tìm lát cắt nhỏ nhất có thể thu được một
+tập độc lập lớn nhất \(I\).
+
+Thuật toán này chỉ giải được bài toán tập độc lập dạng tối ưu, không giải được
+các bài toán phức tạp hơn như đếm hoặc có thêm ràng buộc khác.
+
+\paragraph{Tập độc lập lớn nhất của đồ thị không móng.}
+Tập độc lập lớn nhất của đồ thị hai phía cho ta một ý tưởng: khi tìm matching
+lớn nhất của đồ thị, ta có thể liên tục tăng kích thước matching bằng cách tìm
+đường tăng. Vậy khi tìm tập độc lập lớn nhất của các đồ thị khác, có thể dùng
+cách tăng tương tự không? Đáng tiếc là trên đồ thị bất kỳ, đồ thị con cảm sinh
+bởi hiệu đối xứng\footnote{Hiệu đối xứng của hai tập \(A,B\) là
+\(A\triangle B=\{x\mid [x\in A]\ne[x\in B]\}\).} của hai tập độc lập không nhất
+thiết là một số đường đi hoặc chu trình, nên không thể dùng phương pháp tìm
+đường tăng để tìm tập độc lập lớn nhất.
+
+Tuy nhiên, trên một loại đồ thị đặc biệt, thuật toán này là khả thi.
+
+\paragraph{Định nghĩa 4.1.}
+\term{Đồ thị không móng} (claw-free graph) được định nghĩa là đồ thị vô hướng
+mà mọi đồ thị con cảm sinh đều không phải \(K_{1,3}\). Trong đó \(K_{1,3}\)
+được gọi là \term{móng} (claw), tức đồ thị hai phía đầy đủ có một phần chứa
+\(1\) đỉnh và phần kia chứa \(3\) đỉnh.
+
+Tập độc lập lớn nhất của đồ thị không móng có thể được giải bằng thuật toán
+tương tự matching trên đồ thị tổng quát. Thuật toán này dựa trên định lý sau:
+
+\paragraph{Định lý 4.2.}
+Giả sử \(I_1,I_2\) là hai tập độc lập của đồ thị không móng \(G\). Khi đó mỗi
+thành phần liên thông của \(G[I_1\triangle I_2]\) đều là một đường đi đơn hoặc
+một chu trình đơn.
+
+\paragraph{Chứng minh.}
+Giả sử \(v\in I_1\), khi đó \(N(v)\cap I_1=\varnothing\). Trong
+\(G[I_1\triangle I_2]\), bậc của \(v\) là \(|N(v)\cap I_2|\).
+
+Giả sử tồn tại ba đỉnh khác nhau \(v_1,v_2,v_3\in N(v)\cap I_2\). Vì \(I_2\)
+là tập độc lập, nên \(v_1,v_2,v_3\) đôi một không kề nhau. Do đó
+\(G[\{v,v_1,v_2,v_3\}]\) là một móng, mâu thuẫn.
+
+Vì vậy \(|N(v)\cap I_2|\le 2\), tức mọi đỉnh của \(G[I_1\triangle I_2]\) đều
+có bậc không vượt quá \(2\). Định lý được chứng minh. \qedmark
+
+Chú ý rằng nếu \(|I_1|<|I_2|\), thì \(G[I_1\triangle I_2]\) nhất định tồn tại
+một thành phần liên thông \(C\) sao cho số đỉnh thuộc \(I_2\) trong thành phần
+này nhiều hơn số đỉnh thuộc \(I_1\). Vì các đỉnh thuộc \(I_1\) và \(I_2\) trong
+\(C\) xuất hiện xen kẽ nhau, nếu \(C\) là chu trình đơn thì số đỉnh thuộc
+\(I_1\) và \(I_2\) trong \(C\) bằng nhau; còn nếu \(C\) là đường đi đơn thì số
+đỉnh thuộc \(I_1\) và \(I_2\) trong \(C\) chênh nhau \(1\). Vì vậy nhất định
+tồn tại một đường đi có số đỉnh thuộc \(I_2\) nhiều hơn số đỉnh thuộc \(I_1\)
+đúng \(1\). Ta gọi \(C\) là đường tăng (augment path) của \(I_1\).
+
+Như vậy, có thể tương tự thuật toán matching lớn nhất trên đồ thị tổng quát để
+dùng thuật toán đường tăng tìm tập độc lập lớn nhất của đồ thị không móng
+\(G=(V,E)\). Ban đầu đặt \(I=\varnothing\). Mỗi lần xuất phát từ một đỉnh để
+tìm một đường tăng, rồi đảo trạng thái các đỉnh trên đường tăng: đỉnh trước đó
+không thuộc tập độc lập thì thêm vào tập độc lập, đỉnh trước đó thuộc tập độc
+lập thì xóa khỏi tập độc lập. Cài đặt thuật toán này tương tự thuật toán hoa
+của Edmonds; chi tiết cài đặt và chứng minh tính đúng đắn xem Tài liệu tham
+khảo [4], ở đây không trình bày thêm.
+
+\subsubsection{Thuật toán tập độc lập lớn nhất dựa trên tư tưởng chia giai đoạn trên đồ thị}
+
+\subsubsection{Quy hoạch động trên đồ thị phân tầng}
+
+Với đồ thị \(G=(V,E)\), chia tập đỉnh \(V\) thành \(k\) tập rời nhau
+\(V_1,V_2,\ldots,V_k\) sao cho với mọi \(u\in V_i,v\in V_j\), nếu
+\(|i-j|>1\) thì \((u,v)\notin E\). Khi đó gọi dãy tập
+\(\langle V_1,V_2,\ldots,V_k\rangle\) là một phân tầng của \(G\). Nếu mỗi
+\(V_i\) có không nhiều đỉnh, ta có thể quyết định theo thứ tự
+\(V_1,V_2,\ldots,V_k\), và ở mỗi giai đoạn chỉ cần nén trạng thái cách chọn của
+một tầng, hiệu quả cao hơn nhiều so với DP nén trạng thái trên toàn bộ đồ thị
+tổng quát.
+
+Ký hiệu \(f(i,S)\) là tập độc lập lớn nhất trong
+\(G[V_1\cup V_2\cup\cdots\cup V_i]\) có chứa \(S\) làm tập con. Công thức
+chuyển trạng thái như sau:
+\[
+  f(i,S)=
+  \begin{cases}
+    -\infty, & S\text{ không độc lập},\\
+    0, & i=0,\\
+    \max\{f(i-1,S')\mid S'\subseteq V_{i-1},\ S\cup S'\text{ độc lập}\}
+      + |S'|, & \text{trường hợp còn lại.}
+  \end{cases}
+\]
+
+Số độc lập của \(G\) là giá trị lớn nhất của \(f(k,I)\) trên mọi tập độc lập
+\(I\) của \(G[V_k]\). Quá trình này cũng tìm được một tập độc lập lớn nhất của
+\(G\), phương pháp tương tự như trước, nên ở đây không trình bày thêm.
+
+Độ phức tạp thời gian của thuật toán này là
+\(\Oh\!\left(\sum_{i=1}^{k-1}2^{|V_i|+|V_{i+1}|}\right)\). Tuy nhiên trong đa
+số trường hợp, số tập độc lập trong mỗi \(V_i\) không nhiều, nên hiệu suất thời
+gian thực tế cao hơn cận trên lý thuyết rất nhiều.
+
+\subsubsection{Quy hoạch động trên ``đồ thị \texorpdfstring{\(k\)}{k}-xương rồng''}
+
+\paragraph{Ví dụ 5.}
+Cho đồ thị vô hướng đơn \(G=(V,E)\), bảo đảm mỗi cạnh thuộc đúng một chu trình
+đơn. Hãy tìm số độc lập của \(G\). \(|V|\le 50\,000\),
+\(|E|\le 60\,000\).\footnote{Nguồn bài: LYDSY 4316.}
+
+Nếu \(G\) không liên thông, chỉ cần tìm số độc lập của từng thành phần liên
+thông của \(G\) rồi cộng lại. Dưới đây giả sử \(G\) là đồ thị liên thông. Đồ
+thị đơn liên thông mà mỗi cạnh thuộc nhiều nhất một chu trình đơn được gọi là
+``xương rồng''. Nó có tính chất đặc biệt gì?
+
+Ta có thể thử mạnh dạn: chọn tùy ý \(r\in V\), lấy \(r\) làm gốc và tìm kiếm
+theo chiều sâu (depth-first search, DFS) trên đồ thị \(G\), thu được một cây
+tìm kiếm theo chiều sâu (cây DFS) \(T=(V,E_T)\). Hiển nhiên \(T\) là một cây
+khung của \(G\). Định nghĩa cạnh cây là cạnh thuộc \(E_T\), cạnh không cây là
+cạnh không thuộc \(E_T\), tức thuộc \(E-E_T\).
+
+Cây DFS có một tính chất rất quan trọng:
+
+\paragraph{Định lý 4.3.}
+Với mọi cạnh không cây \(e=(u,v)\), trong \(T\), hoặc \(u\) là tổ tiên của
+\(v\), hoặc \(v\) là tổ tiên của \(u\).
+
+\paragraph{Chứng minh.}
+Giả sử \(e=(u,v)\) là cạnh không cây và \(u\) được thăm trước \(v\). Khi thăm
+\(u\), nếu \(v\) không nằm trong cây con gốc \(u\), thì khi liệt kê cạnh ra
+\(e\) của \(u\), \(v\) chưa được thăm, nên bước tiếp theo sẽ đi theo cạnh \(e\)
+để thăm \(v\). Từ đó \(e\in E_T\), mâu thuẫn với giả thiết. Vậy \(u\) là tổ
+tiên của \(v\). Tương tự, nếu \(v\) được thăm trước \(u\), thì \(v\) là tổ tiên
+của \(u\). \qedmark
+
+Với cạnh không cây \(e=(u,v)\), nếu cạnh cây \(e'\) nằm trên đường đi đơn từ
+\(u\) đến \(v\) trong cây \(T\), thì gọi cạnh cây \(e'\) bị cạnh không cây
+\(e\) \term{phủ} (cover). Với xương rồng, ta có:
+
+\paragraph{Định lý 4.4.}
+Mỗi cạnh cây bị nhiều nhất một cạnh không cây phủ.
+
+\paragraph{Chứng minh.}
+Giả sử một cạnh cây \(e\) bị hai cạnh không cây \((u_1,v_1),(u_2,v_2)\) phủ.
+Khi đó \((u_1,v_1)\) cùng đường đi đơn từ \(v_1\) đến \(u_1\) trong \(T\) tạo
+thành một chu trình đơn \(C_1\); \((u_2,v_2)\) cùng đường đi đơn từ \(v_2\) đến
+\(u_2\) trong \(T\) tạo thành một chu trình đơn \(C_2\). Cạnh \(e\) đồng thời
+thuộc \(C_1\) và \(C_2\), mâu thuẫn với định nghĩa xương rồng. Vì vậy \(e\) bị
+nhiều nhất một cạnh không cây phủ. \qedmark
+
+Tính chất này cho phép ta làm quy hoạch động trên cây \(T\). Ý tưởng ban đầu
+là: ký hiệu \(f(i,0)\) là kích thước tập độc lập lớn nhất trong cây con gốc
+đỉnh \(i\in V\) của \(T\), \(f(i,1)\) là kích thước tập độc lập lớn nhất trong
+cây con \(i\) khi đỉnh cha của \(i\) thuộc tập độc lập. Tuy nhiên cách này
+không bảo đảm hai đầu mút của cạnh không cây không đồng thời thuộc tập độc lập.
+
+Xét thêm một chiều trạng thái. Ký hiệu \(f(i,j,k)\) là kích thước tập độc lập
+lớn nhất trong cây con gốc \(i\), trong trường hợp đỉnh cha của \(i\) thuộc
+\((j=1)\) hoặc không thuộc \((j=0)\) tập độc lập, và đỉnh đầu trên \(u_i\) của
+cạnh không cây \(e'_i=(u_i,v_i)\) phủ cạnh \(e_i\) nối \(i\) với cha của nó
+thuộc \((k=1)\) hoặc không thuộc \((k=0)\) tập độc lập. Khi \(e_i\) không thuộc
+chu trình, \(k=0\). Khi chuyển, liệt kê \(i\) có thuộc tập độc lập hay không;
+chú ý khi \(i\) là đỉnh đầu dưới \(v_i\) của \(e'_i\) và \(k=1\), không thể
+chọn \(i\). Công thức chuyển trạng thái như sau, trong đó \(\mathrm{Chi}_i\)
+biểu thị tập con của đỉnh \(i\):
+
+\begin{itemize}
+  \item Khi \(j=1\) hoặc \(k=1\wedge i=v_i\):
+  \[
+    f(i,j,k)=\sum_{c\in\mathrm{Chi}_i} f(c,0,[e'_c=e'_i]k).
+  \]
+
+  \item Ngược lại:
+  \[
+    f(i,j,k)=\max\left\{
+      \sum_{c\in\mathrm{Chi}_i} f(c,0,[e'_c=e'_i]k),\
+      1+\sum_{c\in\mathrm{Chi}_i} f(c,1,[e'_c=e'_i]k+[u_c=i])
+    \right\}.
+  \]
+\end{itemize}
+
+Sau khi tiền xử lý mọi \(u_i,v_i\) trong \(\Oh(m)\) thời gian, ta có thể dùng
+quy hoạch động \(\Oh(n)\) nói trên để tìm tập độc lập lớn nhất. Độ phức tạp
+thời gian là \(\Oh(n+m)\).
+
+Sau khi nghiên cứu thuật toán trên, tác giả suy nghĩ liệu thuật toán này có
+thể mở rộng hay không. Qua phân tích, tác giả nhận thấy sau khi sửa thuật toán
+một cách đơn giản, nó không chỉ xử lý được xương rồng mà còn xử lý được đồ thị
+trong đó mỗi cạnh thuộc không nhiều chu trình đơn.
+
+Ta gọi các đồ thị như vậy là ``đồ thị \(k\)-xương rồng''\footnote{Tên gọi bắt
+nguồn từ LYDSY 4863.}, tức đồ thị mà mỗi cạnh thuộc nhiều nhất \(k\) chu trình
+đơn, trong đó \(k\) tương đối nhỏ.
+
+Khi giải bài toán tập độc lập trên đồ thị \(k\)-xương rồng \(G=(V,E)\), ta
+cũng chọn một đỉnh làm gốc và DFS trên đồ thị để thu được cây DFS \(T\). Tiếp
+theo với mỗi đỉnh \(i\), ký hiệu \(C_i\) là tập các cạnh không cây phủ cạnh
+\(e_i\) nối \(i\) với cha của nó. Khi đó có một tính chất:
+
+\paragraph{Định lý 4.5.}
+Trong đồ thị \(k\)-xương rồng, với mọi \(i\in V\), \(|C_i|\le k\).
+
+\paragraph{Chứng minh.}
+Với mỗi \((u,v)\in C_i\), cạnh \((u,v)\) và đường đi từ \(u\) đến \(v\) trong
+\(T\) đều tương ứng với một chu trình đơn chứa \(e_i\). Vì vậy nhất định tồn
+tại \(|C_i|\) chu trình đơn chứa \(e_i\).
+
+Do số chu trình đơn chứa \(e_i\) không vượt quá \(k\), nên \(|C_i|\le k\).
+\qedmark
+
+Tiếp theo, ta lợi dụng tính chất này để thiết kế quy hoạch động. Trong trạng
+thái, cần ghi lại đỉnh đầu trên của mọi cạnh trong \(C_i\) có thuộc tập độc lập
+hay không; cách chuyển tương tự. Cụ thể, ký hiệu \(f(i,j,S)\) là kích thước tập
+độc lập lớn nhất trong cây con gốc \(i\) của \(T\), trong trường hợp đỉnh cha
+của \(i\) thuộc \((j=1)\) hoặc không thuộc \((j=0)\) tập độc lập, và trong tập
+\(U_i\) gồm các đỉnh đầu trên của các cạnh trong \(C_i\), những đỉnh thuộc tập
+độc lập tạo thành tập \(S\). Công thức chuyển trạng thái như sau:
+
+\begin{itemize}
+  \item Khi \(j=1\) hoặc \(S\cup\{i\}\) không phải là tập độc lập:
+  \[
+    f(i,j,S)=\sum_{c\in\mathrm{Chi}_i} f(c,0,S\cap U_i).
+  \]
+
+  \item Ngược lại:
+  \[
+    f(i,j,S)=\max\left\{
+      \sum_{c\in\mathrm{Chi}_i} f(c,0,S\cap U_i),\
+      1+\sum_{c\in\mathrm{Chi}_i} f(c,1,(S\cup\{i\})\cap U_i)
+    \right\}.
+  \]
+\end{itemize}
+
+Tương tự thuật toán trước, khi xem \(k\) là hằng số, độ phức tạp của thuật toán
+này là \(\Oh(n)\).
+
+Thực ra điều kiện ``đồ thị \(k\)-xương rồng'' là quá rộng. Chỉ cần số cạnh
+không cây phủ mỗi cạnh cây đều không vượt quá \(k\), thậm chí chỉ cần
+\(\sum_{v\in V}2^{|C_v|}\) không lớn, thuật toán này đều có hiệu suất rất cao.
+
+Thuật toán này có thể mở rộng sang các bài toán phức tạp hơn, như đếm tập độc
+lập.
+
+\paragraph{Ví dụ 6 (Bài toán đếm tập con, test 7 và 8).}
+Cho đồ thị vô hướng \(G=(V,E)\), \(|V|=n\), \(|E|=m\). Hỏi có bao nhiêu tập con
+\(V'\subseteq V\) thỏa \(|V'|=k\) và với mọi \((u,v)\in E\),
+\(u\notin V'\vee v\notin V'\). Vì đáp án có thể rất lớn, chỉ cần in đáp án lấy
+modulo \(p\). Đây là bài nộp đáp án.\footnote{Nguồn bài: tự sáng tác, UOJ
+\#259.}
+
+Trong ví dụ này chỉ thảo luận test 7 và 8. Hai test này thỏa \(G\) là đồ thị
+liên thông, quy mô dữ liệu như bảng sau:
+
+\begin{center}
+\small
+\begin{tabular}{c r r r r}
+\textbf{Mã test} & \(n=\) & \(m=\) & \(k=\) & \(p=\)\\
+\hline
+7 & 4998 & 5002 & 666 & 1000000009\\
+8 & 11986 & 12011 & 1098 & 1000000007
+\end{tabular}
+\end{center}
+
+Bài toán yêu cầu số tập độc lập kích thước \(k\) trong \(G\). Vì \(G\) là đồ
+thị liên thông và \(m-n\) rất nhỏ, có thể thấy \(G\) nhận được bằng cách thêm
+\(m-n+1\) cạnh vào một cây.
+
+Nếu sau khi dựng cây DFS của \(G\), ta vét cạn một đầu mút của mỗi cạnh không
+cây có được chọn hay không, rồi dùng quy hoạch động trên cây để thống kê số
+tập độc lập, thì có thể qua test 7 khá nhanh. Nhưng test 8 cần chạy quá lâu và
+cần tối ưu. Theo tư tưởng đã nêu trong mục này, số chu trình đơn mà mỗi cạnh
+thuộc về không nhiều, nên có thể dùng thuật toán trên để giải.
+
+Ký hiệu:
+
+\begin{itemize}
+  \item \(C_i\) là tập các \(u_e\) thỏa \(e\in E'\), \(u_e\) là tổ tiên của
+  \(i\), không tính \(i\), và \(v_e\) nằm trong cây con gốc \(i\).
+
+  \item \(f(i,j,S,s)\) là số tập độc lập kích thước \(s\) trong \(j\) cây con
+  đầu tiên của \(i\), với điều kiện tập các đỉnh trong \(C_i\) thuộc tập độc
+  lập là \(S\).
+
+  \item \(g(i,j,S,s)\) là số tập độc lập kích thước \(s\) trong \(i\) và \(j\)
+  cây con đầu tiên của \(i\), với điều kiện tập các đỉnh trong \(C_i\) thuộc
+  tập độc lập là \(S\).
+
+  \item \(F(i,S,s)=f(i,t_i,S,s)\), \(G(i,S,s)=g(i,t_i,S,s)\), trong đó \(t_i\)
+  là số con của \(i\).
+\end{itemize}
+
+Với \(f(i,j,S,s)\), giả sử trong \(i\) và \(j-1\) cây con đầu tiên của \(i\) có
+tổng cộng \(s_1\) đỉnh, trong cây con thứ \(j\) có \(s_2\) đỉnh, và con thứ
+\(j\) là \(c_j\). Khi đó
+\[
+  f(i,j,S,s)=
+  \sum_{x=\max\{s-s_1,0\}}^{\min\{s,s_2\}}
+    f(i,j-1,S,s-x)G(c_j,S\cap C_{c_j},x),
+  \qquad 0\le s\le s_1+s_2.
+\]
+
+Với \(g(i,j,S,s)\), nếu tồn tại cạnh \(e\in E'\) sao cho \(u_e\in S\) và
+\(v_e=i\), thì \(i\) không thể thuộc tập độc lập, nên
+\[
+  g(i,j,S,s)=f(i,j,S,s).
+\]
+
+Ngược lại, tồn tại tập độc lập chứa \(i\); số tập độc lập như vậy được ký hiệu
+\(g'(i,j,S,s)\). Khi đó
+\[
+  g'(i,j,S,s)=
+  \sum_{x=\max\{s-s_1,0\}}^{\min\{s-1,s_2\}}
+    g'(i,j-1,S,s-x)F(c_j,(S\cup\{i\})\cap C_{c_j},x),
+  \qquad 0\le s\le s_1+s_2.
+\]
+Do đó
+\[
+  g(i,j,S,s)=g'(i,j,S,s)+f(i,j,S,s),\qquad 0\le s\le s_1+s_2.
+\]
+
+Biên là \(f(i,0,S,0)=g'(i,0,S,1)=1\); mọi trạng thái chưa định nghĩa có giá trị
+\(0\). Đáp án chính là \(G(r,\varnothing,k)\).
+
+Chỉ cần tính các trạng thái thỏa \(s\le k\). Độ phức tạp là
+\(\Oh\!\left(k\sum_{v\in V}2^{|C_v|}\right)\), trong đó \(|C_v|\) thường không
+quá \(12\). Toàn bộ tính toán được thực hiện theo modulo \(p\); bộ nhớ có thể
+cấp phát động.
+
+Cần chú ý rằng chọn các đỉnh \(r\in V\) khác nhau làm gốc, cũng như dùng các
+thứ tự khác nhau để DFS, sẽ cho hiệu suất chạy khác nhau. Có thể chọn một gốc
+\(r\) để DFS sao cho
+\[
+  \sum_{v\in V}2^{|C_v|}
+\]
+nhỏ nhất, rồi mới thực hiện thuật toán trên để giảm độ phức tạp thời gian. Qua
+thực nghiệm, số trạng thái của test 7 xấp xỉ \(5\times10^5\), có thể qua test
+này trong \(1\) giây; số trạng thái của test 8 xấp xỉ \(10^8\), có thể qua
+test này trong \(2\) phút.
+
+\subsection{Tổng kết}
+
+Các phương pháp tối ưu thuật toán cho bài toán NP-hard nhiều không kể xiết. Bài
+viết này chỉ nhắc đến vài thuật toán tối ưu cho bài toán tập độc lập. Các
+phương pháp này giải những bài toán tương tự nhau, nhưng tư tưởng lại khác
+nhau: với bài toán tối ưu thông thường, như tập độc lập lớn nhất, có thể dùng
+thuật toán tìm kiếm có cắt nhánh theo tính tối ưu để giảm lượng liệt kê; với
+bài toán đếm hoặc có ràng buộc bổ sung, như đếm tập độc lập, có thể dùng quy
+hoạch động nén trạng thái và nâng cao hiệu suất chạy bằng cách tối ưu số trạng
+thái; với đồ thị có thể ``tăng'' và đồ thị có tính giai đoạn rõ rệt, lại có
+thể dùng thuật toán độ phức tạp đa thức để hoàn thành hiệu quả.
+
+Đồng thời, bài viết phân tích và so sánh thời gian chạy của vài thuật toán
+trong trường hợp ngẫu nhiên, giúp mọi người có nhận thức sâu hơn về hiệu suất
+giải bài toán tập độc lập.
+
+\subsection*{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+
+Cảm ơn cô Chen Ying của Trường Trung học số 1 Phúc Châu đã quan tâm và chỉ
+dẫn.
+
+Cảm ơn các anh chị khóa trên của Trường Trung học số 1 Phúc Châu đã đem lại
+nhiều gợi mở và chỉ dẫn.
+
+Cảm ơn tổ huấn luyện OI đã giúp đỡ tôi.
+
+Cảm ơn bạn Chen Junkun đã cung cấp cho tôi không ít kỹ thuật tối ưu thuật toán
+tập độc lập, giúp tôi rất nhiều trong nghiên cứu DP trên cây DFS.
+
+Cảm ơn mọi người đã cung cấp các tài liệu mà bài viết này từng tham khảo.
+
+Cảm ơn quý vị đã dành thời gian quý báu trong lúc bận rộn để đọc bài.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}[label={[\arabic*]}]
+  \item Wikipedia, Bron--Kerbosch algorithm.
+
+  \item Robson, J. M. (2001), Finding a maximum independent set in time
+  \(\Oh(2^{n/4})\).
+
+  \item Tomita, Etsuji; Tanaka, Akira; Takahashi, Haruhisa (2006), The
+  worst-case time complexity for generating all maximal cliques and
+  computational experiments.
+
+  \item Minty, George J. (1980), ``On maximal independent sets of vertices in
+  claw-free graphs'', \emph{Journal of Combinatorial Theory. Series B},
+  28 (3): 284--304, doi:10.1016/0095-8956(80)90074-X, MR 579076.
+\end{enumerate}
+
 \section*{Ghi chú về trích xuất}
 
 Nội dung bài đầu được trích bằng \texttt{pdftotext} từ trang vật lý 3 đến 13
@@ -1832,5 +2920,15 @@ LaTeX. Công thức khai triển \(E(x)\) ở thuật toán sáu được giữ 
 vế phải dùng \(x^k\) trong tổng, dù về mặt ký hiệu đây có vẻ là lỗi nguồn
 thay vì \(x^i\). Dòng định nghĩa \(P(x)\) cũng được giữ theo bản in, nơi không
 có thừa số lũy thừa của \(x\) trong tổng.
+
+Bài thứ tư được trích bằng \texttt{pdftotext} từ trang vật lý 34 đến 51 của
+PDF, tương ứng trang bài viết 32 đến 49; trang vật lý 52 là bài kế tiếp. Bài
+này không có hình; hai bảng và hai mã giả được dựng lại bằng LaTeX. Các ký
+hiệu bị lớp văn bản trích thành \(<\), \((\) hoặc dấu phẩy đã được đối chiếu
+với trang render và chuyển về \(\notin\), \(\subset\), \(\ne\) khi rõ nghĩa.
+Bản in ở điều kiện cực đại của \(S\) trên trang 36 ghi \(V\cup\{v\}\); bản dịch
+dùng \(S\cup\{v\}\) theo nội dung toán học ngay sau đó. Hai dòng mã giả
+\(\text{\textbf{end for}}=0\) và \(\text{\textbf{return }}I=0\) được giữ theo
+bản in.
 
 \end{document}

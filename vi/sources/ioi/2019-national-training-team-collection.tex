@@ -31,10 +31,11 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2019. Tệp được
 tạo bằng XeTeX và có lớp văn bản đọc được; tuy nhiên các trang có watermark
 chéo, nên kết quả trích xuất xen thêm chữ từ watermark vào nội dung chính. Bản
-LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và ba bài viết đầu
-tiên: ``Tính chất và ứng dụng của hai loại dãy truy hồi'' của Zhong Ziqian và
-``Bàn về bài toán bước đi ngẫu nhiên trên mô hình đồ thị'' của Wang Xiuhan, và
-``Báo cáo ra đề \emph{Bài toán nhỏ dễ}'' của Yang Junzhao.
+LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và bốn bài viết đầu
+tiên: ``Tính chất và ứng dụng của hai loại dãy truy hồi'' của Zhong Ziqian,
+``Bàn về bài toán bước đi ngẫu nhiên trên mô hình đồ thị'' của Wang Xiuhan,
+``Báo cáo ra đề \emph{Bài toán nhỏ dễ}'' của Yang Junzhao, và ``Bàn về bài
+toán tô màu đỉnh của đồ thị'' của Gao Jiaxuan.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -2093,6 +2094,994 @@ Xin cảm ơn cha mẹ đã quan tâm và ủng hộ tôi.
 \begin{enumerate}
   \item CodeChef. Count on a Treap, problem code: COT5.
   \item 2017 Multi-University Training Contest 5, problem 1005.
+\end{enumerate}
+
+\clearpage
+\section*{Bàn về bài toán tô màu đỉnh của đồ thị}
+
+\begin{center}
+Gao Jiaxuan, Trường Trung học Tưởng niệm Tôn Trung Sơn, thành phố Trung Sơn,
+tỉnh Quảng Đông
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết này giới thiệu một nội dung quan trọng trong bài toán tô màu đồ thị:
+bài toán tô màu đỉnh. Tô màu đỉnh có hai phần quan trọng: sắc số và đa thức
+sắc. Bài viết giới thiệu các định lý liên quan tới sắc số và một số thuật toán
+thực dụng để phán định \(k\)-tô màu được cũng như để tìm sắc số của đồ thị;
+đồng thời, bài viết giới thiệu thuật toán xóa--co để tính đa thức sắc của đồ
+thị, rồi nêu các tối ưu của thuật toán này trên đồ thị thưa và đồ thị dày.
+
+\subsection*{Lời nói đầu}
+
+Bài toán tô màu đồ thị là một nội dung quan trọng trong lý thuyết đồ thị, từ
+xưa tới nay luôn là một chủ đề được nghiên cứu rộng rãi; ví dụ nổi tiếng là
+định lý bốn màu. Đồng thời, tô màu đồ thị có ứng dụng quan trọng trong các bài
+toán lập lịch, phân phối thanh ghi và quy hoạch.
+
+Bài toán tô màu đồ thị có vài dạng: tô màu đỉnh, tô màu cạnh và một số bài
+toán tô màu khác; trong đó tô màu đỉnh là một dạng rất quan trọng. Trong thi
+tin học cũng có những bài liên quan tới tô màu đỉnh, chẳng hạn tính sắc số của
+một đồ thị, tính số cách \(k\)-tô màu một đồ thị; nhưng dữ liệu của lớp bài này
+thường rất nhỏ, và lời giải chuẩn thường dùng chuỗi lũy thừa theo tập hợp
+\footnote{Xem chi tiết trong bài ``Tính chất, ứng dụng và thuật toán nhanh của
+chuỗi lũy thừa theo tập hợp'' của Lu Kaifeng, tập luận văn đội tuyển quốc gia
+năm 2015.}. Vì vậy tác giả nghiên cứu sâu hơn về bài toán tô màu đỉnh, với hy
+vọng khiến nhiều người chú ý hơn tới bài toán này.
+
+Bài viết chia thành ba phần. Phần thứ nhất đưa ra một số ký hiệu và định nghĩa
+sẽ dùng. Phần thứ hai xoay quanh sắc số trong bài toán tô màu đỉnh, trình bày
+các định lý và thuật toán thực dụng liên quan. Phần thứ ba giới thiệu thuật
+toán xóa--co\footnote{Nguyên văn: Deletion-Contraction Algorithm.} để tính đa
+thức sắc của đồ thị và đưa ra các tối ưu của tác giả cho thuật toán ấy.
+
+\section*{1. Định nghĩa và quy ước}
+
+Để tiện mô tả, trước hết ta đưa ra một số định nghĩa.
+
+Nếu không nói rõ thêm, đồ thị trong bài đều là đồ thị vô hướng không có cạnh
+bội và không có khuyên.
+
+Với \(G=(V,E)\), bài viết dùng \(n=|V|\) để chỉ kích thước tập đỉnh \(V\), và
+dùng \(m=|E|\) để chỉ kích thước tập cạnh \(E\).
+
+\paragraph{\term{Định nghĩa 1.1.} (Tô màu đỉnh)}
+Tô màu đỉnh là việc trong một đồ thị vô hướng \(G=(V,E)\), gán cho mỗi đỉnh
+\(x\) một màu \(c(x)\), sao cho phương án tô màu thỏa
+\[
+  \forall (u,v)\in E,\quad c(u)\ne c(v).
+\]
+
+\paragraph{\term{Định nghĩa 1.2.} (Phương án \(k\)-tô màu hợp lệ)}
+Trong đồ thị vô hướng \(G\), một phương án tô màu dùng không quá \(k\) màu
+được gọi là phương án \(k\)-tô màu hợp lệ; nếu đồ thị vô hướng \(G\) tồn tại
+một phương án \(k\)-tô màu, ta nói \(G\) là \(k\)-tô màu được.
+
+\paragraph{\term{Định nghĩa 1.3.} (Tập độc lập)}
+Một tập độc lập của đồ thị vô hướng \(G=(V,E)\) được định nghĩa là một tập con
+\(S\) của \(V\), sao cho các đỉnh trong \(S\) đôi một không kề nhau. Nói hình
+thức, \(I\) là một tập độc lập của \(G\) khi và chỉ khi
+\[
+  I\subseteq V\quad\text{và}\quad
+  \forall u,v\in I,\ (u,v)\notin E.
+\]
+
+\paragraph{\term{Hệ quả 1.1.}}
+Trong một phương án \(k\)-tô màu hợp lệ của đồ thị vô hướng \(G\), tập các
+đỉnh mang một màu bất kỳ đều là một tập độc lập của \(G\).
+
+\paragraph{\term{Định nghĩa 1.4.} (Đồ thị song liên thông)}
+Ta định nghĩa đồ thị vô hướng \(G\) là song liên thông khi và chỉ khi sau khi
+bỏ đi một đỉnh bất kỳ của \(G\), đồ thị \(G\) vẫn liên thông.
+
+\paragraph{\term{Định nghĩa 1.5.} (Thành phần song liên thông)}
+Một thành phần song liên thông của đồ thị vô hướng \(G\) được định nghĩa là
+một đồ thị con song liên thông cực đại của \(G\). Hai thành phần song liên
+thông khác nhau bất kỳ trong \(G\) chứa nhiều nhất một đỉnh chung; những đỉnh
+như vậy được gọi là đỉnh khớp. Một đồ thị song liên thông không có đỉnh khớp.
+
+\paragraph{\term{Định nghĩa 1.6.} (Đồ thị con cảm sinh)}
+Trong đồ thị vô hướng \(G=(V,E)\), với tập đỉnh \(S\subseteq V\), đồ thị con
+cảm sinh bởi \(S\) trên \(G\) được định nghĩa là đồ thị con gồm các đỉnh trong
+\(S\) và các cạnh trong \(E\) có cả hai đầu mút đều thuộc \(S\), ký hiệu là
+\(G[S]\).
+
+\paragraph{\term{Định nghĩa 1.7.} (Clique)}
+Một đồ thị vô hướng \(G=(V,E)\) là một clique khi và chỉ khi giữa hai đỉnh
+khác nhau bất kỳ trong \(V\) đều có cạnh nối; nói hình thức,
+\[
+  \forall u,v\in V,\ u\ne v\Longrightarrow (u,v)\in E.
+\]
+Ký hiệu \(K_n\) chỉ clique có kích thước \(n\).
+
+\paragraph{\term{Định nghĩa 1.8.} (Clique lớn nhất và số clique)}
+Clique lớn nhất của đồ thị vô hướng \(G=(V,E)\) được định nghĩa là một tập con
+lớn nhất \(S\) của \(V\) sao cho đồ thị con cảm sinh bởi \(S\) trên \(G\) là
+một clique. Kích thước của clique lớn nhất của \(G\) được gọi là số clique của
+\(G\), ký hiệu \(\omega(G)\).
+
+\paragraph{\term{Định nghĩa 1.9.}}
+Trong đồ thị vô hướng \(G=(V,E)\), dùng \(\Delta(G)\) để chỉ bậc lớn nhất
+trong \(G\), và dùng \(\Delta(x)\) để chỉ bậc của đỉnh \(x\).
+
+Để tiện mô tả, bài viết dùng các số nguyên dương để đánh số các màu khác
+nhau; trong một phương án \(k\)-tô màu hợp lệ, các màu được đánh số bởi
+\(1..k\).
+
+\section*{2. Sắc số}
+
+\subsection*{2.1. Định nghĩa}
+
+\paragraph{\term{Định nghĩa 2.1.} (Sắc số)}
+Sắc số của đồ thị vô hướng \(G\) được định nghĩa là số nguyên dương nhỏ nhất
+\(k\) sao cho \(G\) là \(k\)-tô màu được; sắc số của \(G\) cũng được ký hiệu
+\(\chi(G)\).
+
+\subsection*{2.2. Cận của sắc số}
+
+Có nhiều định lý và kết luận thú vị về cận của sắc số \(\chi(G)\); ở đây nêu
+một vài kết luận cơ bản.
+
+\paragraph{\term{Kết luận 2.1.}}
+Trên đồ thị vô hướng \(G=(V,E)\), sắc số không nhỏ hơn số clique, tức
+\[
+  \chi(G)\ge \omega(G).
+\]
+
+\paragraph{\term{Kết luận 2.2.}}
+Trên đồ thị vô hướng \(G=(V,E)\),
+\[
+  \chi(G)(\chi(G)-1)\le 2m.
+\]
+
+\paragraph{\term{Chứng minh.}}
+Xét một phương án tô màu của \(G\). Nếu tồn tại hai màu \(p,q\) sao cho không
+có \((u,v)\in E\) nào thỏa \(u\) được tô màu \(p\) và \(v\) được tô màu \(q\),
+thì đổi màu tất cả các đỉnh màu \(p\) thành màu \(q\) vẫn thu được một phương
+án tô màu hợp lệ. Từ đó suy ra trong một phương án \(\chi(G)\)-tô màu, số cạnh
+ít nhất là \(\chi(G)(\chi(G)-1)/2\), tức
+\(\chi(G)(\chi(G)-1)\le 2m\). \(\square\)
+
+\subsection*{2.3. Tô màu tham lam}
+
+Thông qua thuật toán tô màu tham lam sau, ta có thể thấy
+\[
+  \chi(G)\le \Delta(G)+1.
+\]
+
+Quy trình của thuật toán tô màu tham lam như sau. Trước hết chọn một dãy
+\(a\), trong đó \(a\) là một hoán vị của tất cả các đỉnh trong \(G\), và ban
+đầu mọi đỉnh đều được đặt là chưa tô màu.
+
+Sau đó, duyệt từng đỉnh trong \(a\) theo thứ tự từ trước ra sau. Với đỉnh
+\(x\), gọi \(c\) là màu có số hiệu nhỏ nhất sao cho trong các đỉnh hiện kề với
+\(x\), không có đỉnh nào đã được tô màu \(c\). Dùng màu \(c\) tô cho đỉnh
+\(x\).
+
+Dễ thấy số hiệu màu của mỗi đỉnh chắc chắn không vượt quá số đỉnh kề với nó
+và đứng trước nó trong dãy, cộng thêm một. Theo quá trình trên, ta thu được
+một phương án tô màu dùng không quá \(\Delta(G)+1\) màu.
+
+Ví dụ, trong hình dưới, thứ tự tô màu là \([b,e,c,a,d]\), và số hiệu của các
+màu đỏ/vàng/xanh dương/xanh lục lần lượt là \(1,2,3,4\):
+
+\begin{center}
+\begin{tikzpicture}[scale=.65, every node/.style={circle,draw,minimum size=18pt,inner sep=1pt,font=\small}]
+  \newcommand{\colora}{white}
+  \newcommand{\colorb}{red!70}
+  \newcommand{\colorc}{yellow!70}
+  \newcommand{\colord}{green!50}
+  \newcommand{\colore}{red!70}
+  \coordinate (a) at (0,1.6);
+  \coordinate (b) at (1.2,.6);
+  \coordinate (c) at (.7,-.8);
+  \coordinate (d) at (-.7,-.8);
+  \coordinate (e) at (-1.2,.6);
+  \foreach \u/\v in {a/b,b/c,c/d,d/e,e/a,a/c,a/d,b/d} \draw (\u)--(\v);
+  \node[fill=\colora] at (a) {a};
+  \node[fill=\colorb] at (b) {b};
+  \node[fill=white] at (c) {c};
+  \node[fill=white] at (d) {d};
+  \node[fill=white] at (e) {e};
+  \begin{scope}[xshift=3.5cm]
+    \foreach \u/\v in {a/b,b/c,c/d,d/e,e/a,a/c,a/d,b/d} \draw (\u)--(\v);
+    \node[fill=white] at (a) {a};
+    \node[fill=red!70] at (b) {b};
+    \node[fill=white] at (c) {c};
+    \node[fill=white] at (d) {d};
+    \node[fill=red!70] at (e) {e};
+  \end{scope}
+  \begin{scope}[xshift=7cm]
+    \foreach \u/\v in {a/b,b/c,c/d,d/e,e/a,a/c,a/d,b/d} \draw (\u)--(\v);
+    \node[fill=white] at (a) {a};
+    \node[fill=red!70] at (b) {b};
+    \node[fill=yellow!70] at (c) {c};
+    \node[fill=white] at (d) {d};
+    \node[fill=red!70] at (e) {e};
+  \end{scope}
+  \begin{scope}[xshift=5cm,yshift=-3.2cm]
+    \foreach \u/\v in {a/b,b/c,c/d,d/e,e/a,a/c,a/d,b/d} \draw (\u)--(\v);
+    \node[fill=blue!35] at (a) {a};
+    \node[fill=red!70] at (b) {b};
+    \node[fill=yellow!70] at (c) {c};
+    \node[fill=white] at (d) {d};
+    \node[fill=red!70] at (e) {e};
+  \end{scope}
+  \begin{scope}[xshift=1.5cm,yshift=-3.2cm]
+    \foreach \u/\v in {a/b,b/c,c/d,d/e,e/a,a/c,a/d,b/d} \draw (\u)--(\v);
+    \node[fill=blue!35] at (a) {a};
+    \node[fill=red!70] at (b) {b};
+    \node[fill=yellow!70] at (c) {c};
+    \node[fill=green!50] at (d) {d};
+    \node[fill=red!70] at (e) {e};
+  \end{scope}
+  \draw[-{Latex[length=3mm]},thick] (1.55,.6)--(2.35,.6);
+  \draw[-{Latex[length=3mm]},thick] (5.05,.6)--(5.85,.6);
+  \draw[-{Latex[length=3mm]},thick] (7,-1.1)--(6.25,-2.1);
+  \draw[-{Latex[length=3mm]},thick] (4.1,-2.6)--(3.15,-2.6);
+\end{tikzpicture}
+\end{center}
+
+Trong sơ đồ trên, các màu được thêm dần theo thứ tự \(b,e,c,a,d\); đây cũng là
+thuật toán tô màu theo dãy. Dãy \(a\) được chọn có ảnh hưởng then chốt tới kết
+quả của thuật toán.
+
+\subsection*{2.4. Đồ thị phẳng}
+
+\paragraph{\term{Định nghĩa 2.2.} (Đồ thị phẳng)}
+Đồ thị vô hướng \(G\) là đồ thị phẳng khi và chỉ khi có thể vẽ \(G\) trên mặt
+phẳng sao cho mọi cạnh chỉ cắt nhau tại các đỉnh.
+
+Trong bài toán tô màu đỉnh trên đồ thị phẳng, định lý bốn màu chiếm vị trí rất
+quan trọng; nội dung của nó là:
+
+\paragraph{\term{Định lý 2.1.} (Định lý bốn màu)}
+Mọi đồ thị phẳng đều tồn tại phương án \(4\)-tô màu hợp lệ.
+
+Vì định lý bốn màu không phải trọng tâm của bài viết, ở đây không dành nhiều
+dung lượng giới thiệu.
+
+Dưới đây đưa ra cách tìm một phương án \(6\)-tô màu cho đồ thị phẳng. Trước
+hết có kết luận:
+
+\paragraph{\term{Kết luận 2.3.}}
+Trong đồ thị phẳng tồn tại ít nhất một đỉnh có bậc không vượt quá \(5\).
+
+Mời người đọc tự chứng minh.
+
+Sau khi có kết luận này, không khó để có một thuật toán tìm phương án
+\(6\)-tô màu cho đồ thị phẳng \(G=(V,E)\): trước hết tìm trong đồ thị một đỉnh
+\(x\) có bậc không vượt quá \(5\); sau khi tìm được phương án \(6\)-tô màu hợp
+lệ trong \(G-x\), tìm màu \(c\) có số hiệu nhỏ nhất chưa được dùng trong các
+đỉnh kề với \(x\), rồi dùng màu \(c\) tô cho \(x\). Như vậy có thể thu được
+một phương án \(6\)-tô màu hợp lệ.
+
+\subsection*{2.5. Đồ thị dây cung}
+
+\paragraph{\term{Định nghĩa 2.3.} (Đồ thị dây cung)}
+Đồ thị vô hướng \(G\) là đồ thị dây cung khi và chỉ khi với mọi chu trình
+\(C\) trong \(G\) có kích thước lớn hơn \(3\), trên chu trình \(C\) tồn tại
+hai đỉnh không kề nhau trên chu trình nhưng có cạnh nối với nhau; cạnh ấy cũng
+được gọi là một dây cung.
+
+\paragraph{\term{Định nghĩa 2.4.} (Thứ tự loại bỏ hoàn hảo)}
+Một thứ tự loại bỏ hoàn hảo của đồ thị dây cung \(G=(V,E)\) được định nghĩa
+là một dãy \(P\) gồm tất cả các đỉnh trong \(V\), sao cho với mọi đỉnh \(v\),
+các đỉnh kề với \(v\) và đứng sau \(v\) trong dãy \(P\), cùng với \(v\), cảm
+sinh trên \(G\) một clique.
+
+Trong đồ thị dây cung \(G=(V,E)\), đảo ngược một thứ tự loại bỏ hoàn hảo của
+\(G\) để được dãy \(P\), rồi chạy thuật toán tô màu tham lam ở mục 2.3 theo
+dãy \(P\), ta thu được một phương án \(\omega(G)\)-tô màu hợp lệ. Vì với mọi
+đồ thị đều có \(\chi(G)\ge\omega(G)\), suy ra với mọi đồ thị dây cung
+\(G=(V,E)\) đều có
+\[
+  \chi(G)=\omega(G).
+\]
+
+\subsection*{2.6. Định lý Brooks}
+
+\paragraph{\term{Định lý 2.2.} (Định lý Brooks)}
+Khi \(G=(V,E)\) không phải đồ thị đầy đủ và \(G\) không phải chu trình lẻ, ta
+có
+\[
+  \chi(G)\le \Delta(G).
+\]
+
+\paragraph{\term{Chứng minh.}}
+Chứng minh dưới đây dùng quy nạp. Gọi \(d\) là bậc lớn nhất \(\Delta(G)\) của
+đồ thị vô hướng \(G=(V,E)\), và gọi \(n=|V|\) là số đỉnh. Với \(d\), giả sử
+định lý đúng cho mọi trường hợp có \(d\) nhỏ hơn; khi \(d\le2\), định lý hiển
+nhiên đúng. Với \(d,n\), giả sử định lý đúng cho mọi trường hợp có \(n\) nhỏ
+hơn. Quy nạp bắt đầu từ \(n=d+1\); trường hợp này hiển nhiên đúng, vì
+\(G\ne K_{d+1}\), nên chắc chắn tìm được hai đỉnh không kề nhau, có thể tô
+chúng bằng cùng một màu để thu được một phương án \(d\)-tô màu hợp lệ. Do đó
+trong phần chứng minh dưới đây giả sử \(n\ge d+2\) và \(d>2\).
+
+\paragraph{\term{Trường hợp 1.}}
+\(G\) không phải một thành phần song liên thông, tức tồn tại đỉnh khớp \(v\).
+Gọi \(C_1,\ldots,C_t\) là các tập đỉnh của các thành phần liên thông của
+\(G-v\). Theo giả thiết quy nạp, có thể \(d\)-tô màu các đồ thị con cảm sinh
+trên \(G\) bởi các tập \(C_1\cup\{v\},\ldots,C_t\cup\{v\}\). Bằng cách đổi tên
+màu, có thể gộp các phương án \(d\)-tô màu ấy lại để được một phương án
+\(d\)-tô màu hợp lệ của \(G\).
+
+\paragraph{\term{Trường hợp 2.}}
+Trong \(G\) tồn tại hai đỉnh không kề nhau \(v,w\) sao cho \(G-v-w\) không
+liên thông. Gọi \(A\) là tập đỉnh của một thành phần liên thông của
+\(G-v-w\), và đặt \(B=V\setminus(A\cup\{v,w\})\). Khi đó \(v,w\) đều có ít
+nhất một cạnh nối tới các đỉnh trong \(A\) và trong \(B\). Gọi \(G_1\) là đồ
+thị con cảm sinh trên \(G\) bởi \(A\cup\{v,w\}\), và \(G_2\) là đồ thị con cảm
+sinh trên \(G\) bởi \(B\cup\{v,w\}\).
+
+Nếu cả \(G_1+vw\) và \(G_2+vw\) đều không phải \(K_{d+1}\), thì theo quy nạp
+có thể tìm phương án \(d\)-tô màu hợp lệ cho hai đồ thị ấy; đổi tên màu rồi
+gộp hai phương án lại là đủ.
+
+Ngược lại, giả sử \(G_1+vw\) là \(K_{d+1}\) (đồ thị con cảm sinh bởi \(A\)
+trên \(G\) là \(K_{d-1}\)). Khi đó có thể tô cả \(v\) và \(w\) bằng màu \(1\),
+rồi tô các đỉnh trong \(A\) lần lượt bằng các màu \(2..d\). Mặt khác, gộp hai
+đỉnh \(v,w\) trong \(G_2+vw\) để được \(G_3\). Theo quy nạp, \(G_3\) tồn tại
+phương án \(d\)-tô màu hợp lệ; đổi tên màu thì có thể gộp với phương án phía
+trước. Trường hợp \(G_2+vw\) là \(K_{d+1}\) tương tự.
+
+\paragraph{\term{Trường hợp 3.}}
+Trong \(G\) không có đỉnh khớp, và cũng không tồn tại hai đỉnh \(v,w\) sao cho
+\(G-v-w\) không liên thông. Gọi \(x\) là một đỉnh có bậc lớn nhất. Trong các
+đỉnh kề với \(x\), tìm hai đỉnh không kề nhau \(a,b\). Khi đó \(G-a-b\) chắc
+chắn là đồ thị liên thông. Trong \(G-a-b\), chạy duyệt rộng \((bfs)\) từ \(x\)
+để được dãy \(P\); đảo ngược dãy \(P\), rồi thêm \(a,b\) vào đầu dãy để được
+dãy \(Q\). Chạy thuật toán tô màu tham lam ở mục 2.3 theo dãy này sẽ thu được
+một phương án \(d\)-tô màu hợp lệ.
+
+Vì đầu dãy là \(a,b\), nên \(a,b\) đều có màu \(1\). Với mọi đỉnh trong
+\(V\setminus\{a,b,x\}\), đều có ít nhất một đỉnh kề đứng sau nó trong \(Q\).
+Với \(x\), vì \(a,b\) đều có màu \(1\), nên chắc chắn có thể dùng tại đỉnh
+\(x\) một màu có số hiệu không vượt quá \(d\). \(\square\)
+
+\emph{Ghi chú trích xuất hình:} bản gốc có các sơ đồ màu minh họa ba trường
+hợp trong chứng minh định lý Brooks. Các sơ đồ ấy chỉ biểu diễn trực quan việc
+tách theo đỉnh khớp, tách theo hai đỉnh \(v,w\), rồi đổi tên màu để gộp các
+phương án; phần lập luận phía trên đã ghi lại đầy đủ nội dung toán học.
+
+\subsection*{2.7. Phán định \(k\)-tô màu được}
+
+Mục này đưa ra một số thuật toán phán định đồ thị vô hướng \(G=(V,E)\) có
+\(k\)-tô màu được hay không.
+
+\paragraph{\term{Với \(k=2\).}}
+Phán định một đồ thị có \(2\)-tô màu được hay không chính là phán định đồ thị
+ấy có phải đồ thị hai phía hay không; chỉ cần tô đen-trắng trực tiếp trên đồ
+thị. Độ phức tạp thời gian là \(O(n+m)\).
+
+\paragraph{\term{Với \(k=3\).}}
+Để phán định một đồ thị có \(3\)-tô màu được hay không, có thể dùng thuật toán
+Bron--Kerbosch để tìm tập độc lập cực đại, như Zhong Zhixian đã nhắc tới trong
+bài ``Bàn về bài toán tập độc lập trong thi tin học'' thuộc tập luận văn đội
+tuyển quốc gia năm 2017. Độ phức tạp thời gian là \(O(3^{n/3}n^2)\).
+
+\paragraph{\term{Với \(k\) bất kỳ.}}
+Khi \(k\) là bất kỳ, tồn tại cách làm dùng quy hoạch động và thuật toán tìm
+tập độc lập cực đại, với độ phức tạp thời gian \(O(2.445^n)\). Ở đây tác giả
+đưa ra thuật toán dùng chuỗi lũy thừa theo tập hợp để phán định đồ thị có
+\(k\)-tô màu được hay không.
+
+\paragraph{\term{Tích chập hợp.}}
+Định nghĩa tích chập hợp như sau. Với hai chuỗi lũy thừa theo tập hợp \(f,g\)
+trên biến tập hợp \(x\), đặt
+\[
+  f=\sum_{S\subseteq U} f_S x^S,\qquad
+  g=\sum_{S\subseteq U} g_S x^S.
+\]
+Định nghĩa \(f\cdot g=h\), trong đó \(h\) cũng là một chuỗi lũy thừa theo tập
+hợp và hệ số \(h_S\) thỏa
+\[
+  h_S=\sum_{L\subseteq U}\sum_{R\subseteq U}
+       [L\cup R=S]\,f_L g_R. \tag{1}
+\]
+
+Định nghĩa biến đổi Möbius của chuỗi lũy thừa theo tập hợp \(f\) là
+\[
+  \widehat f_S=\sum_{T\subseteq S} f_T.
+\]
+Có thể dùng thuật toán chia để trị để tính \(\widehat f\). Ngược lại, có thể
+định nghĩa phép đảo Möbius của \(\widehat f\) là \(f\). Theo nguyên lý bù trừ,
+ta có
+\[
+  f_S=\sum_{T\subseteq S}(-1)^{|S|-|T|}\widehat f_T.
+\]
+Lấy biến đổi Möbius hai vế của (1), ta được
+\[
+\begin{aligned}
+  \widehat h_S
+  &=\sum_{L\subseteq U}\sum_{R\subseteq U}
+      [L\cup R\subseteq S]\,f_L g_R\\
+  &=\left(\sum_{L\subseteq U}[L\subseteq S]f_L\right)
+    \left(\sum_{R\subseteq U}[R\subseteq S]g_R\right)\\
+  &=\widehat f_S\widehat g_S.
+\end{aligned}
+\]
+Vì vậy, lần lượt lấy biến đổi Möbius của \(f,g\) để được \(\widehat f,\widehat
+g\), ta có thể tính \(\widehat h\), rồi lấy đảo Möbius của \(\widehat h\) để
+thu được \(h\). Độ phức tạp thời gian là \(O(n2^n)\).
+
+Trong các bài thi tin học, đề bài thường cho một môđun \(P\); các hệ số của
+chuỗi lũy thừa theo tập hợp được tính trong vành số nguyên modulo \(P\).
+
+Xét cách dùng tích chập hợp để phán định đồ thị vô hướng \(G\) có thể
+\(k\)-tô màu được hay không. Theo định nghĩa tô màu đỉnh, tập đỉnh của mỗi màu
+đều là một tập độc lập. Do đó phán định đồ thị vô hướng \(G=(V,E)\) có thể
+\(k\)-tô màu được hay không tương đương với phán định có thể tìm trong
+\(G=(V,E)\) \(k\) tập độc lập \(P_1,\ldots,P_k\) sao cho
+\[
+  P_1\cup P_2\cup\cdots\cup P_k=V
+\]
+hay không.
+
+Ta có thuật toán sau. Với đồ thị vô hướng \(G=(V,E)\), định nghĩa chuỗi lũy
+thừa theo tập hợp \(f\) bởi
+\[
+  f=\sum_{S\subseteq V}[S\text{ là tập độc lập trong }G]x^S.
+\]
+Tính biến đổi Möbius \(\widehat f\) của \(f\). Tính \(\widehat g\), trong đó
+\[
+  \widehat g_S=\widehat f_S^k.
+\]
+Lấy đảo Möbius của \(\widehat g\) để được \(g\). Nếu \(g_V=0\), điều này cho
+thấy \(G\) không tồn tại phương án \(k\)-tô màu hợp lệ; ngược lại \(G\) có thể
+\(k\)-tô màu được.
+
+Độ phức tạp thời gian của thuật toán trên là \(O(2^n n)\).
+
+\subsection*{2.8. Tìm sắc số của đồ thị}
+
+Khi tìm sắc số của đồ thị vô hướng \(G=(V,E)\), có thể tiếp tục dùng ý tưởng
+tích chập hợp trong việc phán định đồ thị có \(k\)-tô màu được hay không.
+
+Phần chính của thuật toán là giống nhau; điểm khác là ta liệt kê \(k\) từ nhỏ
+tới lớn rồi phán định \(G\) có \(k\)-tô màu được hay không.
+
+Quy trình thuật toán như sau. Với đồ thị vô hướng \(G=(V,E)\), định nghĩa
+chuỗi lũy thừa theo tập hợp \(f\) bởi
+\[
+  f=\sum_{S\subseteq V}[S\text{ là tập độc lập trong }G]x^S.
+\]
+Tính biến đổi Möbius \(\widehat f\) của \(f\).
+
+Liệt kê \(k\) từ nhỏ tới lớn. Gọi \(\widehat g\) là chuỗi lũy thừa theo tập
+hợp trong đó \(\widehat g_S=\widehat f_S^k\). Dùng nguyên lý bù trừ để tính
+trong \(O(2^n)\) giá trị
+\[
+  g_V=\sum_{S\subseteq V}(-1)^{|V|-|S|}\widehat g_S.
+\]
+Nếu \(g_V\ne0\), ta có thể cho rằng sắc số của \(G\) là \(\chi(G)=k\).
+
+Độ phức tạp thời gian của thuật toán trên là \(O(2^n n)\).
+
+\section*{3. Đa thức sắc}
+
+\subsection*{3.1. Định nghĩa và quy ước}
+
+\paragraph{\term{Định nghĩa 3.1.} (Số \(k\)-tô màu)}
+Số \(k\)-tô màu của đồ thị vô hướng \(G\) được định nghĩa là số phương án tô
+màu hợp lệ cho \(G\) bằng \(k\) màu; hai phương án khác nhau khi và chỉ khi
+tồn tại một đỉnh có màu khác nhau trong hai phương án.
+
+\paragraph{\term{Định nghĩa 3.2.} (Đa thức sắc)}
+Đa thức sắc của đồ thị vô hướng \(G\), ký hiệu \(P(G,x)\), được định nghĩa là
+một đa thức theo \(x\), sao cho khi dùng \(k\) màu để tô màu, thay \(x=k\) vào
+\(P(G,x)\) thì nhận được số \(k\)-tô màu của \(G\).
+
+\paragraph{\term{Định nghĩa 3.3.} (\(k\)-phân hoạch độc lập)}
+Một phương án \(k\)-phân hoạch độc lập của đồ thị vô hướng \(G=(V,E)\) được
+định nghĩa là việc chia tập đỉnh \(V\) thành \(k\) tập không rỗng
+\(S_1,S_2,\ldots,S_k\), mỗi đỉnh thuộc đúng một tập, và thỏa với mọi
+\(i\in[1,k]\), \(S_i\) đều là tập độc lập của \(G\). Hai phương án
+\(k\)-phân hoạch độc lập khác nhau khi và chỉ khi tồn tại hai đỉnh \(u,v\) sao
+cho trong một phương án chúng nằm trong cùng một tập, còn trong phương án kia
+chúng nằm trong hai tập khác nhau.
+
+\paragraph{\term{Định nghĩa 3.4.} (Dãy phân hoạch độc lập)}
+Dãy phân hoạch độc lập của đồ thị vô hướng \(G=(V,E)\) được định nghĩa là dãy
+\(h\), trong đó \(h_k\) biểu thị số phương án \(k\)-phân hoạch độc lập của
+\(G\). Dễ thấy \(h_n=1\) và với mọi \(i>n\), \(h_i=0\).
+
+\paragraph{\term{Định nghĩa 3.5.} (Đa thức phân hoạch độc lập)}
+Với đồ thị vô hướng \(G\), gọi \(h\) là dãy phân hoạch độc lập của nó. Định
+nghĩa đa thức phân hoạch độc lập của \(G\) là
+\[
+  H(G,x)=\sum_i h_i x^i.
+\]
+
+Thông thường trong một đồ thị có quy mô nhất định, các hệ số của đa thức sắc
+sẽ rất lớn. Trong thi tin học, người ta thường xét các hệ số ấy sau khi lấy
+modulo một số nào đó, chẳng hạn \(998244353\) hoặc \(10^9+7\). Vì vậy trong
+phần sau, ta giả định mọi phép toán đều được thực hiện theo modulo một số
+nguyên tố đủ lớn \(M\).
+
+\subsection*{3.2. Tính chất}
+
+\paragraph{\term{Tính chất 3.1.}}
+Với đồ thị vô hướng \(G\), giữa đa thức sắc
+\[
+  P(G,x)=\sum_i a_i x^i
+\]
+và dãy phân hoạch độc lập \(h\) tồn tại quan hệ sau:
+\[
+  P(G,x)=\sum_i h_i x^{\underline{i}}.
+\]
+Ở đây \(x^{\underline{i}}\) biểu thị lũy thừa giảm bậc \(i\) của \(x\), tức
+\[
+  x^{\underline{i}}=\prod_{j=1}^{i}(x-i+j).
+\]
+
+Vì \(h_n=1\), và với mọi \(i>n\) đều có \(h_i=0\), bậc của đa thức \(P(G,x)\)
+bằng \(n\).
+
+\paragraph{\term{Tính chất 3.2.}}
+Sắc số của đồ thị vô hướng \(G\) là số nguyên \(k\) nhỏ nhất làm cho
+\(P(G,k)\) khác không; nói hình thức,
+\[
+  \chi(G)=\min\{k\in\mathbb{N}: P(G,k)>0\}.
+\]
+Tính đúng đắn của tính chất 3.2 suy ra trực tiếp từ định nghĩa sắc số.
+
+\paragraph{\term{Tính chất 3.3.}}
+Với đồ thị vô hướng \(G=(V,E)\), giá trị \(P(G,-1)\times(-1)^{|V|}\) bằng số
+phương án định hướng phi chu trình\footnote{Nguyên văn: Acyclic orientation.}
+của \(G\). Ở đây định hướng phi chu trình là số cách chọn hướng cho mỗi cạnh
+của \(G\) để nhận được đồ thị có hướng \(G'\) là đồ thị có hướng không chu
+trình; hai phương án khác nhau khi và chỉ khi có một cạnh \((u,v)\) mang
+hướng khác nhau trong hai phương án.
+
+Chứng minh lược bỏ.
+
+\paragraph{\term{Tính chất 3.4.}}
+Với đồ thị vô hướng \(G=(V,E)\), giả sử \(G\) có \(c\) thành phần liên thông
+\(G_1,\ldots,G_c\). Khi đó trong đa thức sắc \(P(G,x)\):
+\begin{itemize}
+  \item các hệ số của các hạng \(x^0,\ldots,x^{c-1}\) đều bằng \(0\);
+  \item các hệ số của các hạng \(x^c,\ldots,x^n\) đều khác \(0\), và dấu của
+        chúng luân phiên nhau;
+  \item hệ số của hạng \(x^n\) bằng \(1\);
+  \item hệ số của hạng \(x^{n-1}\) bằng \(-|E|\);
+  \item \(P(G,x)=P(G_1,x)P(G_2,x)\cdots P(G_c,x)\).
+\end{itemize}
+
+\paragraph{\term{Tính chất 3.5.}}
+\(G\) là cây khi và chỉ khi
+\[
+  P(G,x)=x(x-1)^{n-1}.
+\]
+
+\subsection*{3.3. Đa thức sắc của đồ thị đặc biệt}
+
+Trong một số đồ thị đặc biệt, có thể trực tiếp tìm đa thức sắc:
+
+\begin{center}
+\begin{tabular}{ll}
+Clique \(K_n\) & \(x(x-1)(x-2)\cdots(x-(n-1))\) \\
+Đồ thị không cạnh \(\overline{K_n}\) & \(x^n\) \\
+Cây có \(n\) đỉnh & \(x(x-1)^{n-1}\) \\
+Chu trình đơn \(C_n\) & \((x-1)^n+(-1)^n(x-1)\)
+\end{tabular}
+\end{center}
+
+Trong đồ thị dây cung, ngoài việc sắc số \(\chi(G)\) bằng số clique
+\(\omega(G)\), đa thức sắc cũng có thể tính trực tiếp. Với đồ thị dây cung
+\(G=(V,E)\), tìm một thứ tự loại bỏ hoàn hảo \(P\) của \(G\). Gọi \(x_i\) là
+số đỉnh kề với đỉnh \(P_i\) và đứng sau \(P_i\) trong \(P\). Khi đó
+\[
+  P(G,x)=(x-x_1)(x-x_2)\cdots(x-x_n).
+\]
+
+\subsection*{3.4. Chuỗi lũy thừa theo tập hợp}
+
+Có thể dùng chuỗi lũy thừa theo tập hợp để tìm sắc số của đồ thị; cũng có thể
+dùng nó để tìm đa thức sắc của đồ thị.
+
+Trước hết xét cách tính số phương án tô màu đồ thị \(G=(V,E)\) bằng \(k\) màu.
+Định nghĩa chuỗi lũy thừa theo tập hợp \(f\) theo biến tập hợp \(x\):
+\[
+  f=\sum_{S\subseteq V}[S\text{ là tập độc lập trong }G]\cdot u^{|S|}\cdot x^S.
+\]
+Chú ý rằng chuỗi lũy thừa theo tập hợp ở đây khác với mục 2.8: \(f_S\), tức
+hệ số của \(x^S\), không còn là một số đơn thuần, mà là một đa thức theo
+\(u\); các phép toán liên quan được thực hiện theo modulo \(u^{n+1}\).
+
+Tìm biến đổi Möbius \(\widehat f\) của \(f\). Tính chuỗi lũy thừa theo tập
+hợp \(\widehat g\), trong đó
+\[
+  \widehat g_S=(\widehat f_S)^k.
+\]
+Tính đảo Möbius \(g\) của \(\widehat g\). Hệ số của \(u^n\) trong \(g_V\)
+chính là số phương án tô màu \(G\) bằng \(k\) màu.
+
+Lấy \(k=1..n\), thuật toán trên có thể tính được số phương án tô màu \(G\)
+bằng \(1..n\) màu trong thời gian \(O(2^n n^3)\). Gọi \(w(k)\) là số phương án
+tô màu bằng \(k\) màu.
+
+Vì đa thức sắc \(P(G,x)\) của \(G\) là một đa thức bậc \(n\) và hằng số tự do
+bằng \(0\), các giá trị \(w(1..n)\) nhận được ở trên chính là các giá trị điểm
+của \(P(G,x)\) tại \(x=1..n\). Do đó có thể dùng nội suy Lagrange để tìm
+\(P(G,x)\).
+
+\paragraph{\term{Nội suy Lagrange.}}
+Với một đa thức \(F(x)\) theo \(x\), bậc của nó là \(c\). Nếu biết \(c+1\)
+điểm đôi một khác nhau trên \(F(x)\),
+\[
+  (x_0,y_0),(x_1,y_1),\ldots,(x_c,y_c),
+\]
+thì
+\[
+  F(x)=\sum_{i=0}^{c} y_i\prod_{i\ne j}\frac{x-x_j}{x_i-x_j}.
+\]
+Dùng nội suy Lagrange, có thể sử dụng các giá trị điểm
+\[
+  (0,0),(1,w(1)),(2,w(2)),\ldots,(n,w(n))
+\]
+để tính \(P(G,x)\).
+
+\subsection*{3.5. Thuật toán xóa--co}
+
+\paragraph{\term{Định nghĩa 3.6.} (Co cạnh)}
+Trong đồ thị \(G=(V,E)\), co cạnh \(e=(u,v)\) là thao tác xóa \(e\) khỏi
+\(G\), rồi gộp hai đỉnh \(u\) và \(v\) thành một đỉnh mới \(w\); các cạnh nối
+với \(w\) tương ứng với những cạnh vốn nối với \(u\) hoặc \(v\).
+
+Nói hình thức hơn, trong \(G=(V,E)\), co cạnh \((u,v)\) thu được một đồ thị
+mới \(G'=(V',E')\). Trước hết gộp \(u,v\) thành một đỉnh mới \(w\), khi đó
+\[
+  V'=\{w\}\cup(V\setminus\{u,v\}).
+\]
+Sau đó, trong tập cạnh \(E'\), với mọi \(x,y\notin\{u,v\}\), \((x,y)\in E'\)
+khi và chỉ khi \((x,y)\in E\); với mọi \(x\notin\{u,v\}\), \((w,x)\in E'\)
+khi và chỉ khi \((u,x)\in E\) hoặc \((v,x)\in E\).
+
+Hình dưới là một minh họa cho thao tác co cạnh.\footnote{Hình trong bản gốc
+lấy từ mục từ ``Contraction'' trên Wikipedia; ở đây vẽ lại giản lược bằng
+TikZ.}
+
+\begin{center}
+\begin{tikzpicture}[scale=.75, every node/.style={circle,draw,minimum size=18pt,inner sep=1pt,font=\small}]
+  \node (u) at (0,1) {\(u\)};
+  \node (v) at (0,-1) {\(v\)};
+  \node (a) at (-1.2,1.5) {};
+  \node (b) at (1.2,1.2) {};
+  \node (c) at (-1.2,-1.5) {};
+  \node (d) at (1.2,-1.2) {};
+  \foreach \p/\q in {u/v,u/a,u/b,u/d,v/c,v/d,v/a} \draw (\p)--(\q);
+  \draw[-{Latex[length=3mm]},thick] (2.1,0)--(3.0,0);
+  \begin{scope}[xshift=4.5cm]
+    \node (w) at (0,0) {\(w\)};
+    \node (a) at (-1.2,1.5) {};
+    \node (b) at (1.2,1.2) {};
+    \node (c) at (-1.2,-1.5) {};
+    \node (d) at (1.2,-1.2) {};
+    \foreach \p in {a,b,c,d} \draw (w)--(\p);
+  \end{scope}
+\end{tikzpicture}
+\end{center}
+
+Đúng như tên gọi, nội dung của thuật toán xóa--co dựa trên việc xóa và co
+cạnh. Với một cạnh \((u,v)\) trong \(G\), ta có
+\[
+  P(G,x)=P(G-uv,x)-P(G/uv,x). \tag{2}
+\]
+Ở đây \(G-uv\) chỉ đồ thị thu được bằng cách xóa cạnh \((u,v)\) khỏi \(G\), và
+\(G/uv\) chỉ đồ thị thu được bằng cách co cạnh \((u,v)\) trên \(G\).
+
+Tính trực tiếp theo đẳng thức trên sẽ cho thuật toán xóa--co cơ bản nhất. Ví
+dụ, hình dưới biểu thị cây đệ quy khi thực hiện thuật toán xóa--co trên một
+đồ thị nhỏ:
+
+\begin{center}
+\begin{tikzpicture}[scale=.75,
+  graphnode/.style={circle,draw,minimum size=7pt,inner sep=0pt},
+  every node/.style={font=\small}]
+  \def\squaregraph#1#2#3{
+    \begin{scope}[xshift=#1cm,yshift=#2cm]
+      \node[graphnode] (a#3) at (0,1) {};
+      \node[graphnode] (b#3) at (1,1) {};
+      \node[graphnode] (c#3) at (0,0) {};
+      \node[graphnode] (d#3) at (1,0) {};
+      \draw (a#3)--(b#3)--(d#3)--(c#3)--(a#3);
+      \draw[red!70,thick] (c#3)--(d#3);
+    \end{scope}}
+  \squaregraph{0}{3}{r}
+  \squaregraph{-2}{1.4}{l}
+  \squaregraph{2}{1.4}{m}
+  \draw (-.3,2.9)--(-1.5,2.3);
+  \draw (.8,2.9)--(2.2,2.3);
+  \node at (-2,-.2) {\(G-uv\)};
+  \node at (2,-.2) {\(G/uv\)};
+\end{tikzpicture}
+\end{center}
+
+Vì dạng đệ quy của thuật toán trên giống với dãy Fibonacci\footnote{Dãy
+Fibonacci thỏa \(f_0=1,f_1=1,f_i=f_{i-1}+f_{i-2}\ (i\ge2)\).}, trong trường
+hợp xấu nhất độ phức tạp là
+\[
+  \left(\frac{1+\sqrt5}{2}\right)^{|V|+|E|}
+  \in O(1.62^{|V|+|E|}).
+\]
+Đáng tiếc là trong phần lớn trường hợp, hiệu suất của thuật toán này kém xa
+độ phức tạp tính toán bằng chuỗi lũy thừa theo tập hợp.
+
+Dưới đây tối ưu thuật toán xóa--co.
+
+\subsection*{3.6. Tối ưu thuật toán xóa--co trên đồ thị thưa}
+
+\subsubsection*{3.6.1. Tách thành phần song liên thông}
+
+Với \(G=(V,E)\), giả sử trong \(G\) có \(k\) thành phần song liên thông
+\(C_1,C_2,\ldots,C_k\), và \(G\) có \(s\) thành phần liên thông. Khi đó
+\[
+  P(G,x)=\frac{1}{x^{k-s}}\prod_{i=1}^{k}P(C_i,x).
+\]
+
+Với \(G\), trước hết dùng thuật toán Tarjan tách \(G\) thành các thành phần
+song liên thông. Sau khi tìm được đa thức sắc của từng thành phần song liên
+thông, dùng công thức trên để tính đa thức sắc của \(G\).
+
+\begin{center}
+\begin{tikzpicture}[scale=.75, every node/.style={circle,draw,minimum size=18pt,inner sep=1pt}]
+  \node (a) at (-2,1) {}; \node (b) at (-1,1) {};
+  \node (c) at (-2,0) {}; \node (v) at (-1,0) {};
+  \node (d) at (0,0) {}; \node (e) at (-1.7,-1) {};
+  \node (f) at (-.3,-1) {};
+  \draw (a)--(b)--(v)--(c)--(a) (a)--(v) (v)--(d) (v)--(e)--(f)--(d)--(v);
+  \draw[-{Latex[length=3mm]},thick] (.9,0)--(1.7,0);
+  \begin{scope}[xshift=4cm]
+    \node (a) at (-1,1) {}; \node (b) at (0,1) {};
+    \node (c) at (-1,0) {}; \node (v) at (0,0) {};
+    \draw (a)--(b)--(v)--(c)--(a) (a)--(v);
+    \node (d) at (1.4,0) {}; \node (e) at (2.2,0) {}; \draw (d)--(e);
+    \node (p) at (-.5,-1.5) {}; \node (q) at (.5,-1.5) {}; \node (r) at (0,-.7) {};
+    \draw (p)--(q)--(r)--(p);
+  \end{scope}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection*{3.6.2. Đường đi bậc hai}
+
+Qua quan sát, dễ thấy trong đồ thị thưa có rất nhiều đỉnh có bậc không vượt
+quá \(2\).
+
+Khi đỉnh \(u\) có bậc \(0\) trong \(G\),
+\[
+  P(G,x)=P(G-u,x)\cdot x.
+\]
+Khi đỉnh \(u\) có bậc \(1\) trong \(G\),
+\[
+  P(G,x)=P(G-u,x)\cdot (x-1).
+\]
+
+Với đỉnh bậc \(2\), để giảm số lần tính toán, xét đồng thời xóa--co nhiều
+cạnh và dùng các đa thức sắc đã tổng kết phía trước cho đồ thị đặc biệt để
+tính nhanh.
+
+Để trình bày tốt hơn, đưa vào khái niệm ``đường đi bậc hai''.
+
+\paragraph{\term{Định nghĩa 3.7.} (Đường đi bậc hai)}
+Một đường đi bậc hai trong \(G\) được định nghĩa là một đường đi đơn mà các
+đỉnh ngoài điểm đầu và điểm cuối đều có bậc \(2\) trong \(G\). Nói hình thức,
+một đường đi độ dài \(k\)
+\[
+  P=(p_1,p_2,\ldots,p_{k+1})
+\]
+là một đường đi bậc hai khi và chỉ khi:
+\begin{itemize}
+  \item \(P\) là một đường đi đơn;
+  \item với mọi \(i\in[2,k]\), \(\Delta(p_i)=2\).
+\end{itemize}
+
+Trước hết nhắc lại trường hợp đường thẳng và chu trình. Đa thức sắc của một
+đường thẳng độ dài \(l\) là \(x(x-1)^{l-1}\). Đa thức sắc của một chu trình độ
+dài \(l\) là
+\[
+  (x-1)^l+(-1)^l(x-1).
+\]
+
+Với một đường đi bậc hai độ dài \(k\)
+\[
+  P=(p_1,p_2,\ldots,p_{k+1}),
+\]
+nếu đã xác định màu của \(p_1\) và \(p_{k+1}\), thì số cách tô màu
+\(p_2,\ldots,p_k\) là bao nhiêu?
+
+Chia thành hai trường hợp:
+
+\paragraph{\term{Trường hợp 1.}}
+Màu tô cho \(p_1\) và \(p_{k+1}\) giống nhau. Trường hợp này có thể xem là
+tìm đa thức sắc của chu trình độ dài \(k\), tức
+\[
+  (x-1)^k+(-1)^k(x-1).
+\]
+Vì màu của \(p_1\) và \(p_{k+1}\) đã được xác định, số phương án tương ứng là
+\[
+  \frac{(x-1)^k+(-1)^k(x-1)}{x}.
+\]
+
+\paragraph{\term{Trường hợp 2.}}
+Màu tô cho \(p_1\) và \(p_{k+1}\) khác nhau. Trường hợp này có thể xem là lấy
+số cách tô màu đường thẳng độ dài \(k\) trừ đi số cách tô màu chu trình độ dài
+\(k\), tức
+\[
+  x(x-1)^k-(x-1)^k-(-1)^k(x-1)
+  =(x-1)^{k+1}-(-1)^k(x-1).
+\]
+Vì màu của \(p_1\) và \(p_{k+1}\) đã được xác định, số cách tô màu
+\(p_2,\ldots,p_k\) là
+\[
+  \frac{(x-1)^k-(-1)^k}{x}.
+\]
+
+Vì vậy, với một đường đi bậc hai \(P\), gọi \(G_1\) là đồ thị thu được bằng
+cách xóa khỏi \(G\) tất cả các đỉnh trên \(P\) trừ điểm đầu và điểm cuối; gọi
+\(G_2\) là đồ thị thu được bằng cách co tất cả các cạnh trên \(P\) trong
+\(G\). Theo hai trường hợp trên, ta có
+\[
+\begin{aligned}
+  P(G,x)
+  &=\frac{(x-1)^k-(-1)^k}{x}\bigl(P(G_1,x)-P(G_2,x)\bigr)
+    +\frac{(x-1)^k+(-1)^k(x-1)}{x}P(G_2,x)\\
+  &=\frac{(x-1)^k-(-1)^k}{x}P(G_1,x)+(-1)^kP(G_2,x).
+\end{aligned}
+\]
+Thật ra công thức
+\[
+  P(G,x)=P(G-uv,x)-P(G/uv,x)
+\]
+là trường hợp \(k=1\) của công thức này.
+
+Trong \(G\), trước hết tìm một đường đi bậc hai cực dài \(P\), rồi dùng công
+thức trên để tính \(P\).
+
+\subsection*{3.7. Tối ưu thuật toán xóa--co trên đồ thị dày}
+
+Trong đồ thị dày \(G=(V,E)\), với một cạnh \((u,v)\notin E\), có đẳng thức
+sau:
+\[
+  P(G,x)=P(G+uv,x)+P(G/uv,x). \tag{3}
+\]
+Công thức (3) thật ra là biến dạng của công thức (2).
+
+Để tận dụng tốt hơn tính chất đặc biệt của đồ thị dày, xét trước hết việc tìm
+đa thức phân hoạch độc lập \(H(G,x)\) của \(G\), rồi dựa vào tính chất 3.1 để
+dùng \(H(G,x)\) tìm \(P(G,x)\).
+
+Với \(H(G,x)\), ta có
+\[
+  H(G,x)=H(G+uv,x)+H(G/uv,x).
+\]
+Để tiện mô tả, đặt
+\[
+  \overline{H}(G,x)=H(\overline{G},x).
+\]
+
+\subsubsection*{3.7.1. Đỉnh khớp}
+
+Khác với tình huống trong đồ thị thưa, ở đây ta sẽ tách theo đỉnh khớp của đồ
+thị bù của đồ thị dày.
+
+Với một đỉnh khớp \(u\) trong \(\overline{G}\), gọi \(G_1\) là một thành phần
+song liên thông của \(\overline{G}\) chứa \(u\), và gọi \(G_2\) là đồ thị con
+cảm sinh trên \(\overline{G}\) bởi các đỉnh của \(\overline{G}\) sau khi bỏ
+đi \(G_1-u\). Khi đó:
+\[
+\begin{aligned}
+  H(G,x)
+  &=\overline{H}(G_1,x)\overline{H}(G_2-u,x)
+    +\overline{H}(G_2,x)\overline{H}(G_1-u,x)\\
+  &\quad{}-x\cdot\overline{H}(G_2-u,x)\overline{H}(G_1-u,x).
+\end{aligned}
+\]
+Điều cần chú ý là công thức trên rất khác kết quả thu được ở mục 3.6.1; ưu
+điểm của nó là tối ưu dạng đệ quy liên quan tới số đỉnh và số cạnh trong công
+thức (3).
+
+\subsubsection*{3.7.2. Đường đi bậc hai}
+
+Trong đồ thị bù của đồ thị dày có nhiều đỉnh bậc \(2\). Được gợi ý từ mục
+3.6.2, có thể xét tối ưu một đường đi bậc hai cực dài trong đồ thị bù.
+
+Gọi đường đi đơn
+\[
+  P=(p_1,p_2,\ldots,p_{k+1})
+\]
+là một đường đi bậc hai cực dài trong \(\overline{G}\), và đặt
+\(u=p_1,\ v=p_{k+1}\).
+
+Khi \(k=1\), trực tiếp tính trên \(G\):
+\[
+  H(G,x)=H(G+uv,x)+H(G/uv,x).
+\]
+Khi \(k=2\), trực tiếp tính trên \((u,p_2)\):
+\[
+  H(G,x)=H(G+up_2,x)+H(G/up_2,x).
+\]
+Khi \(k>2\), trước hết tính trên \(G\) đối với cạnh \((u,p_2)\):
+\[
+  H(G,x)=H(G+up_2,x)+H(G/up_2,x),
+\]
+rồi trong hai đồ thị thu được tiếp tục tính công thức trước đó đối với
+\((p_k,v)\).
+
+Trong đồ thị vô hướng \(G'\) thu được ở trên, sẽ xuất hiện trường hợp một
+thành phần liên thông của \(\overline{G'}\) là một đường thẳng.
+
+Với một đồ thị \(L_r\) có \(r\) đỉnh mà đồ thị bù của nó là một đường thẳng,
+đa thức phân hoạch độc lập của nó là
+\[
+  H(L_r,x)=\sum_{i=\lceil r/2\rceil}^{r}\binom{i}{r-i}x^i.
+\]
+
+Có thể thấy tối ưu đường đi bậc hai trong đồ thị thưa và trong đồ thị bù của
+đồ thị dày rất khác nhau. Trường hợp trước tương đối đơn giản, còn trường hợp
+sau phức tạp hơn; nó chỉ đưa ra một thứ tự tính theo cạnh, hình thức cũng
+không đẹp bằng trường hợp trước. Về bản chất, mục đích là cố gắng tách ra các
+thành phần liên thông mà đồ thị bù của chúng là đường thẳng, rồi dùng công
+thức để giảm số lần tính toán.
+
+\subsection*{3.8. Các tối ưu khác của thuật toán xóa--co}
+
+Trong thuật toán xóa--co, với một số đồ thị đặc biệt như chu trình, cây, có
+thể trực tiếp tính đa thức sắc của chúng.
+
+Trong ứng dụng thực tế, người ta cũng thường dùng các cách làm liên quan tới
+phán định đẳng cấu đồ thị để giảm số lần tính toán của thuật toán xóa--co.
+
+\section*{Tổng kết}
+
+Đối với sắc số, bài viết đưa ra một số cận cơ bản của sắc số trong đồ thị,
+đồng thời đưa ra các thuật toán phán định \(k\)-tô màu được và tính sắc số của
+đồ thị.
+
+Đối với đa thức sắc, bài viết đưa ra các tính chất của đa thức sắc và thuật
+toán xóa--co để tính đa thức sắc, đồng thời đưa ra các tối ưu trên đồ thị thưa
+và đồ thị dày. Để trình bày rõ hơn, bài viết đưa vào khái niệm ``đường đi bậc
+hai''; trong tối ưu dành cho đồ thị dày, bài viết đưa vào các khái niệm ``dãy
+phân hoạch độc lập'' và ``đa thức phân hoạch độc lập'' để tối ưu đồ thị dày.
+
+Thuật toán kinh điển dùng chuỗi lũy thừa theo tập hợp để tính đa thức sắc, do
+hiệu suất thời gian và không gian, chỉ có thể áp dụng cho đồ thị có số đỉnh
+nhỏ. Tối ưu thuật toán xóa--co trên đồ thị thưa khiến việc tính đa thức sắc
+trên đồ thị có số đỉnh lớn hơn trở nên khả thi.
+
+Trong bài toán tô màu đỉnh vẫn còn nhiều nội dung thú vị hơn nữa. Hy vọng bài
+viết này có thể gợi suy nghĩ cho người đọc và khiến nhiều người quan tâm hơn
+tới bài toán tô màu đỉnh.
+
+\section*{Lời cảm ơn}
+
+Xin cảm ơn Hội Máy tính Trung Quốc đã cung cấp cơ hội học tập và trao đổi.
+
+Xin cảm ơn huấn luyện viên Zhang Ruizhe đã hướng dẫn và giúp đỡ.
+
+Xin cảm ơn cha mẹ đã bồi dưỡng và quan tâm tôi trong nhiều năm qua.
+
+Xin cảm ơn thầy Song Xinbo và thầy Xiong Chao của Trường Trung học Tưởng niệm
+Tôn Trung Sơn đã quan tâm và giúp đỡ trong nhiều năm qua.
+
+Xin cảm ơn bạn Cao Tianyou của Trường Trung học Tưởng niệm Tôn Trung Sơn, và
+các bạn Fan Zhiyuan, Zhang Zheyu của Trường Trung học Xuejun Hàng Châu đã
+thẩm định bản thảo bài viết này.
+
+Xin cảm ơn các thầy cô và bạn học đã khích lệ, giúp đỡ tôi.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Wikipedia tiếng Anh, Graph coloring,
+        \url{https://en.wikipedia.org/wiki/Graph_coloring}.
+  \item Wikipedia tiếng Anh, Chromatic polynomial,
+        \url{https://en.wikipedia.org/wiki/Chromatic_polynomial}.
+  \item Zhong Zhixian. Bàn về bài toán tập độc lập trong thi tin học. Tập luận
+        văn đội tuyển quốc gia IOI 2017.
+  \item Lu Kaifeng. Tính chất, ứng dụng và thuật toán nhanh của chuỗi lũy thừa
+        theo tập hợp. Tập luận văn đội tuyển quốc gia IOI 2015.
 \end{enumerate}
 
 \end{document}
