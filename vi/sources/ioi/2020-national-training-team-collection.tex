@@ -23,11 +23,12 @@
 \begin{abstract}
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2020. Tệp được
 tạo bằng XeTeX và có lớp văn bản Unicode đọc được. Bản LaTeX này chuyển ngữ
-phần nhận diện tập sách, toàn bộ mục lục, và bốn bài đầu tiên: bài của Jiang
+phần nhận diện tập sách, toàn bộ mục lục, và năm bài đầu tiên: bài của Jiang
 Mingrun về tối ưu các bài toán chia khối cổ điển bằng fractional cascading, bài
 của Chen Sunli về cây thống trị, và báo cáo ra đề \emph{Ghép số} của Jiang
-Xunchi, cùng báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue. Các
-hình nhỏ trong báo cáo thứ tư được dựng lại bằng TikZ từ bản render PDF.
+Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, cùng bài
+của Chen Yu về nguyên lý chuyển vị. Các hình nhỏ trong báo cáo thứ tư được dựng
+lại bằng TikZ từ bản render PDF.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -2551,6 +2552,656 @@ Cảm ơn cha mẹ vì sự quan tâm và ủng hộ.
 
 \begin{enumerate}
   \item Codeforces 1129E, \emph{Legendary Tree}.
+\end{enumerate}
+
+\section{Giới thiệu đơn giản về nguyên lý chuyển vị}
+
+\begin{center}
+Chen Yu, Trường Trung học trực thuộc Đại học Sư phạm An Huy
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết này giới thiệu nguyên lý chuyển vị (transposition principle), còn gọi
+là nguyên lý Tellegen, một nhóm quy tắc để viết lại các thuật toán tuyến tính
+(linear algorithm). Bài viết sẽ giới thiệu chuyển vị của một số thuật toán
+tuyến tính thường dùng, chỉ ra rằng phương pháp chuyển vị có thể giúp giải một
+số bài toán thuận tiện hơn và tối ưu hiệu suất, đồng thời giới thiệu một lớp
+đặc biệt của bài toán nhân ma trận với vector được tối ưu bằng nguyên lý chuyển
+vị cùng các ứng dụng của nó.
+
+\subsection{Khái quát}
+
+Ta giả sử mọi thao tác trên số dưới đây đều được thực hiện trên một trường số
+\(F\).
+
+\paragraph{\term{Định nghĩa 1.}}
+Một thuật toán nhận vào một vector \(n\times 1\) là \(a\), lấy một ma trận hằng
+\(n\times n\) là \(A\) nhân bên trái vector đó, rồi xuất kết quả \(b=Aa\) (trong
+đó \(b\) cũng là một vector \(n\times 1\)), được gọi là thuật toán tuyến tính.
+Ta xem vector đầu vào là biến, còn ma trận là hằng. Để tiện trình bày, ở đây
+chỉ xét trường hợp \(A\) là ma trận vuông; nếu không vuông thì có thể bổ sung
+các số \(0\) thích hợp.
+
+\paragraph{\term{Định nghĩa 2.}}
+Với thuật toán tuyến tính có dạng \(b=Aa\), ta gọi thuật toán tuyến tính có dạng
+\(b'=A^Ta'\) là chuyển vị của thuật toán đó.
+
+Nguyên lý chuyển vị khẳng định rằng ta có thể viết lại một thuật toán tuyến tính
+thành thuật toán sau chuyển vị, đồng thời giữ nguyên độ phức tạp thời gian và
+không gian. Như vậy ta có thể chuyển vị một thuật toán, tối ưu thuật toán sau
+chuyển vị, rồi viết lại thuật toán sau chuyển vị đó thành thuật toán giải bài
+toán ban đầu. Trong nhiều tình huống, cách này có thể đơn giản hóa bài toán.
+
+\subsection{Viết lại}
+
+Mục này chỉ ra rằng việc viết lại một thuật toán tuyến tính thành chuyển vị của
+nó là một quy trình khá cơ học.
+
+Trước hết ta thảo luận ảnh hưởng của phép chuyển vị ma trận lên quá trình thuật
+toán. Để tiện, ta tính mọi bộ nhớ phụ liên quan tới biến mà chương trình dùng
+vào vector đầu vào; khi đó chỉ cần thay đổi đầu vào và đầu ra thích hợp là có
+thể đạt hiệu quả tương đương.
+
+\paragraph{\term{Định nghĩa 3.}}
+Ta sửa nhẹ ma trận đơn vị \(I\) để nhận được ba loại ma trận sau:
+
+\begin{enumerate}
+  \item Đổi chỗ hàng thứ \(i\) và hàng thứ \(j\) của \(I\). Ma trận này nhân
+  bên trái một vector có tác dụng đổi chỗ phần tử thứ \(i\) và phần tử thứ
+  \(j\) của vector đó.
+  \item Đổi phần tử thứ \(i\) trên hàng thứ \(i\) của \(I\) từ \(1\) thành số
+  \(a\). Ma trận này nhân bên trái một vector có tác dụng nhân phần tử thứ
+  \(i\) của vector đó với \(a\).
+  \item Đổi phần tử ở hàng thứ \(i\), cột thứ \(j\) (\(j\ne i\)) của \(I\) từ
+  \(0\) thành hằng số \(a\). Ma trận này nhân bên trái một vector có tác dụng
+  lấy phần tử thứ \(j\) nhân với \(a\) rồi cộng vào phần tử thứ \(i\).
+\end{enumerate}
+
+Ta gọi ba loại ma trận này là ma trận sơ cấp.
+
+Nhân ma trận với vector thường cần dùng \(O(n)\) bộ nhớ phụ. Sau khi xử lý, ma
+trận \(A\) có thể được tách trực tiếp thành tích của một dãy ma trận sơ cấp
+\[
+  A=E_1E_2\cdots E_k.
+\]
+Do đó
+\[
+  A^T=E_k^TE_{k-1}^T\cdots E_1^T.
+\]
+
+Xét chuyển vị của ma trận sơ cấp: loại thứ nhất và loại thứ hai không đổi sau
+khi chuyển vị; loại thứ ba biến thao tác cộng phần tử thứ \(j\) vào phần tử thứ
+\(i\) thành thao tác cộng phần tử thứ \(i\) vào phần tử thứ \(j\). Vì vậy thuật
+toán sau chuyển vị chính là thực hiện mọi câu lệnh của thuật toán ban đầu theo
+thứ tự ngược lại, đồng thời đổi câu lệnh dạng \(x\leftarrow x+ay\) trong thuật
+toán ban đầu thành \(y\leftarrow y+ax\). Với thao tác cộng hằng số, có thể bổ
+sung một \(1\) vào ma trận để thực hiện.
+
+Trong ứng dụng thực tế, có thể ta cần nhập vào một ma trận, rồi dựa trên ma
+trận đó tính ra mọi hằng số mà thuật toán dùng, từ đó nhận được một thuật toán
+tuyến tính.
+
+Với tham số hàm, phần liên quan tới hằng số giữ nguyên; còn biến thì đổi từ
+truyền vào thành trả về hoặc sửa đổi, và từ trả về hoặc sửa đổi thành truyền
+vào.
+
+Lời gọi hàm chỉ cần được đảo ngược trực tiếp như bình thường, lần lượt thực
+hiện chuyển vị các hàm khác được gọi bên trong; đệ quy cũng có thể xem như lời
+gọi tới hàm khác. Điểm cần chú ý là vì tại mỗi thời điểm khi chạy ngược, ta cần
+tính được mọi hằng số của trạng thái chạy xuôi tới đó, nên thường tiền xử lý
+trước sẽ thuận tiện hơn.
+
+\subsection{Ví dụ}
+
+\subsubsection{Biến đổi Fourier rời rạc}
+
+Xét ma trận của DFT:
+\[
+\begin{bmatrix}
+1 & 1 & 1 & \cdots & 1\\
+1 & \omega_n & \omega_n^2 & \cdots & \omega_n^{n-1}\\
+1 & \omega_n^2 & \omega_n^4 & \cdots & \omega_n^{2(n-1)}\\
+\vdots & \vdots & \vdots & \ddots & \vdots\\
+1 & \omega_n^{n-1} & \omega_n^{2(n-1)} & \cdots &
+\omega_n^{(n-1)(n-1)}
+\end{bmatrix}.
+\]
+Vì ma trận này là ma trận đối xứng, chuyển vị của thuật toán này chính là bản
+thân nó. IDFT cũng tương tự.
+
+\subsubsection{Biến đổi Fourier nhanh}
+
+Dạng FFT được dùng rộng rãi là DIT (decimation in time, tách theo miền thời
+gian)-FFT: tách hệ số đa thức thành các hạng chẵn và hạng lẻ, rồi dễ dàng đệ
+quy thành các bài toán con theo tính chất của căn đơn vị; ở đây không nhắc lại.
+Khi viết thành dạng không đệ quy, cách thường dùng là đảo bit của chỉ số mảng;
+khi đó mỗi lần lấy bit thấp nhất sẽ trở thành lấy bit cao nhất, các hạng chẵn
+và hạng lẻ trở thành nửa trái và nửa phải, nên dễ xử lý.
+
+Mặt khác, ta xét việc tách trực tiếp thành nửa trước và nửa sau:
+\[
+\begin{aligned}
+\operatorname{DFT}(a,n)_k
+  &= \sum_{i=0}^{n-1} a_i\omega_n^{ik}\\
+  &= \sum_{i=0}^{n/2-1}
+     \left(a_i^{(\mathit{left})}
+     +a_i^{(\mathit{right})}\omega_n^{n/2\,k}\right)\omega_n^{ik}.
+\end{aligned}
+\]
+Vì \(\omega_n^{n/2\,k}=(-1)^k\), bằng cách xét tính chẵn lẻ của \(k\), ta có
+thể nhận được một thuật toán đặt đáp án của các hạng chẵn ở bên trái, đáp án
+của các hạng lẻ ở bên phải. Khi đổi thuật toán này sang dạng không đệ quy, chỉ
+cần đảo bit của chỉ số mảng ở bước cuối.
+
+Thuật toán này được gọi là DIF (decimation in frequency, tách theo miền tần
+số)-FFT. Quan sát quá trình thuật toán, hai thuật toán có cùng chức năng này là
+chuyển vị của nhau, điều đó cũng xác nhận rằng chuyển vị của DFT là chính nó.
+
+\subsubsection{Nhân đa thức}
+
+Ta dùng \(M(n)\) để biểu thị thời gian tính \(2n\) vị trí đầu của tích chập
+vòng của hai đa thức, và giả định \(M(n)=O(n\log n)\).
+
+Với hai đa thức \(a\) và \(b\) lần lượt có bậc cao nhất là \(n-1\) và \(m-1\),
+chương trình nhân đa thức thô để thu được đa thức \(c=ab\) bậc \(n+m-1\) như
+sau:
+
+\begin{verbatim}
+1   c←0
+2   for i ← 0 to n + m − 2
+3         for j ← max(0, i − n + 1) to min(i, m − 1)
+4             ci ← ci + ai− j b j
+\end{verbatim}
+
+Ta xem \(b\) là hằng số và chuyển viết trực tiếp theo quy tắc trên, nhận được
+chuyển vị của phép nhân: cho hai đa thức \(a\) và \(b\) lần lượt có bậc cao
+nhất là \(n-1\) và \(m-1\), kết quả là đa thức
+\(c=\operatorname{mulT}(a,b)\) bậc \(n-m\):
+
+\begin{verbatim}
+1   c←0
+2   for i ← 0 to n + m − 2
+3         for j ← min(i, m − 1) downto max(0, i − (n − m))
+4             ci− j ← ci− j + ai b j
+\end{verbatim}
+
+Từ đó có thể thấy \(\operatorname{mulT}(a,b)\) là các vị trí từ \(m-1\) tới
+\(n-1\) trong kết quả tích chập của \(a\) với \(b\) sau khi đảo hệ số.
+
+Thời gian của phép nhân đa thức đương nhiên là
+\(\frac12M(n+m)\), còn thời gian của phép nhân chuyển vị có thể đạt
+\(\frac12M(n)\), bởi phần tràn của tích chập vòng không giao với phần ta cần.
+Cùng cách làm này cũng dễ suy ra từ kết luận ở mục 4.1.
+
+\subsection{Chuyển vị của ma trận Vandermonde}
+
+\paragraph{\term{Định nghĩa 4.}}
+Ma trận Vandermonde là một ma trận vuông \(n\times n\) có dạng
+\[
+V_\alpha=
+\begin{bmatrix}
+1 & \alpha_0 & \alpha_0^2 & \cdots & \alpha_0^{n-1}\\
+1 & \alpha_1 & \alpha_1^2 & \cdots & \alpha_1^{n-1}\\
+\vdots & \vdots & \vdots & \ddots & \vdots\\
+1 & \alpha_{n-1} & \alpha_{n-1}^2 & \cdots & \alpha_{n-1}^{n-1}
+\end{bmatrix}.
+\]
+
+\paragraph{\term{Định nghĩa 5.}}
+Với đa thức \(b\) có bậc cao nhất \(n-1\) (vector hệ số của nó cũng được viết là
+\(b\)),
+\[
+  V_\alpha b^T=(b(\alpha_0),b(\alpha_1),\ldots,b(\alpha_{n-1}))^T.
+\]
+Phép tính này thường được gọi là tính giá trị đa thức tại nhiều điểm.
+
+Sau đây ta sẽ chỉ ra rằng ứng dụng nguyên lý chuyển vị có thể giảm đáng kể hằng
+số thời gian của phép tính giá trị tại nhiều điểm. Trước hết giới thiệu vài bài
+toán liên quan.
+
+\subsubsection{Chia đa thức và lấy phần dư}
+
+Cho đa thức \(f\) bậc \(n-1\) và đa thức \(g\) bậc \(m-1\) (\(m\le n\)), cần tìm
+\(h,r\) sao cho \(f=gh+r\) và \(|r|<n\) (giả sử \(m\) xấp xỉ \(0.5n\)).
+
+Với bài toán này, thuật toán Sieveking--Kung cho công thức tính như sau: gọi
+\(\operatorname{rev}(n,a)\) là kết quả đảo hệ số của đa thức \(a\) bậc
+\(n-1\), ta có
+\[
+  \operatorname{rev}(n-m+1,h)=
+  \operatorname{rev}(n,f)\frac{1}{\operatorname{rev}(m,g)}
+  \pmod{x^{n-m+1}}.
+\]
+Tính thương của chuỗi lũy thừa hình thức có thể hoàn thành trong thời gian
+\(\frac73M(m)=\frac76M(n)\) \([1]\). Sau đó tính
+\(r=f-gh\) còn cần dùng thời gian \(M(m)=\frac12M(n)\), nên tổng thời gian là
+\(\frac53M(n)\).
+
+\subsubsection{Tính tích của nhiều nhị thức}
+
+Cho \(a_1,a_2,\ldots,a_n\), xuất hệ số của đa thức
+\[
+  (1+a_1x)(1+a_2x)\cdots(1+a_nx).
+\]
+Ta có thể giải trực tiếp bằng chia để trị. Cụ thể, đặt
+\[
+  F(l,r)=\prod_{i=l}^r(1+a_ix),
+\]
+và tính bằng
+\[
+  F(l,r)=F\left(l,\left\lfloor\frac{l+r}{2}\right\rfloor\right)
+  F\left(\left\lfloor\frac{l+r}{2}\right\rfloor+1,r\right).
+\]
+Thời gian là
+\[
+  T(n)=2T(n/2)+M(n/2)=\frac12M(n)\log_2n+O(M(n)).
+\]
+
+\subsubsection{Tổng lũy thừa}
+
+Cho \(a_1,a_2,\ldots,a_n\), đặt
+\[
+  f(k)=\sum_{i=1}^n a_i^k,
+\]
+cần tính \(f(0),f(1),\ldots,f(n-1)\).
+
+Xét chuỗi lũy thừa hình thức
+\[
+  F(z)=\sum_{k\ge 0} f(k)z^k
+  =\sum_{k\ge 0}\sum_{i=1}^n a_i^kz^k
+  =\sum_{i=1}^n\frac{1}{1-a_iz}.
+\]
+Tức là cần tính \(F(z)\bmod z^n\).
+
+Dễ biết
+\[
+  \prod_{i=1}^n(1-a_iz)F(z)
+  =\sum_{i=1}^n\prod_{j\ne i}(1-a_jz).
+\]
+Gọi hai vế là \(A(z)F(z)=B(z)\), ta chỉ cần lần lượt tính
+\(A,B\bmod z^n\), rồi thực hiện một lần chia chuỗi lũy thừa hình thức.
+
+Ta định nghĩa \(A(l,r),B(l,r)\) tương tự \(F(l,r)\) ở mục 4.2. Khi đó \(A\) có
+thể được tính tương tự, còn
+\[
+\begin{aligned}
+B(l,r)
+  ={}& A\left(l,\left\lfloor\frac{l+r}{2}\right\rfloor\right)
+      B\left(\left\lfloor\frac{l+r}{2}\right\rfloor+1,r\right)\\
+   &+ B\left(l,\left\lfloor\frac{l+r}{2}\right\rfloor\right)
+      A\left(\left\lfloor\frac{l+r}{2}\right\rfloor+1,r\right).
+\end{aligned}
+\]
+Tính bằng chia để trị như vậy, dễ thấy thời gian là
+\(\frac32M(n)\log_2 n+O(M(n))\).
+
+\subsubsection{Tính giá trị tại nhiều điểm và nội suy}
+
+Tính giá trị tại nhiều điểm theo cách truyền thống dùng một thuật toán chia để
+trị. Xét việc tính giá trị của \(b\) tại các điểm trong \(\alpha\). Khi
+\(|b|\ge |\alpha|\), có thể lấy \(b\) modulo
+\((x-\alpha_0)(x-\alpha_1)\cdots(x-\alpha_{|\alpha|-1})\), nhờ đó luôn làm cho
+\(|b|<|\alpha|\). Sau đó, mỗi lần ta chia tập điểm cần tính thành hai nửa và đệ
+quy xuống.
+
+Thời gian của cách này bằng thời gian của mục 4.3 cộng với thời gian của mục
+4.2 trong mỗi lời gọi chia để trị; sau khi tính toán nhận được
+\(\frac{11}{3}M(n)\log_2 n+O(M(n))\). Với cách cài đặt nghịch đảo bằng phương
+pháp Newton phổ biến nhưng chưa tối ưu, tốc độ còn chậm hơn trên gấp đôi.
+
+Tiếp theo, ta xét chuyển vị của ma trận Vandermonde:
+\[
+V_\alpha^T=
+\begin{bmatrix}
+1 & 1 & \cdots & 1\\
+\alpha_0 & \alpha_1 & \cdots & \alpha_{n-1}\\
+\alpha_0^2 & \alpha_1^2 & \cdots & \alpha_{n-1}^2\\
+\vdots & \vdots & \ddots & \vdots\\
+\alpha_0^{n-1} & \alpha_1^{n-1} & \cdots & \alpha_{n-1}^{n-1}
+\end{bmatrix}.
+\]
+Xét bài toán sau chuyển vị \(V_\alpha^Tb=c\), khi đó
+\[
+  c_i=\sum_{j=0}^{n-1}\alpha_j^i b_j.
+\]
+Bài toán này về cơ bản tương tự bài toán ở mục 4.3; sau một sửa đổi nhỏ sẽ thu
+được thuật toán chia để trị thời gian
+\(\frac23M(n)\log_2 n+O(M(n))\).
+
+Viết thuật toán này trở lại phiên bản trước chuyển vị sẽ biến một phép nhân ở
+mỗi tầng chia để trị ban đầu thành hai phép nhân, dẫn tới thời gian tăng gấp
+đôi. Thời gian của thuật toán sau khi viết lại là
+\(\frac52M(n)\log_2 n+O(M(n))\).
+
+Thuật toán nội suy chủ yếu gọi một lần tính giá trị tại nhiều điểm, nên cũng có
+cùng thời gian với tính giá trị tại nhiều điểm.
+
+\subsubsection{Thực hành}
+
+Cài đặt tính giá trị tại nhiều điểm của chúng tôi được nộp tại
+\url{https://www.luogu.com.cn/record/29053749}; trong bài đó, cấp độ của \(n\)
+là \(2^{16}\). Chương trình của chúng tôi là nhanh nhất vào thời điểm hiện tại
+(trước ngày 2020-01-08), và nhanh hơn gấp đôi so với chương trình nhanh
+nhất chưa tối ưu tầng thấp, phù hợp với tính toán lý thuyết ở trên.
+
+Trước đây, tính giá trị tại nhiều điểm không thường gặp trong thi đấu, không
+nhất thiết vì nó ít hữu dụng, mà phần lớn vì tính giá trị tại nhiều điểm phải
+lồng ghép nhiều thuật toán, khó nhớ và khó viết; đồng thời bản thân thuật toán
+có hằng số rất lớn, người ra đề chưa chắc có thể dùng giới hạn thời gian hợp lý
+để loại lời giải thô, còn thí sinh sau khi vất vả viết xong lại có thể không
+qua được vì hằng số. Thuật toán cải tiến nói trên chỉ cần dùng chia để trị và
+nhân đa thức, hằng số cũng giảm đi nhiều, nên ở một mức độ nhất định đã mở rộng
+tính thực dụng của tính giá trị tại nhiều điểm.
+
+\subsection{Thuật toán nhanh cho một lớp ma trận đặc biệt nhân vector}
+
+\subsubsection{Mô tả}
+
+Ta xét một biến đổi tuyến tính \(A\alpha=\beta\). Bây giờ xét hàm sinh hai biến
+của các hệ số trong ma trận \(n\times n\) là \(A\):
+\[
+  A(x,y)=\sum_{i=0}^{n-1}\sum_{j=0}^{n-1}A_{i,j}x^iy^j.
+\]
+Nếu \(A(x,y)\) có thể biểu diễn thành
+\[
+  u(x)v(y)f(g(x)h(y)),
+\]
+trong đó \(g\) và \(h\) được tạo bởi phép hợp của một dãy (số lượng hằng số)
+các hàm đơn giản sẽ được nêu dưới đây, thì ta có thể hoàn thành phép nhân bên
+trái của ma trận này và ma trận nghịch đảo của nó với vector trong thời gian
+\(\widetilde{O}(n)\). Cụ thể, nếu trong \(g,h\) có chứa \(\exp,\log\) thì độ
+phức tạp là \(O(M(n)\log n)\), nếu không thì là \(O(M(n))\) (độ phức tạp này
+tốt hơn mọi phương pháp đã biết trước đó). Để bảo đảm các phép toán dưới đây có
+nghĩa, còn yêu cầu hạng tử hằng của \(gh\) là \(0\), hạng tử bậc nhất của
+\(g\) và \(h\) đều khác \(0\); hạng tử hằng của \(u\) và \(v\) khác \(0\), và
+mọi hạng tử của \(f\) đều khác \(0\) (nếu hoàn toàn không cần nghịch đảo thì có
+thể bỏ điều kiện này).
+
+\subsubsection{Phép hợp}
+
+\paragraph{\term{Định nghĩa 6.}}
+Xét một đa thức \(F\) bậc \(n-1\) và một biến đổi tuyến tính:
+\[
+  F(G(x))\bmod x^n,
+\]
+trong đó \(G(x)\) là hằng. Ta gọi phép tính này là hợp bên phải.
+
+Phép tính này không có phương pháp tốt trong trường hợp tổng quát; nhưng nếu
+\(G=g_1\circ g_2\circ\cdots\circ g_k\), trong đó các \(g_i\) là một số hàm đơn
+giản, thì ta có thể dùng tính kết hợp của phép hợp:
+\(A(B(C(x)))=A\circ B(C(x))\), rồi lần lượt hợp \(F\) với các hàm đơn giản
+\(k\) lần để tính ra kết quả. Một số ít hàm không đóng sẽ dùng tới thông tin
+của \(C(x)\), cần đặc biệt chú ý. Nếu thỏa các điều kiện nêu trên, ngoài các
+tính toán đó ra, ở mỗi bước đều có thể cắt còn \(n\) vị trí mà không mất độ
+chính xác.
+
+Ta xem các hàm đơn giản là những loại sau:
+
+\begin{enumerate}
+  \item Phép cộng \(x+k\).
+
+  Có
+  \[
+  \begin{aligned}
+  F(x+k)
+    &=\sum_{i=0}^{n-1}F_i(x+k)^i
+      =\sum_{i=0}^{n-1}F_i\sum_{j=0}^i\binom{i}{j}x^jk^{i-j}\\
+    &=\sum_{j=0}^{n-1}\frac{x^j}{j!}
+      \sum_{i=j}^{n-1} i!F_i\frac{k^{i-j}}{(i-j)!}.
+  \end{aligned}
+  \]
+  Rõ ràng có thể hoàn thành trong thời gian \(M(n)\).
+
+  \item Phép nhân \(kx\). Chỉ cần nhân các lũy thừa của \(k\) vào hệ số, thời
+  gian \(O(n)\).
+
+  \item Lũy thừa \(x^k\) (\(k\in\mathbb{Z}^+\)). Chỉ cần biến đổi chỉ số, không
+  thực hiện phép toán số học nào.
+
+  \item Nghịch đảo \(x^{-1}\). Chú ý chuỗi lũy thừa không được có số mũ âm. Xét
+  \(F(x^{-1})=(\operatorname{rev}(n,F))(x)x^{1-n}\), trong đó \(x\) là chuỗi
+  lũy thừa được hợp phía sau. Việc đảo hệ số không thực hiện phép toán số học
+  nào; tính hệ số của nghịch đảo chuỗi lũy thừa phía sau cần thời gian
+  \(O(M(n))\).
+
+  \item Căn \(x^{1/k}\) (\(k\in\mathbb{Z}^+\)). Ở đây cần bảo đảm căn bậc \(k\)
+  của \(x\) là duy nhất; khi suy ra dạng \(g(x)h(y)\) phía trước, cần kiểm tra
+  một số hạng để loại bỏ nghiệm không hợp lệ.
+
+  Giả sử chuỗi lũy thừa phía sau tương ứng với \(x\) là \(g\), và \(g=h^k\) (ở
+  đây cần bảo đảm \(h\) là duy nhất). Ta chia chỉ số của \(F\) có dư,
+  \(F_{ik+j}\), rồi phân loại theo modulo \(k\):
+  \[
+    F_i(x)=\sum_j F_{jk+i}h^j.
+  \]
+  Khi đó
+  \[
+    F(h)=\sum_i F_i(g)h^i.
+  \]
+  Sau khi đệ quy thành \(n/k\) bài toán con kích thước \(k\) rồi ghép lại là
+  được. Tính \(h\) cần thời gian \(O(M(n))\) \([1]\); sau đó cần thời gian
+  \(O(kM(n))\) để tính các lũy thừa bậc \(0,\ldots,k-1\) của \(h\), vì vậy cần
+  bảo đảm \(k\) là hằng số.
+
+  \item Hàm mũ \(\exp(x)-1\). Trừ \(1\) là để nó và logarit là nghịch đảo hợp
+  của nhau; tạm thời có thể không xét phần trừ \(1\). Khi đó
+  \[
+  \begin{aligned}
+  F(e^x)
+    &=\sum_{i=0}^{n-1}F_ie^{ix}
+      =\sum_{i=0}^{n-1}F_i\sum_{j\ge 0}\frac{i^j}{j!}x^j\\
+    &=\sum_{j\ge 0}\frac{x^j}{j!}\sum_{i=0}^{n-1}F_ii^j.
+  \end{aligned}
+  \]
+  Ta xét việc tính
+  \[
+    \sum_{j\ge 0}x^j\sum_{i=0}^{n-1}F_ii^j.
+  \]
+  Tất nhiên kết quả cần được cắt còn \(n\) vị trí; sau đó chỉ cần chia mỗi vị
+  trí cho \(j!\).
+
+  Bài toán trên giống bài toán chuyển vị của tính giá trị tại nhiều điểm đã
+  nhắc tới trước đó, nên có thể giải bằng chia để trị và nhân đa thức. Độ phức
+  tạp là \(O(M(n)\log n)\).
+
+  \item Logarit \(\log(x+1)\). Làm trực tiếp không dễ phân tích, nên ta xét
+  nghịch đảo của thuật toán hợp với hàm mũ.
+
+  Thuật toán hợp với hàm mũ có thể tóm tắt là: chạy bài toán chuyển vị của tính
+  giá trị tại nhiều điểm trên \(F\) với các điểm \(0,1,\ldots,n-1\), rồi nhân
+  mỗi vị trí với \(1/j!\).
+
+  Chuyển vị thuật toán này nhận được: trước hết nhân mỗi vị trí với \(1/j!\),
+  rồi chạy tính giá trị tại nhiều điểm trên \(0,1,\ldots,n-1\). Nghịch đảo của
+  nó hiển nhiên là chạy nội suy nhiều điểm rồi nhân mỗi vị trí với \(j!\). Sau
+  đó chuyển vị ngược lại, độ phức tạp không đổi, nên là \(O(M(n)\log n)\).
+\end{enumerate}
+
+Một điểm tốt hơn nữa là mọi hàm ở trên đều có nghịch đảo hợp.
+
+\subsubsection{Thuật toán}
+
+Ta quay lại bài toán ban đầu. Trước hết giả sử \(u=v=1\), ta có
+\[
+  F_{i,j}=\sum_k g_i^k f_k h_j^k.
+\]
+Khi đó biến đổi tuyến tính này là hợp của ba biến đổi tuyến tính: hợp bên phải
+với \(g\), nhân từng điểm với \(f\), rồi chuyển vị của hợp bên phải với \(h\).
+Chỉ cần tính tuần tự theo phương pháp ở mục trước.
+
+Sau khi thêm \(u,v\), biến đổi tuyến tính ban đầu trở thành hợp của ba biến đổi
+tuyến tính: nhân với \(u\), biến đổi tuyến tính ban đầu, rồi chuyển vị của
+phép nhân với \(v\); cũng có thể tính dễ dàng.
+
+Trong các điều kiện giới hạn, mọi thao tác trên đều có nghịch đảo và có thể lấy
+nghịch đảo trực tiếp, nên ma trận nghịch đảo cũng có thể được tính tương ứng.
+Tóm lại, ta đã giải quyết lớp bài toán này với độ phức tạp rất thấp.
+
+\subsection{Ứng dụng}
+
+\subsubsection{Đổi cơ sở}
+
+\paragraph{\term{Định nghĩa 7.}}
+Xét một dãy đa thức \(\varphi_0(x),\varphi_1(x),\ldots,\varphi_n(x)\). Nếu mọi
+đa thức bậc \(n\) đều có thể được biểu diễn tuyến tính bằng chúng, thì đây là
+một cơ sở của không gian đa thức modulo \(x^n\). Các cơ sở thường gặp trong OI
+có cơ sở đơn thức và cơ sở giai thừa giảm.
+
+Một đa thức có thể được biểu diễn dưới những cơ sở khác nhau. Trong đại số tuyến
+tính, ta biết rằng việc chuyển từ biểu diễn theo một cơ sở sang cơ sở khác
+tương ứng với một biến đổi tuyến tính. Đổi cơ sở đa thức thường tương ứng với
+bài toán đã nhắc ở mục 5. Ta có các kết quả sau cho việc chuyển đổi qua lại
+giữa cơ sở đơn thức và các cơ sở khác:
+
+\begin{itemize}
+  \item Có thể tính trong thời gian \(O(M(n))\): đa thức Laguerre, đa thức
+  Hermite, đa thức Jacobi, đa thức Fibonacci, đa thức Euler, đa thức Bernoulli,
+  đa thức Mott, đa thức Spread, đa thức Bessel.
+  \item Có thể tính trong thời gian \(O(M(n)\log n)\): giai thừa giảm, đa thức
+  Bell, đa thức Bernoulli loại hai, đa thức Poisson--Charlier, đa thức
+  Actuarial, đa thức Narumi, đa thức Peters, đa thức Meixner--Pollaczek, đa
+  thức Meixner, đa thức Krawtchouk.
+\end{itemize}
+
+Ứng dụng đẹp của nhiều cơ sở trong danh sách trên vào OI vẫn còn chờ được khai
+phá.
+
+\subsubsection{Bài ví dụ}
+
+\paragraph{\term{Con đường đời chân thật và vô vọng của họ.}}
+\term{Nguồn bài:} Comet OJ \#2 F.
+
+\term{Ý chính đề bài:} Có \(n\) (\(n\le 10^5\)) vật phẩm; vật phẩm thứ \(i\)
+(\(1\le i\le n\)) có thuộc tính \(p_i\) (\(0<p_i\le 1\)). Cấp độ ban đầu của
+nhân vật chính là \(0\). Dùng vật phẩm thứ \(i\) có xác suất \(p_i\) làm cấp độ
+tăng \(1\), và xác suất \(1-p_i\) giữ nguyên. Nếu cấp độ cuối cùng là \(j\) thì
+sinh ra lực tấn công \(a_j\). Gọi \(f_i\) là kỳ vọng lực tấn công của nhân vật
+chính sau khi dùng \(n-1\) vật phẩm trừ vật phẩm thứ \(i\). Cần tính
+\(f_1,f_2,\ldots,f_n\) trong \(F_{998244353}\).
+
+\term{Lời giải:} Đặt
+\[
+  C_i(x)=1-p_i+p_ix,\qquad C(x)=\prod_i C_i(x).
+\]
+Khi đó tổng các hệ số của tích vô hướng giữa \(C/C_i\) và \(a\) chính là
+\(f_i\).
+
+Xem \(a\) là vector đầu vào, đây là bài toán biến đổi tuyến tính \(Aa=f\), trong
+đó \(A_{i,j}=(C/C_i)[x^j]\). Xét bài toán chuyển vị \(A^Ta=g\), ta có
+\[
+  g=\sum_i a_i C/C_i.
+\]
+Biểu thức này có thể được tính bằng chia để trị và nhân đa thức tương tự bài
+toán tổng lũy thừa.
+
+\paragraph{\term{Bước đi ngẫu nhiên.}}
+\term{Ý chính đề bài:} Cho \(n,a,b\) (\(n\le 10^5\)). Trên một mặt phẳng hai
+chiều vô hạn, một người xuất phát tại \((0,0)\); mỗi bước có thể đi theo các
+vector \((1,1)\), \((1,0)\), và \((2,0)\), với trọng số lần lượt là
+\(1,a,b\). Người này có thể dừng lại bất cứ lúc nào. Nếu dừng ở \((x,y)\) thì
+sinh ra trọng số \(w_y\). Trọng số của một đường đi được định nghĩa là tích các
+trọng số đó. Với mọi \(1\le a\le n\), cần tính tổng trọng số của mọi đường đi
+kết thúc tại các điểm có tọa độ \(x\) bằng \(a\), ký hiệu là \(g_a\), trong
+\(F_{998244353}\).
+
+\term{Lời giải:} Không xét \(w_y\), gọi \(f_{x,y}\) là tổng trọng số đường đi
+tới \((x,y)\), với \(f_{0,0}=1\), và ngoài ra
+\[
+  f_{i,j}=f_{i-1,j-1}+af_{i-1,j}+bf_{i-2,j}\quad(i,j\ge 0),
+\]
+còn các \(f_{i,j}\) khác bằng \(0\). Khi đó
+\[
+  g_a=\sum_y f_{a,y}w_y,
+\]
+đây là một bài toán biến đổi tuyến tính.
+
+Đặt hàm sinh hai biến của \(f\) là
+\[
+  F(x,y)=\sum_{i,j}f_{i,j}x^iy^j.
+\]
+Khi đó phương trình \(F=1+x(a+y)F+x^2F\) đúng, suy ra
+\[
+  F=\frac{1}{1-(a+y)x-x^2}
+   =\frac{1}{(1-x^2)\left(1-\frac{a+y}{1-x^2}\right)}.
+\]
+Công thức này có thể chuyển thành dạng ở mục 5, trong đó
+\[
+  u(x)=\frac{1}{1-x^2},\quad
+  v(y)=1,\quad
+  f(x)=\frac{1}{1-x},\quad
+  g(x)=\frac{1}{1-x^2},\quad
+  h(y)=a+y.
+\]
+Áp dụng thuật toán là nhận được \(O(M(n))\); trên thực tế đây chính là bài toán
+đổi cơ sở sang một lớp đa thức trực giao.
+
+\paragraph{\term{Đếm cây nhị phân.}}
+\term{Ý chính đề bài:} Cho \(n\) (\(n\le 10^5\)). Định nghĩa trọng số của một
+cây nhị phân có \(x\) lá là \(w_x\). Gọi \(f(t)\) là tổng trọng số của mọi cây
+nhị phân không gán nhãn có \(t\) đỉnh. Hãy tính \(f(1),f(2),\ldots,f(n)\) trong
+\(F_{998244353}\).
+
+\term{Lời giải:} Tương tự trên, gọi \(f_{i,j}\) là số cây nhị phân có \(i\) đỉnh
+và \(j\) lá, \(F\) là hàm sinh hai biến của nó. Khi đó có thể lập
+\[
+  F=x(y+2F+F^2),
+\]
+suy ra
+\[
+\begin{aligned}
+F
+&=\frac{1-2x-\sqrt{(2x-1)^2-4x^2y}}{2x}\\
+&=\frac{1}{2x}(1-2x)
+  \left(1-\sqrt{1-\left(\frac{1}{2x-1}+1\right)^2y}\right).
+\end{aligned}
+\]
+Ta đặt
+\[
+  u(x)=1-2x,\quad v(y)=1,\quad f(x)=1-\sqrt{1-x},\quad
+  g(x)=\left(\frac{1}{2x-1}+1\right)^2,\quad h(y)=y.
+\]
+Áp dụng thuật toán là có thể tính phần bên trong; bên ngoài nhân với
+\(\frac{1}{2x}\) và xử lý đơn giản là xong, độ phức tạp \(O(M(n))\).
+
+\subsection{Tổng kết}
+
+Bài viết này khảo sát nguyên lý chuyển vị và các ứng dụng của nó. Nguyên lý
+chuyển vị đưa ra một cách nhìn mới để xử lý các bài toán biến đổi tuyến tính:
+xem xét sự thay đổi của ma trận từ góc độ thay đổi thuật toán. Dùng nguyên lý
+chuyển vị, ta tối ưu mạnh hằng số và độ khó lập trình của tính giá trị tại
+nhiều điểm, đồng thời hé lộ bản chất chung bên trong nhiều bài toán kinh điển
+tưởng như khác nhau. Ở phần cuối, bài viết giải quyết một lớp khá rộng các bài
+toán ma trận nhân vector, khiến nhiều bài toán đếm vốn khó trở nên dễ xử lý;
+những mặt này đều cho thấy phạm vi ứng dụng rộng, sức mạnh lớn và tiềm năng vô
+hạn của nguyên lý chuyển vị. Ngoài các nội dung được nhắc tới trong bài, vẫn
+còn những cách vận dụng khéo léo khác của nguyên lý chuyển vị đang chờ độc giả
+khai phá. Hy vọng bài viết có thể gợi mở tư duy cho độc giả, mở rộng hướng ra
+đề và giải đề.
+
+\subsection{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng trao đổi và học tập.
+
+Cảm ơn huấn luyện viên đội tuyển quốc gia Gao Wenyuan vì sự hướng dẫn.
+
+Cảm ơn thầy Ye Guoping vì sự giúp đỡ trong học tập và cuộc sống.
+
+Cảm ơn các anh, bạn học Zhu Zhenting, Zhou Yuyang và những người khác vì sự chỉ
+dẫn.
+
+Cảm ơn các bạn Luo Kai, Li Baitian, Zhang Haofeng và những người khác đã đọc
+bản thảo bài viết này.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Về hằng số trong phương pháp Newton tối ưu tính toán chuỗi lũy thừa
+  hình thức. \url{http://negiizhao.blog.uoj.ac/blog/4671}.
+  \item A. Bostan, G. Lecerf, và E. Schost. \emph{Tellegen's Principle into
+  Practice}. 2005.
+  \item Alin Bostan, Bruno Salvy, và Eric Schost. \emph{Power Series
+  Composition and Change of Basis}. 2008.
 \end{enumerate}
 
 \end{document}
