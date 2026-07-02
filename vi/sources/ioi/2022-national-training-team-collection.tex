@@ -18,7 +18,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2022. Tệp này
 là bản quét ảnh: \texttt{pdftotext} chỉ trả về các dấu sang trang và không khôi
 phục được văn bản thân bài. Vì vậy bản LaTeX này chuyển ngữ phần nhận diện tập
-sách, mục lục và hai bài đầu tiên bằng cách đọc trực tiếp các trang đã render
+sách, mục lục và ba bài đầu tiên bằng cách đọc trực tiếp các trang đã render
 từ PDF, kết hợp OCR bằng \texttt{tesseract}.
 \end{abstract}
 
@@ -1418,6 +1418,935 @@ anh Jin Ce và anh Xu Yinzhan đã đọc kiểm tra bản thảo.
   luận văn đội tuyển ứng viên quốc gia Trung Quốc IOI 2018, 2018.
 \end{enumerate}
 
+\section{Bàn về ứng dụng của một tư tưởng tham lam dựa trên so sánh trong thi tin học}
+
+\begin{center}
+\textbf{Zhang Junkai, Trường Ngoại ngữ Thành Đô}
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết giới thiệu ứng dụng trong thi tin học của một tư tưởng tham lam dựa
+trên so sánh. Trước hết bài viết trình bày dạng bài toán, quá trình của phương
+pháp và một điều kiện cần dùng để áp dụng phương pháp này. Sau đó bài viết đưa
+vào một lớp bài toán trên cây có dạng tương tự, rồi đưa ra thuật toán dựa trên
+tư tưởng tham lam nói trên. Cuối cùng bài viết phân tích một số mô hình thường
+gặp trong thi tin học thỏa các điều kiện đó, cùng một phần tính chất của thuật
+toán.
+
+\subsection{Mở đầu}
+
+Trong thi tin học, tư tưởng tham lam là một phần cực kỳ quan trọng. Trong các
+lời giải tham lam có một lớp phương pháp phân tích ảnh hưởng của việc hoán đổi
+hai phần tử trong nghiệm lên đáp án, từ đó suy ra tính chất mà nghiệm tối ưu
+phải thỏa. Phương pháp này thường được gọi là \emph{exchange arguments}. Nó đã
+xuất hiện trong thi tin học từ hơn mười năm trước, những năm gần đây cũng có
+một số ví dụ mở rộng, nhưng việc phân tích và nghiên cứu hệ thống về nó vẫn còn
+khá ít. Bài viết này phân tích phương pháp đó tương đối chi tiết.
+
+Phần đầu dùng một ví dụ để dẫn nhập phương pháp, rồi phân tích một điều kiện đủ
+để phương pháp thu được nghiệm tối ưu đúng. Phần thứ hai giới thiệu một mở rộng
+cổ điển: trên dạng bài toán trước đó thêm một ràng buộc có dạng cây có gốc; sau
+đó đưa ra một điều kiện tương tự nhưng mạnh hơn và hai thuật toán khi bài toán
+thỏa điều kiện ấy. Trong cả hai phần, bài viết thảo luận một số mô hình thường
+gặp và phân tích một số tính chất, ứng dụng của thuật toán.
+
+\subsection{Một lớp bài toán tối ưu liên quan tới hoán vị và phương pháp exchange arguments}
+
+\subsubsection{Dẫn nhập bài toán}
+
+Trong phần này ta chủ yếu xét dạng bài toán sau.
+
+Cho $n$ phần tử $x_1,\ldots,x_n$ và một hàm $F$ có miền xác định là các dãy gồm
+các phần tử này, miền giá trị là một tập có thứ tự. Với mọi hoán vị bậc $n$ là
+$p$, hãy tìm giá trị nhỏ nhất của
+\[
+  F\bigl((x_{p_1},x_{p_2},\ldots,x_{p_n})\bigr).
+\]
+
+\paragraph{Ví dụ 1.}
+Cho $n$ cặp số nguyên dương $(a_i,b_i)$, hãy sắp chúng theo thứ tự tùy ý thành
+một dãy. Định nghĩa chi phí của dãy là tổng, trên mọi cặp trong dãy, của
+``$a$ của cặp đó nhân với tổng các $b$ của mọi cặp đứng sau nó''. Hãy tìm chi
+phí nhỏ nhất.
+\[
+  n\le 10^6,\qquad 1\le a_i,b_i\le 10^6.
+\]
+
+Bài toán này là một trường hợp của dạng trên, với
+\[
+  F\bigl(((a_1,b_1),(a_2,b_2),\ldots,(a_k,b_k))\bigr)
+  =\sum_{1\le i<j\le k} a_i b_j .
+\]
+Rõ ràng các số thực có thể so sánh được.
+
+Ta phân tích tính chất của một hoán vị tối ưu. Xét một hoán vị
+$(p_1,\ldots,p_n)$ và hoán vị nhận được bằng cách đổi hai vị trí kề nhau
+$(i,i+1)$:
+\[
+  (q_1,\ldots,q_n)=(p_1,\ldots,p_{i-1},p_{i+1},p_i,p_{i+2},\ldots,p_n).
+\]
+Khi đó
+\[
+\begin{aligned}
+&F\bigl(((a_{p_1},b_{p_1}),\ldots,(a_{p_n},b_{p_n}))\bigr)
+ -F\bigl(((a_{q_1},b_{q_1}),\ldots,(a_{q_n},b_{q_n}))\bigr)\\
+&\qquad =a_{p_i}b_{p_{i+1}}-a_{p_{i+1}}b_{p_i}.
+\end{aligned}
+\tag{1}
+\]
+Vì vậy nếu $a_{p_i}b_{p_{i+1}}-a_{p_{i+1}}b_{p_i}>0$, sau khi đổi chỗ hai phần
+tử đó thì $F$ nhỏ hơn, nên $(p_1,\ldots,p_n)$ không thể là nghiệm tối ưu. Do đó
+chỉ các hoán vị thỏa
+\[
+  \forall 1\le i<n,\quad
+  a_{p_i}b_{p_{i+1}}-a_{p_{i+1}}b_{p_i}\le 0,
+  \quad\text{tức}\quad
+  \frac{a_{p_i}}{b_{p_i}}\le \frac{a_{p_{i+1}}}{b_{p_{i+1}}},
+\]
+mới có thể tối ưu.
+
+Nếu một hoán vị $p$ thỏa điều kiện đó thì với mọi $1\le i<j\le n$ ta có
+\[
+  \frac{a_{p_i}}{b_{p_i}}\le \frac{a_{p_j}}{b_{p_j}}.
+\]
+Do đó, với mọi giá trị $v$, các vị trí $i$ thỏa
+$a_{p_i}/b_{p_i}=v$ tạo thành một đoạn liên tiếp trong hoán vị, và các đoạn
+khác nhau được sắp tăng dần theo $a/b$. Nếu hai phần tử trong cùng một đoạn có
+cùng tỉ số, theo (1), đổi chỗ hai phần tử kề nhau không làm thay đổi $F$; suy ra
+mọi hoán vị thỏa điều kiện trên có cùng giá trị $F$ và đều tối ưu.
+
+Vì thế với bài toán này, chỉ cần sắp mọi cặp theo $a_i/b_i$ là thu được một cách
+sắp tối ưu. Độ phức tạp là thời gian sắp xếp $O(n\log n)$.
+
+\subsubsection{Phân tích bài toán và phương pháp exchange arguments}
+
+Xét cách làm trong ví dụ trên. Nó có thể được xem là xây dựng một quan hệ so
+sánh giữa mỗi hai phần tử $x_i,x_j$, cụ thể là
+\[
+  x_i<x_j \quad\Longleftrightarrow\quad F((x_i,x_j))\le F((x_j,x_i)).
+\]
+Trong bài đó, quan hệ so sánh được định nghĩa như vậy và bản thân bài toán thỏa
+một số tính chất đặc biệt, khiến việc sắp mọi phần tử theo quan hệ so sánh cho
+ra nghiệm tối ưu. Nhưng trong tình huống tổng quát hơn, điều này hiển nhiên
+không còn đúng; thực tế với một số hàm $F$, dạng bài toán trên hiện chỉ có
+thuật toán mũ. Ta phân tích các tính chất của ví dụ trước để tìm một điều kiện
+đủ cho thuật toán sau:
+
+Gọi $S$ là tập tất cả phần tử đã cho. Định nghĩa một quan hệ nhị nguyên $<$ trên
+$S$, rồi sắp mọi phần tử theo quan hệ đó.
+
+Trong ví dụ trước, dễ thấy tồn tại các tính chất sau.
+
+\paragraph{Tính chất 2.1.}
+Với mọi $a,b\in S$, ít nhất một trong $a<b$ và $b<a$ đúng; tức quan hệ so sánh
+có tính toàn phần mạnh.
+
+\paragraph{Tính chất 2.2.}
+Với mọi $a,b,c\in S$, nếu $a<b$ và $b<c$ thì $a<c$; tức quan hệ có tính bắc cầu.
+
+\paragraph{Tính chất 2.3.}
+Với mọi $a,b\in S$, nếu $a<b$ thì với mọi dãy phần tử chứa $\{a,b\}$ như một
+dãy con liên tiếp, ta có
+\[
+  F((s_1,\ldots,s_{k-1},a,b,s_{k+2},\ldots,s_\ell))
+  \le
+  F((s_1,\ldots,s_{k-1},b,a,s_{k+2},\ldots,s_\ell)).
+\]
+
+\paragraph{Định lý 2.1.}
+Nếu tồn tại một quan hệ nhị nguyên $<$ trên $S$ thỏa các Tính chất
+2.1, 2.2 và 2.3, thì dùng quan hệ này trong thuật toán sắp xếp trên sẽ thu được
+một nghiệm tối ưu.
+
+\paragraph{Chứng minh.}
+Theo giả thiết, $<$ tạo thành một thứ tự yếu (\emph{weak ordering}, còn gọi là
+quan hệ ưu tiên) trên $S$. Do đó, nếu $|S|=n$, tồn tại một cách xếp các phần tử
+thành dãy $(x_1,\ldots,x_n)$ sao cho
+\[
+  \forall 1\le i<n,\quad x_i<x_{i+1}.
+\]
+Với một quan hệ so sánh thỏa thứ tự yếu, thuật toán sắp xếp dựa trên so sánh có
+thể tìm một dãy như vậy bằng $O(n\log n)$ lần so sánh.
+
+\paragraph{Bổ đề 2.1.}
+Nếu một hoán vị $(x_1,\ldots,x_n)$ của các phần tử trong $S$ thỏa
+$x_i<x_{i+1}$ với mọi $1\le i<n$, và $<$ thỏa Tính chất 2.3, thì không tồn tại
+hoán vị $(y_1,\ldots,y_n)$ của $S$ sao cho
+\[
+  F((y_1,\ldots,y_n))<F((x_1,\ldots,x_n)).
+\]
+Nói cách khác, $(x_1,\ldots,x_n)$ đạt giá trị nhỏ nhất trong mọi hoán vị.
+
+\paragraph{Chứng minh.}
+Từ tính bắc cầu của $<$, ta có $x_i<x_j$ với mọi $i<j$. Xét một hoán vị bất kỳ
+$(y_1,\ldots,y_n)=(x_{p_1},\ldots,x_{p_n})$. Ta biến đổi nó về
+$(x_1,\ldots,x_n)$ bằng các lần đổi chỗ kề nhau: ở lượt $i$, đưa $x_i$ về vị
+trí thứ $i$ bằng cách liên tục đổi $x_i$ với phần tử đứng ngay trước nó. Trong
+mỗi lần đổi, phần tử đứng trước $x_i$ là một $x_j$ với $j>i$, nên $x_i<x_j$.
+Theo Tính chất 2.3, đổi từ $(x_j,x_i)$ sang $(x_i,x_j)$ không làm $F$ tăng. Sau
+tất cả các lần đổi, $F$ không tăng, nên
+\[
+  F((x_1,\ldots,x_n))\le F((x_{p_1},\ldots,x_{p_n})).
+\]
+\hfill\rule{0.55em}{0.55em}
+
+Từ bổ đề, mọi hoán vị $(x_1,\ldots,x_n)$ thỏa $x_i<x_{i+1}$ đều là nghiệm tối
+ưu. Điều này cũng chứng minh tính đúng đắn của cách giải trong ví dụ đầu.
+
+\subsubsection{Một số ví dụ và mô hình tương ứng}
+
+\paragraph{Một số ví dụ.}
+Ngoài ví dụ trên còn có các bài toán khác có dạng tương tự; dưới đây là một vài
+ví dụ.
+
+\paragraph{Ví dụ 2.}
+Cho $n$ xâu $s_1,\ldots,s_n$. Hãy chọn một hoán vị $p$ của $n$ phần tử sao cho
+xâu nhận được bằng cách nối $s_{p_1},s_{p_2},\ldots,s_{p_n}$ theo thứ tự có thứ
+tự từ điển nhỏ nhất.
+\[
+  \sum_i |s_i|\le 5\times 10^5.
+\]
+
+Lấy $F$ là kết quả nối các xâu theo thứ tự; so sánh từ điển giữa các xâu là hợp
+lệ. Vẫn đặt $x<y$ khi và chỉ khi $F((x,y))\le F((y,x))$. Khi đó, với hai xâu
+$s,t$, ta có $s<t$ khi và chỉ khi $s+t$ không lớn hơn $t+s$ theo thứ tự từ điển
+(dấu $+$ biểu thị phép nối xâu). Rõ ràng $<$ thỏa Tính chất 2.1. So sánh từ
+điển không đổi nếu thêm cùng một xâu vào đầu hoặc cuối hai xâu cùng độ dài, nên
+$<$ thỏa Tính chất 2.3. Chỉ cần chứng minh tính bắc cầu.
+
+\paragraph{Bổ đề 2.2.}
+Ký hiệu $s^\infty$ là xâu vô hạn nhận được bằng cách lặp $s$ vô hạn lần. Khi đó
+$s+t$ không lớn hơn $t+s$ theo thứ tự từ điển khi và chỉ khi $s^\infty$ không
+lớn hơn $t^\infty$ theo thứ tự từ điển.
+
+Chứng minh bổ đề này tương đối phức tạp và ít liên quan tới phần còn lại của
+bài viết, nên được lược bỏ trong nguồn. Từ bổ đề, do so sánh từ điển có tính
+bắc cầu, quan hệ $<$ nói trên cũng bắc cầu, vì vậy nó thỏa ba tính chất. Dùng
+cách làm này, với mảng hậu tố hoặc thuật toán tương tự, sau tiền xử lý có thể
+so sánh $s+t$ và $t+s$ trong $O(1)$. Khi đó độ phức tạp là độ phức tạp dựng
+cấu trúc và sắp xếp; với cách cài đặt mảng hậu tố thường gặp là
+$O(L\log L)$ với $L=\sum_i |s_i|$.
+
+\paragraph{Ví dụ 3.}
+Có $n$ ổ đĩa cần định dạng. Ổ thứ $i$ có dung lượng trước khi định dạng là
+$a_i$ và sau khi định dạng là $b_i$. Ban đầu mỗi ổ đều chứa đầy dữ liệu; trong
+quá trình định dạng một ổ, cần chuyển toàn bộ dữ liệu trên ổ đó sang các ổ khác
+hoặc sang bộ nhớ ngoài. Dữ liệu có thể chuyển tùy ý và chia tùy ý. Hỏi cần ít
+nhất bao nhiêu bộ nhớ ngoài để định dạng toàn bộ ổ mà vẫn giữ được dữ liệu.
+\[
+  n\le 10^6,\qquad 0<a_i,b_i<10^6.
+\]
+
+Xét một thứ tự định dạng $p_1,\ldots,p_n$. Bài toán có thể viết thành: cho $n$
+cặp $(a_i,b_i)$, tìm một hoán vị tối đa hóa
+\[
+  \min_j\left\{\sum_{i=1}^j b_{p_i}-\sum_{i=1}^j a_{p_i}\right\}.
+\]
+Tương đương, đặt
+\[
+  F(((a_1,b_1),\ldots,(a_k,b_k)))
+  =
+  -\min_j\left\{\sum_{i=1}^j b_i-\sum_{i=1}^j a_i\right\}
+\]
+và tối thiểu hóa $F$.
+
+Tiếp tục định nghĩa $x<y$ khi $F((x,y))\le F((y,x))$. Với
+$(a_1,b_1),(a_2,b_2)$, điều kiện này tương đương
+\[
+  \min\{-a_1,\ b_1-a_1-a_2\}
+  \ge
+  \min\{-a_2,\ b_2-a_1-a_2\}.
+\]
+Dễ kiểm tra Tính chất 2.3 bằng cách xét đóng góp của hai phần tử kề nhau bị đổi
+chỗ; phần tiền tố và hậu tố ngoài hai phần tử đó giữ nguyên, còn bất đẳng thức
+trên đúng chính là điều kiện làm giá trị $F$ không tăng.
+
+Để phân tích quan hệ so sánh, xét dấu của $b_i-a_i$. Ký hiệu
+\[
+\operatorname{sgn}(x)=
+\begin{cases}
+1,&x>0,\\
+0,&x=0,\\
+-1,&x<0.
+\end{cases}
+\]
+
+\paragraph{Bổ đề 2.3.}
+Với hai cặp $(a_1,b_1),(a_2,b_2)$:
+\begin{enumerate}
+  \item nếu $\operatorname{sgn}(b_1-a_1)>\operatorname{sgn}(b_2-a_2)$ thì
+  \[
+    \min\{-a_1,\ b_1-a_1-a_2\}
+    \ge
+    \min\{-a_2,\ b_2-a_1-a_2\};
+  \]
+  \item nếu cả hai dấu đều bằng $1$, bất đẳng thức trên đúng khi $a_1\le a_2$;
+  \item nếu cả hai dấu đều bằng $0$, bất đẳng thức trên luôn đúng;
+  \item nếu cả hai dấu đều bằng $-1$, bất đẳng thức trên đúng khi $b_1\ge b_2$.
+\end{enumerate}
+
+Từ bổ đề, nếu chia mọi phần tử thành ba lớp theo
+$\operatorname{sgn}(b_i-a_i)$, thì trong từng lớp riêng lẻ quan hệ $<$ là một
+thứ tự yếu hợp lệ. Tuy nhiên giữa các lớp, quan hệ định nghĩa trực tiếp bởi
+$F((x,y))\le F((y,x))$ chưa chắc bắc cầu. Ví dụ có thể có
+$(2,2)<(1,1)<(1,2)$ nhưng $(2,2)\not<(1,2)$.
+
+Mặt khác, nếu $\operatorname{sgn}(b_1-a_1)>\operatorname{sgn}(b_2-a_2)$ thì
+nhất định $(a_1,b_1)<(a_2,b_2)$. Vì vậy ta định nghĩa lại $<$ như sau:
+$(a_1,b_1)<(a_2,b_2)$ khi và chỉ khi một trong hai điều kiện sau đúng:
+\begin{enumerate}
+  \item $\operatorname{sgn}(b_1-a_1)>\operatorname{sgn}(b_2-a_2)$;
+  \item $\operatorname{sgn}(b_1-a_1)=\operatorname{sgn}(b_2-a_2)$ và
+  \[
+    F(((a_1,b_1),(a_2,b_2)))
+    \le
+    F(((a_2,b_2),(a_1,b_1))).
+  \]
+\end{enumerate}
+Dễ kiểm tra quan hệ này thỏa ba tính chất, nên sắp xếp theo nó giải được bài
+toán trong $O(n\log n)$.
+
+Ví dụ này cho thấy vì Tính chất 2.3 chỉ cho một chiều hàm ý, không nhất thiết có
+thể dùng trực tiếp $F((x,y))\le F((y,x))$ để định nghĩa quan hệ so sánh. Nhưng
+từ so sánh do phép đổi chỗ gợi ra vẫn là một hướng xuất phát tốt.
+
+\paragraph{Ví dụ 4.}
+Có $n$ hộp, hộp thứ $i$ có trọng lượng $w_i$ và sức chịu tải $v_i$
+($w_i,v_i>0$). Hãy xếp chúng thành một chồng sao cho tổng trọng lượng các hộp
+nằm trên mỗi hộp không vượt quá sức chịu tải của hộp đó.
+\[
+  n\le 10^6.
+\]
+
+Với một dãy hộp $((w_1,v_1),\ldots,(w_n,v_n))$, cần
+\[
+  \min_j\left\{v_j-\sum_{i<j} w_i\right\}\ge 0.
+\]
+Nếu tối đa hóa vế trái, ta được một bài toán cùng dạng với Ví dụ 3 bằng cách đặt
+$a_i=-v_i$ và $b_i=-v_i-w_i$. Khi đó mọi $b_i-a_i<0$, nên một phương án tối ưu
+là sắp mọi hộp theo $b_i$ giảm dần, tức theo $v_i+w_i$ tăng dần.
+
+Tương tự, trong Ví dụ 1, nếu thay ràng buộc bằng $a_ib_i>0$, hoặc $a_i>0$, hoặc
+các điều kiện gần giống, sau khi xử lý một số phần tử đặc biệt, ta vẫn có thể
+so sánh $(a_i,b_i)$ và $(a_j,b_j)$ bằng cách tương tự so sánh $a_i b_j$ với
+$a_j b_i$, để quan hệ thỏa Tính chất 2.1, 2.2 và 2.3. Nhưng nếu không có ràng
+buộc nào và $a_i,b_i$ là các số thực tùy ý, dễ dựng phản ví dụ cho thấy ba tính
+chất không thể đồng thời thỏa, nên không còn dùng được thuật toán trên.
+
+\paragraph{Một số mô hình.}
+Ba ví dụ ở trên tương ứng với ba kiểu phần tử, hàm và quan hệ so sánh khác
+nhau. Gọi một bộ gồm phần tử, hàm và quan hệ so sánh như vậy là một \emph{mô
+hình}; các ví dụ trên cho ba mô hình:
+\begin{enumerate}
+  \item Phần tử có dạng $(a,b)$ với $a,b\in\mathbb R$ và $a,b\ge 0$,
+  \[
+    F(((a_1,b_1),\ldots,(a_n,b_n)))
+    =\sum_{1\le i<j\le n} a_i b_j,
+  \]
+  so sánh $F$ theo thứ tự thông thường trên số thực; cách so sánh phần tử là
+  như Ví dụ 1.
+  \item Phần tử có dạng $(a,b)$ với $a,b\in\mathbb R$,
+  \[
+    F(((a_1,b_1),\ldots,(a_n,b_n)))
+    =
+    -\min_j\left\{\sum_{i=1}^j b_i-\sum_{i=1}^j a_i\right\},
+  \]
+  so sánh theo số thực; cách so sánh phần tử cụ thể như Ví dụ 3.
+  \item Phần tử là xâu $s$, $F((s_1,\ldots,s_n))=s_1+\cdots+s_n$, so sánh theo
+  thứ tự từ điển; hai phần tử $s,t$ được so sánh bằng thứ tự từ điển của
+  $s+t$ và $t+s$.
+\end{enumerate}
+
+Các mô hình này, đặc biệt hai mô hình đầu, xuất hiện khá rộng trong thi tin học.
+Còn nhiều bài toán khác có thể chuyển thành các mô hình trên hoặc các mô hình
+khác thỏa ba tính chất; nguồn không triển khai thêm.
+
+\subsubsection{Một số ứng dụng khác của phương pháp}
+
+Dựa trên các tính chất và cách xử lý trong thuật toán trên, ta còn giải được
+nhiều bài toán hơn. Ví dụ xét lớp bài toán sau: cho $n$ phần tử
+$x_1,\ldots,x_n$ và một hàm $F$ trên các dãy phần tử, thỏa ba tính chất trên.
+Chọn $k$ phần tử, sắp chúng tùy ý thành $y_1,\ldots,y_k$, và tối ưu hóa
+$F((y_1,\ldots,y_k))$.
+
+Theo thuật toán trên, ta có thể xây dựng một thứ tự yếu giữa các $x_i$; giả sử
+$x_1<x_2<\cdots<x_n$. Nếu các phần tử được chọn là
+$x_{s_1}<x_{s_2}<\cdots<x_{s_k}$, thì dãy
+$(x_{s_1},\ldots,x_{s_k})$ là một nghiệm tối ưu cho tập đã chọn. Vì vậy luôn tồn
+tại nghiệm tối ưu là một dãy con của $(x_1,\ldots,x_n)$. Tính chất này biến
+bài toán chọn một số phần tử theo thứ tự thành bài toán chọn một dãy con, trong
+nhiều trường hợp làm bài toán dễ hơn.
+
+\paragraph{Ví dụ 5.}
+Có $n$ vật phẩm, vật phẩm thứ $i$ có chi phí không âm $c_i$ và giá trị $w_i$.
+Hai người chơi trò chơi sau:
+\begin{enumerate}
+  \item Người thứ nhất chọn một vật phẩm và trả chi phí $c_i$. Người thứ nhất
+  cũng có thể trực tiếp kết thúc trò chơi.
+  \item Người thứ hai có thể xóa vật phẩm này, khi đó trò chơi trở lại bước đầu
+  nhưng chi phí người thứ nhất đã trả không được hoàn lại. Người thứ hai được
+  làm thao tác này nhiều nhất $k$ lần. Người thứ hai cũng có thể không thao tác,
+  khi đó người thứ nhất nhận lợi ích $w_i$ và trò chơi kết thúc.
+\end{enumerate}
+Tổng lợi ích của người thứ nhất là lợi ích nhận được trừ tổng chi phí đã trả.
+Người thứ nhất muốn tối đa hóa, người thứ hai muốn tối thiểu hóa. Hãy tìm kết
+quả khi cả hai chơi tối ưu.
+\[
+  n<1.5\times 10^5,\qquad k<9.
+\]
+
+Nếu người thứ nhất chọn không lấy vật phẩm, lợi ích là $0$. Nếu có chiến lược
+tốt hơn, cuối cùng anh ta chắc chắn nhận lợi ích của một vật phẩm. Khi đó chiến
+lược của người thứ nhất có thể xem là chọn một dãy gồm $k+1$ vật phẩm
+$(s_1,\ldots,s_{k+1})$, lần thứ $i$ chọn vật phẩm $s_i$. Với chiến lược cố định,
+lợi ích nhỏ nhất mà người thứ hai có thể buộc được là
+\[
+  \min_i\left\{w_{s_i}-\sum_{j=1}^i c_{s_j}\right\}.
+\]
+Vì vậy bài toán trở thành tối đa hóa giá trị này. Đây tương tự Ví dụ 4; từ cách
+làm của Ví dụ 4, một thứ tự tối ưu là sắp vật phẩm theo $w_i$ tăng dần. Do đó
+chiến lược của người thứ nhất luôn có thể xem là chọn một dãy con sau khi sắp
+theo giá trị. Đặt $f_{i,j}$ là giá trị lớn nhất khi chọn $j$ vật phẩm trong hậu
+tố bắt đầu từ $i$ sau khi sắp; ta có chuyển tiếp
+\[
+  f_{i,j}=\max\{f_{i+1,j},\ \min(w_i-c_i,\ f_{i+1,j-1}-c_i)\}.
+\]
+Độ phức tạp là $O(nk)$; trong nguồn, do $k$ là hằng nhỏ nên được ghi là tuyến
+tính theo $n$.
+
+\subsubsection{Tổng kết}
+
+Điểm xuất phát của thuật toán là phân tích sự thay đổi của giá trị phương án
+khi đổi chỗ hai phần tử kề nhau, từ đó suy ra tính chất mà phương án tối ưu cần
+thỏa. Vì vậy nó được gọi là \emph{exchange argument}. Bản chất của thuật toán là
+tìm một quan hệ so sánh tạo thành thứ tự, sao cho mỗi khi đổi một cặp kề nhau
+mà trong thứ tự phần tử sau không lớn hơn phần tử trước, phương án sau đổi không
+kém đi; từ đó suy ra dãy thỏa thứ tự là tối ưu. Dùng trực tiếp điều kiện
+``đổi xong không kém đi'' làm quan hệ so sánh có thể gặp vấn đề, nhưng bắt đầu
+từ quan hệ do phép đổi chỗ gợi ra vẫn là một phương án tốt.
+
+Các ví dụ trên nhìn qua tưởng không liên quan, nhưng đều giải được bằng cùng
+một phương pháp, cho thấy thuật toán có phạm vi ứng dụng rộng. Đồng thời, tư
+tưởng phân tích tính chất cục bộ của nghiệm tối ưu để suy ra tính chất toàn cục
+cũng là một cách mạnh để phân tích bài toán.
+
+\subsection{Mở rộng bài toán lên cây có gốc và lời giải}
+
+\subsubsection{Dẫn nhập bài toán}
+
+Phần này xét một lớp bài toán có dạng tương tự phần trước, nhưng thêm một ràng
+buộc kiểu thứ tự bộ phận liên quan tới cây có gốc. Với một hoán vị $p$, nói
+rằng $x$ xuất hiện trước $y$ khi tồn tại $i<j$ sao cho $p_i=x$ và $p_j=y$.
+
+Cho $n$ phần tử $x_1,\ldots,x_n$, một hàm $F$ có miền xác định là dãy các phần
+tử này và miền giá trị là một tập có thứ tự. Cho thêm một cây có gốc $T$ gồm
+$n$ đỉnh, gốc là $1$; cha của đỉnh $i$ ($2\le i\le n$) là $\operatorname{fa}_i$.
+Để mô tả gọn, ta nói ``đỉnh $i$ ứng với phần tử $x_i$''.
+
+Một hoán vị được gọi là thỏa ràng buộc của $T$ nếu với mọi $2\le i\le n$,
+$\operatorname{fa}_i$ xuất hiện trước $i$ trong hoán vị. Hãy tìm giá trị nhỏ
+nhất của
+\[
+  F\bigl((x_{p_1},x_{p_2},\ldots,x_{p_n})\bigr)
+\]
+trên mọi hoán vị bậc $n$ thỏa ràng buộc của $T$.
+
+\paragraph{Ví dụ 6.}
+Cho một cây có gốc gồm $n$ đỉnh, gốc là $1$. Mỗi đỉnh $i$ có trọng số
+$w_i\in\{0,1\}$. Cần sắp các đỉnh thành dãy $p_1,\ldots,p_n$ sao cho với mọi
+đỉnh $x$, mọi tổ tiên khác chính nó của $x$ đều xuất hiện trước $x$. Hãy tối
+thiểu hóa số nghịch thế của dãy $(w_{p_1},w_{p_2},\ldots,w_{p_n})$, tức số cặp
+$1\le i<j\le n$ thỏa $w_{p_i}>w_{p_j}$.
+\[
+  n<2\times 10^5.
+\]
+
+Trong bài này, nghịch thế chỉ phát sinh khi $w_{p_i}=1$ và $w_{p_j}=0$. Nếu xem
+phần tử $w=1$ là $(1,0)$ trong mô hình thứ nhất, còn $w=0$ là $(0,1)$, bài toán
+có thể biểu diễn dưới dạng trên.
+
+Nếu không có ràng buộc $T$, theo phần trước chỉ cần tồn tại một quan hệ so sánh
+giữa các phần tử thỏa ba tính chất là dùng được phương pháp exchange arguments.
+Nhưng khi thêm ràng buộc cây, dù $F$ thỏa điều kiện đó, vẫn có thể không tồn tại
+thuật toán tốt theo hướng này. Xét mô hình sau: cho $n$ số thực
+$w_1,\ldots,w_n$, sắp chúng sao cho tổng $k$ số đầu là lớn nhất. Định nghĩa
+$x<y$ theo so sánh số thực thông thường. Quan hệ này rõ ràng thỏa Tính chất
+2.1 và 2.2, và cũng dễ chứng minh thỏa Tính chất 2.3.
+
+\paragraph{Một phản ví dụ.}
+Cho một cây có gốc gồm $n$ đỉnh, mỗi đỉnh có trọng số. Cho số nguyên dương $k$,
+hãy chọn một khối liên thông kích thước $k$ trên cây, chứa gốc, sao cho tổng
+trọng số trong khối là lớn nhất.
+
+Bài toán tương đương chọn một hoán vị đỉnh thỏa ràng buộc của $T$ và tối đa hóa
+tổng trọng số của $k$ đỉnh đầu. Khi không có ràng buộc cây, nó tương đương mô
+hình vừa nêu. Bài toán có thể giải bằng quy hoạch động $O(n^2)$; nếu cây có
+dạng gốc có ba cây con và mỗi cây con là một đường, thì bài toán trở thành:
+cho ba dãy tùy ý $a,b,c$, tìm
+\[
+  \max_{i+j+\ell=k}\{a_i+b_j+c_\ell\},
+\]
+nên khó giải dưới $O(n^2)$. Điều này cho thấy nếu muốn tiếp tục dùng tư tưởng
+tham lam dựa trên đổi chỗ, cần yêu cầu mạnh hơn về $F$ và cần phân tích thêm.
+
+\subsubsection{Phân tích bài toán trên cây}
+
+Giả sử tồn tại một quan hệ $<$ thỏa Tính chất 2.1, 2.2 và 2.3. Ta có bổ đề sau.
+
+\paragraph{Bổ đề 3.1.}
+Giả sử các phần tử là $x_1,\ldots,x_n$, gốc của cây là $1$. Gọi $v$ là đỉnh có
+phần tử nhỏ nhất trong $x_2,\ldots,x_n$ và $u$ là cha của $v$ trên cây. Khi đó
+tồn tại một hoán vị tối ưu trong đó $u$ và $v$ kề nhau, tức tồn tại
+$i\in\{1,\ldots,n-1\}$ sao cho $p_i=u,p_{i+1}=v$ hoặc $p_i=v,p_{i+1}=u$.
+
+\paragraph{Chứng minh.}
+Xét một hoán vị $p$ bất kỳ thỏa ràng buộc của $T$. Giả sử $p_a=u$ và $p_b=v$.
+Do $u$ là cha của $v$, ta có $a<b$. Vì $v$ là phần tử nhỏ nhất ngoài gốc, mọi
+đỉnh nằm giữa $u$ và $v$ trong hoán vị đều không nhỏ hơn $v$. Dùng Tính chất 2.3
+có thể lần lượt đổi $v$ sang trái qua các phần tử này mà không làm $F$ tăng.
+Hơn nữa, trong đoạn giữa $u$ và $v$ không thể có tổ tiên của $u$: nếu có một
+đỉnh như vậy, quan hệ tổ tiên trong cây sẽ mâu thuẫn với việc $p$ thỏa ràng buộc
+của $T$. Do đó sau khi dịch $v$ tới ngay sau $u$, hoán vị vẫn thỏa ràng buộc
+của $T$. Vì với mọi hoán vị hợp lệ đều tìm được một hoán vị hợp lệ có $u,v$ kề
+nhau và $F$ không lớn hơn, tồn tại một nghiệm tối ưu có tính chất này.
+\hfill\rule{0.55em}{0.55em}
+
+Theo Bổ đề 3.1, nếu chỉ xét các hoán vị hợp lệ trong đó $u,v$ kề nhau, nghiệm
+tối ưu thu được vẫn là nghiệm tối ưu của bài toán gốc. Hãy hợp nhất $u,v$ trên
+cây thành một đỉnh đại diện cho dãy hai phần tử $(x_u,x_v)$. Khi đó ta được một
+bài toán mới trên cây có $n-1$ đỉnh, mỗi đỉnh ứng với một dãy phần tử; chọn một
+hoán vị hợp lệ của các đỉnh, nối các dãy theo thứ tự hoán vị và tối thiểu hóa
+$F$ trên dãy nối đó. Các dãy thu được ở bài toán mới đúng là các dãy của bài
+toán cũ trong đó $x_u,x_v$ kề nhau, nên nghiệm tối ưu của bài toán mới ứng với
+một nghiệm tối ưu của bài toán cũ.
+
+Bài toán mới có cùng dạng, nhưng mỗi đỉnh không còn ứng với một phần tử mà ứng
+với một dãy phần tử. Do đó nếu muốn tiếp tục dùng bổ đề trên, cần mở rộng quan
+hệ so sánh từ phần tử sang dãy phần tử.
+
+Gọi $S$ là tập các phần tử đã cho, và $\mathcal T$ là tập mọi dãy không rỗng
+gồm các phần tử của $S$. Giả sử tồn tại một quan hệ nhị nguyên $<$ trên
+$\mathcal T$ thỏa:
+\begin{itemize}
+  \item \textbf{Tính chất 3.1.} Với mọi $a,b\in\mathcal T$, ít nhất một trong
+  $a<b$ và $b<a$ đúng.
+  \item \textbf{Tính chất 3.2.} Với mọi $a,b,c\in\mathcal T$, nếu $a<b$ và
+  $b<c$ thì $a<c$.
+  \item \textbf{Tính chất 3.3.} Với mọi $a,b\in\mathcal T$, nếu $a<b$ thì với
+  mọi dãy phần tử $s_1,s_2$,
+  \[
+    F(s_1+a+b+s_2)\le F(s_1+b+a+s_2),
+  \]
+  trong đó dấu $+$ là phép nối dãy.
+\end{itemize}
+
+Nếu bài toán thỏa các tính chất này, có hai thuật toán tìm một nghiệm tối ưu
+bằng $O(n\log n)$ lần so sánh dãy và $O(n)$ lần hợp nhất dãy. Phần sau phân tích
+hai thuật toán đó.
+
+\subsubsection{Hai thuật toán cho bài toán trên cây}
+
+Trong phần này giả sử các tính chất trên đều đúng. Khi đó các dãy thỏa cùng
+kiểu tính chất như phần tử, nên có thể thay mỗi đỉnh ban đầu ứng với một phần
+tử $x_i$ bằng đỉnh ứng với dãy $s_i=(x_i)$ và chỉ xét so sánh, hợp nhất giữa các
+dãy.
+
+\paragraph{Thuật toán 1.}
+Tiếp tục dùng ý tưởng của Bổ đề 3.1, nhưng thay phần tử bằng dãy; bổ đề vẫn
+đúng. Vì vậy khi mỗi đỉnh ứng với một dãy phần tử, ta vẫn có thể hợp nhất hai
+đỉnh. Mỗi thao tác hợp nhất hai đỉnh trên cây và nối hai dãy tương ứng; sau
+$n-1$ lần hợp nhất, cây chỉ còn một đỉnh, dãy của đỉnh đó là một nghiệm tối ưu.
+
+Thuật toán cụ thể:
+\begin{enumerate}
+  \item Lặp $n-1$ lần.
+  \item Mỗi lần, tìm trong các đỉnh không phải gốc đỉnh $x$ có dãy nhỏ nhất.
+  \item Nối dãy của $x$ vào cuối dãy của cha $x$, rồi hợp nhất $x$ với cha của
+  nó trên cây.
+\end{enumerate}
+Sau $n-1$ thao tác, dãy ứng với gốc là một nghiệm tối ưu.
+
+Bổ đề 3.1 bảo đảm sau mỗi lần hợp nhất, nghiệm tối ưu của bài toán mới ứng với
+một nghiệm tối ưu của bài toán trước, nên thuật toán đúng. Khi cài đặt, có thể
+dùng DSU trên cây để duy trì các đỉnh đã co, lưu thông tin của một khối liên
+thông tại gốc của khối đó, và dùng một cấu trúc dữ liệu hỗ trợ chèn, xóa phần
+tử nhỏ nhất (chẳng hạn \texttt{priority\_queue} của C++) để duy trì mọi đỉnh
+không phải gốc. Khi đó thuật toán dùng $O(n\log n)$ lần so sánh dãy, $O(n)$ lần
+hợp nhất dãy; phần còn lại cũng $O(n\log n)$.
+
+\paragraph{Thuật toán 2.}
+Phân tích bài toán từ một góc nhìn khác cho ta thuật toán thứ hai. Nó dựa trên
+các bổ đề sau.
+
+\paragraph{Bổ đề 3.2.}
+Nói một hoán vị $p$ thỏa quan hệ thứ tự của dãy $(v_1,\ldots,v_k)$ nếu trong
+$p$, $v_1$ xuất hiện trước $v_2$, $v_2$ xuất hiện trước $v_3$, ..., $v_{k-1}$
+xuất hiện trước $v_k$.
+
+Giả sử trong cây có gốc $T$, một đỉnh có các con $v_1,\ldots,v_k$, và các con
+này đều là lá. Nếu $s_{v_1}<s_{v_2}<\cdots<s_{v_k}$ thì tồn tại một hoán vị
+phần tử tối ưu, thỏa ràng buộc của $T$, đồng thời thỏa quan hệ thứ tự của dãy
+$(v_1,\ldots,v_k)$.
+
+\paragraph{Bổ đề 3.3.}
+Giả sử một đỉnh $u$ trong cây có hai con lá $v_1,v_2$ và $s_{v_1}<s_{v_2}$. Với
+bất kỳ hoán vị hợp lệ $p$, nếu $p_i=v_1$, $p_j=v_2$ và $j<i$, thì có thể chỉ
+thay đổi đoạn $p_j,p_{j+1},\ldots,p_i$ để được một hoán vị hợp lệ $q$ trong đó
+$v_1$ xuất hiện trước $v_2$ và
+\[
+  F((s_{q_1}+\cdots+s_{q_n}))
+  \le
+  F((s_{p_1}+\cdots+s_{p_n})).
+\]
+
+\paragraph{Chứng minh.}
+Vì $s_{v_1}<s_{v_2}$, từ Tính chất 3.1 và 3.2, khi so sánh $s_{v_1}$ với các
+dãy trong đoạn giữa $v_2$ và $v_1$, một trong hai hướng dịch chuyển tương ứng
+sẽ không làm $F$ tăng theo Tính chất 3.3. Do $v_1,v_2$ là lá cùng cha, đưa
+$v_1$ lên trước $v_2$ trong đoạn này không phá vỡ ràng buộc cây. Trường hợp đối
+xứng xử lý tương tự. \hfill\rule{0.55em}{0.55em}
+
+Từ Bổ đề 3.3, xét hàm $g(v_1,\ldots,v_k)$ là giá trị nhỏ nhất của $F$ trên mọi
+hoán vị hợp lệ thỏa quan hệ thứ tự $(v_1,\ldots,v_k)$. Mỗi khi trong dãy thứ tự
+có hai phần tử kề nhau $v_i,v_{i+1}$ với $s_{v_i}<s_{v_{i+1}}$, đổi chúng theo
+chiều đúng không làm $g$ tăng. Vì $<$ thỏa Tính chất 3.1 và 3.2, áp dụng
+exchange arguments của phần trước cho hàm $g$ suy ra dãy con lá được sắp theo
+thứ tự không giảm là tối ưu. Do đó Bổ đề 3.2 đúng.
+
+\paragraph{Bổ đề 3.4.}
+Giả sử trong cây $T$, mọi con $v_1,\ldots,v_k$ của đỉnh $u$ đều là lá và
+$s_{v_1}<s_{v_2}<\cdots<s_{v_k}$. Nếu $s_u<s_{v_i}$, thì với mọi hoán vị hợp lệ
+thỏa thứ tự $(v_1,\ldots,v_k)$, tồn tại một hoán vị hợp lệ khác vẫn thỏa thứ tự
+đó, có giá trị $F$ không lớn hơn, và trong đó $u$ được đặt sát trước $v_i$ theo
+cách tương ứng.
+
+\paragraph{Chứng minh.}
+Ý tưởng giống Bổ đề 3.3. Nếu trong một hoán vị $u$ đứng trước $v_i$, dùng Tính
+chất 3.3 để đổi $u$ qua các dãy nằm giữa mà không làm $F$ tăng. Vì hoán vị ban
+đầu đã thỏa thứ tự của các lá, việc dịch chuyển này không phá ràng buộc cây và
+không phá thứ tự $(v_1,\ldots,v_k)$. Trường hợp đối xứng xử lý tương tự.
+\hfill\rule{0.55em}{0.55em}
+
+\paragraph{Bổ đề 3.5.}
+Với mỗi đỉnh $u$ của cây $T$, có thể chia các phần tử trong cây con
+$\operatorname{subtree}_u$ thành các dãy $c_1,\ldots,c_k$ sao cho:
+\begin{enumerate}
+  \item $c_1\le c_2\le\cdots\le c_k$;
+  \item nếu thay cây con của $u$ bằng bài toán mới trong đó $u$ có thêm $k$ con
+  lá $v_1,\ldots,v_k$ lần lượt ứng với các dãy $c_1,\ldots,c_k$, thì mọi nghiệm
+  tối ưu của bài toán mới thỏa thứ tự $(v_1,\ldots,v_k)$ đều ứng với một nghiệm
+  tối ưu của bài toán ban đầu.
+\end{enumerate}
+
+\paragraph{Chứng minh.}
+Quy nạp trên cây. Với lá $u$, lấy $k=1$ và $c_1=(x_u)$ là hiển nhiên. Với đỉnh
+không phải lá, giả sử các con của $u$ đều đã có các dãy thỏa bổ đề. Trộn các
+dãy của các con theo thứ tự không giảm, đồng thời giữ thứ tự nội bộ của từng
+con. Theo Bổ đề 3.2, tồn tại nghiệm tối ưu thỏa thứ tự đã trộn. Nếu dãy đầu
+tiên trong thứ tự đó nhỏ hơn dãy hiện tại của $u$, dùng Bổ đề 3.4 để cho hai
+dãy tương ứng kề nhau rồi hợp nhất chúng. Lặp thao tác này cho đến khi dãy đầu
+tiên không nhỏ hơn dãy của $u$, hoặc mọi lá đã bị hợp nhất. Khi đó các dãy còn
+lại, cùng dãy mới của $u$, thỏa hai điều kiện của bổ đề. \hfill\rule{0.55em}{0.55em}
+
+Từ cách xây dựng trong chứng minh Bổ đề 3.5, ta có thuật toán thứ hai. Với mỗi
+đỉnh $u$, tính dãy $S_u$ gồm các dãy $c_i$ của Bổ đề 3.5 theo thứ tự. Với một
+đỉnh $u$, thực hiện:
+\begin{enumerate}
+  \item Trước hết lấy tất cả $S_v$ của các con $v$ của $u$, rồi trộn chúng theo
+  quan hệ so sánh dãy để được $S_u$.
+  \item Đặt $C=(x_u)$.
+  \item Lặp: lấy phần tử đầu $c$ của $S_u$. Nếu $S_u$ rỗng hoặc $c\not< C$ thì
+  dừng; nếu không, xóa $c$ khỏi $S_u$ và nối $c$ vào cuối $C$.
+  \item Sau khi dừng, thêm $C$ vào đầu $S_u$.
+\end{enumerate}
+
+Duyệt DFS từ dưới lên để tính mọi $S_u$. Sau khi có $S_1$ của gốc, nối mọi dãy
+trong $S_1$ theo thứ tự là một nghiệm tối ưu. Thuật toán cần $O(n)$ lần trộn hai
+danh sách $S$, $O(n)$ lần hỏi/xóa phần tử đầu của một $S$ và $O(n)$ lần hợp
+nhất dãy. Nếu dùng cây cân bằng hoặc cấu trúc tương tự để duy trì $S$, thuật
+toán dùng $O(n\log n)$ lần so sánh dãy, cùng bậc với thuật toán 1.
+
+\subsubsection{Phân tích các mô hình cụ thể}
+
+Với các bài toán mà tồn tại quan hệ so sánh thỏa Tính chất 3.1, 3.2 và 3.3, hai
+thuật toán trên đều giải được bằng $O(n\log n)$ lần so sánh dãy và $O(n)$ lần
+hợp nhất dãy. Sau đây xét ba mô hình đã nêu ở phần trước.
+
+\paragraph{Mô hình thứ nhất.}
+Trong mô hình thứ nhất, phần tử có dạng $(a,b)$ với $a,b\in\mathbb R$,
+$a,b\ge 0$, và
+\[
+  F(((a_1,b_1),\ldots,(a_n,b_n)))=\sum_{1\le i<j\le n}a_i b_j.
+\]
+Với hai dãy
+$c_1=((a_1,b_1),\ldots,(a_n,b_n))$ và
+$c_2=((a'_1,b'_1),\ldots,(a'_m,b'_m))$, ta có
+\[
+  F(c_1+c_2)-F(c_2+c_1)
+  =
+  \left(\sum_{i=1}^n a_i\right)\left(\sum_{i=1}^m b'_i\right)
+  -
+  \left(\sum_{i=1}^m a'_i\right)\left(\sum_{i=1}^n b_i\right).
+\]
+Vì vậy một dãy có thể xem như phần tử tương đương
+\[
+  \left(\sum_i a_i,\ \sum_i b_i\right).
+\]
+Dùng cách so sánh của mô hình thứ nhất trên hai phần tử tương đương này để so
+sánh hai dãy. Dễ thấy quan hệ đó thỏa Tính chất 3.1, 3.2 và 3.3.
+
+\paragraph{Mô hình thứ hai.}
+Trong mô hình thứ hai, phần tử có dạng $(a_i,b_i)$ với $a_i,b_i\in\mathbb R$,
+và
+\[
+  F(((a_1,b_1),\ldots,(a_n,b_n)))
+  =
+  -\min_j\left\{\sum_{i=1}^j b_i-\sum_{i=1}^j a_i\right\}.
+\]
+Với hai phần tử liên tiếp $(a_1,b_1),(a_2,b_2)$, có thể hợp nhất chúng thành
+một phần tử tương đương
+\[
+  \left(
+    -\min\{-a_1,\ b_1-a_1-a_2\},\quad
+    b_1+b_2-a_1-a_2-\min\{-a_1,\ b_1-a_1-a_2\}
+  \right),
+\]
+mà giá trị $F$ đối với mọi ngữ cảnh bên ngoài không đổi. Quy nạp cho thấy mọi
+dãy đều có thể hợp nhất thành một phần tử tương đương khi tính $F$. Do đó trong
+Tính chất 3.3 có thể thay các dãy ở hai vế bằng phần tử tương đương của chúng,
+rồi dùng quan hệ so sánh phần tử của mô hình thứ hai. Vì quan hệ phần tử thỏa
+Tính chất 2.1, 2.2 và 2.3, quan hệ dãy thu được thỏa Tính chất 3.1, 3.2 và 3.3.
+
+\paragraph{Mô hình thứ ba.}
+Với mô hình xâu, nối một số xâu trong dãy vẫn thu được một xâu, nên các tính
+chất trên hiển nhiên đúng. Chi tiết về cài đặt nối và so sánh xâu phức tạp hơn,
+nguồn không triển khai.
+
+Ngược lại, với phản ví dụ ở đầu phần này, không tồn tại quan hệ $<$ thỏa điều
+kiện trên. Chẳng hạn lấy $k=2$, khi đó có thể có
+$F((3,3))>F((4,1))$ nhưng $F((4,3,2))<F((4,4,1))$. Theo Tính chất 3.1, hai dãy
+$(3,3)$ và $(4,1)$ phải có một dãy không lớn hơn dãy kia, nhưng cả hai khả năng
+đều mâu thuẫn với Tính chất 3.3. Vì vậy điều kiện nói trên chắc chắn không thỏa,
+và bài toán đó không giải được bằng thuật toán này.
+
+\subsubsection{Tính chất và ứng dụng của thuật toán}
+
+Hai mô hình đầu có một tính chất tốt: khi hợp nhất hai dãy $c_1,c_2$, chỉ cần
+biết $O(1)$ thông tin của mỗi dãy là có thể tính thông tin của dãy hợp nhất và
+$F(c_1+c_2)$. Với mô hình thứ nhất, chỉ cần biết
+$\sum a_i$, $\sum b_i$ và $F(c)$; với mô hình thứ hai, chỉ cần biết phần tử
+tương đương $(a,b)$. Vì thế đối với các bài toán thuộc hai mô hình này, hai
+thuật toán trên có thể tính đáp án trong $O(n\log n)$. Mô hình thứ nhất ứng với
+Ví dụ 6; bài toán sau ứng với mô hình thứ hai.
+
+\paragraph{Ví dụ 7.}
+Cho một cây $n$ đỉnh. Mỗi đỉnh trừ đỉnh $1$ có trọng số $v_i$. Một người ban đầu
+ở đỉnh $1$ và có một giá trị $hp$, ban đầu bằng $0$. Người này có thể di chuyển
+dọc theo các cạnh của cây; khi lần đầu tới đỉnh $i$, $hp$ được cộng thêm $v_i$.
+Nếu $hp<0$ thì người đó thất bại. Hỏi có thể tới được một đỉnh cho trước $t$ mà
+không thất bại hay không.
+\[
+  n<10^6,\qquad |v_i|<10^6.
+\]
+
+Thêm một lá nối với $1$ có trọng số rất lớn. Nếu đi được tới $t$, sau khi đi
+tới lá này ta chắc chắn có thể đi qua mọi đỉnh còn lại; vì vậy bài toán trở
+thành có thể đi qua mọi đỉnh mà không thất bại hay không. Nếu ghi lại dãy đỉnh
+theo lần đầu tiên đi qua, ta được một hoán vị thỏa ràng buộc của cây $T$, và
+quá trình thay đổi của $hp$ chính là đi qua các phần tử theo hoán vị đó.
+
+Bài toán trở thành tìm một hoán vị hợp lệ sao cho mọi thời điểm $hp\ge 0$.
+Tương đương, tối đa hóa giá trị nhỏ nhất của $hp$ trong quá trình. Đây là mô
+hình thứ hai: phần tử $x\ge 0$ ứng với $(0,x)$, còn $x<0$ ứng với $(-x,0)$. Dùng
+thuật toán trên cho độ phức tạp $O(n\log n)$.
+
+\paragraph{Tìm một nghiệm tối ưu.}
+Như đã nói, trong hai mô hình đầu chỉ cần duy trì một phần thông tin của dãy để
+so sánh và tính đáp án. Nếu muốn khôi phục phương án, trong cả hai thuật toán
+đều có $n$ lần hợp nhất dãy, mỗi lần dạng ``nối dãy $t$ vào cuối dãy $s$''. Ghi
+lại các thao tác hợp nhất đó; sau khi thuật toán kết thúc, có thể khôi phục dãy
+phương án trong $O(n)$.
+
+\paragraph{Tìm đáp án cho bài toán con của mỗi cây con.}
+Xét dạng bài toán sau: với mỗi đỉnh $x$, bài toán con của cây con gốc $x$ là
+lấy các đỉnh trong cây con của $x$ làm cây mới $T'$, lấy $x$ làm gốc, và giữ
+nguyên dạng bài toán. Hãy tìm đáp án của bài toán con với mọi đỉnh $x$.
+
+\paragraph{Ví dụ 8.}
+Cho một cây có gốc gồm $n$ đỉnh, gốc là $1$, mỗi đỉnh có trọng số $v_i$. Ta có
+một số quân cờ và được thực hiện hai loại thao tác:
+\begin{enumerate}
+  \item Chọn một đỉnh đang có quân cờ và thu lại toàn bộ quân cờ trên đỉnh đó.
+  \item Chọn một đỉnh $x$ chưa có quân cờ, đồng thời mọi con của $x$ đều đang có
+  quân cờ, rồi đặt $v_x$ quân cờ lên $x$.
+\end{enumerate}
+Với mỗi đỉnh, hỏi nếu cần đặt quân cờ lên đỉnh đó thì ban đầu cần ít nhất bao
+nhiêu quân cờ.
+\[
+  n<2\times 10^5,\qquad 1<v_i<10^9.
+\]
+
+Phân tích bài toán cho hai tính chất:
+\begin{enumerate}
+  \item Nếu cần đặt quân cờ lên đỉnh $i$, quá trình chỉ đặt quân cờ trong cây
+  con của $i$ và đặt đúng một lần lên mỗi đỉnh trong cây con đó.
+  \item Tồn tại một cách thao tác tối ưu sao cho sau khi đặt quân cờ lên một
+  đỉnh $x$, thao tác tiếp theo là thu lại toàn bộ quân cờ ở các con của $x$.
+\end{enumerate}
+Gọi $p_1,\ldots,p_k$ là dãy các đỉnh được đặt quân cờ. Với bài toán của đỉnh
+$i$, tồn tại nghiệm tối ưu mà dãy này là một hoán vị của cây con $i$. Đặt
+$s_i$ là tổng $v$ của các con của $i$; sau khi đặt quân cờ lên $p_j$, số quân
+đang dùng là
+\[
+  \sum_{\ell=1}^j v_{p_\ell}-\sum_{\ell<j}s_{p_\ell}.
+\]
+Vì vậy bài toán tương đương tối thiểu hóa giá trị lớn nhất của biểu thức này.
+Sau khi đảo thứ tự dãy, dạng hàm thu được tương tự mô hình thứ hai, và hướng
+ràng buộc trên cây cũng trở về dạng cha xuất hiện trước con. Do đó bài toán
+được chuyển thành tìm đáp án bài toán con của mỗi cây con.
+
+Với thuật toán 2, Bổ đề 3.5 cho ngay tính chất: nếu $S_x$ là dãy các dãy được
+xây dựng cho đỉnh $x$, thì nối các phần tử trong $S_x$ theo thứ tự là một nghiệm
+tối ưu của bài toán con gốc $x$. Do đó, nếu dùng cây cân bằng hoặc cấu trúc
+tương tự để duy trì $S_x$, đồng thời có thể duy trì nghiệm tối ưu của cây con
+gốc $x$; độ phức tạp cùng bậc với thuật toán 2.
+
+Thuật toán 1 cũng giải được yêu cầu này, nhưng cần phân tích thêm.
+
+\paragraph{Bổ đề 3.6.}
+Với một đỉnh $u$ bất kỳ trong cây có gốc $T$, xét một tập con $S$ của các con
+của $u$. Gọi $U(u,S)$ là tập gồm $u$ và mọi đỉnh thuộc các cây con của các đỉnh
+trong $S$. Với bất kỳ hoán vị tối ưu $p$ thu được bằng thuật toán 1 trên $T$,
+tồn tại một hoán vị $q$ thu được bằng thuật toán 1 trên cây cảm sinh bởi
+$U(u,S)$, lấy $u$ làm gốc, sao cho $q$ giữ thứ tự tương ứng của các đỉnh trong
+$p$ khi chỉ xét $U(u,S)$.
+
+\paragraph{Chứng minh.}
+Quy nạp theo số đỉnh của $T$. Xét thao tác hợp nhất đầu tiên trong thuật toán 1.
+Nếu thao tác không liên quan tới $U(u,S)$, cấu trúc phần này không đổi và dùng
+giả thiết quy nạp. Nếu thao tác chỉ ảnh hưởng tới gốc $u$ của phần đang xét,
+quá trình thuật toán 1 trong phần đó không phụ thuộc vào dãy đang nằm tại gốc,
+nên kết luận vẫn đúng. Nếu thao tác hợp nhất hai đỉnh đều thuộc $U(u,S)$, thì
+đỉnh được hợp nhất cũng là một đỉnh có dãy nhỏ nhất trong bài toán cảm sinh bởi
+$U(u,S)$, nên có thể chọn cùng thao tác đầu tiên trong thuật toán 1 của bài toán
+con; sau đó áp dụng quy nạp. \hfill\rule{0.55em}{0.55em}
+
+Từ Bổ đề 3.6, với mọi hoán vị tối ưu $p$ do thuật toán 1 sinh ra và mọi đỉnh
+$x$, nếu trong $p$ chỉ giữ các đỉnh thuộc cây con của $x$, ta thu được một
+nghiệm tối ưu của bài toán con cây con $x$ theo thuật toán 1. Vì vậy có thể dùng
+cấu trúc dữ liệu hỗ trợ hợp nhất, duyệt DFS từ dưới lên để duy trì một nghiệm
+tối ưu cho mỗi đỉnh. Một cách cài đặt là dùng cây đoạn động và hợp nhất cây
+đoạn; độ phức tạp cùng bậc với thuật toán 1.
+
+Bổ đề 3.5 cũng cho thấy hoán vị tối ưu do thuật toán 2 sinh ra có tính chất
+tương tự. Tuy nhiên nếu lấy một hoán vị tối ưu bất kỳ không do hai thuật toán
+trên sinh ra, dễ dựng phản ví dụ cho tính chất này; vì vậy kết luận chỉ được
+bảo đảm với nghiệm do hai thuật toán trong bài tạo ra.
+
+\paragraph{Một số ứng dụng khác.}
+Cuối cùng xét một bài toán liên quan tới cách làm của thuật toán 2.
+
+\paragraph{Ví dụ 9.}
+Có $n$ đống đá xếp thành một hàng, đống thứ $i$ có $a_i$ viên đá. Cần hợp nhất
+mọi đống thành một đống; mỗi lần chọn hai đống kề nhau và hợp nhất chúng, chi
+phí là tổng số đá của hai đống. Có thêm ràng buộc: trong hai đống được chọn ở
+mỗi lần, phải có đống chứa đống đá ban đầu thứ $x$. Hãy tìm chi phí nhỏ nhất.
+\[
+  n<2\times 10^5,\qquad 1<a_i<10^9.
+\]
+
+Với một vị trí $x$ cố định, quá trình có thể xem là mỗi lần nhập một đống vào
+đống thứ $x$. Nếu lần thứ $i-1$ nhập đống $p_i$ ($p_1=x$), ta thu được một hoán
+vị. Ràng buộc của hoán vị tương đương với ràng buộc của cây là đường
+$1-2-\cdots-n$ lấy $x$ làm gốc. Tổng chi phí chỉ phụ thuộc vào hoán vị; sau khi
+trừ một hằng số, nó có dạng
+\[
+  \sum_{1\le i<j\le n} a_{p_j},
+\]
+tức mô hình thứ nhất với phần tử $(a_i,1)$. Vì vậy một bài toán cho $x$ cố định
+giải được trong $O(n\log n)$.
+
+Nếu dùng thuật toán 2, có thể xử lý mọi $x$ liên tiếp. Gọi $L_x$ là dãy các dãy
+nhận được từ đoạn $1-2-\cdots-(x-1)$ khi lấy $x-1$ làm gốc, và $R_x$ tương tự
+cho đoạn $(x+1)-\cdots-n$ khi lấy $x+1$ làm gốc. Theo Bổ đề 3.2 và 3.4, nếu
+trộn $L_x$ và $R_x$ theo quan hệ so sánh thành $S_x$, rồi nối mọi dãy trong
+$S_x$ và thêm $x$ vào đầu, ta được một nghiệm tối ưu cho gốc $x$.
+
+Khi $x$ tăng dần từ $1$ tới $n$, các thay đổi của $L_x$ và $R_x$ chỉ gồm
+$O(n)$ lần chèn hoặc xóa ở đầu và truy vấn dãy đầu. Duy trì kết quả trộn hiện
+tại bằng cây cân bằng: khi xóa dãy đầu thì xóa trực tiếp; khi chèn một dãy vào
+đầu $L$ hoặc $R$, nhờ cách xây dựng, dãy mới không lớn hơn mọi dãy hiện có ở
+phía đó, nên có thể chèn vào vị trí thích hợp trong kết quả trộn mà vẫn giữ cả
+thứ tự toàn cục lẫn thứ tự nội bộ. Đồng thời duy trì giá trị đáp án trên cây
+cân bằng. Vì so sánh, nối dãy và hợp nhất thông tin đáp án đều duy trì được
+trong $O(1)$ cho mô hình này, tổng độ phức tạp là $O(n\log n)$.
+
+Trong bài này chỉ cần đáp án. Nếu hai dãy $a,b$ thỏa $a<b$ và $b<a$, đổi chỗ
+hai dãy này không làm thay đổi $F$, nên khi chèn có thể sắp các dãy tương đương
+theo thứ tự tùy ý mà đáp án vẫn tối ưu. Tuy nhiên nếu chèn tùy ý, phương án đang
+duy trì có thể không còn thỏa ràng buộc cây, dù giá trị đáp án vẫn đúng.
+
+\subsubsection{Tổng kết}
+
+Lớp bài toán này có cấu trúc tương tự phần trước, nhưng thêm ràng buộc lên hoán
+vị có dạng cây có gốc. Về điều kiện cần thỏa và cách giải, hai lớp bài toán có
+liên hệ rất mạnh. Tuy nhiên các ví dụ cho thấy chỉ thỏa yêu cầu của phần trước
+không đủ để giải bài toán có ràng buộc cây. Bài viết tăng cường điều kiện: thay
+vì chỉ so sánh phần tử, cần so sánh cả dãy phần tử. Trên cơ sở đó, bài viết đưa
+ra hai thuật toán từ hai góc nhìn khác nhau. Thuật toán thứ nhất bắt đầu từ
+tính chất cục bộ của một đỉnh, liên tục hợp nhất đỉnh có dãy nhỏ nhất với cha
+của nó để thu nhỏ bài toán. Thuật toán thứ hai trước hết giải các cây con của
+con, rồi dùng các tính chất đã chứng minh để hợp nhất lời giải cây con thành
+lời giải của cây con hiện tại. Hai thuật toán có cùng độ phức tạp. Từ quá trình
+của hai thuật toán có thể suy ra thêm nhiều ứng dụng; bài viết chỉ phân tích
+một số ứng dụng mà tác giả biết.
+
+\subsection{Lời kết và triển vọng}
+
+Trong thi tin học, tư tưởng tham lam có phạm vi ứng dụng rất rộng và còn nhiều
+vấn đề đáng nghiên cứu sâu. Các thuật toán liên quan trong bài viết đã nhiều
+lần xuất hiện trong thi tin học, nhưng việc phân tích chi tiết chúng không đơn
+giản. Do trình độ tác giả có hạn, vẫn còn nhiều câu hỏi liên quan tới lớp thuật
+toán này chưa có câu trả lời tốt, chẳng hạn:
+\begin{enumerate}
+  \item Hai phần trong bài đều đặt ra ba tính chất cho quan hệ so sánh. Có tồn
+  tại các tính chất yếu hơn hoặc đơn giản hơn, nhưng vẫn bảo đảm thuật toán
+  trong bài thu được nghiệm tối ưu hay không?
+  \item Ngoài ba mô hình và các biến thể đã nêu, có tồn tại nhiều mô hình khác
+  thỏa các tính chất trên hay không? Có mô tả bản chất hơn cho các mô hình đó
+  hay không?
+\end{enumerate}
+
+Tác giả hy vọng bài viết có thể gợi mở thêm nghiên cứu, để các bạn đọc quan tâm
+tìm được nhiều cách làm và ứng dụng thú vị hơn cho lớp bài toán này.
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+đổi; cảm ơn huấn luyện viên đội tuyển quốc gia Yang Ziliang đã hướng dẫn; cảm
+ơn cha mẹ đã nuôi dưỡng và giáo dục; cảm ơn nhà trường đã bồi dưỡng; cảm ơn
+huấn luyện viên Li Xiang và các huấn luyện viên của Trường Ngoại ngữ Thành Đô
+đã chỉ bảo nhiều mặt; cảm ơn bạn Dai Jiangqi đã trao đổi và gợi mở; cảm ơn Liu
+Yiping, Jin Tian, Song Jiaxing và nhiều bạn khác đã đọc kiểm tra bản thảo; cảm
+ơn anh Wen Kairui đã động viên và giúp đỡ tác giả trong quá trình học thi tin
+học.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Wikipedia contributors. \emph{Weak Orderings}.
+  \url{https://en.wikipedia.org/wiki/Weak_ordering}.
+  \item Errichto. \emph{Lecture \#3 -- Exchange arguments (sorting with dp)}.
+  \url{https://codeforces.com/blog/entry/63533}.
+  \item AtCoder Grand Contest 023 Editorial.
+  \url{https://atcoder.jp/contests/agc023/editorial}.
+  \item CERC 2013: Presentation of solutions.
+  \href{https://cerc.tcs.uj.edu.pl/2013/data/cerc2013solutions.pdf}
+  {\texttt{https://cerc.tcs.uj.edu.pl/2013/data/}\\
+  \texttt{cerc2013solutions.pdf}}.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục đã đọc được trên ảnh render, tập năm 2022 bao phủ các nhóm chủ đề
@@ -1441,5 +2370,10 @@ dịch này được đọc bằng cách render bằng \texttt{pdftoppm} rồi O
 đó được đánh dấu bằng ghi chú OCR tiếng Việt thay vì tự suy diễn công thức.
 Bài thứ hai được OCR từ các trang vật lý 17--31 của PDF, tương ứng trang mục
 lục 13--27; các khối công thức quan trọng được đối chiếu lại trên ảnh render.
+Bài thứ ba được OCR từ các trang vật lý 32--52 của PDF, tương ứng trang mục lục
+28--48. Bài này không có hình; các công thức chính được đối chiếu lại trên ảnh
+render. Một số chứng minh dài trong các mục 3.3--3.5 bị OCR nhiễu nặng, nên
+bản dịch giữ phát biểu toán học, cấu trúc lập luận và ý chứng minh thay vì cố
+chép lại từng dòng biến đổi không đọc chắc được.
 
 \end{document}
