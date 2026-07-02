@@ -2,6 +2,7 @@
 % Source-PDF: IOI中国国家候选队论文/国家集训队2016论文集.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{array}
 
 \title{Tập luận văn đội tuyển quốc gia Trung Quốc năm 2016}
 \author{Huấn luyện viên: Yu Linyun, Chen Xumin}
@@ -18,10 +19,21 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2016. Phần
 bìa và mục lục có lớp văn bản đọc được, nhưng ngay từ bài đầu tiên phần thân
 đã bị lỗi ánh xạ phông chữ và trích xuất thành mojibake. Bản dịch này chuyển
-ngữ các thông tin đầu sách, mục lục và bài đầu tiên của Ren Zhizhou về một số
-phương pháp tính tổng hàm nhân tính; phần thân bài được dựng từ OCR và đối
-chiếu công thức với lớp văn bản PDF.
+ngữ các thông tin đầu sách, mục lục, bài đầu tiên của Ren Zhizhou về một số
+phương pháp tính tổng hàm nhân tính, và bài thứ hai của Jiang Zhihao về một số
+phương pháp mô hình hóa bằng luồng mạng. Phần thân các bài được dựng từ OCR và
+đối chiếu công thức với lớp văn bản PDF.
 \end{abstract}
+
+\section{Trạng thái và ghi chú trích xuất}
+
+Đã dịch hai bài đầu tiên trong tập luận văn. Bài 1 dùng trang vật lý 5--20 của
+PDF nguồn, tương ứng trang in 1--16. Bài 2 dùng trang vật lý 21--35, tương ứng
+trang in 17--31; trang vật lý 36, tương ứng trang in 32, là trang trắng ngăn
+cách trước bài kế tiếp. Bài 3 bắt đầu ở trang vật lý 37, tương ứng trang in
+33. Phần thân bài 2 có lớp văn bản bị mojibake, nên được OCR bằng
+\texttt{pdftoppm} và \texttt{tesseract -l chi\_sim+eng}, rồi lọc nhiễu thủ
+công khi dựng bản dịch.
 
 \section{Thông tin đầu sách}
 
@@ -33,7 +45,7 @@ Xumin. Đơn vị xuất bản là China Computer Federation.
 
 \begin{center}
 \small
-\begin{tabular}{r p{0.47\linewidth} p{0.28\linewidth}}
+\begin{tabular}{r >{\raggedright\arraybackslash}p{0.47\linewidth} >{\raggedright\arraybackslash}p{0.28\linewidth}}
 \textbf{Trang} & \textbf{Bài viết} & \textbf{Tác giả / trường} \\
 \hline
 1 & Một số phương pháp tính tổng hàm nhân tính & Ren Zhizhou, Trường Trung học số 1 Thiệu Hưng \\
@@ -931,6 +943,575 @@ Xin cảm ơn các thầy cô và bạn học khác từng giúp đỡ và gợi
   \item Ji Ruyi, \url{http://jiruyi910387714.i11r.com/posts/195270.html},
   jiry\_2's Blog.
   \item Project Euler forum, Problem 521.
+\end{enumerate}
+
+\section*{Bài 2. Một số phương pháp mô hình hóa bằng luồng mạng}
+\addcontentsline{toc}{section}{Bài 2. Một số phương pháp mô hình hóa bằng luồng mạng}
+
+\begin{center}
+Jiang Zhihao, Trường Trung học số 1 Shengli, Đông Doanh
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Luồng mạng có phạm vi ứng dụng rộng trong thi tin học, và nhiều mô hình luồng
+mạng được xây dựng bằng những cách rất tinh tế. Bài viết này tổng kết một số
+phương pháp mô hình hóa luồng mạng thường dùng.
+
+\subsection*{1. Dẫn nhập}
+
+Luồng mạng là một phương pháp giải quyết vấn đề dựa trên phép tương tự với
+dòng chảy. Trong thi tin học, nó xuất hiện rất thường xuyên. Các bài toán
+thường gặp gồm luồng cực đại, luồng cực đại chi phí nhỏ nhất, luồng có chặn
+trên và chặn dưới, v.v. Điểm tinh tế của bài toán luồng mạng thường không nằm
+ở quá trình cài đặt thuật toán, mà nằm ở cách mô hình hóa bài toán thành một
+mạng luồng.
+
+Bài viết này tổng kết một số cách mô hình hóa luồng mạng tương đối thông
+dụng, chia thành bốn nhóm: mô hình hóa từ góc độ luồng cực đại, từ góc độ cắt
+nhỏ nhất, từ góc độ luồng chi phí, và từ tư tưởng cân bằng luồng. Hy vọng các
+phương pháp này ít nhiều có thể giúp ích cho các bạn tham gia thi tin học.
+
+\subsection*{2. Mô hình hóa từ góc độ luồng cực đại}
+
+Nói chung, mô hình hóa từ góc độ luồng cực đại là trực quan nhất. Ta thường
+dùng một đơn vị luồng đi từ nguồn \(S\) tới đích \(T\) để biểu diễn một phương
+án. Chẳng hạn, khi dùng luồng cực đại để tìm khớp cực đại trong đồ thị hai
+phía, một đường tăng \(S\to T\) biểu diễn một cặp ghép.
+
+\subsubsection*{2.1. Ví dụ mô hình hóa}
+
+\paragraph{\term{Ví dụ 1 (Soldier Occupation).}}
+Cho một bàn cờ \(n\times m\), một số ô là chướng ngại vật. Ta cần chọn một số
+ô để đặt lính; mỗi ô nhiều nhất đặt một lính và ô chướng ngại vật không được
+đặt lính. Gọi một cách đặt lính là chiếm được toàn bộ bàn cờ nếu hàng thứ
+\(i\) có ít nhất \(r_i\) lính và cột thứ \(j\) có ít nhất \(c_j\) lính. Hãy
+dùng ít lính nhất để chiếm bàn cờ.
+\[
+  1\le n,m\le 100.
+\]
+
+Phương án tệ nhất là đặt riêng đủ số lính cho từng hàng, rồi lại đặt riêng đủ
+số lính cho từng cột. Khi đó mỗi lính chỉ có đóng góp \(1\). Một số lính có
+thể vừa đóng góp cho hàng vừa đóng góp cho cột, tức đóng góp \(2\). Số lính
+loại này càng nhiều thì tổng số lính cần dùng càng ít, nên ta xét cách làm
+cho số lính có đóng góp \(2\) lớn nhất.
+
+Số lính đóng góp \(2\) trên hàng \(i\) không thể vượt quá \(r_i\), nếu không
+sẽ có lính không cần thiết cho hàng đó. Tương tự, số lính đóng góp \(2\) trên
+cột \(j\) không thể vượt quá \(c_j\). Ta dựng đồ thị như sau:
+\begin{itemize}
+  \item Với mỗi hàng lập một đỉnh \(A_i\), nối \(S\to A_i\) với dung lượng
+  \(r_i\).
+  \item Với mỗi cột lập một đỉnh \(B_j\), nối \(B_j\to T\) với dung lượng
+  \(c_j\).
+  \item Nếu ô \((i,j)\) có thể đặt lính, nối \(A_i\to B_j\) với dung lượng
+  \(1\).
+\end{itemize}
+
+Trong đồ thị này, một lính có đóng góp \(2\) tương ứng với một đơn vị luồng
+\(S\to T\). Dung lượng của cạnh giữa hàng và cột bảo đảm một ô nhiều nhất có
+một lính, còn dung lượng cạnh kề nguồn và kề đích bảo đảm số lính đóng góp
+\(2\) của mỗi hàng, mỗi cột không vượt quá yêu cầu. Vì vậy, luồng cực đại là
+số lính đóng góp \(2\) lớn nhất, và số lính tối thiểu bằng
+\[
+  \sum_i r_i+\sum_j c_j-\operatorname{maxflow}.
+\]
+
+\paragraph{\term{Ví dụ 2 (Dining).}}
+Có \(f\) loại thức ăn và \(d\) loại đồ uống. Mỗi loại thức ăn hoặc đồ uống chỉ
+có thể phục vụ một con bò, và mỗi con bò chỉ dùng một loại thức ăn cùng một
+loại đồ uống. Có \(n\) con bò; mỗi con bò có danh sách các loại thức ăn và đồ
+uống nó thích. Hỏi nhiều nhất có bao nhiêu con bò đồng thời được dùng thức ăn
+và đồ uống mà nó thích.
+\[
+  1\le n,f,d\le 100.
+\]
+
+Ta dùng một đơn vị luồng \(S\to T\) để biểu diễn việc thỏa mãn một con bò.
+Dựng đồ thị như sau:
+\begin{itemize}
+  \item Với mỗi loại thức ăn lập đỉnh \(A_i\), nối \(S\to A_i\) dung lượng
+  \(1\). Với mỗi loại đồ uống lập đỉnh \(B_i\), nối \(B_i\to T\) dung lượng
+  \(1\).
+  \item Với mỗi con bò lập hai đỉnh \(C_i,D_i\), nối \(C_i\to D_i\) dung
+  lượng \(1\).
+  \item Nếu bò \(i\) thích thức ăn \(j\), nối \(A_j\to C_i\) dung lượng
+  \(1\). Nếu bò \(i\) thích đồ uống \(j\), nối \(D_i\to B_j\) dung lượng
+  \(1\).
+\end{itemize}
+
+Việc tách một con bò thành hai đỉnh và đặt cạnh ở giữa có dung lượng \(1\)
+nhằm giới hạn mỗi con bò chỉ được thỏa mãn một lần.
+
+Một số bài toán không thể mô hình hóa trực tiếp. Khi đó cần phân tích đề bài,
+biến đổi nó thành dạng có thể giải bằng luồng mạng.
+
+\paragraph{\term{Ví dụ 3 (Collector's Problem).}}
+Bob và \(n-1\) người bạn cùng sưu tầm nhãn dán. Có \(m\) loại nhãn dán khác
+nhau. Mỗi người có một số nhãn dán, có thể có nhãn dán trùng lặp, và bạn của
+Bob chỉ chịu đổi lấy loại nhãn dán mà họ chưa có. Mỗi lần đổi là một đổi một.
+
+Bob thông minh hơn các bạn, vì cậu nhận ra rằng nếu chỉ đổi lấy loại mình
+chưa có thì chưa chắc tối ưu. Trong một số trường hợp, đổi về một nhãn dán
+trùng lặp lại có lợi hơn. Giả sử các bạn chỉ đổi với Bob, không đổi với nhau,
+và họ chỉ đưa ra những nhãn dán thừa để đổi lấy loại khác mà họ chưa có. Hãy
+tính số loại nhãn dán khác nhau lớn nhất Bob có thể có cuối cùng.
+\[
+  2\le n\le 10,\qquad 5\le m\le 25.
+\]
+
+Với một người bạn \(F\), Bob chỉ có thể đưa cho \(F\) một loại nhãn dán mà
+\(F\) chưa có, và mỗi loại nhiều nhất đưa một lần. Nếu \(F\) có \(k\ge 2\)
+bản sao của một loại nhãn dán, \(F\) nhiều nhất có thể đưa Bob \(k-1\) tấm
+loại đó. Vì vậy vai trò của một người bạn là biến một loại nhãn dán trong tay
+Bob thành một loại nhãn dán khác.
+
+Dựng đồ thị như sau:
+\begin{itemize}
+  \item Với mỗi loại nhãn dán lập đỉnh \(A_i\). Nối \(S\to A_i\) với dung
+  lượng bằng số nhãn dán loại \(i\) ban đầu Bob có. Nối \(A_i\to T\) với dung
+  lượng \(1\), biểu diễn việc cuối cùng Bob chỉ cần giữ một tấm của mỗi loại.
+  \item Với mỗi người bạn lập đỉnh \(B_j\). Nếu bạn \(j\) không có nhãn dán
+  loại \(i\), nối \(A_i\to B_j\) dung lượng \(1\), biểu diễn Bob đưa loại đó
+  cho bạn ấy. Nếu bạn \(j\) có \(k\ge 2\) nhãn dán loại \(i\), nối
+  \(B_j\to A_i\) dung lượng \(k-1\), biểu diễn số nhãn dán thừa loại đó có
+  thể đưa lại cho Bob.
+\end{itemize}
+
+Một đơn vị luồng \(S\to T\) trước hết đi từ \(S\) tới một đỉnh nhãn dán
+\(A_i\), biểu diễn một nhãn dán ban đầu của Bob. Sau đó nó đi qua không hoặc
+nhiều đoạn \(A\to B\to A\), biểu diễn các lần đổi với bạn. Cuối cùng nó đi từ
+một đỉnh nhãn dán tới \(T\), biểu diễn loại nhãn dán Bob giữ được sau khi đổi.
+
+\subsubsection*{2.2. Tiểu kết}
+
+Đặc điểm của mô hình luồng cực đại là trực quan, dễ hiểu. Một đơn vị luồng
+\(S\to T\) thường có ý nghĩa thực tế rõ ràng, biểu diễn một phương án hoặc một
+chuỗi thao tác. Tuy nhiên biến thể của bài toán luồng cực đại rất nhiều. Có
+những lúc phải phân tích kỹ bản chất bài toán, đơn giản hóa hoặc chuyển hóa
+nó, rồi mới tìm được mô hình luồng phù hợp.
+
+\subsection*{3. Mô hình hóa từ góc độ cắt nhỏ nhất}
+
+\subsubsection*{3.1. Dùng cạnh dung lượng vô cùng để biểu diễn xung đột}
+
+\paragraph{\term{Ví dụ 4 (NOI2006, Maximum Profit).}}
+Công ty truyền thông có \(n\) địa điểm có thể xây trạm trung chuyển tín hiệu.
+Xây trạm thứ \(i\) tốn chi phí \(p_i\). Có \(m\) nhóm khách hàng tiềm năng;
+nhóm thứ \(i\) dùng hai trạm \(a_i,b_i\) để liên lạc và đem lại lợi nhuận
+\(c_i\). Công ty có thể chọn một số trạm để xây, rồi phục vụ những nhóm khách
+hàng có đủ hai trạm cần thiết. Hãy tối đa hóa lãi ròng, tức tổng lợi nhuận
+thu được trừ tổng chi phí xây trạm.
+\[
+  1\le n\le 5000,\qquad 1\le m\le 50000.
+\]
+
+Xem trạm và nhóm khách hàng là các đỉnh. Với trạm \(i\), lập đỉnh \(A_i\) và
+nối \(S\to A_i\) dung lượng \(p_i\); cắt cạnh này nghĩa là chịu chi phí xây
+trạm \(i\). Với nhóm khách hàng \(i\), lập đỉnh \(B_i\) và nối \(B_i\to T\)
+dung lượng \(c_i\); cắt cạnh này nghĩa là không phục vụ nhóm đó và mất lợi
+nhuận \(c_i\).
+
+Nếu nhóm khách hàng \(i\) dùng trạm \(j\), thì cạnh \(S\to A_j\) và cạnh
+\(B_i\to T\) không được đồng thời giữ lại trong cắt theo cách mâu thuẫn với
+việc phục vụ nhóm đó. Ta nối \(A_j\to B_i\) bằng cạnh dung lượng \(+\infty\).
+Như vậy cắt nhỏ nhất không thể chọn phương án vừa giữ lợi nhuận của khách
+hàng vừa không trả chi phí xây trạm cần thiết.
+
+Tổng lợi nhuận của mọi nhóm khách hàng trừ đi giá trị cắt nhỏ nhất chính là
+lãi ròng lớn nhất. Trong bài toán này, cạnh dung lượng vô cùng giúp các lợi
+ích xung đột không thể đồng thời được bảo lưu. Cạnh dung lượng vô cùng cũng
+có thể dùng để hạn chế nhiều loại xung đột khác.
+
+\paragraph{\term{Ví dụ 5 (Codechef Dec14, Course Selection).}}
+Một sinh viên có \(n\) môn học, mỗi môn phải hoàn thành trong một trong
+\(m\) học kỳ. Có \(k\) quan hệ tiên quyết; \(a\) là môn tiên quyết của \(b\)
+nghĩa là học kỳ hoàn thành \(a\) phải đứng trước học kỳ hoàn thành \(b\).
+Điểm của môn \(i\) nếu hoàn thành ở học kỳ \(j\) là \(x_{i,j}\); nếu
+\(x_{i,j}=-1\) thì học kỳ \(j\) không mở môn \(i\). Hãy tối đa hóa điểm trung
+bình.
+\[
+  1\le n,m\le 100,\qquad 0\le k\le 100,\qquad -1\le x_{i,j}\le 100.
+\]
+
+Điểm trung bình lớn nhất tương đương tổng điểm lớn nhất. Giả sử điểm tối đa
+là \(100\), ta chuyển sang tối thiểu hóa tổng điểm bị trừ. Gọi \(y_{i,j}\) là
+số điểm bị trừ khi học môn \(i\) ở học kỳ \(j\). Nếu \(x_{i,j}=-1\) thì
+\(y_{i,j}=+\infty\); ngược lại \(y_{i,j}=100-x_{i,j}\).
+
+Với mỗi cặp môn học kỳ \((i,j)\), lập một đỉnh. Dựng một chuỗi cho từng môn:
+\begin{itemize}
+  \item Nối \(S\to (i,1)\) dung lượng \(y_{i,1}\).
+  \item Với \(2\le j\le m\), nối \((i,j-1)\to (i,j)\) dung lượng \(y_{i,j}\).
+  \item Nối \((i,m)\to T\) dung lượng \(+\infty\).
+\end{itemize}
+
+Cắt cạnh đi vào \((i,j)\) biểu diễn môn \(i\) được học ở học kỳ \(j\). Cắt
+nhỏ nhất của các chuỗi trên chính là tổng điểm bị trừ nhỏ nhất nếu tạm bỏ qua
+các quan hệ tiên quyết.
+
+Nếu \(a\) là môn tiên quyết của \(b\), vị trí cắt của chuỗi \(a\) phải đứng
+trước vị trí cắt của chuỗi \(b\). Ta thêm các cạnh dung lượng \(+\infty\):
+\[
+  S\to (b,1),\qquad (a,j-1)\to (b,j)\quad (2\le j\le m).
+\]
+Các cạnh này không xuất hiện trong cắt nhỏ nhất, nên chúng ép phương án thỏa
+mãn mọi ràng buộc tiên quyết. Bản chất ở đây là dùng cạnh vô cùng để cấm đồng
+thời hai điều kiện: ``\(S\) liên thông với đầu cạnh'' và ``cuối cạnh liên
+thông với \(T\)''.
+
+\subsubsection*{3.2. Mô hình cắt nhỏ nhất từ quan hệ giữa hai điểm}
+
+\paragraph{\term{Ví dụ 6 (happiness).}}
+Sơ đồ chỗ ngồi của lớp là một lưới \(n\times m\). Sau một học kỳ, hai học
+sinh ngồi kề nhau theo bốn hướng trở thành bạn tốt. Mỗi học sinh chọn ban tự
+nhiên sẽ có độ vui \(a_i\), chọn ban xã hội sẽ có độ vui \(b_i\). Với một cặp
+bạn tốt, nếu cả hai cùng chọn tự nhiên, họ được thêm độ vui chung \(v_2\); nếu
+cùng chọn xã hội, họ được thêm độ vui chung \(v_1\). Hãy phân ban để tổng độ
+vui của cả lớp lớn nhất.
+\[
+  1\le n,m\le 100.
+\]
+
+Xét trước quan hệ của hai học sinh kề nhau \(x,y\). Giả sử giữ cạnh nối với
+\(S\) biểu diễn chọn tự nhiên, giữ cạnh nối với \(T\) biểu diễn chọn xã hội.
+Với cặp \(x,y\), gọi \(v_1\) là lợi ích nếu cả hai cùng chọn xã hội, \(v_2\)
+là lợi ích nếu cả hai cùng chọn tự nhiên. Ta cần các dung lượng sao cho mất
+mát của bốn trường hợp là:
+\[
+\begin{aligned}
+  a+b &= v_1 &&(x,y\text{ đều chọn xã hội}),\\
+  c+d &= v_2 &&(x,y\text{ đều chọn tự nhiên}),\\
+  a+d+e &= v_1+v_2 &&(x\text{ chọn xã hội},\,y\text{ chọn tự nhiên}),\\
+  b+c+e &= v_1+v_2 &&(x\text{ chọn tự nhiên},\,y\text{ chọn xã hội}).
+\end{aligned}
+\]
+Lấy hai phương trình sau trừ hai phương trình đầu được
+\[
+  2e=v_1+v_2,\qquad
+  e=\frac{v_1+v_2}{2},\qquad
+  a=b=\frac{v_1}{2},\qquad c=d=\frac{v_2}{2}.
+\]
+
+Sau khi giải được dung lượng, cộng thêm lợi ích riêng của từng học sinh, mô
+hình là:
+\begin{itemize}
+  \item Với mỗi học sinh lập một đỉnh. Nối \(S\) tới đỉnh đó với dung lượng
+  bằng lợi ích chọn tự nhiên của học sinh này, cộng một nửa tổng lợi ích chung
+  khi học sinh này và từng bạn kề nó cùng chọn tự nhiên.
+  \item Nối đỉnh đó tới \(T\) với dung lượng bằng lợi ích chọn xã hội, cộng
+  một nửa tổng lợi ích chung khi học sinh này và từng bạn kề nó cùng chọn xã
+  hội.
+  \item Với hai học sinh kề nhau \(x,y\), nối một cạnh hai chiều giữa hai đỉnh
+  với dung lượng bằng trung bình cộng của lợi ích ``cùng xã hội'' và ``cùng
+  tự nhiên'' của cặp đó.
+\end{itemize}
+
+Tổng mọi lợi ích trừ đi cắt nhỏ nhất chính là tổng độ vui lớn nhất. Bài toán
+này có lợi ích liên quan nhiều nhất tới hai người. Vì vậy ta phân tích trước
+quan hệ giữa hai người, rồi tổng hợp mọi quan hệ vào đồ thị.
+
+\paragraph{\term{Ví dụ 7 (Google Code Jam 2008 Final E, The Year of Code Jam).}}
+Sphinny đang xem lịch của năm mới. Trong thế giới của cô, một năm có \(n\)
+tháng, mỗi tháng có đúng \(m\) ngày. Mỗi ngày được đánh dấu bằng một trong ba
+loại:
+\begin{enumerate}
+  \item Trắng: ngày đó cô không tham gia cuộc thi.
+  \item Xanh: ngày đó cô tham gia một cuộc thi.
+  \item Dấu hỏi: ngày đó có cuộc thi dự định sẵn, nhưng cô chưa quyết định có
+  tham gia hay không.
+\end{enumerate}
+
+Độ vui của một cuộc thi được tính như sau: ban đầu là \(4\), và với mỗi ngày
+kề cạnh cũng có tham gia thi, độ vui giảm \(1\). Sphinny sẽ đổi mọi dấu hỏi
+thành trắng hoặc xanh sao cho tổng độ vui lớn nhất.
+\[
+  1\le n,m\le 50.
+\]
+
+Bài toán này cũng bắt đầu từ quan hệ giữa hai điểm. Khởi tạo \(ans\) bằng độ
+vui khi mọi dấu hỏi đều là trắng, rồi cộng thêm \(4\) lần số dấu hỏi. Khi đó:
+\begin{itemize}
+  \item Nếu một dấu hỏi đổi thành trắng, \(ans\) giảm \(4\).
+  \item Nếu một dấu hỏi đổi thành xanh, và xung quanh nó có \(tot\) ô ban đầu
+  đã xanh, \(ans\) giảm \(2\cdot tot\).
+  \item Nếu hai dấu hỏi kề nhau \(?_{1}\) và \(?_{2}\) đều đổi thành xanh,
+  \(ans\) giảm \(2\).
+\end{itemize}
+
+Ta thử giải dung lượng cạnh như ví dụ trước nhưng khó thu được hệ phương
+trình đơn giản. Cách làm là tô hai màu bàn cờ lịch, vì hai ô kề cạnh luôn
+thuộc hai phía khác nhau của đồ thị hai phía.
+
+Với một phía, dùng kiểu \(?_{1}\): giữ cạnh với \(S\) nghĩa là đổi thành trắng,
+giữ cạnh với \(T\) nghĩa là đổi thành xanh. Với phía còn lại, dùng kiểu
+\(?_{2}\): giữ cạnh với \(S\) nghĩa là đổi thành xanh, giữ cạnh với \(T\)
+nghĩa là đổi thành trắng. Với mỗi dấu hỏi kiểu \(?_{1}\), nối \(S\to ?_{1}\)
+dung lượng \(2tot\) và \(?_{1}\to T\) dung lượng \(4\). Với mỗi dấu hỏi kiểu
+\(?_{2}\), nối \(S\to ?_{2}\) dung lượng \(4\) và \(?_{2}\to T\) dung lượng
+\(2tot\). Với hai dấu hỏi kề nhau thuộc hai phía, nối \(?_{2}\to ?_{1}\) dung
+lượng \(2\). Chỉ khi cả hai dấu hỏi đều đổi thành xanh thì cạnh giữa chúng
+mới bị cắt, làm \(ans\) giảm \(2\).
+
+Do đó \(ans\) trừ đi giá trị cắt nhỏ nhất chính là tổng độ vui lớn nhất.
+
+\subsubsection*{3.3. Tiểu kết}
+
+Cắt nhỏ nhất có thể giải một số bài toán tối đa hóa lợi ích khi các lợi ích
+xung đột nhau. Trong đồ thị luồng, trên mọi đường đi từ \(S\) tới \(T\) đều
+phải cắt ít nhất một cạnh. Tận dụng tính chất này, ta biểu diễn xung đột giữa
+các lợi ích ngay trong mô hình luồng mạng.
+
+\subsection*{4. Mô hình hóa từ góc độ luồng chi phí}
+
+Thêm một yếu tố ``chi phí'' vào mạng luồng, ta có bài toán luồng chi phí.
+So với luồng cực đại đơn thuần, luồng chi phí giải được nhiều kiểu bài toán
+hơn và linh hoạt hơn.
+
+\subsubsection*{4.1. Ví dụ mô hình hóa}
+
+\paragraph{\term{Ví dụ 8 (Sequence).}}
+Cho dãy số nguyên dương \(A_i\) độ dài \(n\). Chọn một dãy con sao cho trong
+bất kỳ đoạn liên tiếp độ dài \(m\) nào của dãy gốc, số phần tử được chọn không
+vượt quá \(k\). Hãy tối đa hóa tổng các phần tử được chọn.
+\[
+  1\le n\le 1000,\qquad 1\le m,k\le 100.
+\]
+
+Điều kiện ``mỗi đoạn độ dài \(m\) chọn nhiều nhất \(k\) phần tử'' có thể
+chuyển thành: không phải chọn một lần, mà chọn \(k\) lần; trong mỗi lần chọn,
+bất kỳ đoạn liên tiếp độ dài \(m\) nào chọn nhiều nhất một phần tử. Một phương
+án hợp lệ của bài toán gốc có phương án tương đương trong bài toán sau khi
+chuyển hóa, và ngược lại.
+
+Dựng đồ thị như sau. Lập nguồn \(S\), đích \(T\), và với phần tử thứ \(i\)
+lập đỉnh \(P_i\).
+\begin{itemize}
+  \item Nối \(S\to P_1\) dung lượng \(k\), chi phí \(0\).
+  \item Với \(1\le i<n\), nối \(P_i\to P_{i+1}\) dung lượng \(k\), chi phí
+  \(0\).
+  \item Nối \(P_n\to T\) dung lượng \(k\), chi phí \(0\).
+  \item Với \(1\le i\le n-m\), nối \(P_i\to P_{i+m}\) dung lượng \(1\), chi
+  phí \(A_i\).
+  \item Với \(n-m+1\le i\le n\), nối \(P_i\to T\) dung lượng \(1\), chi phí
+  \(A_i\).
+\end{itemize}
+
+Tìm luồng cực đại có chi phí cực đại. Chi phí cực đại chính là tổng phần tử
+được chọn lớn nhất. Bài toán này cần chuyển bài toán gốc thành dạng dễ mô
+hình hóa hơn, rồi mới dùng luồng mạng để giải.
+
+\paragraph{\term{Ví dụ 9 (WC2007, Rock Paper Scissors).}}
+Trong một số trò chơi đối kháng một chọi một, ví dụ cờ, bóng bàn hay cầu
+lông, ta thường gặp quan hệ \(A\) thắng \(B\), \(B\) thắng \(C\), nhưng \(C\)
+lại thắng \(A\). Gọi đó là một tình huống kéo búa bao. Có \(n\) người tham
+gia; giữa hai người bất kỳ có đúng một trận, tổng cộng \(n(n-1)/2\) trận. Một
+số trận đã có kết quả. Hãy sắp xếp kết quả các trận còn lại để số bộ ba vô
+thứ tự \((A,B,C)\) tạo thành tình huống kéo búa bao là lớn nhất.
+\[
+  1\le n\le 100.
+\]
+
+Đếm trực tiếp số bộ ba tạo thành kéo búa bao không thuận tiện. Ta xét phần
+bù: nếu \((A,B,C)\) không tạo thành kéo búa bao, thì trong ba người có một
+người thắng \(2\) trận, một người thắng \(1\) trận, và một người thắng \(0\)
+trận. Nếu người \(i\) thắng tổng cộng \(w_i\) trận, thì
+\[
+  \sum_i \frac{w_i(w_i-1)}{2}
+\]
+là số bộ ba \((A,B,C)\) không tạo thành kéo búa bao. Vì vậy tối đa hóa số tình
+huống kéo búa bao tương đương tối thiểu hóa tổng trên.
+
+Trước hết mô hình hóa việc chọn kết quả các trận chưa đấu. Lập nguồn \(S\) và
+đích \(T\). Với mỗi người lập đỉnh \(P_i\). Với mỗi trận chưa đấu giữa
+\(i,j\), lập đỉnh \(C_{i,j}\), nối \(S\to C_{i,j}\) dung lượng \(1\), rồi nối
+\(C_{i,j}\to P_i\) và \(C_{i,j}\to P_j\), mỗi cạnh dung lượng \(1\). Luồng đi
+vào \(P_i\) biểu diễn số trận chưa đấu mà người \(i\) được sắp thắng. Cuối
+cùng nối \(P_i\to T\).
+
+Để tối thiểu hóa \(\sum_i w_i(w_i-1)/2\), ta đặt chi phí trên các cạnh
+\(P_i\to T\). Nhưng khi lưu lượng trên cạnh này tăng thêm \(1\), chi phí biên
+không cố định mà tăng dần. Có thể tách cạnh thành nhiều cạnh dung lượng \(1\),
+với chi phí lần lượt là chi phí phát sinh khi số trận thắng của người đó tăng
+thêm một. Nếu người \(i\) đã thắng \(b_i\) trận trong các kết quả có sẵn, các
+cạnh tách ra có chi phí
+\[
+  b_i,\ b_i+1,\ b_i+2,\ldots.
+\]
+Vì ta tìm luồng cực đại chi phí nhỏ nhất, thuật toán sẽ ưu tiên tăng qua các
+cạnh rẻ trước, đúng với hàm lồi \(\binom{w_i}{2}\).
+
+Bài toán này dùng tư tưởng chuyển sang phần bù. Đồng thời, khi chi phí của
+một cạnh không cố định theo lưu lượng, có thể giải quyết bằng cách tách cạnh.
+
+\subsubsection*{4.2. Tiểu kết}
+
+Luồng chi phí giải được nhiều loại bài toán hơn luồng cực đại, và cũng linh
+hoạt hơn. Trong nhiều trường hợp, cần chuyển hóa bài toán gốc trước, rồi dùng
+luồng chi phí để giải.
+
+\subsection*{5. Tư tưởng cân bằng luồng}
+
+Có những bài toán khó mô hình hóa trực tiếp bằng trực giác, nhưng ta có thể
+thu được các quan hệ giữa biến trong bài toán, thường viết được thành một số
+đẳng thức. Trong đồ thị luồng, ngoài nguồn và đích, mọi đỉnh đều thỏa mãn cân
+bằng luồng. Điều kiện cân bằng luồng cũng có thể viết dưới dạng đẳng thức.
+Vì vậy một số hệ đẳng thức trong bài toán có thể được cấu tạo thành đồ thị
+luồng, sao cho các đẳng thức ấy chính là phương trình cân bằng tại các đỉnh.
+
+\subsubsection*{5.1. Ví dụ mô hình hóa}
+
+\paragraph{\term{Ví dụ 10 (NOI2008, Volunteer Recruitment).}}
+Một dự án cần \(n\) ngày để hoàn thành; ngày thứ \(i\) cần ít nhất \(a_i\)
+tình nguyện viên. Có \(m\) loại tình nguyện viên có thể tuyển; loại thứ
+\(j\) làm việc từ ngày \(s_j\) tới ngày \(t_j\), chi phí tuyển mỗi người là
+\(c_j\). Hãy tuyển đủ người với tổng chi phí nhỏ nhất.
+\[
+  1\le n\le 1000,\qquad 1\le m\le 10000.
+\]
+
+Xét một ví dụ nhỏ có ba ngày. Giả sử có ba loại tình nguyện viên: làm từ ngày
+1 tới 3, từ ngày 2 tới 3, và từ ngày 1 tới 2; số người tuyển tương ứng là
+\(b_1,b_2,b_3\). Điều kiện nhu cầu có thể viết thành bất đẳng thức:
+\[
+\begin{aligned}
+  p_1 &= b_1+b_3\ge a_1,\\
+  p_2 &= b_1+b_2+b_3\ge a_2,\\
+  p_3 &= b_1+b_2\ge a_3.
+\end{aligned}
+\]
+Thêm biến dư \(d_i\ge 0\), ta được
+\[
+\begin{aligned}
+  p_1 &= b_1+b_3=a_1+d_1,\\
+  p_2 &= b_1+b_2+b_3=a_2+d_2,\\
+  p_3 &= b_1+b_2=a_3+d_3.
+\end{aligned}
+\]
+Lấy hiệu các đẳng thức kề nhau, rồi thêm hai phương trình biên, ta có một hệ
+đẳng thức mà mỗi biến xuất hiện đúng hai lần, một lần với dấu dương và một
+lần với dấu âm:
+\[
+\begin{aligned}
+  b_1+b_3-a_1-d_1 &=0,\\
+  b_2-a_2+a_1-d_2+d_1 &=0,\\
+  -b_3-a_3+a_2-d_3+d_2 &=0,\\
+  -b_1-b_2+a_3+d_3 &=0.
+\end{aligned}
+\]
+
+Trong đồ thị luồng, nếu quy ước lưu lượng chảy ra là dương và lưu lượng chảy
+vào là âm, tổng đại số lưu lượng tại mỗi đỉnh bằng \(0\). Do đó, mỗi đẳng
+thức trên có thể tương ứng với một đỉnh; mỗi biến xuất hiện một lần dương và
+một lần âm nên tương ứng với một cạnh giữa hai đỉnh.
+
+Từ cách nhìn này, mô hình tổng quát là:
+\begin{itemize}
+  \item Lập nguồn \(S\), đích \(T\), và các đỉnh \(1,2,\ldots,n+1\).
+  \item Với \(2\le i\le n+1\), nối \(i\to i-1\) dung lượng \(+\infty\), chi
+  phí \(0\). Các cạnh này tương ứng với biến dư.
+  \item Với loại tình nguyện viên \(j\) làm từ ngày \(s_j\) tới ngày \(t_j\)
+  và chi phí \(c_j\), nối \(s_j\to t_j+1\) dung lượng \(+\infty\), chi phí
+  \(c_j\).
+  \item Đặt \(a_0=a_{n+1}=0\). Với mỗi \(i\), nếu \(a_i-a_{i-1}\ge 0\), nối
+  \(S\to i\) dung lượng \(a_i-a_{i-1}\), chi phí \(0\); nếu \(a_i-a_{i-1}<0\),
+  nối \(i\to T\) dung lượng \(a_{i-1}-a_i\), chi phí \(0\).
+\end{itemize}
+
+Vì các \(a_i\) là hằng số, mọi cạnh đi ra từ \(S\) và đi vào \(T\) đều phải
+đầy lưu lượng. Luồng cực đại trong đồ thị thỏa mãn điều kiện này. Để tối thiểu
+hóa chi phí tuyển, ta tìm luồng cực đại chi phí nhỏ nhất.
+
+\paragraph{\term{Ví dụ 11 (World Finals 2011, Chips Challenge).}}
+Trong một lưới \(n\times n\), ta đặt các linh kiện. Một số ô đã bắt buộc có
+linh kiện, một số ô không được đặt, còn các ô khác có thể đặt hoặc không. Yêu
+cầu tổng số linh kiện trên hàng \(i\) bằng tổng số linh kiện trên cột \(i\).
+Để bảo đảm tản nhiệt, số linh kiện trên bất kỳ hàng hoặc cột nào không được
+vượt quá một tỉ lệ \(\frac{A}{B}\) của tổng số linh kiện. Hãy đặt được nhiều
+linh kiện nhất.
+\[
+  1\le n\le 40.
+\]
+
+Gọi \(a_{i,j}\) cho biết ô hàng \(i\), cột \(j\) có đặt linh kiện hay không,
+trong đó \(1\) là đặt và \(0\) là không đặt. Gọi \(t_i\) là tổng số linh kiện
+trên hàng \(i\), đồng thời cũng là tổng số linh kiện trên cột \(i\). Ta có
+\[
+\begin{aligned}
+  t_i &= a_{i,1}+a_{i,2}+\cdots+a_{i,n} &&(1\le i\le n),\\
+  t_i &= a_{1,i}+a_{2,i}+\cdots+a_{n,i} &&(1\le i\le n).
+\end{aligned}
+\]
+Sắp xếp lại:
+\[
+\begin{aligned}
+  a_{i,1}+a_{i,2}+\cdots+a_{i,n}-t_i &=0 &&(1\le i\le n),\\
+  t_i-a_{1,i}-a_{2,i}-\cdots-a_{n,i} &=0 &&(1\le i\le n).
+\end{aligned}
+\]
+
+Ta còn có giới hạn tản nhiệt. Nếu liệt kê tổng số linh kiện \(tot\), ta xác
+định được số linh kiện tối đa trên mỗi hàng hoặc cột, gọi là \(maxt\). Với
+mỗi giá trị \(tot\), tìm tổng số linh kiện nhiều nhất \(ans\) trong giới hạn
+\(maxt\); nếu \(ans\ge tot\), phương án cho \(tot\) là hợp lệ.
+
+Sau khi cố định \(maxt\), dựng đồ thị như sau:
+\begin{itemize}
+  \item Lập đỉnh \(A_i\) cho đẳng thức của hàng
+  \(a_{i,1}+a_{i,2}+\cdots+a_{i,n}-t_i=0\).
+  \item Lập đỉnh \(B_i\) cho đẳng thức của cột
+  \(t_i-a_{1,i}-a_{2,i}-\cdots-a_{n,i}=0\).
+  \item Nối \(B_i\to A_i\) với chặn dưới \(0\), chặn trên \(maxt\), chi phí
+  \(1\). Cạnh này biểu diễn biến \(t_i\).
+  \item Nếu ô \((i,j)\) bắt buộc đặt linh kiện, nối \(A_i\to B_j\) với chặn
+  dưới và chặn trên đều bằng \(1\), chi phí \(0\).
+  \item Nếu ô \((i,j)\) tùy chọn, nối \(A_i\to B_j\) với chặn dưới \(0\),
+  chặn trên \(1\), chi phí \(0\). Nếu ô bị cấm thì không thêm cạnh tương ứng.
+\end{itemize}
+
+Một luồng khả thi trong mạng này chính là một phương án đặt linh kiện hợp lệ
+với giới hạn \(maxt\). Luồng khả thi có chi phí lớn nhất cho ta phương án tốt
+nhất dưới giới hạn đó. Liệt kê mọi giá trị \(maxt\) và lấy phương án hợp lệ
+tốt nhất làm đáp án cuối cùng.
+
+\subsubsection*{5.2. Tiểu kết}
+
+Ta biểu diễn quan hệ giữa các biến dưới dạng đẳng thức, rồi liên hệ chúng với
+các phương trình cân bằng luồng trong đồ thị. Nhờ đó có thể ánh xạ bài toán
+gốc sang một mạng luồng.
+
+Đa số mô hình luồng mạng đều có thể được hiểu bằng tư tưởng cân bằng luồng,
+nên tư tưởng này có thể dùng để giải phần lớn các bài toán luồng mạng. Nhược
+điểm của nó là không đủ trực quan, đôi khi còn làm bài toán trở nên phức tạp.
+Tuy vậy, với những bài khó hiểu hoặc khó nghĩ ra mô hình trực tiếp, tư tưởng
+cân bằng luồng có thể phát huy tác dụng rất lớn.
+
+\subsection*{6. Tổng kết}
+
+Góc nhìn mô hình hóa luồng mạng rất đa dạng: từ luồng cực đại, từ cắt nhỏ
+nhất, từ luồng chi phí, từ cân bằng luồng, v.v.
+
+Các kỹ thuật dùng khi mô hình hóa luồng mạng cũng rất nhiều, chẳng hạn tách
+đỉnh, tách cạnh, xây đồ thị phân tầng.
+
+Khi mô hình hóa bằng luồng mạng, đôi khi cần phân tích bài toán và chuyển bài
+toán gốc thành một bài toán dễ mô hình hóa hơn.
+
+Đôi khi mô hình luồng mạng phải kết hợp với thuật toán hoặc phép biến đổi
+khác mới giải được bài toán, chẳng hạn tìm kiếm nhị phân hoặc chuyển sang bài
+toán phần bù.
+
+Tóm lại, nội dung mô hình hóa luồng mạng rất phong phú. Hy vọng có bạn đọc
+có thể lấy cảm hứng từ bài viết này để phát hiện những mô hình luồng mạng mới
+và tinh tế hơn.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Liu Rujia, Chen Feng, \emph{Sách nhập môn kinh điển về thi thuật toán:
+  hướng dẫn luyện tập}, Nhà xuất bản Đại học Thanh Hoa.
+  \item PHVA, \emph{Ứng dụng mô hình cắt nhỏ nhất trong thi tin học}.
 \end{enumerate}
 
 \end{document}
