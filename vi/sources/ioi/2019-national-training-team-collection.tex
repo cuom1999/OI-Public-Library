@@ -31,7 +31,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2019. Tệp được
 tạo bằng XeTeX và có lớp văn bản đọc được; tuy nhiên các trang có watermark
 chéo, nên kết quả trích xuất xen thêm chữ từ watermark vào nội dung chính. Bản
-LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và mười bài viết đầu
+LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và mười một bài viết đầu
 tiên: ``Tính chất và ứng dụng của hai loại dãy truy hồi'' của Zhong Ziqian,
 ``Bàn về bài toán bước đi ngẫu nhiên trên mô hình đồ thị'' của Wang Xiuhan,
 ``Báo cáo ra đề \emph{Bài toán nhỏ dễ}'' của Yang Junzhao, ``Bàn về bài toán
@@ -40,8 +40,9 @@ tô màu đỉnh của đồ thị'' của Gao Jiaxuan, ``Bàn về các bài to
 thi thuật toán và bước đầu về số nguyên Gauss'' của Li Jiaheng, ``Báo cáo ra
 đề \emph{Bài luyện cơ bản về cây tròn-vuông}'' của Fan Zhiyuan, ``Báo cáo
 ra đề \emph{Đếm điểm nguyên} và một số nghiên cứu về số nguyên Gauss'' của Xu
-Yixuan, ``Bàn về thuật toán chia để trị trên cây'' của Zhang Zheyu, và ``Báo
-cáo ra đề \emph{Tổng tổ hợp}'' của Wu Siyang.
+Yixuan, ``Bàn về thuật toán chia để trị trên cây'' của Zhang Zheyu, ``Báo cáo
+ra đề \emph{Tổng tổ hợp}'' của Wu Siyang, và ``Bàn về một lớp cấu trúc dữ liệu
+ngắn gọn'' của Wang Siqi.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -8150,6 +8151,652 @@ Cảm ơn các bạn học khác đã trao đổi, thảo luận với tôi.
   \item Wikipedia. Reeds--Sloane algorithm.
         \href{https://en.wikipedia.org/wiki/Reeds--Sloane_algorithm}{English
         Wikipedia}.
+\end{enumerate}
+
+\clearpage
+\section*{Bàn về một lớp cấu trúc dữ liệu ngắn gọn}
+
+\begin{center}
+Wang Siqi, Trường Trung học số 7 Thành Đô
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Cấu trúc dữ liệu ngắn gọn là một loại cấu trúc dữ liệu có hằng số không gian
+nhỏ. Bài viết này giới thiệu một lớp cấu trúc dữ liệu ngắn gọn và đưa ra một
+số ứng dụng của chúng.
+
+\section*{1. Lời nói đầu}
+
+Biểu diễn dữ liệu và truy vấn dữ liệu một cách tiết kiệm không gian là một vấn
+đề quan trọng trong khoa học máy tính. Với việc biểu diễn dữ liệu, phương pháp
+thường gặp nhất là nén; nhưng sau khi nén, truy vấn dữ liệu gốc thường trở nên
+khó hơn. Nếu lưu trực tiếp dữ liệu gốc rồi dùng cấu trúc dữ liệu thông thường
+để duy trì, không gian lại chưa đủ hiệu quả.
+
+Vì các vấn đề ấy, những cấu trúc dữ liệu tiết kiệm không gian ra đời. Các loại
+thường gặp gồm những loại sau, giả sử dữ liệu gốc cần \(n\) bit để biểu diễn:
+
+\begin{itemize}
+  \item Cấu trúc dữ liệu nén (compressed data structure): không gian lưu trữ
+        phụ thuộc vào dữ liệu cụ thể, thường liên quan tới entropy thông tin
+        của dữ liệu được biểu diễn.
+  \item Cấu trúc dữ liệu ngắn gọn (succinct data structure): dùng
+        \(n+o(n)\) bit.
+  \item Cấu trúc dữ liệu ẩn (implicit data structure): dùng \(n+O(1)\) bit.
+  \item Cấu trúc dữ liệu compact: dùng \(O(n)\) bit.
+\end{itemize}
+
+Bài viết này giới thiệu một cấu trúc dữ liệu ngắn gọn để xử lý hai bài toán
+\(\rank\) và \(\operatorname{select}\) trên chuỗi 01; sau đó, dựa trên cấu trúc
+dữ liệu này, dẫn nhập cấu trúc dữ liệu xử lý cây và wavelet tree.
+
+\section*{2. Chuỗi 01}
+
+Xét một chuỗi 01 \(S\) độ dài \(n\), cần hỗ trợ hai thao tác:
+
+\begin{itemize}
+  \item \(\rank_v(k)\): hỏi từ vị trí \(1\) đến vị trí \(k\) có bao nhiêu ký
+        tự \(v\).
+  \item \(\operatorname{select}_v(k)\): hỏi vị trí của ký tự \(v\) thứ \(k\).
+\end{itemize}
+
+Rõ ràng, nếu giá trị ở vị trí \(i\) là \(v\), thì
+\(\operatorname{select}_v(\rank_v(i))=i\).
+
+Bài toán này có cách dùng tổng tiền tố với không gian \(O(n\log n)\), thời
+gian \(O(1)\), và cách vét cạn với không gian \(n\), thời gian \(O(n)\). Nhưng
+cách tốt hơn có thể đạt không gian
+\[
+  n+O\left(\frac{n\log\log n}{\log n}\right)
+\]
+và thời gian \(O(1)\).
+
+Dưới đây trước hết giới thiệu một cách làm không gian \(O(n)\), thời gian
+\(O(1)\), rồi giới thiệu cách tốt hơn ở trên.
+
+\subsection*{2.1. Cách làm không gian \texorpdfstring{\(O(n)\)}{O(n)}, thời gian \texorpdfstring{\(O(1)\)}{O(1)}}
+
+Với thao tác \(\rank\), trước hết chia \(S\) thành các khối kích thước
+\(\log n/2\), rồi lưu tổng tiền tố tại cuối mỗi khối. Phần này cần
+\[
+  \frac{n}{\log n/2}\cdot\log n=2n
+\]
+không gian.
+
+Trong nội bộ khối, có thể lưu trực tiếp tổng của mọi chuỗi 01 có độ dài không
+vượt quá \(\log n/2\), cần \(O(\sqrt n\log\log n)\) không gian. Khi truy vấn,
+ta tra tổng của phần gồm các khối liên tiếp đầy đủ, còn phần chưa đủ một khối
+có thể tính bằng hai lần tra bảng.
+
+Với thao tác \(\operatorname{select}_1\), trước hết chia giá trị được hỏi
+thành các khối lớn theo \(\log n\), tức là tính trước mọi giá trị
+\(\operatorname{select}_1(k\log n)\). Phần này cần
+\[
+  \frac{n}{\log n}\cdot\log n=n
+\]
+không gian.
+
+Nếu một khối lớn ứng với một đoạn trong chuỗi gốc có độ dài lớn hơn
+\(\log^2 n\), thì số khối như vậy không vượt quá \(n/\log^2 n\). Có thể lưu
+trực tiếp đáp án của mọi khối như vậy, tổng cộng cần
+\[
+  O\left(\frac{n}{\log^2 n}\cdot\log n\cdot\log n\right)=O(n)
+\]
+không gian.
+
+Với các khối lớn còn lại, tiếp tục chia trong khối theo \(\log\log n\) thành
+khối nhỏ, rồi lưu đáp án của mỗi vị trí trong khối nhỏ ấy. Vì đoạn tương ứng
+trong chuỗi gốc có độ dài không vượt quá \(\log^2 n\), biểu diễn mỗi đáp án
+cũng chỉ cần \(O(\log\log n)\) không gian. Do đó phần này tổng cộng cần
+\[
+  O\left(\frac{n}{\log n}\cdot
+  \frac{\log n}{\log\log n}\cdot\log\log n\right)=O(n)
+\]
+không gian.
+
+Với các đoạn có độ dài không vượt quá \(\log n/2\), có thể lưu trực tiếp đáp
+án của mọi thao tác \(\operatorname{select}\) trên mọi đoạn như vậy, tổng cộng
+cần \(O(\sqrt n\log n\log\log n)\) không gian.
+
+Sau hai lần chia khối, nếu một khối nhỏ ứng với đoạn trong chuỗi gốc có độ dài
+không vượt quá \(\log n/2\), ta tra trực tiếp bảng ở trên; nếu không, số khối
+như vậy hiển nhiên là \(O(n/\log n)\), nên có thể lưu trực tiếp đáp án của mọi
+vị trí trong khối ấy tương đối với khối lớn \(\log n\) chứa nó, cần
+\[
+  O\left(\frac{n(\log\log n)^2}{\log n}\right)
+\]
+không gian.
+
+Vì vậy tổng cộng cần
+\[
+  O\left(n+\sqrt n\log\log n+\sqrt n\log n\log\log n+
+  \frac{n(\log\log n)^2}{\log n}\right)=O(n)
+\]
+không gian, và số lần phân loại trong mỗi thao tác là hằng số, nên thời gian
+đều là \(O(1)\).
+
+\subsection*{2.2. Cách làm không gian \texorpdfstring{\(n+O\left(\frac{n\log\log n}{\log n}\right)\)}{n+O(n log log n/log n)}, thời gian \texorpdfstring{\(O(1)\)}{O(1)}}
+
+Trước hết chia \(S\) thành các khối kích thước \(\log^2 n\), rồi lưu tổng
+tiền tố tại cuối mỗi khối. Phần này cần
+\[
+  \frac{n}{\log^2 n}\cdot\log n=\frac{n}{\log n}
+\]
+không gian.
+
+Tiếp theo, chia mỗi khối thành các khối nhỏ kích thước \(\log n\), rồi lưu
+tổng trên đoạn từ cuối mỗi khối nhỏ đến đầu khối lớn. Như vậy tổng cộng lưu
+\(n/\log n\) giá trị; mỗi giá trị có cỡ \(\log^2 n\), nên cần
+\[
+  \frac{n\log\log n}{\log n}
+\]
+không gian.
+
+Cuối cùng, dùng một mảng lưu tổng của mọi chuỗi 01 có độ dài không vượt quá
+\(\log n/2\), cần \(O(\sqrt n\log\log n)\) không gian.
+
+Với thao tác \(\rank\), trước hết định vị khối lớn chứa \(k\), rồi định vị
+khối nhỏ chứa \(k\). Sau khi lấy hai tổng tiền tố phía trước, phần cuối chưa
+đủ \(\log n\) có thể tính bằng hai lần tra bảng.
+
+Với thao tác \(\operatorname{select}\), có thể dùng tương tự phương pháp chia
+khối nhiều lần; chi tiết có thể tham khảo~[3]. Do giới hạn độ dài, bài viết
+không trình bày thêm.
+
+\subsection*{2.3. Cài đặt}
+
+Hai cách làm phía trên đạt độ phức tạp tốt, nhưng khi cài đặt thực tế còn phụ
+thuộc vào độ lớn của các hằng số.
+
+Chuỗi 01 có thể được lưu trực tiếp bằng cách dùng một số nguyên 64 bit cho mỗi
+64 bit liên tiếp.
+
+Với thao tác \(\rank\), có thể chia khối với kích thước là bội của 64 và lưu
+tổng tiền tố giữa các khối. Phần chưa đủ một khối có thể tính trực tiếp bằng
+lệnh CPU. Có thể điều chỉnh kích thước khối để cân bằng thời gian và không
+gian.
+
+Với thao tác \(\operatorname{select}\), một phương pháp là dùng lại bảng của
+thao tác \(\rank\), tìm kiếm nhị phân trong đó rồi xử lý phần chưa đủ một
+khối. Cách này dùng ít không gian hơn, nhưng độ phức tạp thời gian cao hơn.
+
+Một phương pháp khác tương tự mục 2.1, nhưng để giảm hằng số truy vấn thì chỉ
+chia khối một lần. Với phần ánh xạ sang đoạn ngắn trong chuỗi gốc, có thể tính
+vét cạn trực tiếp; với phần dài hơn thì vẫn lưu đáp án.
+
+\section*{3. Cây}
+
+Mục này giới thiệu ba cấu trúc dữ liệu ngắn gọn biểu diễn cây và ứng dụng của
+chúng. Ba cấu trúc dữ liệu đó lần lượt là BP (Balanced Parentheses), LOUDS
+(Level-ordered Unary Degree Sequence) và DFUDS (Depth-first Unary Degree
+Sequence).
+
+Cả ba cấu trúc dữ liệu đều mã hóa cây thành chuỗi 01 hoặc dãy ngoặc độ dài
+\(2n+O(1)\), rồi dùng cấu trúc dữ liệu cho chuỗi 01 đã nêu ở trên, hoặc cấu
+trúc dữ liệu cho dãy ngoặc trong~[4], để duy trì.
+
+Ba cấu trúc dữ liệu này đều có thời gian \(O(1)\) trên một số thao tác, còn
+trên các thao tác khác thì khác nhau. Ngoài ra còn có một số cấu trúc dữ liệu
+khác có thể thực hiện các thao tác này và nhiều thao tác hơn nữa trong cùng
+không gian \(2n+o(n)\); chi tiết có thể tham khảo~[6,7,8], ở đây không nhắc
+lại.
+
+\subsection*{3.1. BP}
+
+BP là cách dùng ngoặc để biểu diễn cây.
+
+\setcounter{figure}{9}
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=.85,
+  every node/.style={circle,draw,minimum size=18pt,inner sep=1pt,font=\small}]
+  \node (n1) at (0,2.4) {1};
+  \node (n2) at (-1.7,1.2) {2};
+  \node (n3) at (0,1.2) {3};
+  \node (n6) at (1.7,1.2) {6};
+  \node (n4) at (-.8,0) {4};
+  \node (n5) at (.8,0) {5};
+  \node (n7) at (1.7,0) {7};
+  \draw (n1)--(n2) (n1)--(n3) (n1)--(n6)
+        (n3)--(n4) (n3)--(n5) (n6)--(n7);
+\end{tikzpicture}
+\caption{Một cây.}
+\end{figure}
+
+Dãy ngoặc tương ứng với Hình 10 là:
+
+\begin{center}
+\begin{tabular}{c|c}
+Dãy ngoặc & \((\ (\,)\ (\,(\,)\ (\,)\,)\ (\,(\,)\,)\,)\)\\
+\hline
+Số hiệu đỉnh tương ứng & \(1\ 2\ 2\ 3\ 4\ 4\ 5\ 5\ 3\ 6\ 7\ 7\ 6\ 1\)
+\end{tabular}
+\end{center}
+
+Sau khi bỏ hai ngoặc của nút gốc, hiển nhiên dãy ngoặc cân bằng độ dài
+\(2n-2\) (hai loại ngoặc có số lượng bằng nhau) và cây \(n\) đỉnh tương ứng
+một-một với nhau. Số dãy ngoặc độ dài \(2n-2\) là
+\[
+  C_{n-1}=\frac1n\binom{2n-2}{n-1}.
+\]
+Theo công thức Stirling, \(\log C_n\) tiến tới \(2n\). Vì vậy, dùng không gian
+\(2n+o(n)\) bit là ngắn gọn.
+
+Theo phương pháp trong~[4], với một dãy ngoặc độ dài \(2n\), ta có thể trong
+thời gian \(O(1)\) và không gian \(2n+o(n)\) tìm được ngoặc phải ứng với một
+ngoặc trái, ngoặc trái ứng với một ngoặc phải, và ngoặc bao ngoài một ngoặc.
+
+Dùng các thao tác này, có thể cài đặt trong \(O(1)\) các thao tác tìm con đầu
+tiên, con cuối cùng, nút anh em, cha, cũng như tính kích thước cây con và độ
+sâu của đỉnh.
+
+\subsection*{3.2. LOUDS}
+
+LOUDS là cách mã hóa bậc theo dạng nhất phân theo thứ tự BFS.
+
+Trước hết thêm cho cây một gốc mới, trong đó con duy nhất của gốc mới là gốc
+của cây ban đầu. Sau đó đánh số cây này theo thứ tự BFS và nối lần lượt mã
+của từng nút để thu được mã của cả cây. Mã của mỗi nút phụ thuộc vào số con
+của nó: nếu có \(x\) con thì mã là \(x\) ký tự \(1\), rồi thêm một ký tự
+\(0\).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=.86,
+  every node/.style={circle,draw,minimum size=18pt,inner sep=1pt,font=\small}]
+  \node (root) at (0,3.2) {gốc};
+  \node[draw=none] at (.85,3.2) {\texttt{10}};
+  \node (n1) at (0,2.2) {1};
+  \node[draw=none] at (.85,2.55) {\texttt{1110}};
+  \node (n2) at (-2,1.0) {2};
+  \node (n3) at (0,1.0) {3};
+  \node (n4) at (2,1.0) {4};
+  \node[draw=none] at (-2,1.55) {\texttt{0}};
+  \node[draw=none] at (.75,1.35) {\texttt{110}};
+  \node[draw=none] at (2.9,1.35) {\texttt{10}};
+  \node (n5) at (-.75,-.2) {5};
+  \node (n6) at (.75,-.2) {6};
+  \node (n7) at (2,-.2) {7};
+  \node[draw=none] at (-.75,.35) {\texttt{0}};
+  \node[draw=none] at (.75,.35) {\texttt{0}};
+  \node[draw=none] at (2.55,.35) {\texttt{0}};
+  \draw (root)--(n1) (n1)--(n2) (n1)--(n3) (n1)--(n4)
+        (n3)--(n5) (n3)--(n6) (n4)--(n7);
+\end{tikzpicture}
+\caption{Một cây và mã của từng đỉnh.}
+\end{figure}
+
+Mã của cây trong Hình 11 là
+\[
+  \texttt{10.1110.0.110.10.0.0.0},
+\]
+trong đó dấu chấm chỉ để tiện đọc. Mỗi nút tương ứng đúng một ký tự \(1\)
+trong mã. Quan hệ giữa số hiệu nút và vị trí trong mã như sau:
+
+\begin{itemize}
+  \item \(v=\rank_1(i)\): tìm số hiệu nút \(v\) ứng với vị trí \(i\).
+  \item \(i=\operatorname{select}_1(v)\): tìm vị trí \(i\) của nút có số hiệu
+        \(v\).
+\end{itemize}
+
+Các thao tác liên quan tới nút trên cây cũng có thể được cài đặt dễ dàng:
+
+\begin{itemize}
+  \item \(\operatorname{firstchild}(i)=
+        \operatorname{select}_0(\rank_1(i))+1\): tìm vị trí con đầu tiên của
+        nút ứng với vị trí \(i\).
+  \item \(\operatorname{lastchild}(i)=
+        \operatorname{select}_0(\rank_1(i)+1)-1\): tìm vị trí con cuối cùng
+        của nút ứng với vị trí \(i\).
+  \item \(\operatorname{parent}(i)=\operatorname{select}_1(\rank_0(i))\): tìm
+        vị trí cha của nút ứng với vị trí \(i\).
+  \item \(\operatorname{child}(i,k)=\operatorname{firstchild}(i)+k-1\): tìm vị
+        trí con thứ \(k\) của nút ứng với vị trí \(i\).
+  \item \(\operatorname{degree}(i)=
+        \operatorname{lastchild}(i)-\operatorname{firstchild}(i)+1\): tìm số
+        con của nút ứng với vị trí \(i\).
+\end{itemize}
+
+\subsection*{3.3. DFUDS}
+
+DFUDS là cách mã hóa bậc theo dạng nhất phân theo thứ tự DFS.
+
+DFUDS của một cây được cho như sau:
+
+\begin{itemize}
+  \item Với cây chỉ có một nút, mã của nó là \texttt{()}.
+  \item Với cây có nhiều hơn một nút, trước hết xóa ngoặc trái ngoài cùng
+        trong mã của mọi cây con. Sau đó mã của cây là
+        \(\texttt{((}\cdots\texttt{()}\), trong đó số ngoặc trái bằng số con
+        cộng \(1\), rồi nối tiếp lần lượt mã của từng con.
+\end{itemize}
+
+Nếu xóa ngoặc trái ngoài cùng, thì phần mã mới được thêm vào cho mỗi nút giống
+LOUDS, trong đó \(1\) ứng với ngoặc trái và \(0\) ứng với ngoặc phải.
+
+Mã của cây trong Hình 10 là
+\[
+  \texttt{(.((().).(().).).().)}
+\]
+trong đó dấu chấm chỉ để dễ nhìn; mã của từng nút có thể xem ở Hình 11.
+
+Không khó thấy DFUDS nhất định là một dãy ngoặc hợp lệ.
+
+Khi xây dựng thực tế, có thể DFS một lần, rồi với mỗi nút lần lượt thêm số
+ngoặc trái bằng số con của nó và một ngoặc phải. Cuối cùng thêm ngoặc trái ở
+đầu. Thuật toán cụ thể như sau.
+
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.78\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 1} Tìm mã DFUDS của một cây}\\
+\multicolumn{2}{l}{\textbf{Require:} cây \(T\)}\\
+\multicolumn{2}{l}{\textbf{Ensure:} mã \(\mathit{Result}\)}\\
+1: & \(\mathit{Result}\gets\texttt{""}\)\\
+2: & \textbf{procedure} \(\operatorname{Dfs}(x)\)\\
+3: & \quad \(\mathit{Result}\gets \mathit{Result}
+      +\texttt{"("}\times x.\mathit{children\_count}+\texttt{")"}\)\\
+4: & \quad \textbf{for} \(y\in x.\mathit{children}\) \textbf{do}\\
+5: & \qquad \(\operatorname{Dfs}(y)\)\\
+6: & \quad \textbf{end for}\\
+7: & \textbf{end procedure}\\
+8: & \(\operatorname{Dfs}(T.\mathit{root})\)\\
+9: & \(\mathit{Result}\gets\texttt{"("}+\mathit{Result}\)
+\end{tabular}
+\end{center}
+
+Để thực hiện nhanh các thao tác trên cây, ta cần dùng các thao tác đã nêu ở
+mục 2.2 và các thao tác trên dãy ngoặc trong~[4] để duy trì.
+
+\begin{itemize}
+  \item \(\rank_v(k)\): hỏi từ đầu đến vị trí \(k\) có bao nhiêu ký tự \(v\),
+        trong đó \(v\) là \(\mathit{open}\) hoặc \(\mathit{close}\), biểu diễn
+        ngoặc trái và ngoặc phải.
+  \item \(\operatorname{select}_v(k)\): hỏi vị trí ký tự \(v\) thứ \(k\).
+  \item \(\operatorname{findclose}(k)\): hỏi ngoặc phải ứng với vị trí \(k\),
+        bảo đảm vị trí \(k\) là ngoặc trái.
+  \item \(\operatorname{findopen}(k)\): hỏi ngoặc trái ứng với vị trí \(k\),
+        bảo đảm vị trí \(k\) là ngoặc phải.
+  \item \(\operatorname{enclose}(k)\): hỏi ngoặc trái bao ngoài vị trí \(k\).
+\end{itemize}
+
+Trong DFUDS, mỗi nút và mỗi ngoặc phải tương ứng một-một, với quan hệ như sau:
+
+\begin{itemize}
+  \item \(v=\rank_{\mathit{close}}(i)\): tìm số hiệu nút \(v\) ứng với vị trí
+        \(i\).
+  \item \(i=\operatorname{select}_{\mathit{close}}(v)\): tìm vị trí \(i\) của
+        nút có số hiệu \(v\).
+\end{itemize}
+
+Dễ thấy số hiệu của mỗi nút chính là vị trí của nó trong thứ tự DFS.
+
+Các thao tác được cài đặt như sau:
+
+\begin{itemize}
+  \item \(\operatorname{pre}(k)=
+        \operatorname{select}_{\mathit{close}}(\rank_{\mathit{close}}(k)-1)\):
+        tìm vị trí ngoặc phải đứng trước.
+  \item \(\operatorname{degree}(k)=
+        k-\operatorname{select}_{\mathit{close}}(\rank_{\mathit{close}}(k)-1)\):
+        tìm số con của nút ứng với vị trí \(k\).
+  \item \(\operatorname{child}(i,k)=
+        \operatorname{select}_{\mathit{close}}(
+        \rank_{\mathit{close}}(\operatorname{findclose}(k-i))+1)\): tìm con
+        thứ \(i\) của nút ứng với vị trí \(k\).
+  \item \(\operatorname{parent}(k)=
+        \operatorname{select}_{\mathit{close}}(
+        \rank_{\mathit{close}}(\operatorname{findopen}(\operatorname{pre}(k)))+1)\):
+        tìm cha của nút ứng với vị trí \(k\).
+  \item \(\operatorname{subtreesize}(k)=
+        (\operatorname{findclose}(\operatorname{enclose}(\operatorname{pre}(k)))
+        -\operatorname{pre}(k))/2+1\): tìm kích thước cây con của vị trí
+        \(k\). Thao tác này cần xử lý riêng khi \(k\) là gốc.
+\end{itemize}
+
+\subsection*{3.4. Ứng dụng}
+
+Trong nhiều tình huống cần biểu diễn cây, đều có thể dùng ba cấu trúc dữ liệu
+này để tối ưu.
+
+Chẳng hạn với trie, khi xây dựng trie cần dùng cấu trúc con trỏ; nhưng sau khi
+xây xong, ta có thể không dùng con trỏ nữa mà chỉ giữ lại cấu trúc cây. Dưới
+đây là hai cách tối ưu.
+
+Giả sử bảng chữ cái là \(\Sigma\), số nút của trie là \(n\).
+
+Cách thứ nhất: với mỗi nút của trie, thêm một số nút ảo để bù đầy số con lên
+\(|\Sigma|\). Sau đó mã hóa trực tiếp cây này; có thể dựa vào số con của một
+nút để phán đoán nó có phải nút ảo hay không.
+
+Cách này có độ phức tạp không gian \(O(n|\Sigma|)\), và độ phức tạp thời gian
+để tìm nút con ứng với một ký tự là \(O(1)\).
+
+Cách thứ hai: mã hóa trực tiếp trie ban đầu, rồi ghi lại ký tự ứng với mỗi
+nút. Khi tìm nút con ứng với một ký tự, có thể tìm kiếm nhị phân hoặc duyệt;
+độ phức tạp thời gian lần lượt là \(O(\log|\Sigma|)\) và
+\(O(|\Sigma|/w)\), trong đó \(w\) là độ rộng từ máy. Cách sau có thể xem gần
+như \(O(1)\) khi \(|\Sigma|\) nhỏ.
+
+Cách này có độ phức tạp không gian \(O(n)\).
+
+\section*{4. Wavelet Tree}
+
+Xét một chuỗi \(S\) độ dài \(n\), bảng chữ cái là \(\Sigma\), cần hỗ trợ hai
+thao tác:
+
+\begin{itemize}
+  \item \(\rank_v(k)\): hỏi từ vị trí \(1\) đến vị trí \(k\) có bao nhiêu ký
+        tự \(v\).
+  \item \(\operatorname{select}_v(k)\): hỏi vị trí của ký tự \(v\) thứ \(k\).
+\end{itemize}
+
+Wavelet tree có thể thực hiện hai thao tác này với không gian
+\((1+o(1))n\log|\Sigma|\) và thời gian mỗi truy vấn \(O(\log|\Sigma|)\).
+
+Với một chuỗi, ta chia bảng chữ cái của nó thành hai phần, thường là chia đều
+trực tiếp theo thứ tự ký tự, rồi thay các ký tự thuộc phần thứ nhất bằng \(0\)
+và các ký tự thuộc phần thứ hai bằng \(1\). Sau đó lấy lần lượt các ký tự
+thuộc hai phần trong chuỗi gốc để thu được hai chuỗi mới, rồi đệ quy xây cây
+trên hai chuỗi mới ấy, cho tới khi kích thước bảng chữ cái bằng \(1\).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw,inner sep=4pt,font=\ttfamily\small,align=left},
+  edge/.style={thin},
+  lab/.style={font=\small}]
+  \node[box] (root) at (0,0) {this-is-a-sample\\1001001000101110};
+  \node[box] (l) at (-3.5,-1.7) {hi-i-a-ae\\110100001};
+  \node[box] (r) at (3.5,-1.7) {tsssmpl\\1111010};
+  \node[box] (ll) at (-5.1,-3.4) {--a-a\\00101};
+  \node[box] (lr) at (-2.0,-3.4) {hiie\\1110};
+  \node[box] (rl) at (2.2,-3.4) {ml\\10};
+  \node[box] (rr) at (5.0,-3.4) {tsssp\\11110};
+  \node[box] (lrr) at (-1.1,-5.15) {hii\\011};
+  \node[box] (rrr) at (6.1,-5.15) {tsss\\1000};
+  \draw[edge] (root)--node[lab,left]{0}(l);
+  \draw[edge] (root)--node[lab,right]{1}(r);
+  \draw[edge] (l)--node[lab,left]{0}(ll);
+  \draw[edge] (l)--node[lab,right]{1}(lr);
+  \draw[edge] (r)--node[lab,left]{0}(rl);
+  \draw[edge] (r)--node[lab,right]{1}(rr);
+  \draw[edge] (lr)--node[lab,right]{1}(lrr);
+  \draw[edge] (rr)--node[lab,right]{1}(rrr);
+\end{tikzpicture}
+\caption{Ví dụ về wavelet tree.}
+\end{figure}
+
+Hình 12 là wavelet tree của chuỗi gốc \(\texttt{this-is-a-sample}\), với bảng
+chữ cái \(\{\texttt{-},\texttt{a},\texttt{e},\texttt{h},\texttt{i},
+\texttt{l},\texttt{m},\texttt{p},\texttt{s},\texttt{t}\}\).
+
+Cây xây theo cách này có \(|\Sigma|-1\) nút, độ sâu lớn nhất là
+\(\lceil\log|\Sigma|\rceil\), và tổng độ dài các chuỗi 01 được duy trì trên
+mọi nút không vượt quá \(n\lceil\log|\Sigma|\rceil\).
+
+Sau khi duy trì nhanh các thao tác \(\rank_0,\rank_1,\operatorname{select}_0,
+\operatorname{select}_1\) trên chuỗi 01 của mỗi nút, các thao tác cần hỏi có
+thể được thực hiện như sau:
+
+\begin{itemize}
+  \item Với thao tác \(\rank_v(k)\), ta tìm ở nút hiện tại xem \(v\) bị chia
+        sang \(0\) hay \(1\). Giả sử \(v\) bị chia sang \(x\), ta tính
+        \(\rank_x(k)\) trên chuỗi 01 của nút hiện tại, rồi đệ quy sang nút con
+        phía ấy để tiếp tục truy vấn.
+
+        Chẳng hạn, tại gốc trong Hình 12 nếu hỏi \(\rank_{\texttt{a}}(10)\),
+        ta thấy \(\texttt{a}\) được chia sang \(0\), và trên chuỗi 01 tại nút
+        ấy có \(\rank_0(10)=7\), nên có thể đệ quy sang con trái và tiếp tục
+        hỏi \(\rank_{\texttt{a}}(7)\).
+  \item Với thao tác \(\operatorname{select}_v(k)\), có thể xử lý ngược với
+        thao tác \(\rank\). Trước hết tìm nút thấp nhất chứa \(v\), xác định
+        ở nút ấy \(v\) được chia thành giá trị \(x\), rồi tính
+        \(\operatorname{select}_x(k)\) trên chuỗi 01 của nút đó, cuối cùng đệ
+        quy lên nút cha để xử lý.
+
+        Chẳng hạn, trong Hình 12 nếu hỏi \(\operatorname{select}_{\texttt{a}}(1)\),
+        ta thấy nút thấp nhất chứa \(\texttt{a}\) là \(\texttt{--a-a}\). Ở nút
+        ấy truy vấn \(\operatorname{select}_1(1)=3\), rồi có thể chuyển thành
+        truy vấn \(\operatorname{select}_0(3)=6\) ở cha của nó, tiếp tục đệ
+        quy lên cha thành \(\operatorname{select}_0(6)=9\), cuối cùng thu được
+        \(\operatorname{select}_{\texttt{a}}(1)=9\).
+\end{itemize}
+
+Mã giả của hai thao tác này như sau:
+
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.78\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 2} Các thao tác \(\rank\) và
+\(\operatorname{select}\) trên wavelet tree}\\
+\multicolumn{2}{l}{\textbf{Require:} nút gốc \(T\), bảng chữ cái
+\(\{1,\ldots,|\Sigma|\}\)}\\
+1: & \textbf{function} \(\operatorname{Rank}(T,v,k,l,r)\)\\
+2: & \quad \textbf{if} \(l=r\) \textbf{then}\\
+3: & \qquad \textbf{return} \(k\)\\
+4: & \quad \textbf{end if}\\
+5: & \quad \(\mathit{mid}\gets(l+r)/2\)\\
+6: & \quad \textbf{if} \(v\le \mathit{mid}\) \textbf{then}\\
+7: & \qquad \textbf{return}
+      \(\operatorname{Rank}(T.\mathit{left},v,T.\rank_0(k),l,\mathit{mid})\)\\
+8: & \quad \textbf{else}\\
+9: & \qquad \textbf{return}
+      \(\operatorname{Rank}(T.\mathit{right},v,T.\rank_1(k),\mathit{mid}+1,r)\)\\
+10: & \quad \textbf{end if}\\
+11: & \textbf{end function}\\
+12: & \\
+13: & \textbf{function} \(\operatorname{Select}(T,v,k,l,r)\)\\
+14: & \quad \textbf{if} \(l=r\) \textbf{then}\\
+15: & \qquad \textbf{return} \(k\)\\
+16: & \quad \textbf{end if}\\
+17: & \quad \(\mathit{mid}\gets(l+r)/2\)\\
+18: & \quad \textbf{if} \(v\le \mathit{mid}\) \textbf{then}\\
+19: & \qquad \textbf{return}
+      \(T.\operatorname{select}_0(
+      \operatorname{Select}(T.\mathit{left},v,k,l,\mathit{mid}))\)\\
+20: & \quad \textbf{else}\\
+21: & \qquad \textbf{return}
+      \(T.\operatorname{select}_1(
+      \operatorname{Select}(T.\mathit{right},v,k,\mathit{mid}+1,r))\)\\
+22: & \quad \textbf{end if}\\
+23: & \textbf{end function}\\
+24: & \\
+25: & \textbf{function} \(\operatorname{rank}(v,k)\)\\
+26: & \quad \textbf{return} \(\operatorname{Rank}(T,v,k,1,|\Sigma|)\)\\
+27: & \textbf{end function}\\
+28: & \\
+29: & \textbf{function} \(\operatorname{select}(v,k)\)\\
+30: & \quad \textbf{return} \(\operatorname{Select}(T,v,k,1,|\Sigma|)\)\\
+31: & \textbf{end function}
+\end{tabular}
+\end{center}
+
+Dùng wavelet tree còn có thể hoàn thành các thao tác sau:
+
+\begin{itemize}
+  \item \(\operatorname{quantile}(l,r,k)\): tìm giá trị lớn thứ \(k\) trong
+        \([l,r]\). Có thể tính số lượng \(0\) trong \([l,r]\), từ đó quyết
+        định giá trị lớn thứ \(k\) bị chia sang \(0\) hay \(1\), rồi đệ quy
+        sang nút con phía ấy.
+  \item \(\operatorname{rangefreq}(l,r,x,y)\): tìm số phần tử trong \([l,r]\)
+        có miền giá trị thuộc \([x,y]\). Có thể truy vấn đệ quy tương tự cây
+        đoạn.
+  \item \(\operatorname{nextvalue}(l,r,x)\): tìm giá trị nhỏ nhất lớn hơn
+        \(x\) trong \([l,r]\). Có thể trước hết xác định \(x\) bị chia sang
+        \(0\) hay \(1\), rồi đệ quy sang nút con phía ấy để xử lý.
+\end{itemize}
+
+Các thao tác này đều có thể hoàn thành trong thời gian \(\log|\Sigma|\). Nhiều
+bài toán khác đồng thời đặt ràng buộc trên đoạn và trên miền giá trị cũng có
+thể được thực hiện dễ dàng.
+
+\section*{5. Tổng kết}
+
+Bài viết này từ chuỗi 01 dẫn nhập cấu trúc dữ liệu xử lý cây và wavelet tree.
+Với chuỗi 01 và cây, ngoài các cấu trúc dữ liệu được nhắc tới trong bài viết
+này, còn có những cấu trúc dữ liệu đạt độ phức tạp thấp hơn hoặc thực hiện
+được nhiều chức năng hơn.
+
+Ba loại cấu trúc dữ liệu này đều có ứng dụng rộng, đặc biệt là trong các bối
+cảnh như thuật toán nén, cơ sở dữ liệu và chỉ mục xâu.
+
+Trong thi tin học, do giới hạn bộ nhớ thường khá lớn nên thông thường không
+cần dùng các cấu trúc dữ liệu này; còn nếu muốn khảo sát trực tiếp các cấu
+trúc dữ liệu ấy, kỹ thuật chấm hiện có lại khó giới hạn bộ nhớ thật chính xác,
+vì vậy hiện nay chúng ít được khảo sát. Tuy nhiên, các cấu trúc dữ liệu này
+vẫn có không ít công dụng trong tối ưu hằng số; nếu muốn khảo sát trực tiếp,
+có thể dùng một ngôn ngữ tùy biến để giới hạn bộ nhớ chính xác, chẳng hạn ngôn
+ngữ Potato từng xuất hiện trong đợt tập huấn IOI2019.
+
+\section*{Lời cảm ơn}
+
+Cảm ơn Hội Máy tính Trung Quốc đã cung cấp nền tảng học tập và trao đổi.
+
+Cảm ơn thầy Zhang Junliang và thầy Lin Yang của Trường Trung học số 7 Thành Đô
+đã quan tâm và chỉ dẫn trong nhiều năm.
+
+Cảm ơn các thầy cô và bạn học đã đọc duyệt, góp ý cho bài viết này.
+
+Cảm ơn các thầy cô và bạn học khác từng giúp đỡ tôi.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item G. Jacobson, Succinct Static Data Structures, Tech. report
+        CMU-CS-89-112, Department of Computer Science, Carnegie-Mellon
+        University, Pittsburgh, PA, 1989.
+  \item G. Jacobson, Space-efficient static trees and graphs, in Proceedings
+        of the 30th Annual IEEE Symposium on Foundations of Computer Science,
+        pp. 549--554, 1989.
+  \item A. Golynski, Optimal lower bounds for rank and select indexes,
+        \emph{Theoretical Computer Science}, 387, pp. 348--359, 2007.
+  \item J. I. Munro and V. Raman, Succinct representation of balanced
+        parentheses, static trees and planar graphs, in Proceedings of the
+        38th Annual IEEE Symposium on Foundations of Computer Science,
+        pp. 118--126, 1997.
+  \item D. Benoit, E. D. Demaine, J. I. Munro, and V. Raman, Representing
+        trees of higher degree, in Proceedings of the 6th Workshop on
+        Algorithms and Data Structures (WADS), Lecture Notes in Comput. Sci.
+        1663, Springer-Verlag, Berlin, pp. 169--180, 1999.
+  \item R. F. Geary, R. Raman and V. Raman. Succinct ordinal trees with
+        level-ancestor queries. In Proc. 15th ACM-SIAM SODA, pp. 1--10, 2004.
+  \item M. He, J. I. Munro, S. S. Rao, Succinct ordinal trees based on tree
+        covering, in: Proceedings of the International Conference on Automata,
+        Language and Programming, LNCS, vol. 4596, pp. 509--520, 2007.
+  \item A. Farzan, R. Raman, and S. S. Rao. Universal succinct representations
+        of trees? In Proceedings of the 36th International Colloquium on
+        Automata, Languages and Programming (ICALP). 451--462, 2009.
+  \item H. Zhang, D. G. Andersen, M. Kaminsky, A. Pavlo, H. Lim, V. Leis, and
+        K. Keeton. SuRF: Practical Range Query Filtering with Fast Succinct
+        Tries. In Proceedings of the 2018 International Conference on
+        Management of Data (SIGMOD). ACM, 323--336, 2018.
+  \item R. Grossi, A. Gupta, and J. S. Vitter, High-order entropy-compressed
+        text indexes, in Proceedings of the 14th Annual ACM-SIAM Symposium on
+        Discrete Algorithms, SIAM, Philadelphia, pp. 841--850, 2003.
+  \item M. Burrows and D. J. Wheeler, A block-sorting lossless data compression
+        algorithm. Digital SRC Reports 124, 1994.
 \end{enumerate}
 
 \end{document}

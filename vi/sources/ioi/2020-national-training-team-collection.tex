@@ -23,7 +23,7 @@
 \begin{abstract}
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2020. Tệp được
 tạo bằng XeTeX và có lớp văn bản Unicode đọc được. Bản LaTeX này chuyển ngữ
-phần nhận diện tập sách, toàn bộ mục lục, và mười bài đầu tiên: bài của Jiang
+phần nhận diện tập sách, toàn bộ mục lục, và mười một bài đầu tiên: bài của Jiang
 Mingrun về tối ưu các bài toán chia khối cổ điển bằng fractional cascading, bài
 của Chen Sunli về cây thống trị, báo cáo ra đề \emph{Ghép số} của Jiang
 Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, bài của
@@ -34,7 +34,7 @@ Zheyu về bài toán rừng hướng vào nhỏ nhất, và bài của Xu Yixua
 automaton nén. Các hình nhỏ trong báo cáo thứ tư và thứ bảy được dựng lại bằng
 TikZ từ bản render PDF; các hình minh họa trong bài thứ chín và thứ mười được
 ghi lại bằng chú thích khung khi nội dung chính đã nằm trong lời văn và công
-thức.
+thức; tiếp đó là bài của Luo Yuxiang về nimber và thuật toán đa thức.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -6987,6 +6987,1202 @@ Cảm ơn các thầy cô và các bạn đã từng giúp đỡ tôi.
   \item Li Yudong, \emph{Hướng dẫn nâng cao thi thuật toán}.
   \item OI Wiki, \emph{Virtual tree}, \url{https://oi-wiki.org/graph/virtual-tree/}.
   \item OI Wiki, \emph{String hashing}, \url{https://oi-wiki.org/string/hash/}.
+\end{enumerate}
+
+\section{Bàn về nimber và thuật toán đa thức}
+
+\begin{center}
+Luo Yuxiang, Trường Trung học Trấn Hải, Ninh Ba
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết xuất phát từ định nghĩa của nimber, giới thiệu phép tính nhanh trên
+nimber, cùng định nghĩa và thuật toán nhanh cho các bài toán: nhân đa thức
+nimber, thuật toán chia để trị, hợp thành, lặp Newton, phép chia, tính giá trị
+tại nhiều điểm, nội suy nhanh, thuật toán Euclid, thuật toán thặng dư Trung
+Hoa, tích chập nhị thức nimber, \(\ln\) và \(\exp\), và các hàm lượng giác.
+
+\subsection*{Lời nói đầu}
+
+Trò chơi tổ hợp, hay nói rộng hơn là lý thuyết trò chơi, là một chủ điểm quan
+trọng trong OI và thường xuất hiện ở nhiều kỳ thi lớn. Hiện nay trọng tâm
+thường là định lý SG, còn các mở rộng liên quan chủ yếu tập trung vào tối ưu
+bằng cấu trúc dữ liệu.
+
+Bài toán đa thức cũng là một chủ điểm quan trọng trong OI. Tuy nhiên tác giả
+nhận thấy một số thuật toán đa thức\footnote{Chẳng hạn phân tích đa thức trên
+trường hữu hạn.} tuy đã được đưa vào nhưng chưa phổ biến, dẫn tới tình huống
+đề thi dùng các trường hợp đặc biệt của một số thuật toán đó.
+
+Vì vậy, qua bài viết này, tác giả hy vọng kết hợp nội dung về trò chơi tổ hợp
+và đa thức để giới thiệu một số thuật toán và bài toán liên quan.
+
+Mục 1 sẽ đưa ra định nghĩa nimber và các bài toán liên quan; mục 2 thảo luận
+hàm sinh nimber và các phép toán của nó; mục 3 thảo luận hàm sinh mũ nimber và
+các phép toán tương ứng.
+
+\subsection{Nimber}
+
+\subsubsection{Nimber và định lý Sprague--Grundy}
+
+\paragraph{Trò chơi tổ hợp.}
+Trước hết ta định nghĩa trò chơi tổ hợp công bằng theo luật chơi thông thường là
+trò chơi tổ hợp thỏa các điều kiện sau:
+
+\begin{enumerate}
+  \item Hai người chơi luân phiên thực hiện thao tác; khi tới lượt mà không thể
+  thao tác thì người đó thua.
+  \item Các thao tác được phép chỉ phụ thuộc vào trạng thái hiện tại, không phụ
+  thuộc vào người đang thao tác. Mọi thông tin của trò chơi đều công khai với
+  cả hai bên.
+  \item Tổng số trạng thái và tổng số thao tác hữu hạn, và tác động của mọi thao
+  tác lên trạng thái là xác định.
+\end{enumerate}
+
+Ta có thể dùng tập các trạng thái kế tiếp để biểu diễn một trạng thái trong trò
+chơi. Ví dụ, trạng thái không thể thao tác là \(\varnothing\), trạng thái chỉ có
+thể đi tới trạng thái không thể thao tác là \(\{\varnothing\}\). Khi không gây
+nhầm lẫn, ta cũng trực tiếp dùng trạng thái này để biểu diễn một trò chơi tổ
+hợp.
+
+Định nghĩa trò chơi Nim một đống như sau: có một đống đá, mỗi thao tác có thể
+lấy khỏi đó một số dương viên đá tùy ý; đây là một trò chơi tổ hợp công bằng
+theo luật chơi thông thường.
+
+Ta định nghĩa nimber \(*n\) là trò chơi Nim một đống với đống đá kích thước
+\(n\). Nói hình thức, nimber được định nghĩa quy nạp bởi \(*0=\varnothing\) và
+với \(n\ge 0\) có
+\[
+  *(n+1)=*n\cup\{*n\}.
+\]
+Khi không gây nhầm lẫn, có thể lược bỏ dấu \(*\).
+
+Với hai trò chơi tổ hợp \(A,B\), ta định nghĩa tổng của chúng:
+\[
+  A\oplus B=\{a\oplus B\mid a\in A\}\cup\{A\oplus b\mid b\in B\}.
+\]
+Tức là mỗi lần chỉ được thao tác trong một trò chơi. Rõ ràng phép này thỏa tính
+giao hoán và kết hợp.
+
+Dễ thấy thắng thua của trò chơi Nim một đống chỉ phụ thuộc vào \(n\) có bằng
+\(0\) hay không, nhưng các trạng thái này không tương đương. Điều đó cho thấy
+tính tương đương của hai trò chơi tổ hợp không thể chỉ nhìn vào kết quả thắng
+thua.
+
+Vì vậy ta định nghĩa hai trò chơi tổ hợp \(A,B\) là tương đương khi và chỉ khi
+với mọi trò chơi tổ hợp \(C\), hai trò chơi \(A\oplus C\) và \(B\oplus C\) có
+cùng kết quả thắng thua. Ký hiệu là \(A\approx B\).
+
+\paragraph{Định lý Sprague--Grundy.}
+Định lý Sprague--Grundy phát biểu rằng mọi trò chơi tổ hợp công bằng đều tương
+đương với một nimber. Do đó việc nghiên cứu trò chơi tổ hợp công bằng có thể
+chuyển thành nghiên cứu nimber. Vì không liên quan nhiều tới nội dung bài viết,
+chứng minh định lý Sprague--Grundy được lược bỏ ở đây\footnote{Có thể xem chứng
+minh trong tài liệu tham khảo \([3]\).}.
+
+Ta gọi nimber tương đương với trò chơi tổ hợp đó là hàm SG của trò chơi. Cách
+tính là lấy số nguyên không âm nhỏ nhất chưa xuất hiện\footnote{Cũng gọi là phép
+\(\mathrm{mex}\).} trong các hàm SG của mọi trạng thái kế tiếp.
+
+Định nghĩa tổng Nim của hai nimber là nimber tương đương với tổng của hai trò
+chơi nimber đó. Không khó chứng minh rằng đây chính là kết quả xor từng bit của
+giá trị hai nimber.
+
+\subsubsection{Tích Nim}
+
+Tích Nim có thể xem là mở rộng của tổng Nim, với định nghĩa:
+\[
+  x\otimes y =
+  \mathrm{mex}\{(a\otimes b)\oplus(a\otimes y)\oplus(x\otimes b)
+  \mid 0\le a<x,\ 0\le b<y\}.
+\]
+Điều này tương đương với hàm SG của trò chơi tổ hợp mà mỗi thao tác lật màu bốn
+đỉnh của hình chữ nhật \((a,b)-(x,y)\).
+
+Có thể chứng minh rằng mọi nimber trong \([0,2^{2^m})\) tạo thành một trường hữu
+hạn, còn toàn bộ các nimber tạo thành một trường đóng đại số. Chứng minh khá
+phức tạp nên được lược bỏ ở đây\footnote{Chứng minh liên quan có thể xem trong
+tài liệu tham khảo \([2]\).}.
+
+Để tính tích Nim của hai số, ta cần dùng kết luận sau; chứng minh cũng được
+lược bỏ:
+\[
+  2^{2^n}\otimes 2^{2^m}=
+  \begin{cases}
+    2^{2^n}\cdot 2^{2^m}, & n\ne m,\\
+    3\cdot 2^{2^n-1}, & n=m.
+  \end{cases}
+\]
+
+Xét cách dùng kết luận này để tính tích Nim của hai số.
+
+Đặt
+\[
+  x=a\cdot 2^{2^{m-1}}+b,\qquad
+  y=c\cdot 2^{2^{m-1}}+d,
+\]
+trong đó \(a,b,c,d\in[0,2^{2^{m-1}})\) và \(x,y\in[0,2^{2^m})\). Đặt
+\(n=2^{m-1}\), thì không khó chứng minh \(2^n\otimes a=2^n\cdot a\). Do đó
+\[
+\begin{aligned}
+x\otimes y
+&=(a\otimes 2^n\oplus b)\otimes(c\otimes 2^n\oplus d)\\
+&=a\otimes c\otimes 3\cdot 2^{n-1}
+  \oplus(a\otimes d\oplus b\otimes c)\otimes 2^n\oplus b\otimes d\\
+&=a\otimes c\otimes 2^{n-1}
+  \oplus(a\otimes d\oplus b\otimes c\oplus a\otimes c)\cdot 2^n
+  \oplus b\otimes d.
+\end{aligned}
+\]
+Chú ý rằng
+\[
+  a\otimes d\oplus b\otimes c\oplus a\otimes c
+  =(a\oplus b)\otimes(c\oplus d)\oplus b\otimes d.
+\]
+
+Như vậy chỉ cần thực hiện bốn lần đệ quy với tham số \(m-1\), độ phức tạp thời
+gian là \(O(4^m)\). Trên thực tế, một lần đệ quy trong đó là tích Nim giữa một
+lũy thừa của \(2\) và một số khác. Khi \(x\) là lũy thừa của \(2\), trong \(a,b\)
+ở trên có một số bằng \(0\), số còn lại cũng là lũy thừa của \(2\). Do đó trong
+bốn lần đệ quy, một lần có \(x=0\) nên kết quả cũng bằng \(0\), ba lần còn lại
+có \(x\) là lũy thừa của \(2\), và mỗi lần chỉ sinh ra ba lời gọi đệ quy; độ
+phức tạp thời gian là \(O(3^m)\).
+
+Xét toàn bộ quá trình, ta có
+\[
+  T(m)=3T(m-1)+O(3^m),
+\]
+suy ra \(T(m)=O(m\cdot 3^m)\). Thực ra vì \(O(3^m)\) ở đây là độ phức tạp cỡ
+\(m-1\), hằng số chỉ là \(1/3\).
+
+Vì thuật toán này rất quan trọng, ta đưa ra mã giả. Khoảng cách giữa \(m\cdot
+3^m\) và \(4^m\) thật ra không quá lớn, nhưng trong mã chỉ khác một lệnh
+\texttt{if}, nên ở đây trình bày phiên bản \(O(m\cdot 3^m)\).
+
+\paragraph{Thuật toán 1: \textsc{NimMul}\((x,y,m)\).}
+\begin{enumerate}
+  \item Nếu \(x=0\) hoặc \(y=0\), trả về \(0\).
+  \item Nếu \(m=0\), trả về \(1\).
+  \item Đặt
+  \[
+    n=2^{m-1},\quad
+    a=\left\lfloor\frac{x}{2^n}\right\rfloor,\quad
+    b=x\bmod 2^n,\quad
+    c=\left\lfloor\frac{y}{2^n}\right\rfloor,\quad
+    d=y\bmod 2^n.
+  \]
+  \item Đặt
+  \[
+    ac=\textsc{NimMul}(a,c,m-1),\qquad
+    bd=\textsc{NimMul}(b,d,m-1).
+  \]
+  \item Trả về
+  \[
+  \bigl(\textsc{NimMul}(a\oplus b,c\oplus d,m-1)\oplus bd\bigr)\cdot 2^n
+  +\bigl(\textsc{NimMul}(2^{n-1},ac,m-1)\oplus bd\bigr).
+  \]
+\end{enumerate}
+
+Chú ý rằng \(5\cdot 3^4=405\) vẫn khá lớn, nên ta xét tối ưu thuật toán này
+thêm một bước.
+
+Một ý tưởng trực tiếp là ghi nhớ kết quả. Vì \(x,y\) có tổng cộng
+\(2^{2^{m+1}}\) khả năng, ghi nhớ là chấp nhận được khi \(m\le 3\).
+
+Ý tưởng xa hơn là chú ý tới sự tồn tại của căn nguyên thủy\footnote{Với trường
+hợp \(m=4\), căn nguyên thủy nhỏ nhất là \(258\).} trong trường hữu hạn; ta có
+thể tiền xử lý bảng mũ và logarit trong phạm vi \([0,2^{2^m})\). Như vậy có thể
+xử lý trường hợp \(m\le 4\). Sau khi dùng các tối ưu trên, \(10^7\) lần tích Nim
+trên UOJ mất khoảng \(400\) ms.
+
+Vì thế, trường hợp \(m=5\) chỉ cần một lần đệ quy để có đáp án, có thể xem độ
+phức tạp là \(O(1)\). Do \([0,2^{32})\) trong C++\footnote{Ở đây chỉ C++ trên
+NOI Linux.} chính là phạm vi biểu diễn của \texttt{unsigned int}, nếu không nói
+riêng thì phần sau chỉ xét nimber trong phạm vi này.
+
+Trong phần tiếp theo, nếu không nói khác, \(a^b\) khi \(a\) là một số cụ thể
+hoặc khi xuất hiện trong độ phức tạp thì biểu thị lũy thừa số học; còn khi
+\(a\) là biến hoặc biểu thức thì biểu thị lũy thừa Nim, tức thực hiện \(b\) lần
+tích Nim.
+
+\subsubsection{Khai căn và nghịch đảo nimber}
+
+Xét việc giải phương trình \(x^2=a\) và \(a\otimes x=1\).
+
+Theo tính chất cơ bản của trường hữu hạn, \(x^{2^{32}}=x\). Do đó một nghiệm khả
+dĩ là \(a^{2^{31}}\) đối với phép khai căn, và \(a^{2^{32}-2}\) đối với nghịch
+đảo khi \(a\ne 0\); chỉ cần dùng lũy thừa nhanh.
+
+Không khó chứng minh nghiệm là duy nhất.
+
+\subsubsection{Tổng các tích nimber}
+
+Cho một mảng hai chiều \(a_{i,j}\) kích thước \(n\times n\), cần tính
+\[
+  \bigoplus_p \bigotimes_{i=1}^n a_{i,p_i},
+\]
+trong đó \(p\) chạy qua mọi hoán vị của \(1\sim n\).
+
+Vì \(x\oplus x=0\), tổng các tích này chính là định thức. Chỉ cần dùng khử
+Gauss để tính.
+
+\subsubsection{Phương trình đa thức nimber}
+
+Bây giờ xét việc giải một phương trình đa thức tổng quát
+\[
+  \bigoplus_{i=0}^n a_i\otimes x^i=0.
+\]
+Phương trình này có thể có nghiệm \(x\ge 2^{32}\), nhưng ở đây chỉ xét tìm
+nghiệm trong \([0,2^{32})\).
+
+Trước hết lấy \(\gcd\) của đa thức ban đầu với \(x^{2^{32}}\oplus x\). Kết quả
+sau khi lấy \(\gcd\) là tích của một số đa thức bậc nhất đôi một khác nhau.
+
+Đặt
+\[
+  F(x)=\bigoplus_{i=1}^{31} x^{2^i},
+\]
+thì
+\[
+  F(x)(F(x)\oplus 1)=x^{2^{32}}\oplus x.
+\]
+Vì vậy, nếu chọn ngẫu nhiên một đa thức \(l\), thì
+\[
+  \gcd(F(l(x)),G(x))
+\]
+có xác suất ít nhất \(1/2\) tìm được một nhân tử không tầm thường của \(G\). Việc
+tính \(F(l(x))\) có thể làm tương tự phương pháp lũy thừa nhanh.
+
+Độ phức tạp thời gian không vượt quá \(O(32n^2\log n)\).
+
+\paragraph{Ví dụ 1. Tiểu Q và tiểu Y chơi trò chơi (một).}
+Tiểu Q và tiểu Y là bậc thầy trò chơi tổ hợp.
+
+Một hôm, họ phát hiện một điểm \((a,b)\) trong góc phần tư thứ nhất của mặt
+phẳng hai chiều\footnote{Ở đây xem các điểm trên trục tọa độ không thuộc bất kỳ
+góc phần tư nào.}, nên quyết định chơi một trò chơi.
+
+Đầu tiên họ tô điểm này màu đen và tô các điểm khác màu trắng. Bắt đầu từ tiểu
+Q, hai người luân phiên thao tác:
+
+Chọn một hình chữ nhật có các đỉnh là điểm nguyên không âm, các cạnh song song
+với trục tọa độ, và góc trên bên phải là điểm đen\footnote{Ở đây yêu cầu diện
+tích hình chữ nhật dương.}; sau đó lật màu bốn đỉnh của nó. Nếu không có hình
+chữ nhật như vậy thì người tới lượt thua.
+
+Vì tiểu Y rất muốn thắng, cậu chuẩn bị gian lận. Trước khi tiểu Q bắt đầu thao
+tác, tiểu Y có thể chọn một đường thẳng trong góc phần tư thứ nhất song song với
+trục \(x\), rồi lần lượt lật màu hai giao điểm của nó với đường thẳng \(x=a\) và
+\(y=x\)\footnote{Nếu hai giao điểm này trùng nhau thì không làm gì.}.
+
+Do đó tiểu Y cần bạn giúp tìm nên chọn đường thẳng nào. Tất nhiên tiểu Y đã xét
+tới năng lực tính toán của bạn, nên nếu không có nghiệm trong \((0,2^{32})\) thì
+chỉ cần in ra không có nghiệm.
+
+Nếu có nhiều nghiệm, tìm nghiệm bất kỳ đều được. Ràng buộc là
+\[
+  1\le a,b<2^{32}.
+\]
+
+\paragraph{Lời giải.}
+Không khó nhận thấy bài toán tương đương với giải phương trình
+\[
+  x^2\oplus a\otimes x\oplus a\otimes b=0.
+\]
+Phương pháp giải phương trình bậc hai thông thường dựa trên hoàn bình phương,
+nhưng với nimber thì hoàn bình phương không khử được hạng tử bậc nhất.
+
+Thực ra ở đây chỉ cần áp dụng trực tiếp cách giải phương trình đa thức nimber.
+Độ phức tạp thời gian là \(O(32)\).
+
+\subsection{Hàm sinh nimber}
+
+Bây giờ ta xét đa thức nimber và hàm sinh nimber. Vấn đề đầu tiên cần giải
+quyết là phép nhân đa thức.
+
+\subsubsection{Nhân đa thức nimber}
+
+Có ba phương pháp chính để giải bài toán này.
+
+\paragraph{Thuật toán Karatsuba.}
+Rất dễ nghĩ tới việc dùng thuật toán Karatsuba để giải bài toán này.
+
+Vì thuật toán Karatsuba đã khá phổ biến trong OI, ở đây chỉ mô tả ngắn gọn quá
+trình. Mỗi lần tách hai đa thức thành nửa trước và nửa sau; sau khi khai triển
+và gộp các hạng đồng dạng, ta chỉ cần tính phần bậc cao nhất, phần bậc thấp
+nhất và tổng của ba phần, nên chỉ cần ba lời gọi đệ quy kích thước một nửa.
+
+Độ phức tạp thời gian là
+\[
+  O(n^{\log_2 3})\approx O(n^{1.585}).
+\]
+
+\paragraph{FFT.}
+Một cách xây dựng trường hữu hạn \(\mathbb{F}_{p^k}\) là: trước hết chọn một đa
+thức bất khả quy bậc \(k\) theo modulo \(p\), ký hiệu \(f(x)\). Khi đó với
+\(p^k\) đa thức bậc không quá \(k-1\) trên modulo \(p\), phép nhân được định
+nghĩa là phép nhân theo modulo \(p\) và \(f(x)\).
+
+Sau khi chuyển nimber sang dạng này, ta có thể dùng FFT để làm nhân đa thức hai
+biến và giải bài toán.
+
+Một cách chuyển đổi là tìm một căn nguyên thủy của \(\mathbb{F}_{2^{32}}\), giả
+sử là \(x\), rồi dùng \(x^0,x^1,\ldots,x^{32}\) để khử Gauss tìm ra đa thức bậc
+\(32\) đó.
+
+Vì nhân đa thức hai biến cần mở rộng độ dài lên bốn lần, và cuối cùng còn cần
+thực hiện \(O(n)\) lần lấy dư đa thức, hằng số khá lớn, thậm chí chưa chắc chạy
+nhanh hơn thuật toán Karatsuba.
+
+\paragraph{Thuật toán Cantor.}
+Với bài toán nhân đa thức tổng quát, có thuật toán độ phức tạp
+\(O(n\log n\log\log n)\). Dưới đây giới thiệu một trong số đó.
+
+Nói đơn giản, thuật toán này trực tiếp duy trì tổng các căn đơn vị trong quá
+trình FFT.
+
+Vì \(x\oplus x=0\), không thể thực hiện IDFT nhị phân, nên ta xét dùng cơ số
+ba\footnote{Với bài toán tổng quát, cần dùng cả cơ số hai và cơ số ba rồi hợp
+nhất bằng thuật toán Euclid mở rộng.}.
+
+Xét tính tích của hai đa thức theo modulo
+\[
+  x^{2\cdot 3^m}\oplus x^{3^m}\oplus 1.
+\]
+Thật ra đa thức lấy modulo là đa thức chia đường tròn, và tính đúng đắn của quá
+trình tính bên dưới cần dựa vào điều này.
+
+Đặt
+\[
+  v=\left\lfloor\frac m2\right\rfloor,\qquad
+  u=\left\lceil\frac m2\right\rceil,\qquad
+  n=3^m,\qquad p=3^u,\qquad q=3^v.
+\]
+Khi đó
+\[
+  \bigoplus_{i=0}^{2n-1} a_i x^i
+  =
+  \bigoplus_{j=0}^{q-1}
+  \left(\bigoplus_{i=0}^{2p-1} a_{iq+j}x^{iq}\right)\otimes x^j.
+\]
+
+Đặt \(x^q=y\). Khi đó có thể xem đây là đa thức hai biến với bậc theo \(x\) là
+\(q-1\), còn phần \(y\) cần lấy modulo \(y^{2p}\oplus y^p\oplus 1\).
+
+Để nhân hai đa thức, vì \(y^{2p}\oplus y^p\oplus 1\) là nhân tử của
+\(y^{3p}\oplus 1\), có thể xem \(y\) là căn đơn vị bậc \(3p\).
+
+Bây giờ có hai đa thức độ dài \(q-1\). Ý tưởng trực tiếp là làm tích chập vòng
+độ dài ít nhất \(2q-1\). Vì cần làm FFT cơ số ba, độ dài cần là \(3q\). Do
+\(p\ge q\), căn đơn vị bậc \(3q\) có thể biểu diễn bằng \(y\).
+
+Xét các thao tác cần cho FFT: đổi chỗ phần tử và cộng trừ có thể xử lý bằng cộng
+trừ đa thức, còn nhân với căn đơn vị chỉ cần một lần tịnh tiến rồi lấy modulo.
+Vì đa thức lấy modulo rất đơn giản, các thao tác này đều là \(O(p)\).
+
+Sau DFT, cần nhân từng cặp điểm tương ứng; đây chính là bài toán con kích thước
+\(u\), xử lý đệ quy.
+
+IDFT tương tự DFT. Thực ra IDFT chính là DFT rồi đảo đoạn từ phần tử thứ hai trở
+đi.
+
+Độ phức tạp thỏa
+\[
+  T(n)=3\sqrt n\,T(\sqrt n)+O(n\log n),
+\]
+suy ra
+\[
+  T(n)=O(n\log^{1+\log_2 3} n).
+\]
+
+Nguyên nhân độ phức tạp chưa tốt là hai bên nhân nhau chỉ có độ dài \(2q\) nhưng
+lại phải bù tới \(3q\). Ta xét trực tiếp làm tích chập vòng độ dài \(q\).
+
+Đặt \(C(x)=A(x)\otimes B(x)\), tức tích của hai đa thức ban đầu.
+
+Xét tính
+\[
+  D(x)=A(x)\otimes B(x),\qquad
+  E(x)=A(x\otimes \omega_{3q})\otimes B(x\otimes \omega_{3q}),
+\]
+trong đó tích chập là tích chập vòng.
+
+Khi đó
+\[
+  d_i=c_i\oplus c_{i+q},\qquad
+  e_i\otimes \omega_{3q}^{-i}=c_i\oplus(c_{i+q}\otimes\omega_3).
+\]
+Rõ ràng chỉ cần tính nghịch đảo của \(\omega_3\oplus 1\). Chú ý rằng
+\(\omega_3\oplus 1=\omega_3^2\), nên nghịch đảo chính là \(\omega_3\).
+
+Vì vậy độ phức tạp là
+\[
+  T(n)=2\sqrt n\,T(\sqrt n)+O(n\log n),
+\]
+suy ra
+\[
+  T(n)=O(n\log n\log\log n).
+\]
+Khi dùng thuật toán này để nhân đa thức modulo số nguyên tố, trên UOJ với
+\(n=100000\) mất khoảng \(70\) ms, xấp xỉ \(1.5\sim 2\) lần các thuật toán FFT
+tách hệ số hoặc NTT ba modulo\footnote{Có thể xem các thuật toán nhanh theo
+hướng này trong tài liệu tham khảo \([7]\).} có hằng số rất tốt.
+
+\subsubsection{Biến đổi Fourier rời rạc}
+
+Tuy nimber không thể làm DFT độ dài là lũy thừa của \(2\), do căn nguyên thủy
+tồn tại, vẫn có thể làm DFT ở một số độ dài.
+
+Chính xác hơn, với \(n\mid 2^{32}-1\), DFT độ dài \(n\) đều có thể định nghĩa.
+Hơn nữa với \(0\le i\le 31\), trong \([2^i,2^{i+1})\) vừa đúng tồn tại một \(n\)
+có thể làm DFT.
+
+Điều này có thể kiểm chứng bằng liệt kê, cũng có thể chứng minh từ việc các
+thừa số nguyên tố của \(2^{32}-1\) đều là số Fermat nguyên tố.
+
+Bây giờ xét cách tính DFT độ dài tổng quát:
+\[
+  b_i=\bigoplus_{j=0}^{n-1} a_j\otimes \omega_n^{i\cdot j}.
+\]
+
+Dùng đẳng thức
+\[
+  \binom{i+j}{2}-\binom i2-\binom j2=i\cdot j,
+\]
+ta có
+\[
+  b_i\otimes\omega_n^{\binom i2}
+  =
+  \bigoplus_{j=0}^{n-1}
+  a_j\otimes\omega_n^{-\binom j2}\otimes\omega_n^{\binom{i+j}{2}}.
+\]
+Vì vậy chỉ cần làm một tích chập hiệu, và có thể lật \(a\) để biến nó thành
+tích chập tổng.
+
+IDFT cũng không khác nhiều; thực ra chỉ cần đảo các giá trị \(1\sim n-1\) trong
+kết quả DFT.
+
+\subsubsection{Tích chập nửa online nimber}
+
+Định nghĩa bài toán tích chập nửa online như sau:
+
+Tính \(f=g\otimes h\), trong đó \(g\) đã cho và có hằng số bằng \(0\), còn
+\(h_i\) sẽ được cho sau khi tính xong \(f_i\)\footnote{Có thể hiểu là việc tính
+\(h_i\) phụ thuộc vào \(f_i\).}.
+
+Dễ nghĩ tới việc dùng chia để trị để giải bài toán này: trước hết đệ quy tính
+nửa trái của \(f_i\), sau đó dùng các \(h_i\) ở nửa trái để cập nhật nửa phải
+của \(f_i\), cuối cùng đệ quy xử lý nửa phải.
+
+Độ phức tạp thời gian là \(O(n\log^2 n\log\log n)\).
+
+Xét mỗi lần không chia thành hai đoạn mà chia thành \(K\) đoạn. Khi đó giữa mọi
+cặp đoạn đều cần chuyển, tổng cộng \(O(K^2)\) lần chuyển.
+
+Nhưng chú ý rằng số loại đa thức chỉ là \(O(K)\), nên sau khi DFT, việc chuyển
+là tuyến tính.
+
+Vì vậy độ phức tạp mỗi tầng trở thành
+\[
+  O\left(n\log\frac nK\log\log\frac nK+nK\right).
+\]
+Lấy \(K=O(\log n\log\log n)\), thời gian mỗi tầng vẫn là \(O(n\log n\log\log n)\),
+nhưng mỗi lần có thể chia thành \(K\) bài toán con.
+
+Do đó tổng độ phức tạp thời gian trở thành
+\[
+  O\left(\frac{n\log^2 n\log\log n}{\log\log n}\right)=O(n\log^2 n).
+\]
+Chú ý rằng quá trình chuyển vẫn là một số lần tích chập nửa online, có thể làm
+tới \(O(n\log^{1+\varepsilon} n)\), nhưng do một số nguyên nhân về hằng số, trong
+thực tế không khác nhiều so với \(O(n\log^2 n)\).
+
+\subsubsection{Hợp thành đa thức nimber}
+
+Tính \((f\circ g)(x)\bmod x^{2^k}\), trong đó \(f\circ g\) biểu thị hợp thành
+của \(f\) và \(g\), tức \(f(g)\).
+
+Đặt
+\[
+  f(x)=f_0(x^2)\oplus\bigl(x\otimes f_1(x^2)\bigr),
+\]
+khi đó chỉ cần tính \(f_0\circ g^2\) và \(f_1\circ g^2\).
+
+Vì các hạng tử bậc lẻ của \(g^2\) đều bằng \(0\), có thể đặt \(g^2(x)=h(x^2)\),
+do đó chỉ cần tính \(f_0(h)\) và \(f_1(h)\) theo modulo \(x^{2^{k-1}}\).
+
+Độ phức tạp thời gian là \(O(n\log^2 n\log\log n)\).
+
+\subsubsection{Lặp Newton}
+
+Cho một đa thức \(F(t)\). Cần tìm một đa thức \(X(x)\) sao cho
+\[
+  (F\circ X)(x)\bmod x^n=0
+\]
+và hằng số của \(X\) bằng \(0\). Yêu cầu hằng số của \(X\) bằng \(0\) là để có
+thể định nghĩa hợp thành của chuỗi lũy thừa hình thức chính xác hơn, nhưng điều
+này có thể khiến trong công thức xuất hiện nhiều \(X(x)\oplus 1\).
+
+Thực ra phương pháp lặp Newton truyền thống vẫn dùng được ở đây.
+
+Trước hết là công thức lặp Newton:
+\[
+  X_{t+1}=X_t\oplus
+  \frac{F\circ X_t}{F'\circ X_t}\pmod {x^{2^{t+1}}},
+\]
+trong đó \(X_t\) biểu thị \(X\bmod x^{2^t}\), còn \(F'\) là đạo hàm; khi cài đặt
+thì bỏ các hạng tử bậc chẵn rồi chia cho \(x\).
+
+Vì vậy bài toán đầu tiên là nghịch đảo đa thức. Chỉ cần giải phương trình
+\[
+  G(x)=\frac1{1\oplus X(x)}
+  =1\oplus X(x)\oplus X(x)^2\oplus\cdots.
+\]
+Thay vào công thức trên và rút gọn được
+\[
+  X_{t+1}=1\oplus (X_t\oplus 1)^2\otimes G \pmod {x^{2^{t+1}}}.
+\]
+Độ phức tạp thời gian là \(O(n\log n\log\log n)\).
+
+Với bài toán tổng quát, độ phức tạp thời gian là
+\(O(n\log^2 n\log\log n)\). Nếu hàm đặc biệt và tính hợp thành nhanh hơn, độ
+phức tạp là \(O(n\log n\log\log n)\).
+
+\subsubsection{Chia đa thức nimber có dư}
+
+Cho đa thức \(A(x)\) bậc \(n\) và đa thức \(B(x)\) bậc \(m\). Cần tìm đa thức
+\(C(x)\) bậc \(n-m\) và đa thức \(D(x)\) bậc không quá \(m-1\) sao cho
+\[
+  A(x)=B(x)\otimes C(x)\oplus D(x).
+\]
+
+Xét thay \(x\) bằng \(1/x\) và nhân hai vế với \(x^n\), được
+\[
+  x^n\otimes A\!\left(\frac1x\right)
+  =
+  \left(x^m\otimes B\!\left(\frac1x\right)\right)
+  \otimes
+  \left(x^{n-m}\otimes C\!\left(\frac1x\right)\right)
+  \oplus
+  x^{n-m+1}\otimes
+  \left(x^{m-1}\otimes D\!\left(\frac1x\right)\right).
+\]
+Lấy modulo \(x^{n-m+1}\) ở hai vế, chỉ cần nghịch đảo đa thức và nhân đa thức
+là tính được \(C\); sau đó tính \(D\) cũng dễ.
+
+\subsubsection{Truy hồi tuyến tính nimber}
+
+Với dãy truy hồi
+\[
+  f_m=\bigoplus_{i=1}^d a_i\otimes f_{m-i},
+\]
+cho mọi \(1\le i\le d\) các giá trị \(a_i,f_{i-1}\), cần tính \(f_n\).
+
+Xét xây dựng ma trận
+\[
+M=
+\begin{pmatrix}
+a_1&a_2&\cdots&a_{d-1}&a_d\\
+1&0&\cdots&0&0\\
+0&1&\cdots&0&0\\
+\vdots&\vdots&\ddots&\vdots&\vdots\\
+0&0&\cdots&1&0
+\end{pmatrix}.
+\]
+Ta có \(F_n=M^n\otimes F_0\), trong đó
+\[
+  F_i=(f_{i+d-1},f_{i+d-2},\ldots,f_i)^T.
+\]
+
+Với một ma trận \(M\), định nghĩa đa thức đặc trưng
+\[
+  f_M(\lambda)=\det(\lambda\otimes I\oplus M).
+\]
+Định lý Cayley--Hamilton cho biết \(f_M(M)=0\).
+
+Với bài toán này,
+\[
+  f_M(\lambda)=\lambda^d\oplus\bigoplus_{i=1}^d a_i\otimes\lambda^{d-i},
+\]
+nên
+\[
+  M^d\oplus\bigoplus_{i=1}^d a_i\otimes M^{d-i}=0.
+\]
+Khi
+\[
+  x^d\oplus\bigoplus_{i=1}^d a_i\otimes x^{d-i}=0,
+\]
+ta có
+\[
+  x^n=x^n\bmod\left(x^d\oplus\bigoplus_{i=1}^d a_i\otimes x^{d-i}\right)
+  =\bigoplus_{i=0}^{d-1} c_i\otimes x^i.
+\]
+Vì vậy có thể dùng lũy thừa nhanh để tính
+\[
+  M^n=\bigoplus_{i=0}^{d-1} c_i M^i,
+\]
+rồi
+\[
+  F_n=M^n\otimes F_0=\bigoplus_{i=0}^{d-1} c_i\otimes M^i\otimes F_0,
+\]
+từ đó
+\[
+  f_n=\bigoplus_{i=0}^{d-1} c_i\otimes f_i.
+\]
+
+\subsubsection{Thuật toán Euclid cho đa thức nimber}
+
+Cho hai đa thức nimber, cần tìm ước chung lớn nhất và các hệ số
+Bézout\footnote{Tức dùng tổ hợp tuyến tính của hai đa thức đã cho để tạo ra ước
+chung lớn nhất.}.
+
+Trước hết xét bài toán sau: cho hai đa thức bậc không quá \(2n\), tìm hai đa
+thức cuối cùng có bậc không nhỏ hơn \(n\) trong quá trình chia Euclid.
+
+Trước hết có bổ đề sau: cho hai đa thức bậc không quá \(n\), nếu chỉ xét phần có
+bậc không nhỏ hơn \(k\) trong quá trình chia Euclid, thì quá trình đó\footnote{Tức
+mỗi thương, hay nói cách khác là các hệ số Bézout của kết quả.} không bị ảnh
+hưởng bởi \(2k-n\) hệ số thấp nhất của đa thức.
+
+Chứng minh: có thể chứng minh các hệ số Bézout có bậc không quá \(n-k\), nên
+\(2k-n\) hệ số cuối không ảnh hưởng tới giá trị bậc cao, từ đó không ảnh hưởng
+tới hệ số Bézout.
+
+Vì vậy, trước tiên tìm hai đa thức cuối cùng có bậc không nhỏ hơn \(1.5n\); độ
+dài cần đệ quy là \(n\). Sau đó tìm tiếp hai đa thức cuối cùng có bậc không nhỏ
+hơn \(n\); độ dài cần đệ quy vẫn là \(n\).
+
+Tổng độ phức tạp thời gian là
+\[
+  T(n)=T\!\left(\frac n2\right)+O(n\log n\log\log n),
+\]
+tức
+\[
+  T(n)=O(n\log^2 n\log\log n).
+\]
+Sau khi giải quyết bài toán này, mỗi lần giảm một nửa độ dài, tổng thời gian là
+\(O(n\log^2 n\log\log n)\).
+
+\subsubsection{Tính giá trị đa thức nimber}
+
+Cho \(F(x),x_1,x_2,\ldots,x_n\), cần tính
+\[
+  F(x_1),F(x_2),\ldots,F(x_n).
+\]
+Chú ý rằng \(F(c)=F(x)\bmod(x\oplus c)\), nên có thể dùng chia để trị.
+
+Tiền xử lý tích của \(x\oplus x_i\) trên mỗi đoạn chia để trị. Mỗi lần lấy dư
+\(F\) theo tích của hai đoạn con rồi đệ quy xử lý riêng từng đoạn.
+
+Độ phức tạp thời gian là \(O(n\log^2 n\log\log n)\). Dùng nguyên lý chuyển vị có
+thể thu được một cài đặt với hằng số nhỏ hơn.
+
+\subsubsection{Tổ hợp tuyến tính đa thức nimber}
+
+Cho \(2m\) đa thức
+\[
+  a_1(x),a_2(x),\ldots,a_m(x),\quad
+  b_1(x),b_2(x),\ldots,b_m(x),
+\]
+thỏa \(\deg b_i\le \deg a_i\). Đặt
+\[
+  n=\sum_{i=1}^m\deg b_i,\qquad
+  A=\bigotimes_{i=1}^m a_i.
+\]
+Cần tính
+\[
+  \bigoplus_{i=1}^m \frac{A}{a_i}\otimes b_i.
+\]
+
+Thực chất đây là tính hệ số của \(y\) trong tích của các đa thức
+\[
+  a_i(x)\oplus b_i(x)\otimes y.
+\]
+Khi chia để trị, chỉ cần giữ hệ số của \(y^0,y^1\). Độ phức tạp thời gian là
+\(O(n\log n\log m\log\log n)\).
+
+\subsubsection{Nội suy đa thức nimber}
+
+Cho \(x_1,x_2,\ldots,x_n\) và \(F(x_1),F(x_2),\ldots,F(x_n)\), cần tìm \(F(x)\).
+
+Xét dùng công thức nội suy Lagrange:
+\[
+  F(x)=\bigoplus_{i=1}^n
+  \left(
+  \frac{\bigotimes_{j\ne i}(x\oplus x_j)}
+       {\bigotimes_{j\ne i}(x_i\oplus x_j)}
+  \right)\otimes F(x_i).
+\]
+
+Chú ý rằng nếu tính được tất cả mẫu số \(Q_i\), bài toán trở thành một bài toán
+tổ hợp tuyến tính.
+
+Đặt
+\[
+  M(x)=\bigotimes_{i=1}^n (x\oplus x_i),
+\]
+thì tử số thứ \(i\) là
+\[
+  P_i(x)=\frac{M(x)}{x\oplus x_i}.
+\]
+Chú ý rằng
+\[
+  M'(x)=\bigoplus_{i=1}^n P_i(x),
+\]
+nên \(Q_i=M'(x_i)\); chỉ cần tính giá trị tại nhiều điểm.
+
+Độ phức tạp thời gian là \(O(n\log^2 n\log\log n)\).
+
+\subsubsection{Thuật toán thặng dư Trung Hoa cho đa thức nimber}
+
+Cho \(m\) đa thức đôi một nguyên tố cùng nhau
+\[
+  a_1(x),a_2(x),\ldots,a_m(x),
+\]
+và \(m\) đa thức
+\[
+  b_1(x),b_2(x),\ldots,b_m(x),
+\]
+cần tìm đa thức \(F(x)\) sao cho \(F\equiv b_i\pmod {a_i}\).
+
+Đặt
+\[
+  A=\bigotimes_{i=1}^m a_i,\qquad n=\deg A.
+\]
+Theo định lý thặng dư Trung Hoa,
+\[
+  F=
+  \bigoplus_{i=1}^m
+  b_i
+  \left[
+    \left(\frac{A}{a_i}\right)^{-1}
+  \right]_{a_i}
+  \frac{A(x)}{a_i}.
+\]
+Vì vậy chỉ cần tính tất cả
+\[
+  \left[
+    \left(\frac{A}{a_i}\right)^{-1}
+  \right]_{a_i},
+\]
+bài toán sẽ trở thành tổ hợp tuyến tính.
+
+Trước hết cần tính
+\[
+  \frac{A}{a_i}\bmod a_i=\frac{A\bmod a_i^2}{a_i},
+\]
+có thể chia để trị lấy dư đa thức tương tự như tính giá trị đa thức.
+
+Sau đó tính
+\[
+  \left[
+    \left(\frac{A}{a_i}\right)^{-1}
+  \right]_{a_i},
+\]
+tức nghịch đảo theo modulo đa thức, bằng thuật toán Euclid.
+
+Do đó tổng độ phức tạp thời gian là \(O(n\log^2 n\log\log n)\).
+
+\subsubsection{Ví dụ 2. Tiểu Q và tiểu Y chơi trò chơi (hai)}
+
+Tiểu Q và tiểu Y là bậc thầy hình học. Lần này họ tìm được \(n\) số nguyên
+không âm đôi một khác nhau để dùng cho nghiên cứu trong \(n\) ngày tiếp theo.
+
+Ngày thứ \(i\), họ chuẩn bị nghiên cứu bài toán hình học \(i\) chiều, nên quyết
+định trước hết chơi một trò chơi.
+
+Chọn tất cả \(\binom ni\) bộ \(i\) phần tử không có thứ tự từ \(n\) số này, sắp
+xếp mỗi bộ theo thứ tự tăng dần. Khi đó một bộ \(i\) phần tử có thể xem là một
+điểm trong không gian \(i\) chiều.
+
+Đầu tiên tô đen tất cả các điểm tương ứng với các bộ \(i\) phần tử này, còn các
+điểm khác tô trắng. Tiểu Q đi trước, hai người luân phiên thao tác như sau:
+
+Chọn một khối hộp \(i\) chiều có các đỉnh là điểm nguyên không âm, các cạnh song
+song với trục tọa độ, và điểm có tọa độ lớn nhất là điểm đen\footnote{Ở đây yêu
+cầu thể tích \(i\) chiều của khối hộp là dương.}; sau đó lật màu mọi đỉnh của
+nó. Nếu không chọn được khối hộp như vậy thì người đang thao tác thua.
+
+Vì tiểu Y rất muốn thắng, cậu chuẩn bị gian lận. Trước khi tiểu Q bắt đầu thao
+tác, tiểu Y có thể chọn một điểm nguyên không âm có \(i-1\) tọa độ đầu đều bằng
+\(1\), rồi lật màu điểm đó.
+
+Do đó tiểu Y cần bạn giúp tìm, với từng \(i=1,2,\ldots,n\), nên tô điểm nào.
+Bạn chỉ cần tìm tọa độ cuối cùng của điểm đó.
+
+Ràng buộc:
+\[
+  1\le n\le 10^5,\qquad 0\le a_i<2^{32}.
+\]
+
+\paragraph{Lời giải.}
+Không khó nhận thấy với một điểm đen, giá trị SG của nó chính là tích Nim của
+các tọa độ trên từng chiều.
+
+Vì vậy bài toán tương đương với tính
+\[
+  \bigotimes_{i=1}^n (a_i\otimes x\oplus 1).
+\]
+Dùng chia để trị để tính các phép nhân đa thức này.
+
+Độ phức tạp thời gian là \(O(n\log^2 n\log\log n)\).
+
+\subsection{Hàm sinh mũ nimber}
+
+\subsubsection{Tích chập nhị thức nimber}
+
+Với hai đa thức nimber \(a,b\), tích chập nhị thức của chúng được định nghĩa là
+\[
+  a\circledast b=
+  \bigoplus_{i=0}^n\bigoplus_{j=0}^m
+  \binom{i+j}{i}\cdot a_i\otimes b_j\otimes x^{i+j}.
+\]
+
+Trước hết xét giá trị của \(\binom{i+j}{i}\bmod 2\). Không khó chứng minh giá
+trị này bằng \(1\) khi và chỉ khi \(i,j\) có phép and từng bit bằng \(0\).
+
+Vì vậy bài toán tương đương với tính
+\[
+  \bigoplus_{i+j=k} [i\mathbin{\&}j=0]\,(a_i\otimes b_j).
+\]
+Chú ý rằng điều kiện này tương đương với việc \(i,j\) là hai tập con rời nhau
+của \(k\), nên nó cũng được gọi là tích chập tập con.
+
+Dưới đây ta định nghĩa chuỗi lũy thừa tập hợp và đưa ra cách tính tích chập tập
+con.
+
+\paragraph{Chuỗi lũy thừa tập hợp nimber.}
+Với một số nguyên trong \([0,2^m)\), ta có thể hiểu nó là một tập con của
+\(\{0,1,\ldots,m-1\}\), trong đó hệ số của \(2^i\) quyết định \(i\) có thuộc tập
+hay không.
+
+Do đó một đa thức có thể được hiểu là một chuỗi lũy thừa tập hợp.
+
+Trước hết định nghĩa biến đổi Möbius của chuỗi lũy thừa tập hợp:
+\[
+  \hat f_S=\bigoplus_{T\subseteq S} f_T.
+\]
+Thực ra, nếu xem tập hợp là một vector \(m\) chiều, biến đổi Möbius chính là
+tính tổng tiền tố \(m\) chiều.
+
+Vì vậy dễ thấy biến đổi ngược của nó là sai phân \(m\) chiều. Do trong trường
+nimber phép cộng và phép trừ giống nhau, đồng thời độ dài mỗi chiều là \(2\),
+biến đổi ngược của biến đổi Möbius chính là bản thân nó.
+
+Với tổng tiền tố nhiều chiều, có thể lần lượt làm tổng tiền tố trên từng chiều.
+Cụ thể, giả sử đang xét chiều thứ \(i\), ta duyệt mọi vị trí từ nhỏ tới lớn; nếu
+nó có tiền nhiệm ở chiều thứ \(i\), cộng thêm giá trị của tiền nhiệm. Độ phức
+tạp thời gian là \(O(m2^m)=O(n\log n)\).
+
+Biến đổi Möbius có thể giải bài toán tích chập hợp tập:
+\[
+  f_S=\bigoplus_{L\cup R=S} g_L\otimes h_R.
+\]
+Chú ý rằng
+\[
+\begin{aligned}
+\hat f_S
+&=\bigoplus_{(L\cup R)\subseteq S} g_L\otimes h_R\\
+&=\bigoplus_{L\subseteq S,\ R\subseteq S} g_L\otimes h_R\\
+&=\left(\bigoplus_{L\subseteq S}g_L\right)\otimes
+  \left(\bigoplus_{R\subseteq S}h_R\right)
+ =\hat g_S\otimes\hat h_S.
+\end{aligned}
+\]
+Vì vậy chỉ cần biến đổi Möbius \(g,h\), nhân các hạng tương ứng, rồi biến đổi
+Möbius lại.
+
+Nhìn từ góc độ khác, tích chập hợp tập là tích chập \(\max\) nhiều chiều, nên xử
+lý bằng tổng tiền tố nhiều chiều là hợp lý.
+
+Nhưng điều ta cần làm hiện tại không phải tích chập hợp, mà là tích chập tập
+con:
+\[
+  f_S=\bigoplus_{L\cup R=S,\ L\cap R=\varnothing} g_L\otimes h_R.
+\]
+
+Một cách làm thô là mỗi lần duyệt mọi \(L\subseteq S\), khi đó \(R=S\setminus
+L\). Vì mỗi phần tử chỉ có ba khả năng: không thuộc \(S\), thuộc \(L\), hoặc
+thuộc \(R\), độ phức tạp thời gian là \(O(3^m)=O(n^{\log_2 3})\).
+
+Chú ý rằng
+\[
+  [L\cup R=S\land L\cap R=\varnothing]
+  =
+  [L\cup R=S\land |L|+|R|=|S|].
+\]
+Do đó với mỗi vị trí, thêm một đa thức giữ chỗ \(p(z)\), bảo đảm hệ số của
+\(z^{|S|}\) là \(f_S\) và các hệ số bậc thấp hơn bằng \(0\). Đa thức này gọi là
+đa thức giữ chỗ.
+
+Khi đó tích chập tập con có thể được tính bằng cách trước hết làm biến đổi
+Möbius, sau đó nhân các đa thức giữ chỗ ở những vị trí tương ứng, cuối cùng làm
+biến đổi Möbius lại. Độ phức tạp thời gian là
+\[
+  O(m^2 2^m)=O(n\log^2 n).
+\]
+
+\subsubsection{Tích chập nhị thức nimber nửa-nửa online}
+
+Định nghĩa tích chập nhị thức nimber nửa-nửa online là \(f=g\circledast h\).
+Trong đó \(g\) đã cho và hằng số bằng \(0\), còn \(h_i\) cần được cho sau khi
+tính xong \(f_i\).
+
+Khác với bài toán tiếp theo, bài toán này là một bài toán chuỗi lũy thừa tập hợp
+khá thuần túy.
+
+Định nghĩa
+\[
+  \hat f_{i,S}=\bigoplus_{T\subseteq S,\ |T|=i} f_T.
+\]
+Trước hết tính toàn bộ \(\hat g_i\).
+
+Xét tính \(f_S\) theo thứ tự \(|S|=0\sim m\). Vì
+\[
+  \hat f_{i,S}=\bigoplus_{j=1}^i \hat g_{j,S}\otimes \hat h_{i-j,S},
+\]
+độ phức tạp tính toán là \(O(m2^m)=O(n\log n)\).
+
+Sau đó làm một lần biến đổi Möbius là nhận được \(f_S\) của vòng này, đồng thời
+nhận được \(h_S\) tương ứng. Làm tiếp biến đổi Möbius sẽ nhận được \(\hat
+h_{i,S}\).
+
+Tổng độ phức tạp thời gian là \(O(m^2 2^m)=O(n\log^2 n)\).
+
+\subsubsection{Tích chập nhị thức nimber toàn-nửa online}
+
+Định nghĩa tích chập nhị thức nimber toàn-nửa online là \(f=g\circledast h\),
+trong đó \(g\) đã cho, còn \(h_{i+1}\) cần chờ \(f_0,f_1,\ldots,f_i\) đều tính
+xong mới được cho.
+
+Với bài toán chuỗi lũy thừa tập hợp đơn thuần, tình huống này không xuất hiện.
+Nhưng vì thực tế ta đang làm tích chập nhị thức, nếu muốn giải phương trình vi
+phân thì có thể xuất hiện tình huống này.
+
+Trước hết xét dùng chia để trị. Giả sử hiện đang xử lý đoạn \([0,2^n)\).
+
+Trước tiên đệ quy xử lý \([0,2^{n-1})\), sau đó tính phần chuyển từ các \(h_i\)
+trong \([0,2^{n-1})\) sang các \(f_i\) trong \([2^{n-1},2^n)\).
+
+Khi đệ quy nửa phải, chú ý rằng lúc này bit cao nhất của \(f,h\) đều là \(1\),
+nên có thể trực tiếp chuyển về tình huống trên \([0,2^{n-1})\).
+
+Độ phức tạp thời gian là \(O(n\log^3 n)\). Thực ra với bài toán này, dùng trực
+tiếp cách làm thô \(O(n^{\log_2 3})\) có hiệu quả gần với chia để trị, thậm chí
+có thể nhanh hơn.
+
+\subsubsection{Định nghĩa hợp thành hàm sinh mũ nimber}
+
+Sau khi giải quyết phép nhân hàm sinh mũ, bài toán tiếp theo là định nghĩa hợp
+thành. Trước hết ta cần xét làm thế nào định nghĩa hợp thành của hai hàm sinh
+mũ mà không dùng phép chia.
+
+Xét tính \(f^k/k!\). Nếu \(f\) không phải đơn thức, có thể tách thành \(g+h\),
+sau đó dùng khai triển nhị thức, trở thành
+\[
+  \sum_{i=0}^k \frac{g^i\cdot h^{k-i}}{i!\cdot(k-i)!}.
+\]
+
+Với đơn thức, đặt \(f=ax^n/n!\), khi đó kết quả là
+\[
+  \frac{x^{kn}}{(kn)!}\cdot \frac{(kn)!}{(n!)^k\cdot k!}\cdot a^k.
+\]
+Không khó chứng minh
+\[
+  \frac{(kn)!}{(n!)^k\cdot k!}
+\]
+là số nguyên, nên ta có thể định nghĩa hợp thành của hai hàm sinh mũ mà không
+cần phép chia.
+
+Bắt chước cách trên có thể định nghĩa hợp thành của hàm sinh mũ nimber và nhận
+được một thuật toán độ phức tạp khá cao. Điều quan trọng thật ra là làm thế nào
+tính nhanh.
+
+Thực tế, vì định nghĩa về cơ bản giống nhau, ta có thể bê nguyên phương pháp
+tính toán của hàm sinh mũ thông thường: khi tích phân thì dịch phải một vị trí,
+khi lấy đạo hàm thì dịch trái một vị trí, và nhân đa thức thì dùng tích chập
+nhị thức.
+
+Cần chú ý rằng tích chập tập con chỉ là một phương pháp tính tích chập nhị thức;
+phương pháp này bỏ qua một số hạng trong tích chập nhị thức, và các hạng này sẽ
+xuất hiện lại trong hợp thành. Vì vậy cách trực tiếp hợp thành các đa thức giữ
+chỗ sau biến đổi Möbius là sai.
+
+\subsubsection{Nghịch đảo theo tích chập nhị thức nimber}
+
+Không mất tính tổng quát, giả sử hằng số bằng \(1\). Khi đó nghịch đảo theo tích
+chập nhị thức chính là bản thân đa thức.
+
+Tính trực tiếp có thể thấy mọi hạng chéo đều xuất hiện hai lần, còn các hạng
+bình phương chỉ có hằng số, nên kết quả sau khi bình phương là \(1\).
+
+Tính duy nhất là hiển nhiên.
+
+\subsubsection{\texorpdfstring{\(\ln\)}{ln} và \texorpdfstring{\(\exp\)}{exp} nimber}
+
+Dùng công thức cơ bản của \(\ln\) và \(\exp\):
+\[
+  g'=g\circledast f'.
+\]
+Vì nghịch đảo theo tích chập nhị thức là bản thân nó, ta có
+\[
+  g'\circledast g=f'.
+\]
+Do đó, cho \(g\) để tìm \(f\) chỉ cần một lần tích chập nhị thức.
+
+Xét trường hợp cho \(f\) để tìm \(g\). Vì đây là một phương trình vi phân, không
+thể dùng phương pháp nửa-nửa online để giải, còn hiệu quả của toàn-nửa online
+khá thấp.
+
+Thực ra ở đây có thể dùng lặp Newton. Chú ý rằng \(\ln(1\oplus x)\) mới là
+chuỗi lũy thừa hình thức, nên phương trình trở thành
+\[
+  \ln(1\oplus f)=g.
+\]
+Thay vào công thức lặp Newton, được
+\[
+  f_{t+1}
+  =
+  1\oplus(1\oplus f_t)\circledast
+  \bigl(1\oplus\ln(1\oplus f_t)\oplus g\bigr)
+  \pmod {x^{2^{t+1}}}.
+\]
+Độ phức tạp thời gian cũng giống tích chập nhị thức.
+
+\subsubsection{Hàm lượng giác nimber}
+
+Thông thường cách tính hàm lượng giác cần chia cho \(2\), nên không thể dùng ở
+đây.
+
+Đặt \(g=\cos f\), khi đó
+\[
+  g'=(e^f\oplus g)\circledast f'.
+\]
+Nhân hai vế với \(e^f\), được
+\[
+  e^f\circledast g'
+  =
+  f'\oplus f'\circledast g\circledast e^f,
+\]
+tức
+\[
+  (e^f\circledast g)'=f'.
+\]
+Vì vậy \(e^f\circledast g=f\oplus c\). Cho \(f=0\) được \(c=1\).
+
+Do đó
+\[
+  \cos f=f\circledast e^f\oplus e^f,\qquad
+  \sin f=f\circledast e^f.
+\]
+Suy ra
+\[
+  \tan f=\frac{\sin f}{\cos f}=\frac{f}{1+f}
+  =f\circledast(1+f)=f\oplus f^2=f.
+\]
+
+\subsubsection{Ví dụ 3. Tiểu Q và tiểu Y chơi trò chơi (ba)}
+
+Tiểu Q và tiểu Y đều là bậc thầy đồ thị, và họ đặc biệt thích đồ thị đầy đủ.
+
+Với một đồ thị, nếu mọi thành phần liên thông của nó đều là đồ thị đầy đủ thì
+đồ thị đó được tiểu Q và tiểu Y yêu thích; ngược lại thì không.
+
+Bây giờ tiểu Q và tiểu Y chơi trò chơi trên một số đồ thị họ thích.
+
+\begin{enumerate}
+  \item Ban đầu, trên mỗi thành phần liên thông kích thước \(i\) của mỗi đồ thị
+  có viết một số nguyên \(f_i\).
+  \item Khi một người thao tác, trước hết chọn một đồ thị sao cho trên mọi thành
+  phần liên thông của đồ thị đó đều viết số nguyên dương. Nếu không có đồ thị
+  như vậy thì người đang thao tác thua.
+  \item Với mỗi thành phần liên thông, chọn một số nguyên không âm nhỏ hơn số
+  ban đầu.
+  \item Với mỗi tập con không rỗng của tập các thành phần liên thông, thêm vào
+  tập đồ thị một bản sao của đồ thị đã chọn, và trong bản sao đó đổi số trên các
+  thành phần liên thông thuộc tập con thành số mới đã chọn.
+  \item Xóa đồ thị đã chọn khỏi tập đồ thị, rồi người còn lại bắt đầu lại từ
+  bước 2.
+\end{enumerate}
+
+Không khó chứng minh quá trình trò chơi là hữu hạn.
+
+Bây giờ, tiểu Q và tiểu Y chơi trò chơi trên tất cả các đồ thị có nhãn, có đúng
+\(m\) đỉnh và được họ yêu thích; tiểu Q đi trước.
+
+Vì tiểu Y rất muốn thắng, cậu chuẩn bị gian lận. Do một số nguyên nhân, cậu chỉ
+có thể sửa giá trị \(f_m\).
+
+Do đó tiểu Y cần bạn giúp tìm, với từng \(m=1,2,\ldots,n\), nên đổi \(f_m\) thành
+bao nhiêu để cậu chắc thắng.
+
+Ràng buộc:
+\[
+  1\le n\le 10^5,\qquad 0\le f_i<2^{32}.
+\]
+
+\paragraph{Lời giải.}
+Với một đồ thị \(G\), dễ thấy giá trị SG của nó chính là tích Nim của các số
+trên từng thành phần liên thông.
+
+Chú ý rằng bài toán tương đương với, trong trường hợp đồ thị có nhãn, biến đồ
+thị liên thông thành tổ hợp của nhiều thành phần liên thông. Vì vậy giá trị SG
+của tất cả đồ thị chính là \(\exp f\).
+
+Bây giờ hỏi nên đổi thành gì để người đi sau thắng, tương đương với yêu cầu tổng
+Nim bằng \(0\), nên chính là tìm
+\[
+  f\oplus \exp f.
+\]
+Dùng thuật toán \(\exp\) nimber đã giới thiệu ở trên.
+
+Độ phức tạp thời gian là \(O(n\log^2 n)\).
+
+\subsection{Tổng kết}
+
+Bài viết tổng kết các bài toán đa thức trên nimber và đưa ra lời giải cho một
+số bài toán. Tuy nhiên với tích chập nhị thức toàn-nửa online và hợp thành hàm
+sinh mũ, bài viết chưa có cách làm tốt.
+
+Đồng thời, ứng dụng thực tế của một số thuật toán trong bài\footnote{Chẳng hạn
+các hàm lượng giác.} vẫn còn chờ được khai thác. Vì vậy tác giả hy vọng bài
+viết này có thể đóng vai trò gợi mở, để độc giả quan tâm tiếp tục nghiên cứu,
+mở rộng cách làm của tác giả, từ đó nhận được nhiều phương pháp và ứng dụng thú
+vị hơn.
+
+\subsection*{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+Cảm ơn huấn luyện viên đội tuyển quốc gia Gao Wenyuan đã chỉ dẫn.
+
+Cảm ơn cha mẹ đã nuôi dưỡng và dạy dỗ tôi.
+
+Cảm ơn nhà trường đã bồi dưỡng, cảm ơn thầy Fu Shuibo, thầy Ying Ping'an đã dạy
+bảo và các bạn học đã giúp đỡ.
+
+Cảm ơn bạn Yu Haoxiang, bạn Hu Jiaqi, bạn Qian Yi đã trao đổi, thảo luận và gợi
+mở cho tôi.
+
+Cảm ơn bạn Weng Weijie, bạn Pan Jiaqi, bạn Xuan Yiming đã đọc duyệt bài viết
+này.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item John H. Conway. \emph{On Numbers and Games}. 2001.
+  \item H. W. Lenstra. \emph{Nim multiplication}. Séminaire de Théorie des
+  Nombres 11, 1978.
+  \item Wikipedia contributors. \emph{Sprague--Grundy theorem}. Wikipedia,
+  \href{https://en.wikipedia.org/wiki/Sprague-Grundy_theorem}{online}.
+  \item Wikipedia contributors. \emph{Nimber}. Wikipedia,
+  \href{https://en.wikipedia.org/wiki/Nimber}{online}.
+  \item Peng Yuxiang, \emph{Nhập môn đa thức}. Trại mùa đông 2016.
+  \item Lü Kaifeng, \emph{Tính chất và thuật toán nhanh của chuỗi lũy thừa tập
+  hợp}. Tập luận văn ứng viên đội tuyển quốc gia IOI Trung Quốc 2015.
+  \item Mao Xiao, \emph{Xét lại biến đổi Fourier nhanh}. Tập luận văn ứng viên
+  đội tuyển quốc gia IOI Trung Quốc 2016.
 \end{enumerate}
 
 \end{document}
