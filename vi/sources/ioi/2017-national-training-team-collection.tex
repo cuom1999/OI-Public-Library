@@ -31,15 +31,15 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2017. Khác với
 một số tập trước đó, lớp văn bản của tập này trích xuất khá tốt bằng
 \texttt{pdftotext}. Bản LaTeX này chuyển ngữ phần nhận diện tập sách, toàn bộ
-mục lục, và mười một bài đầu tiên: bài của Mao Xiao về công thức truy hồi của dãy
+mục lục, và mười ba bài đầu tiên: bài của Mao Xiao về công thức truy hồi của dãy
 số, Yang Jiaqi về matching trên đồ thị tổng quát bằng đại số tuyến tính, Yuan
 Yutao về bài toán tính tổng đa thức, Zhong Zhixian về bài toán tập độc lập
 trong thi tin học, Chen Junkun về \emph{Đồ thị con kỳ diệu}, Sun Yaofeng về
 bài toán bao đóng bắc cầu động, Wang Leping về \emph{A + B Problem}, Xu
 Mingkuan về thuật toán chia khối kích thước phi chuẩn, Weng Wentao về cây
 palindrome cùng các ứng dụng, Yan Shuyi về \emph{Cây đen trắng}, Yang
-Jingqin về \emph{Đa giác đều}, và Feng Zhe về quy hoạch động có đơn điệu
-quyết định.
+Jingqin về \emph{Đa giác đều}, Feng Zhe về quy hoạch động có đơn điệu
+quyết định, và Shen Rui về \emph{Cây đoạn bị thao túng}.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -9593,6 +9593,584 @@ Cảm ơn cha mẹ đã quan tâm và ủng hộ tôi.
   \item UOJ Goodbye Bingshen, lời giải.
 \end{enumerate}
 
+\section{Báo cáo ra đề \texorpdfstring{\emph{Cây đoạn bị thao túng}}{Cây đoạn bị thao túng}}
+
+\begin{center}
+Shen Rui, Trường Trung học Cao cấp Changzhou, tỉnh Jiangsu
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Đây là một bài cấu trúc dữ liệu nhiều lời giải, lấy cây đoạn làm bối cảnh,
+do tác giả ra trong vòng bốn của đợt thi thử đội tuyển quốc gia năm 2017.
+Bài viết ghi lại ba khung tư duy khác nhau để giải bài toán này. Mỗi hướng
+đều đòi hỏi thí sinh có năng lực trừu tượng hóa nhất định để dựng mô hình,
+đồng thời phải vận dụng linh hoạt tham lam, nhảy bội, phân trị cùng các cấu
+trúc dữ liệu như cây đoạn, cây lồng cây và cây động để duy trì thuận tiện
+thông tin trong mô hình rồi giải bài toán.
+\end{abstract}
+
+\subsection{Ý chính của đề và phạm vi dữ liệu}
+
+Cho một cây đoạn độ dài \(N\), nhưng cây đoạn này khác cây đoạn thông thường.
+Trong cây đoạn thông thường, với một đoạn \([l,r]\), ta chọn
+\[
+  \operatorname{mid}=\left\lfloor\frac{l+r}{2}\right\rfloor
+\]
+rồi chia đoạn ấy thành \([l,\operatorname{mid}]\) và
+\([\operatorname{mid}+1,r]\). Trong cây đoạn của bài này, giá trị
+\(\operatorname{mid}\) được cho trước, tuy vẫn thỏa
+\(l\le\operatorname{mid}<r\); các điều kiện còn lại cơ bản giống cây đoạn
+trong OI. Hình 16 của bản gốc là một ví dụ cây đoạn có giá trị
+\(\operatorname{mid}\) được cho sẵn.
+
+Bài toán cho \(Q\) thao tác sửa đổi và truy vấn. Mỗi thao tác sửa đổi thực
+hiện xoay trái hoặc xoay phải trên một cấu trúc con của cây; kiểu xoay cụ thể
+được minh họa trong Hình 17 của bản gốc. Dễ thấy quy tắc xoay này giống kiểu
+xoay trong \texttt{splay}.
+
+\begin{itemize}
+  \item Các cây con \(A,B,C\) không tự thay đổi.
+  \item Vị trí tương đối giữa các cây con \(A,B,C\) và các nút \(X,Y\) thay
+  đổi.
+  \item Thang đoạn của các nút \(X,Y\) thay đổi.
+\end{itemize}
+
+Hình 18 của bản gốc là kết quả sau khi lấy nút số \(3\) và cha của nó là nút
+số \(2\) trong cây ở Hình 16 làm trục để xoay phải.
+
+Mỗi truy vấn cho một đoạn và hỏi số lượng đoạn trong phép định vị đoạn ấy trên
+cây đoạn hiện tại. \term{Định vị đoạn} nghĩa là dùng số ít nhất các đoạn tương
+ứng với nút trên cây đoạn để ghép đúng đoạn cần hỏi, sao cho mỗi đơn vị độ dài
+xuất hiện đúng một lần trong các đoạn được chọn. Ví dụ với cây đoạn trong Hình
+18, định vị của đoạn \([2,6]\) là \([2,4]\), \([5,5]\), \([6,6]\), nên số
+lượng là \(3\).
+
+Một phần dữ liệu yêu cầu online. Giới hạn thời gian là \(1\)--\(2\) giây, tùy
+máy chấm.
+
+\begin{center}
+\small
+\begin{tabular}{c c c c c c}
+\textbf{Test} & \(\boldsymbol{N}\) \textbf{tối đa} &
+\(\boldsymbol{Q}\) \textbf{tối đa} & \textbf{Online?} &
+\textbf{Có sửa?} & \textbf{Bộ nhớ} \\
+\hline
+1 & 1000 & 1000 & không & không & 512MB \\
+2 & 1000 & 1000 & có & không & 512MB \\
+3 & 1000 & 1000 & không & có & 512MB \\
+4 & 1000 & 1000 & có & có & 512MB \\
+5 & 200000 & 200000 & không & không & 512MB \\
+6 & 200000 & 200000 & không & không & 512MB \\
+7 & 200000 & 200000 & không & không & 512MB \\
+8 & 200000 & 200000 & không & không & 512MB \\
+9 & 200000 & 200000 & có & không & 64MB \\
+10 & 200000 & 200000 & có & không & 64MB \\
+11 & 200000 & 200000 & có & không & 64MB \\
+12 & 200000 & 200000 & không & có & 512MB \\
+13 & 200000 & 200000 & không & có & 64MB \\
+14 & 200000 & 200000 & không & có & 32MB \\
+15 & 200000 & 200000 & có & có & 512MB \\
+16 & 200000 & 200000 & có & có & 512MB \\
+17 & 200000 & 200000 & có & có & 64MB \\
+18 & 200000 & 200000 & có & có & 64MB \\
+19 & 200000 & 200000 & có & có & 32MB \\
+20 & 200000 & 200000 & có & có & 32MB
+\end{tabular}
+\end{center}
+
+\subsection{Một cách vét cạn hiển nhiên}
+
+Ta mô phỏng thô quá trình xoay cây đoạn. Với mỗi truy vấn, dùng cách truy cập
+đệ quy đoạn quen thuộc của cây đoạn. Bắt đầu từ gốc: nếu đoạn mà nút hiện tại
+biểu diễn bị đoạn truy vấn phủ hoàn toàn thì tính vào đáp án; nếu không giao
+thì quay lui; nếu có giao thì đệ quy xuống hai cây con trái và phải.
+
+Ta phân tích độ phức tạp của cách vét cạn này.
+
+\paragraph{Định lý 2.1.}
+Trong toàn bộ quá trình truy cập đệ quy, ở mỗi tầng của cây đoạn có nhiều nhất
+\(4\) đoạn được truy cập.
+
+\paragraph{Chứng minh 1.}
+Dùng phản chứng.
+
+Giả sử trong một thao tác truy cập, có một tầng được truy cập \(k\) đoạn với
+\(k>4\). Dễ biết rằng \(k\) đoạn này liên tiếp trên thang tọa độ; giả sử theo
+thứ tự tọa độ chúng là \(s_1,s_2,s_3,\ldots,s_k\). Vì chỉ những đoạn có giao
+với đoạn truy vấn mới được truy cập, hai đoạn \(s_1,s_k\) hoặc bị đoạn truy
+vấn \([l,r]\) phủ hoàn toàn, hoặc chỉ giao một phần với \([l,r]\); còn
+\(s_2,\ldots,s_{k-1}\) chắc chắn bị \([l,r]\) phủ hoàn toàn. Số đoạn bị phủ
+ít nhất là \(k-2\ge 3\), nên chắc chắn tồn tại hai đoạn kề nhau là con trái và
+con phải của một đoạn lớn hơn. Đoạn lớn ấy cũng bị \([l,r]\) phủ hoàn toàn, vì
+vậy khi truy cập đến nó quá trình đệ quy đã dừng, mâu thuẫn với việc truy cập
+hai con ở tầng đang xét. Giả thiết không đúng. \qedmark
+
+Vì mỗi tầng truy cập nhiều nhất \(4\) đoạn, độ phức tạp của một lần truy cập
+đoạn là \(\Oh(\)độ sâu cây đoạn\()\). Với cây đoạn thông thường, độ sâu là
+\(\Oh(\log N)\), nên một thao tác đoạn cũng có độ phức tạp \(\Oh(\log N)\).
+Nhưng do giá trị \(\operatorname{mid}\) của cây đoạn này có thể lấy tùy ý, độ
+sâu của cây có thể đạt \(\Oh(N)\); vì vậy trong trường hợp xấu nhất, một lần
+truy cập đoạn tốn \(\Oh(N)\), tổng thời gian là \(\Oh(NQ)\).
+
+Ở test 5 và test 9, \(\operatorname{mid}\) của cây đoạn ban đầu được sinh ngẫu
+nhiên, nên độ sâu kỳ vọng là \(\Oh(\log N)\), mỗi truy vấn tốn
+\(\Oh(\log N)\), tổng độ phức tạp \(\Oh(Q\log N)\); cách trên có thể qua các
+test ấy.
+
+Điểm kỳ vọng: \(20\)--\(30\) điểm.
+
+\subsection{Giới thiệu thuật toán}
+
+\subsubsection{\emph{idea1}: thuật toán một bắt đầu từ các đoạn}
+
+\paragraph{Ký hiệu 1.}
+Tách mọi đoạn mà các nút biểu diễn ra khỏi cấu trúc cây đoạn, và gọi tập các
+đoạn này là \(S\).
+
+\paragraph{Ký hiệu 2.}
+Gọi đoạn truy vấn hiện tại là \([l,r]\).
+
+Từ quan sát cây đoạn, ta có định lý sau.
+
+\paragraph{Định lý 3.1.}
+Số đoạn trong định vị của \([l,r]\), tức đáp án, bằng
+\[
+  2(r-l+1)-\{\text{số đoạn trong }S\text{ bị }[l,r]\text{ chứa hoàn toàn}\}.
+\]
+
+\paragraph{Chứng minh 2.}
+Đưa tập các đoạn bị \([l,r]\) chứa hoàn toàn trở lại cấu trúc cây đoạn ban
+đầu, ta thấy toàn bộ tập đoạn tạo thành một rừng. Những nút đoạn đóng góp vào
+đáp án đều là gốc trong các cây của rừng ấy.
+
+Vì mọi cây trong rừng đều thỏa tính chất ``mỗi nút không phải lá có hai con'',
+với một cây ta có: số lá bằng số nút trong cộng \(1\).
+
+Với cả rừng, ta có đẳng thức: số lá bằng số nút trong cộng số gốc. Số lá là
+\(r-l+1\), còn số nút trong là số đoạn trong \(S\) bị \([l,r]\) chứa hoàn toàn
+trừ đi \((r-l+1)\).
+
+Chuyển vế thu được Định lý 3.1. \qedmark
+
+Do đó bài toán được chuyển thành duy trì tập mọi đoạn trên cây đoạn, và mỗi
+lần truy vấn cần đếm số đoạn bị một đoạn cho trước chứa hoàn toàn.
+
+\paragraph{Bài toán đếm điểm hai chiều kinh điển.}
+Giả sử đoạn truy vấn là \([l,r]\). Khi ấy thực chất ta cần đếm mọi đoạn
+\([l',r']\) trong \(S\) thỏa \(l\le l'\) và \(r\ge r'\).
+
+Xem một đoạn \([l',r']\) như một điểm \((l',r')\) trên mặt phẳng. Bài toán trở
+thành: trên mặt phẳng có \(N\) điểm và \(Q\) truy vấn, mỗi truy vấn hỏi số điểm
+nằm ở góc trên bên trái của điểm cho trước. Rõ ràng trong OI, đây là bài toán
+đếm điểm hai chiều kinh điển.
+
+\paragraph{\emph{part1}.}
+Xét phần không có sửa đổi và được phép offline. Ta có thể lấy mọi truy vấn ra
+offline, đưa các điểm truy vấn và các điểm trên mặt phẳng vào cùng một danh
+sách để sắp xếp, rồi quét theo thứ tự và dùng cây Fenwick để thống kê. Đây là
+cách làm sắp xếp một chiều cộng cây Fenwick cho chiều thứ hai.
+
+Độ phức tạp thời gian \(\Oh(N\log N)\), bộ nhớ \(\Oh(N)\). Kết hợp với thuật
+toán một, điểm kỳ vọng là \(40\)--\(45\) điểm.
+
+\paragraph{\emph{part2}.}
+Xét cách xử lý phần online nhưng không có sửa đổi. Vì bắt buộc online, ta cứ
+dùng cấu trúc dữ liệu mạnh hơn là cây lồng cây để duy trì. Mỗi lần chèn một
+đoạn tốn \(\Oh(\log^2 N)\), và mỗi truy vấn cũng thêm một thừa số \(\log\).
+
+Độ phức tạp thời gian là \(\Oh((Q+N)\log^2 N)\). Bộ nhớ là
+\(\Oh(N\log N)\) nếu dùng cây đoạn hoặc cây Fenwick lồng cây cân bằng, và
+\(\Oh(N\log^2 N)\) nếu dùng cây đoạn hoặc cây Fenwick lồng cây đoạn. Điểm kỳ
+vọng: \(45\)--\(55\) điểm.
+
+\paragraph{\emph{part3}.}
+Xét phần có sửa đổi. Dễ thấy trong thuật toán này, bản chất của một thao tác
+xoay chỉ là xóa một đoạn khỏi tập đoạn ban đầu rồi thêm một đoạn khác. Chẳng
+hạn trong phép xoay phải ở Hình 17 của bản gốc, bản chất là xóa đoạn
+\([L_a,R_b]\) khỏi \(S\), rồi thêm đoạn \([L_b,R_c]\).
+
+Vấn đề có sửa đổi vì thế được chuyển thành bài toán đếm điểm hai chiều hỗ trợ
+thêm và xóa động.
+
+Với phần offline, vì mỗi sửa đổi độc lập và đáp án có thể cộng gộp, ta có thể
+dùng phân trị. Với một sửa đổi thêm đoạn, xem nó như thêm một điểm trọng số
+\(1\) trên mặt phẳng hai chiều; với một sửa đổi xóa đoạn, xem nó như thêm một
+điểm trọng số \(-1\). Bài toán chuyển thành truy vấn tổng trọng số trong một
+hình chữ nhật.
+
+Ta phân trị trực tiếp theo thời gian. Khi phân trị trên đoạn thời gian
+\([L,R]\), ta tính đóng góp của các sửa đổi trong
+\[
+  \left[L,\left\lfloor\frac{L+R}{2}\right\rfloor\right]
+\]
+cho các truy vấn trong
+\[
+  \left[\left\lfloor\frac{L+R}{2}\right\rfloor,R\right],
+\]
+rồi đệ quy xử lý hai đoạn con tương ứng. Dễ thấy đóng góp của mỗi sửa đổi cho
+các truy vấn phía sau đều được tính đến.
+
+Trong một đoạn thời gian, bài toán xử lý đóng góp của sửa đổi cho truy vấn
+tương đương một bài toán thứ tự riêng phần hai chiều offline; chỉ cần dùng sắp
+xếp một chiều cộng cây Fenwick chiều hai. Vì xử lý \(k\) truy vấn và sửa đổi
+tốn \(\Oh(k\log k)\), theo định lý chính, toàn bộ phân trị có độ phức tạp
+\(\Oh(Q\log^2 Q)\), bộ nhớ \(\Oh(N+Q)\). Cách này có thể qua các test
+12--14; kết hợp với thuật toán một có thể đạt \(60\) điểm.
+
+\paragraph{\emph{part4}.}
+Khi không có sửa đổi, ta đã dùng trực tiếp cây lồng cây để duy trì các đoạn.
+Với trường hợp có sửa đổi và online, ta cũng có thể dùng cấu trúc dữ liệu này:
+mỗi sửa đổi chỉ là xóa một điểm và thêm một điểm trong cấu trúc. Độ phức tạp
+của sửa đổi giống truy vấn, đều là \(\Oh(\log^2 N)\). Thời gian là
+\(\Oh((Q+N)\log^2 N)\); bộ nhớ là \(\Oh((Q+N)\log N)\) nếu dùng cây đoạn hoặc
+cây Fenwick lồng cây cân bằng, và \(\Oh((Q+N)\log^2 N)\) nếu dùng cây đoạn
+hoặc cây Fenwick lồng cây đoạn. Vì giới hạn bộ nhớ có yêu cầu khá chặt, thuật
+toán này không thể lấy trọn điểm; điểm kỳ vọng là \(60\)--\(80\) điểm.
+
+\paragraph{\emph{conclusion}.}
+Tổng hợp mọi phần của thuật toán hai, điểm tối đa có thể đạt tới \(85\) điểm.
+
+\paragraph{Một số cách đạt trọn điểm bất ngờ dựa trên \emph{idea1}.}
+Tuy loạt thuật toán của \emph{idea1} trông có vẻ chỉ đạt nhiều nhất
+\(85\) điểm, trong buổi thi thử đội tuyển vẫn có thí sinh dùng hướng
+\emph{idea1} để đạt trọn điểm.
+
+Bạn Xu Mingkuan từ Trường Thực nghiệm trực thuộc Đại học Sư phạm Bắc Kinh dùng
+cây Fenwick lồng cây cân bằng, cộng với cách khéo léo nén \(3\) biến
+\texttt{int} vào một biến \texttt{long long} để vượt qua giới hạn bộ nhớ và
+đạt trọn điểm. Tuy nhiên mã dài và thời gian bỏ ra cho bài này quá lớn, nên
+không nên cổ vũ cách đó.
+
+Bạn Feng Zhe từ Trường Trung học số 1 Shaoxing dùng \texttt{kd-tree} để duy
+trì các điểm trên mặt phẳng hai chiều. Mỗi lần chèn điểm, bạn ấy thêm thô điểm
+mới vào \texttt{kd-tree}; vì cần duy trì cấu trúc của \texttt{kd-tree}, cứ sau
+mỗi \(13000\) lần thêm điểm lại xây dựng lại toàn bộ \texttt{kd-tree}. Với một
+truy vấn, đệ quy thô trên \texttt{kd-tree}: nếu mọi điểm của cây con hiện tại
+đều nằm trong miền truy vấn thì cộng ngay vào đáp án; nếu nằm ngoài miền thì
+quay lui; nếu có giao thì đệ quy tiếp. Cách làm này không cho được một độ phức
+tạp thời gian trực quan và chắc chắn, nhưng trên thực tế chương trình ấy chạy
+trên TUOJ chỉ tốn \(1.6\) lần thời gian của \texttt{std} \(0.4\) giây, và cũng
+chỉ khoảng \(3\) lần so với mã nhanh nhất tại hiện trường của Chen Junkun
+\(0.2\) giây. Thêm vào đó, bộ nhớ chỉ \(\Oh(Q+N)\), nên có thể đạt trọn điểm.
+
+\subsubsection{\emph{idea2}: thuật toán hai dựa trên tham lam}
+
+Xét một trường hợp đặc biệt.
+
+\paragraph{Định lý 3.2.}
+Khi đầu trái \(l\) của đoạn truy vấn \([l,r]\) nằm ở mép trái của một cây con
+trên cây đoạn, và \(r\) nằm trong thang đoạn của cây con ấy, ta tham lam chọn
+đoạn lớn nhất \([l',r]\) có đầu phải là \(r\), rồi đặt \(r=l'-1\) và lặp lại
+cho đến khi \(l=r+1\). Số đoạn được chọn chính là số đoạn trong định vị của
+\([l,r]\).
+
+\paragraph{Chứng minh 3.}
+Theo Hình 19 của bản gốc, vì \(r\) nằm trong thang đoạn của cây con đang xét,
+khi ta liên tục tham lam chọn đoạn lớn nhất \([l',r]\) có đầu phải là \(r\),
+đầu trái \(l'\) chắc chắn không nhỏ hơn đầu trái \(l\) của toàn bộ cây con. Lại
+vì mỗi lần ta tham lam lấy đoạn lớn nhất, và giữa mọi đoạn chỉ có hai quan hệ:
+chứa nhau hoặc rời nhau, nên mỗi lần lấy đoạn lớn nhất bảo đảm số đoạn được
+chọn là ít nhất. \qedmark
+
+Với trường hợp tổng quát, ta có kết luận sau.
+
+\paragraph{Định lý 3.3.}
+Từ \(l\), tham lam chọn đoạn lớn nhất \([l,r']\) có đầu trái là \(l\), đặt
+\(l=r'+1\) rồi lặp lại cho đến khi \(r'\ge r\). Ghi lại giá trị \(l\) lúc này.
+
+Từ \(r\), tham lam chọn đoạn lớn nhất \([l',r]\) có đầu phải là \(r\), đặt
+\(r=l'-1\) rồi lặp lại cho đến khi \(l=r+1\).
+
+Đáp án bằng tổng số đoạn được chọn bởi các bước tham lam trên.
+
+\paragraph{Chứng minh 4.}
+Với đầu trái \(l\) của đoạn truy vấn, ta tham lam chọn đoạn lớn nhất
+\([l,r']\) nhảy sang phải cho đến khi \(r'\) lớn hơn hoặc bằng đầu phải \(r\)
+của đoạn truy vấn thì dừng. Nếu \(r=r'\), bài toán chuyển thành trường hợp của
+Định lý 3.2; do đó ta chỉ cần xét kiểu \(r'>r\).
+
+Như Hình 20 của bản gốc, gọi đoạn lớn hiện được chọn, có đầu phải không nhỏ
+hơn \(r\), là \([l_0,r_0]\).
+
+Lấy riêng cây con có gốc là đoạn \([l_0,r_0]\). Trong cây con này, đầu trái
+\(l_0\) của đoạn truy vấn hiện tại đã nằm ở mép trái của cây đoạn, còn đầu
+phải \(r\) nằm trong thang đoạn của cây con. Khi đó tình huống hiện tại giống
+tình huống đã xét trong Định lý 3.2. Theo Định lý 3.2, lúc này ta chỉ cần liên
+tục tìm đoạn lớn nhất có thể nhảy sang trái từ \(r\).
+
+Vì mỗi lần ta tham lam chọn đoạn hợp lệ lớn nhất hiện tại, không khó chứng
+minh cách làm này luôn chọn được số đoạn ít nhất. \qedmark
+
+Tóm lại, toàn bộ cách làm là: từ \(l\), tham lam chọn đoạn lớn nhất nhảy sang
+phải và dừng khi vượt phạm vi; từ \(r\), tham lam chọn đoạn lớn nhất nhảy sang
+trái và dừng khi vượt phạm vi. Đáp án là tổng số đoạn được chọn.
+
+Tất nhiên, nếu chọn thô các đoạn có thể nhảy thì độ phức tạp vẫn là
+\(\Oh(NQ)\), không khác vét cạn. Vì thế ta cần thuật toán hoặc cấu trúc dữ liệu
+để duy trì quá trình nhảy.
+
+\paragraph{\emph{part1}.}
+Với phần không có sửa đổi, cấu trúc cây đoạn chắc chắn cố định. Ta có thể tiền
+xử lý đoạn lớn nhất có thể chọn khi đi sang trái hoặc sang phải từ mỗi vị trí,
+tương đương duy trì vị trí nhảy tới sau khi chọn đoạn lớn nhất theo mỗi hướng.
+Các quan hệ nhảy này là một ánh xạ nhiều-một. Quan sát cho thấy với cùng một
+hướng nhảy, quan hệ này tạo thành một cây. Do đó dùng nhảy bội cộng nhị phân
+để tăng tốc quá trình nhảy.
+
+Độ phức tạp thời gian \(\Oh((Q+N)\log N)\), bộ nhớ \(\Oh(N\log N)\). Điểm kỳ
+vọng: \(55\) điểm.
+
+\paragraph{\emph{part2}.}
+Xét ảnh hưởng của thao tác sửa đổi lên các bước nhảy. Nhìn vào hình mô tả phép
+xoay, dễ thấy bản chất chỉ là thay đổi vị trí mà \(L_b\) nhảy sang trái và vị
+trí mà \(R_b\) nhảy sang phải.
+
+Theo phân tích trên, quan hệ nhảy tạo thành quan hệ cây; bây giờ ta cần duy trì
+động hai cây nhảy ấy. Ta có thể dùng LCT, tức cây động, để duy trì hai cây này.
+
+\begin{itemize}
+  \item Với một thao tác sửa đổi, bản chất là cắt một số cạnh trên cây và nối
+  một số điểm, tương ứng hai thao tác \texttt{link} và \texttt{cut} của LCT.
+  Độ phức tạp thời gian \(\Oh(\log N)\).
+
+  \item Với một thao tác truy vấn, bản chất là hỏi trên cây nhảy xem một nút có
+  bao nhiêu tổ tiên không vượt quá một phạm vi nào đó. Trên LCT, ta
+  \texttt{access} nút hiện tại rồi nhị phân trên \texttt{splay} chứa nút ấy để
+  thu được đáp án. Độ phức tạp thời gian \(\Oh(\log N)\).
+\end{itemize}
+
+Độ phức tạp thời gian \(\Oh((Q+N)\log N)\), bộ nhớ \(\Oh(N)\). Điểm kỳ vọng:
+\(100\) điểm.
+
+Đây cũng là cách chuẩn do tác giả đưa ra. Trong buổi thi thử, Chen Junkun từ
+Trường Trung học số 1 Fuzhou, tỉnh Fujian, dùng cách này để đạt trọn điểm.
+
+\subsubsection{\emph{idea3}: thuật toán ba trừu tượng hóa thành cây}
+
+Ta thử vẽ cây đoạn này theo cấu trúc cây, đồng thời đánh số lại: với mỗi nút
+không phải lá, lấy giá trị \(\operatorname{mid}\) của nó làm nhãn để xây một
+cây. Hình 23 của bản gốc là dáng vẻ của Hình 16 sau khi trừu tượng hóa thành
+cây. Trong đó chỉ giữ các nút không phải lá; các phần con trái, con phải rỗng
+trong cây đều là lá nhưng không có số hiệu và không được vẽ, vì trong lời giải
+không cần dùng đến, dù có thể cần trong chứng minh. Ngoài ra, trên cơ sở cây
+ban đầu, ta thêm hai nút mới \(0\) và \(N\) ở phía trên gốc. Bản chất là thêm
+hai nút bên ngoài cây đoạn, sao cho cây đoạn cần xử lý nằm trong một cây con.
+Mục đích là để mô tả thuật toán thuận tiện hơn, không phải thêm vài trường hợp
+đặc biệt.
+
+Ta thấy cây này có các tính chất đẹp sau:
+
+\begin{itemize}
+  \item Thứ tự duyệt trung tố của cây tăng dần từ \(0\) đến \(N\). Sau các thao
+  tác xoay, tính chất này vẫn không đổi.
+
+  \item Nhãn trong một cây con là một đoạn liên tiếp, và thứ tự duyệt trung tố
+  tăng dần. Với cây con có gốc là đoạn \([l,r]\), tập nhãn của mọi nút trong
+  cây con là \(l,\ldots,r-1\).
+\end{itemize}
+
+Qua quan sát, ta thu được định lý sau.
+
+\paragraph{Định lý 3.4.}
+Giả sử đoạn truy vấn là \([l,r]\), đặt \(t=\operatorname{lca}(l-1,r)\). Khi
+đối ứng sang cây trừu tượng này, số đoạn trong định vị bằng tổng của số nút con
+trái trên đường đi từ \(l-1\) đến \(t\), không tính \(t\), và số nút con phải
+trên đường đi từ \(r\) đến \(t\), không tính \(t\).
+
+\paragraph{Chứng minh 5.}
+Trên đường đi từ \(l-1\) đến \(t\), mọi nút con trái trừ nút con trái của
+\(t\): con phải của cha chúng, cộng thêm con phải của \(l-1\), tương ứng với
+nửa trái của định vị đoạn; các đoạn định vị này đều là con phải.
+
+Trên đường đi từ \(r\) đến \(t\), mọi nút con phải trừ nút con phải của \(t\):
+con trái của cha chúng, cộng thêm con trái của \(r\), tương ứng với nửa phải
+của định vị đoạn; các đoạn định vị này đều là con trái.
+
+Trong đó, việc nút con trái của \(t\) được tính vào triệt tiêu với việc con
+phải của \(l-1\) không được tính. Tương tự, việc nút con phải của \(t\) được
+tính vào triệt tiêu với việc con trái của \(r\) không được tính.
+
+Để dễ hiểu, lấy cây đoạn ở Hình 16 của bản gốc, tương ứng cây trừu tượng ở
+Hình 23, làm ví dụ. Với đoạn truy vấn \([3,6]\), trên cây ta tìm
+\(\operatorname{lca}(2,6)=4\). Các nút con trái trên đường từ \(2\) đến \(4\)
+là \(1,3\), còn các nút con phải trên đường từ \(6\) đến \(4\) là \(5,6\);
+tổng cộng \(4\) nút, đúng bằng số đoạn trong định vị. Trong đó nút con trái
+\(1\) ứng với con phải của cha \(3\), tức \([4,4]\); nút con trái \(3\) là con
+trái của LCA \(4\) và triệt tiêu với con phải của \(2\), tức \([3,3]\). Nút
+con phải \(6\) ứng với con trái của cha \(5\), tức \([5,5]\); nút con phải
+\(5\) là con phải của LCA \(4\) và triệt tiêu với con trái của \(6\), tức
+\([6,6]\). Các con trái, con phải tương ứng một-một với các đoạn định vị, nên
+định lý đúng. \qedmark
+
+\paragraph{Một cách trực quan: LCT.}
+Vì bài yêu cầu online, một cách trực quan là duy trì động cây này. Cấu trúc dữ
+liệu đảm đương được việc đó hiển nhiên là LCT.
+
+\begin{itemize}
+  \item Với một thao tác sửa đổi, bản chất là cắt một số cạnh và nối một số
+  điểm, tương ứng với các thao tác \texttt{link} và \texttt{cut} trên LCT. Đồng
+  thời cần sửa trọng số cho biết một số điểm là con trái hay con phải; có thể
+  sửa và duy trì trong \texttt{splay}. Độ phức tạp thời gian \(\Oh(\log N)\).
+
+  \item Với một thao tác truy vấn, cần hỗ trợ tìm LCA. Giả sử cần tìm LCA của
+  hai điểm \(x,y\). Trên LCT, trước hết \texttt{access(x)}, sau đó
+  \texttt{access(y)}; khi ấy cha nối bằng cạnh ảo của \texttt{splay} chứa \(x\)
+  chính là LCA. Với thao tác trên chuỗi phía sau, dùng thao tác đổi gốc và
+  \texttt{access} của LCT, đồng thời duy trì số con trái và số con phải trên
+  \texttt{splay}, là có thể hoàn thành truy vấn. Độ phức tạp thời gian
+  \(\Oh(\log N)\).
+\end{itemize}
+
+Độ phức tạp thời gian \(\Oh((Q+N)\log N)\), bộ nhớ \(\Oh(N)\). Điểm kỳ vọng:
+\(100\) điểm.
+
+\paragraph{Duy trì cây đoạn theo trục tọa độ là thứ tự trung tố.}
+Sau khi quan sát, ta chỉ cần duy trì số con trái và số con phải trên đường từ
+mỗi điểm đến gốc, đồng thời hỗ trợ tìm LCA động, là có thể thu được đáp án.
+Bởi số con trái trên đường từ \(l-1\) đến LCA có thể lấy bằng số con trái trên
+đường từ \(l-1\) đến gốc trừ đi số con trái trên đường từ LCA đến gốc; số con
+phải trên đường từ \(r\) đến LCA cũng tương tự.
+
+Ta có thể duy trì một cây đoạn lấy thứ tự trung tố làm tọa độ. Cụ thể, duy trì
+ba cây đoạn: \(L\), số con trái trên đường từ mỗi điểm đến gốc; \(R\), số con
+phải trên đường từ mỗi điểm đến gốc; và \(\operatorname{Dep}\), độ sâu của mỗi
+điểm, tức số điểm trên đường từ điểm ấy đến gốc.
+
+Trước đó ta đã mô tả tính chất của cây này: thứ tự duyệt trung tố chính là thứ
+tự nhãn, và mọi điểm trong một cây con nằm trên một đoạn liên tiếp của thứ tự
+trung tố. Thứ tự trung tố của cây này giống thứ tự DFS của cây ở chỗ cùng có
+tính chất: một cây con nằm trên một phần liên tiếp của dãy. Vì vậy có thể duy
+trì như sau.
+
+\begin{itemize}
+  \item Với một nút con trái, dùng sửa đoạn trên cây đoạn để cộng \(1\) vào
+  \(L\) trên đoạn ứng với cây con của nó.
+
+  \item Với một nút con phải, cũng dùng sửa đoạn trên cây đoạn để cộng \(1\)
+  vào \(R\) trên đoạn ứng với cây con của nó.
+
+  \item Với mỗi nút trên cây, dùng sửa đoạn để cộng \(1\) vào
+  \(\operatorname{Dep}\) trên đoạn cây con.
+\end{itemize}
+
+Duy trì theo cách này, giá trị tại một điểm trong các cây đoạn \(L,R,\operatorname{Dep}\)
+chính là số con trái, số con phải và độ sâu trên đường từ điểm ấy đến gốc.
+
+Xét cách duy trì từng thao tác.
+
+\begin{itemize}
+  \item Với một thao tác sửa đổi, bản chất là thay đổi đoạn cây con của một
+  điểm, đồng thời đổi một con trái thành con phải và đổi một con phải thành con
+  trái. Khi sửa đoạn cây con, trên cây đoạn ta trừ \(1\) khỏi
+  \(\operatorname{Dep}\) của đoạn cây con cũ, rồi cộng \(1\) vào
+  \(\operatorname{Dep}\) của đoạn cây con mới. Việc thay đổi tính chất con trái,
+  con phải của nút cũng xử lý tương tự. Độ phức tạp thời gian \(\Oh(\log N)\).
+
+  \item Với một thao tác truy vấn, ta vẫn cần hỗ trợ tìm LCA. Giả sử đoạn truy
+  vấn là \([l,r]\). Khi ấy \(\operatorname{lca}(l-1,r)\) là điểm có độ sâu nhỏ
+  nhất trong đoạn \([l-1,r]\). Vì ta đã duy trì độ sâu trên cây đoạn, chỉ cần
+  truy vấn giá trị nhỏ nhất trên đoạn. Phần còn lại, tức số con trái trên đường
+  từ \(l-1\) và LCA đến gốc, cũng như số con phải trên đường từ \(r\) và LCA
+  đến gốc, đều dùng truy vấn điểm là đủ. Độ phức tạp thời gian \(\Oh(\log N)\).
+\end{itemize}
+
+Đến đây, cách làm này chỉ dùng một cấu trúc dữ liệu đơn giản là cây đoạn mà
+giải được bài toán. So với các cấu trúc khá rườm rà như LCT hoặc cây lồng cây
+ở trước, nó rõ ràng và gọn hơn nhiều. Tổng độ phức tạp thời gian là
+\(\Oh((Q+N)\log N)\), bộ nhớ \(\Oh(N)\), điểm kỳ vọng \(100\) điểm.
+
+Trong buổi thi thử, Yan Shuyi từ Trường Trung học số 3 Fuzhou, tỉnh Fujian,
+dùng cách này, tức \emph{idea3} cộng với duy trì cây đoạn theo trục tọa độ là
+thứ tự trung tố, để đạt trọn điểm.
+
+\subsection{Cách sinh dữ liệu}
+
+Cách lấy giá trị \(\operatorname{mid}\) là điểm mấu chốt của bài này. Nếu
+\(\operatorname{mid}\) được lấy ngẫu nhiên, độ sâu kỳ vọng của cây đoạn vẫn là
+\(\Oh(\log N)\), về cơ bản không khác cây đoạn ban đầu, và vét cạn trực tiếp
+cũng AC được. Vì vậy tôi dùng phương pháp sinh ``khung lớn, ngẫu nhiên nhỏ'':
+trước hết dựng một khung lớn dạng chuỗi có độ dài xấp xỉ \(L\), rồi sinh ngẫu
+nhiên một cây đoạn nhỏ bên dưới chuỗi. Như vậy độ sâu của cây đoạn ít nhất là
+\(\Oh(L)\), và độ phức tạp của mỗi truy vấn vét cạn xấp xỉ \(\Oh(L)\). Với
+\(L\), tôi lấy giá trị trong khoảng \(10000\)--\(100000\), tăng dần theo số
+hiệu dữ liệu. Cách này đạt mục đích tăng cường dữ liệu và chặn một số lời giải
+vét cạn.
+
+\subsection{Cơ duyên ra đề}
+
+Nguyên mẫu của bài này là một đề tôi ra trong trại hè của trường năm 2016; khi
+đó bài không có sửa đổi và không bắt buộc online. Trong phòng thi khi ấy, bạn
+Guo Zizheng từ Trường Trung học số 2 Shijiazhuang, tỉnh Hebei, dùng
+\emph{idea1}, một hướng mà lúc đó tôi chưa nghĩ tới, để đạt trọn điểm. Sau đó,
+trong thời gian thi thử đội tuyển, tôi thêm thao tác xoay để mô hình bài toán
+trông phức tạp hơn, đồng thời tin rằng đặt vào thi thử sẽ giúp mọi người cùng
+nghĩ và tạo ra nhiều thuật toán thú vị hơn. Quả nhiên, các bạn tham gia thi
+thử rất xuất sắc và đạt điểm cao bằng nhiều cách khác nhau. Về bối cảnh đề
+bài, cảm hứng đến từ bài \emph{Cây đoạn kỳ lạ} của đàn anh Ji Ruyi trong UNR.
+Đó cũng là một bài lấy cây đoạn có giá trị \(\operatorname{mid}\) tùy ý làm
+nền, nhưng ý tưởng giải và thuật toán lại rất khác.
+
+\subsection{Tổng kết}
+
+Điểm kiến thức của bài này rất toàn diện, bao gồm mô phỏng, tham lam, nhảy bội
+và phân trị trong OI, đồng thời kiểm tra đầy đủ khả năng nắm vững và vận dụng
+các cấu trúc dữ liệu cơ bản như cây đoạn, cây cân bằng, cây lồng cây và cây
+động. Ngoài việc khảo sát nền tảng, bài còn kiểm tra nhiều hơn năng lực quan
+sát đề bài và tổng kết phương pháp của thí sinh. Tùy theo cách quan sát và quy
+nạp, bài này có thể sinh ra ba tuyến lời giải lấy những phương pháp ấy làm
+điểm xuất phát, qua đó tăng mạnh tính đa dạng của lời giải, cải thiện độ khả
+thi của đề, và đem lại cho thí sinh một trải nghiệm làm bài rất thú vị.
+
+Tại hiện trường thi thử có tổng cộng \(4\) bạn đạt trọn điểm; các bạn dùng
+những phương pháp khác nhau, như đã nhắc ở phần trước. Điều đáng nói là khi ra
+đề, tôi chỉ nghĩ tới hai khung thuật toán lớn là \emph{idea1} và \emph{idea2}.
+\emph{idea3} khéo léo của Yan Shuyi, cùng cách dùng cây đoạn để duy trì, đã
+đạt trọn điểm chỉ sau \(1.5\) giờ mở màn; nhờ vậy tôi mới ghi lại nó trong báo
+cáo lời giải này. Nhìn chung, đây là một bài cấu trúc dữ liệu bề ngoài có vẻ
+đơn nhất nhưng thực ra biến hóa và thú vị. Tôi mong sẽ có thêm nhiều thuật toán
+giải được bài toán này; hoan nghênh độc giả có ý tưởng liên hệ với tôi để trao
+đổi học thuật.
+
+\subsection{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+
+Cảm ơn thầy Cao Wen và thầy Wu Tao của Trường Trung học Cao cấp Changzhou,
+tỉnh Jiangsu, đã quan tâm và chỉ dẫn tôi trong nhiều năm qua.
+
+Cảm ơn Weng Wentao của Trường Trung học Tưởng niệm Tôn Trung Sơn và Ouyang
+Siqi của Trường Trung học Yali, thành phố Changsha, đã luôn ủng hộ và giúp đỡ
+tôi.
+
+Cảm ơn Xu Mingkuan của Trường Thực nghiệm trực thuộc Đại học Sư phạm Bắc Kinh,
+Feng Zhe của Trường Trung học số 1 Shaoxing, Chen Junkun của Trường Trung học
+số 1 Fuzhou và Yan Shuyi của Trường Trung học số 3 Fuzhou đã phản hồi tốt cho
+tôi trong thi thử, cũng như gợi mở và giúp đỡ tôi sau thi thử.
+
+Cảm ơn Mao Xiao của Trường Trung học Yali, thành phố Changsha, đã thảo luận với
+tôi về việc chuyển một lớp bài toán trên đường từ \texttt{splay} đến gốc thành
+bài toán duy trì dãy trọng số tăng.
+
+Cảm ơn Yao Jiahe của Trường Trung học Cao cấp Changzhou, tỉnh Jiangsu, đã kiểm
+tra dữ liệu cho bài này.
+
+Cảm ơn Weng Wentao của Trường Trung học Tưởng niệm Tôn Trung Sơn và Yang
+Jingqin của Trường Trung học số 7 Thành Đô đã góp ý sửa đổi cho bài viết này.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}[label={[\arabic*]}]
+  \item Xu Yinzhan, \emph{Ứng dụng cây đoạn trong một lớp bài toán phân trị},
+  luận văn đội tuyển quốc gia năm 2014.
+
+  \item Huang Zhiao, \emph{Bàn về các vấn đề liên quan đến cây động và một số
+  mở rộng đơn giản}, luận văn đội tuyển quốc gia năm 2014.
+
+  \item Ji Ruyi, lời giải bài \emph{Cây đoạn kỳ lạ} của UNR,
+  \url{http://c-sunshine.blog.uoj.ac/blog/1860}.
+\end{enumerate}
+
 \section*{Ghi chú về trích xuất}
 
 Nội dung bài đầu được trích bằng \texttt{pdftotext} từ trang vật lý 3 đến 13
@@ -9681,5 +10259,13 @@ tiếp. Bài này không có hình và không có mẫu mã chương trình. Cá
 danh thuật toán như \(\operatorname{pos}\), \(\operatorname{Reduce}\), SMAWK,
 \(\operatorname{val}\) và các ký hiệu ma trận con được giữ theo ý nghĩa thuật
 toán của nguồn.
+
+Bài thứ mười ba được trích bằng \texttt{pdftotext} từ trang vật lý 167 đến
+180 của PDF, tương ứng trang bài viết 165 đến 178; trang vật lý 181 là bài kế
+tiếp. Các hình 16--23 trong nguồn được tham chiếu bằng mô tả văn bản, không
+dựng lại bằng \texttt{tikz}, vì lớp văn bản trích xuất không chứa đủ chi tiết
+tọa độ của hình. Bảng phạm vi dữ liệu được dựng lại bằng LaTeX; các định danh
+cấu trúc dữ liệu như \texttt{splay}, \texttt{kd-tree}, \texttt{link},
+\texttt{cut} và LCT được giữ theo cách dùng thuật toán của nguồn.
 
 \end{document}

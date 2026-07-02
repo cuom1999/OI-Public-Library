@@ -31,7 +31,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2019. Tệp được
 tạo bằng XeTeX và có lớp văn bản đọc được; tuy nhiên các trang có watermark
 chéo, nên kết quả trích xuất xen thêm chữ từ watermark vào nội dung chính. Bản
-LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và mười hai bài viết đầu
+LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và mười ba bài viết đầu
 tiên: ``Tính chất và ứng dụng của hai loại dãy truy hồi'' của Zhong Ziqian,
 ``Bàn về bài toán bước đi ngẫu nhiên trên mô hình đồ thị'' của Wang Xiuhan,
 ``Báo cáo ra đề \emph{Bài toán nhỏ dễ}'' của Yang Junzhao, ``Bàn về bài toán
@@ -43,7 +43,8 @@ ra đề \emph{Đếm điểm nguyên} và một số nghiên cứu về số ng
 Yixuan, ``Bàn về thuật toán chia để trị trên cây'' của Zhang Zheyu, ``Báo cáo
 ra đề \emph{Tổng tổ hợp}'' của Wu Siyang, và ``Bàn về một lớp cấu trúc dữ liệu
 ngắn gọn'' của Wang Siqi, ``Thuật toán liên quan tới truy vấn chu kỳ xâu con
-và ứng dụng'' của Chen Sunli.
+và ứng dụng'' của Chen Sunli, và ``Báo cáo ra đề \emph{Công viên}'' của Wu
+Zuotong.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -9588,6 +9589,1368 @@ Xin cảm ơn cha mẹ tôi đã luôn hết lòng ủng hộ và khích lệ.
   \item Xu Mingkuan. \emph{Bước đầu về thuật toán chia khối kích thước phi
         thông thường}. Tập luận văn ứng viên đội tuyển quốc gia IOI Trung
         Quốc 2018.
+\end{enumerate}
+
+\clearpage
+\section*{Báo cáo ra đề \emph{Công viên}}
+
+\begin{center}
+Wu Zuotong, Trường Trung học số 1 Phúc Châu, tỉnh Phúc Kiến
+\end{center}
+
+\subsection*{Tóm tắt}
+
+\emph{Công viên} là một bài toán tôi ra trong kỳ kiểm tra chéo đội tuyển tập
+huấn năm 2019. Bài viết này đưa vào khái niệm ``đồ thị nối tiếp-song song
+tổng quát'', đồng thời chứng minh rằng mọi đồ thị nối tiếp-song song tổng
+quát đều có thể được biến đổi thành đồ thị chỉ còn một đỉnh bằng ba phép toán:
+``xóa đỉnh bậc 1'', ``co đỉnh bậc 2'' và ``chồng cạnh song song''. Bài viết
+giới thiệu ý tưởng giải và lựa chọn thuật toán của bài toán dưới các điều
+kiện đặc biệt khác nhau. Trong lời giải chuẩn, để hỗ trợ sửa tham số nhanh,
+ta xây cây biểu thức biểu diễn quá trình quy hoạch động trên đồ thị nối
+tiếp-song song tổng quát của bài toán, dùng dạng ma trận để biểu diễn chuyển
+tiếp, rồi dùng cây đoạn theo phân rã chuỗi để tăng tốc cập nhật. Tôi hy vọng
+bài toán \emph{Công viên} có thể gợi thêm cho mọi người nhiều suy nghĩ về đồ
+thị nối tiếp-song song tổng quát và phép co đỉnh bậc 2.
+
+\section*{1. Đề bài}
+
+\subsection*{1.1. Tóm tắt đề}
+
+Ta gọi một đồ thị vô hướng liên thông là đồ thị nối tiếp-song song tổng quát
+nếu với bất kỳ 4 đỉnh nào cũng không tồn tại 6 đường đi đôi một không chung
+cạnh nối từng cặp trong 4 đỉnh ấy.
+
+PDF nguồn đưa ra một hình ví dụ là đồ thị nối tiếp-song song tổng quát và một
+hình ví dụ không phải đồ thị nối tiếp-song song tổng quát. Ở hình thứ hai, với
+các đỉnh \(1,4,5,6\), tồn tại sáu đường đi đôi một không chung cạnh
+\[
+  1\to4,\quad 4\to5,\quad 5\to6,\quad 6\to1,\quad
+  4\to3\to6,\quad 1\to2\to5
+\]
+nối từng cặp trong bốn đỉnh này.
+
+Cho một đồ thị nối tiếp-song song tổng quát đơn giản (không khuyên, không
+cạnh song song) bậc \(n\), ký hiệu \(G=(V,E)\). Mỗi đỉnh có hai trọng số đỉnh
+\(b_i,w_i\), mỗi cạnh có hai trọng số cạnh \(s_i,d_i\). Cần tô mỗi đỉnh thành
+một trong hai màu đen, trắng, và tìm giá trị lớn nhất của một phương án tô.
+Gọi màu của đỉnh \(i\) sau khi tô là \(c_i\): nếu \(c_i=0\) thì đỉnh \(i\)
+màu đen, nếu \(c_i=1\) thì đỉnh \(i\) màu trắng. Giá trị của một phương án tô
+được định nghĩa là
+\[
+  \sum_{v\in V}\bigl(b_v[c_v=0]+w_v[c_v=1]\bigr)
+  +\sum_{e=(u,v)\in E}\bigl(s_e[c_u=c_v]+d_e[c_u\ne c_v]\bigr).
+\]
+Ở đây \([x]\) có nghĩa là \([x]=1\) nếu mệnh đề \(x\) đúng, và \([x]=0\)
+nếu \(x\) sai.
+
+Cần hỗ trợ sửa động hai trọng số của một đỉnh hoặc hai trọng số của một cạnh.
+Trước mọi lần sửa và sau mỗi lần sửa, hãy in đáp án. Có tất cả \(Q\) lần sửa.
+
+\subsection*{1.2. Định dạng vào}
+
+Dòng đầu gồm hai số nguyên dương \(n,m\), trong đó \(n\) là số đỉnh và \(m\)
+là số cạnh của \(G\).
+
+Tiếp theo là \(n\) dòng, mỗi dòng gồm hai số nguyên không âm; dòng thứ
+\(i\ (1\le i\le n)\) biểu diễn \(b_i,w_i\).
+
+Tiếp theo là \(m\) dòng, mỗi dòng gồm bốn số nguyên dương \(x_i,y_i,s_i,d_i\);
+dòng thứ \(i\ (1\le i\le m)\) biểu diễn hai đầu mút của cạnh thứ \(i\) là
+\(x_i,y_i\), và hai trọng số cạnh của nó là \(s_i,d_i\).
+
+Dòng thứ \(n+m+2\) gồm một số nguyên không âm \(Q\).
+
+Tiếp theo là \(Q\) dòng, mỗi dòng gồm ba số nguyên dương \(x,a,b\) biểu diễn
+một lần sửa. Nếu \(x\le n\), sửa \(b_x\) thành \(a\) và \(w_x\) thành \(b\);
+ngược lại, sửa \(s_{x-n}\) thành \(a\) và \(d_{x-n}\) thành \(b\).
+
+\subsection*{1.3. Định dạng ra}
+
+In \(Q+1\) dòng. Dòng thứ nhất là đáp án trước mọi lần sửa. Với
+\(2\le i\le Q+1\), dòng thứ \(i\) là đáp án sau lần sửa thứ \(i-1\).
+
+\subsection*{1.4. Ví dụ vào}
+
+\begin{verbatim}
+2 1
+2 3
+4 7
+1 2 5 7
+1
+1 2 6
+\end{verbatim}
+
+\subsection*{1.5. Ví dụ ra}
+
+\begin{verbatim}
+16
+18
+\end{verbatim}
+
+\subsection*{1.6. Giải thích ví dụ}
+
+Trước khi sửa, \(b_1=2,w_1=3,b_2=4,w_2=7,s_1=5,d_1=7\). Phương án tô tối ưu
+là \(c_1=0,c_2=1\), có giá trị \(b_1+w_2+d_1=16\).
+
+Sau khi sửa, \(b_1=2,w_1=6,b_2=4,w_2=7,s_1=5,d_1=7\). Phương án tô tối ưu là
+\(c_1=1,c_2=1\), có giá trị \(w_1+w_2+s_1=18\).
+
+\subsection*{1.7. Quy mô dữ liệu và ràng buộc}
+
+Bảo đảm \(2\le n\le10^5,\ Q\le10^5\). Bảo đảm
+\(x_i,y_i\le n,\ x\le n+m,\ b_i,w_i,s_i,d_i,a,b\le10^6\).
+
+\begin{center}
+\small
+\begin{tabular}{c c c c c p{0.27\linewidth}}
+\textbf{Tập} & \textbf{Điểm} & \textbf{Dạng đồ thị} & \(\boldsymbol n\) &
+\(\boldsymbol Q\) & \textbf{Ràng buộc khác}\\
+\hline
+1 & 2 & cây & & \(=0\) & \\
+2 & 3 & xương rồng & \(\le17\) & \(\le17\) & \\
+3 & 7 & xương rồng & & \(=0\) & \\
+4 & 5 & & \(\le1000\) & \(=0\) & \\
+5 & 13 & & \(\le1000\) & \(\le1000\) & \\
+6 & 19 & xương rồng & & & \(b_i=w_i=0,\ x>n\)\\
+7 & 17 & & & & \(b_i=w_i=0,\ x>n\)\\
+8 & 23 & cây & & & \\
+9 & 11 & & & & \\
+\end{tabular}
+\end{center}
+
+Cây là đồ thị liên thông không chu trình. Xương rồng là đồ thị liên thông mà
+mỗi cạnh thuộc không quá một chu trình đơn. Ô trống nghĩa là không có ràng
+buộc bổ sung.
+
+\subsection*{1.8. Giới hạn thời gian và bộ nhớ}
+
+Giới hạn thời gian: 6 giây. Giới hạn bộ nhớ: 1 GB.
+
+\section*{2. Phân tích sơ bộ}
+
+\subsection*{2.1. Thuật toán một}
+
+Bài toán yêu cầu tìm phương án tô có giá trị lớn nhất. Rõ ràng với một phương
+án tô cố định, ta có thể tính giá trị của nó trong \(O(m)\) thời gian bằng
+cách duyệt cạnh và cộng đóng góp.
+
+Với tập con 2, \(n,Q\) đều không quá 17. Với một truy vấn, số phương án tô rất
+ít, không quá \(2^{17}=131072\), nên có thể xét mọi phương án tô, tính giá trị
+từng phương án rồi lấy lớn nhất.
+
+Độ phức tạp thời gian là \(O(2^n Qm)\). Đề không trực tiếp cho cận của \(m\),
+nhưng có thể chứng minh \(m=O(n)\); chứng minh xem ở mục 5.3.1.
+
+Điểm kỳ vọng: 3 điểm.
+
+Thuật toán này kém hiệu quả vì không dùng tính chất \(G\) là đồ thị nối
+tiếp-song song tổng quát, và sau mỗi lần sửa đều tính lại đáp án từ đầu,
+không tận dụng lượng lớn dữ liệu giống nhau trước và sau sửa.
+
+Tiếp theo ta bắt đầu từ vài trường hợp đặc biệt để phân tích bài toán.
+
+\section*{3. Bài toán trên cây}
+
+\subsection*{3.1. Thuật toán hai: cây, không có sửa}
+
+Với các bài toán tối ưu trên cây kiểu này, cách thường dùng là quy hoạch động
+trên cây.
+
+Biến cây vô căn thành cây có gốc tại 1. Ký hiệu \(f(i,j)\ (j\in\{0,1\})\) là
+đáp án trong cây con của đỉnh \(i\) khi \(c_i=j\). Gọi \(C(u)\) là tập con của
+\(u\). Ta có
+\[
+  f(u,0)=b_u+\sum_{v\in C(u)}
+  \max\{f(v,0)+s_{(u,v)}, f(v,1)+d_{(u,v)}\},
+\]
+\[
+  f(u,1)=w_u+\sum_{v\in C(u)}
+  \max\{f(v,0)+d_{(u,v)}, f(v,1)+s_{(u,v)}\}.
+\]
+Đáp án là \(\max\{f(1,0),f(1,1)\}\). Độ phức tạp thời gian \(O(n)\). Có thể
+qua tập con 1, kỳ vọng 2 điểm.
+
+\subsection*{3.2. Thuật toán ba: cây, có sửa}
+
+Xét việc tận dụng thuật toán quy hoạch động của thuật toán hai. Từ công thức
+chuyển, chỉ các giá trị \(f\)\footnote{Ta gọi chung \(f(u,0)\) và \(f(u,1)\)
+là giá trị \(f\) của đỉnh \(u\).} trên đường đi từ đỉnh/cạnh bị sửa tới gốc
+mới có thể thay đổi. Với loại bài toán này, có thể dùng phân rã theo chuỗi.
+
+Trên cây, ta gọi đỉnh không phải gốc có bậc 1 là lá; các đỉnh còn lại là đỉnh
+không lá. Có thể tính trực tiếp giá trị \(f\) của đỉnh bị sửa hoặc của cha của
+cạnh bị sửa. Phần còn lại có thể được tách thành \(O(\log n)\) chuỗi nặng
+bằng phân rã cây theo chuỗi nặng-nhẹ\footnote{Trong bài viết này, mọi chỗ nói
+``phân rã cây theo chuỗi'' đều là phân rã nặng-nhẹ. Cụ thể, con nặng của
+đỉnh \(u\) là đỉnh \(v\in C(u)\) có \(\operatorname{size}(v)\) lớn nhất, nếu
+có nhiều thì lấy chỉ số nhỏ nhất; \(\operatorname{size}(v)\) là số đỉnh trong
+cây con gốc \(v\). Cạnh nối một đỉnh với con nặng của nó là cạnh nặng; các
+cạnh còn lại là cạnh nhẹ. Một chuỗi nặng là một thành phần liên thông của đồ
+thị sinh bởi các cạnh nặng, hoặc một lá \(u\) sao cho cạnh nối \(u\) với cha
+là cạnh nhẹ. Con nhẹ của \(u\) là con không phải con nặng.}. Khi đó chỉ cần
+xét cách duy trì nhanh giá trị \(f\) trên chuỗi nặng.
+
+Gọi \(\operatorname{son}_u\) là con nặng của \(u\). Với đỉnh không lá \(u\),
+viết lại công thức chuyển:
+\[
+\begin{aligned}
+f(u,0)
+&=b_u+\sum_{\substack{v\in C(u)\\v\ne\operatorname{son}_u}}
+\max\{f(v,0)+s_{(u,v)},f(v,1)+d_{(u,v)}\}\\
+&\quad+\max\{f(\operatorname{son}_u,0)+s_{(u,\operatorname{son}_u)},
+f(\operatorname{son}_u,1)+d_{(u,\operatorname{son}_u)}\},
+\end{aligned}
+\]
+\[
+\begin{aligned}
+f(u,1)
+&=w_u+\sum_{\substack{v\in C(u)\\v\ne\operatorname{son}_u}}
+\max\{f(v,0)+d_{(u,v)},f(v,1)+s_{(u,v)}\}\\
+&\quad+\max\{f(\operatorname{son}_u,0)+d_{(u,\operatorname{son}_u)},
+f(\operatorname{son}_u,1)+s_{(u,\operatorname{son}_u)}\}.
+\end{aligned}
+\]
+Khi dùng giá trị \(f\) mới của \(\operatorname{son}_u\) để cập nhật giá trị
+\(f\) của \(u\), chỉ hạng cuối chứa \(f(\operatorname{son}_u,0)\) và
+\(f(\operatorname{son}_u,1)\) có thể thay đổi; phần còn lại có thể xem là
+hằng số. Vì vậy có thể viết
+\[
+  f(u,0)=\max\{f(\operatorname{son}_u,0)+A_u,\,
+               f(\operatorname{son}_u,1)+B_u\},
+\]
+\[
+  f(u,1)=\max\{f(\operatorname{son}_u,0)+C_u,\,
+               f(\operatorname{son}_u,1)+D_u\},
+\]
+trong đó \(A_u,B_u,C_u,D_u\) được xác định bởi đóng góp của các con nhẹ và
+cạnh nặng tương ứng:
+\[
+\begin{aligned}
+A_u&=b_u+\sum_{\substack{v\in C(u)\\v\ne\operatorname{son}_u}}
+\max\{f(v,0)+s_{(u,v)},f(v,1)+d_{(u,v)}\}+s_{(u,\operatorname{son}_u)},\\
+B_u&=b_u+\sum_{\substack{v\in C(u)\\v\ne\operatorname{son}_u}}
+\max\{f(v,0)+s_{(u,v)},f(v,1)+d_{(u,v)}\}+d_{(u,\operatorname{son}_u)},\\
+C_u&=w_u+\sum_{\substack{v\in C(u)\\v\ne\operatorname{son}_u}}
+\max\{f(v,0)+d_{(u,v)},f(v,1)+s_{(u,v)}\}+d_{(u,\operatorname{son}_u)},\\
+D_u&=w_u+\sum_{\substack{v\in C(u)\\v\ne\operatorname{son}_u}}
+\max\{f(v,0)+d_{(u,v)},f(v,1)+s_{(u,v)}\}+s_{(u,\operatorname{son}_u)}.
+\end{aligned}
+\]
+Chuyển trên một chuỗi nặng vì thế có thể biểu diễn bằng dạng giống ma trận.
+
+\subsubsection*{3.2.1. Biểu diễn ma trận}
+
+Đặt
+\[
+f_u=\begin{bmatrix}f(u,0)\\ f(u,1)\end{bmatrix}
+=\begin{bmatrix}
+\max\{f(\operatorname{son}_u,0)+A_u,
+      f(\operatorname{son}_u,1)+B_u\}\\
+\max\{f(\operatorname{son}_u,0)+C_u,
+      f(\operatorname{son}_u,1)+D_u\}
+\end{bmatrix}.
+\]
+Dạng này rất giống kết quả của phép nhân ma trận, chỉ khác là phép cộng của
+phép nhân ma trận thường được thay bằng \(\max\), còn phép nhân được thay bằng
+phép cộng. Vì phép cộng và \(\max\) đều giao hoán, kết hợp, đồng thời phép
+cộng phân phối với \(\max\), phép nhân ma trận mới định nghĩa như vậy vẫn kết
+hợp. Mọi phép nhân ma trận trong bài này đều hiểu theo định nghĩa đó.
+
+Đặt
+\[
+  g_u=\begin{bmatrix}A_u&B_u\\ C_u&D_u\end{bmatrix}.
+\]
+Khi đó
+\[
+  g_u f_{\operatorname{son}_u}
+  =
+  \begin{bmatrix}
+  \max\{f(\operatorname{son}_u,0)+A_u,
+        f(\operatorname{son}_u,1)+B_u\}\\
+  \max\{f(\operatorname{son}_u,0)+C_u,
+        f(\operatorname{son}_u,1)+D_u\}
+  \end{bmatrix}
+  = f_u.
+\]
+
+\subsubsection*{3.2.2. Phân rã}
+
+Ở trạng thái ban đầu, mọi \(A_u,B_u,C_u,D_u\) có thể được tiền xử lý bằng
+thuật toán hai. Sau đó, các giá trị này của \(u\) chỉ cần cập nhật khi sửa
+trọng số của cạnh nối \(u\) với một con, hoặc sửa trọng số đỉnh trong cây con
+của \(u\) hay một con nhẹ của \(u\). Vì trên một đường đơn từ một đỉnh tới gốc
+chỉ có \(O(\log n)\) cạnh nhẹ, mỗi lần sửa chỉ làm thay đổi \(A_u,B_u,C_u,D_u\)
+của \(O(\log n)\) đỉnh.
+
+Để cập nhật \(A_u,B_u,C_u,D_u\), hoặc để tính đáp án, ta cần biết giá trị
+\(f\) của đỉnh đầu\footnote{Đỉnh đầu của chuỗi nặng là đỉnh gần gốc nhất trên
+chuỗi; đỉnh cuối là đỉnh xa gốc nhất trên chuỗi.} của một chuỗi nặng. Dùng
+cây đoạn để duy trì giá trị này. Nhờ phép nhân ma trận ở trên có tính kết hợp,
+ta duy trì tích các ma trận \(g\) trên một đoạn của chuỗi nặng bằng cây đoạn;
+khi sửa \(g_u\), cập nhật điểm tương ứng là đủ. Chú ý \(g_u\) không định nghĩa
+với lá, nên cây đoạn chỉ cần lưu thông tin của đỉnh không lá.
+
+Nếu chuỗi nặng gồm \(u_1,u_2,\ldots,u_l\), với \(u_1\) là đỉnh đầu, \(u_i\) là
+cha của \(u_{i+1}\), và \(u_l\) là lá, thì
+\[
+  f_{u_1}=g_{u_1}g_{u_2}\cdots g_{u_{l-1}}f_{u_l}.
+\]
+Do đó chỉ cần truy vấn tích ma trận \(g\) của cả chuỗi rồi nhân phải với
+\(f_{u_l}\).
+
+Tóm lại, trong một lần sửa:
+\begin{enumerate}
+  \item Sửa trọng số của đỉnh hoặc cạnh; gọi \(u\) là cha của cạnh bị sửa
+        hoặc là đỉnh bị sửa.
+  \item Nếu \(u\) không phải lá, cập nhật \(g_u\) và cây đoạn của chuỗi tương
+        ứng.
+  \item Đặt \(u\) thành đỉnh đầu của chuỗi nặng chứa \(u\).
+  \item Tính lại \(f_u\), gọi giá trị này là \(v\).
+  \item Nếu \(u\) là gốc, trả \(v\) làm đáp án; ngược lại đặt \(u\) thành cha
+        của \(u\).
+  \item Dùng \(v\) đã tính để cập nhật \(g_u\).
+  \item Quay lại bước 3.
+\end{enumerate}
+
+Mỗi lần sửa cần \(O(\log n)\) lần cập nhật điểm trên cây đoạn, nên độ phức tạp
+thời gian là \(O(n+Q\log^2 n)\). Thuật toán qua được các tập con 1 và 8, kỳ
+vọng 25 điểm.
+
+\section*{4. Bài toán trên xương rồng}
+
+\subsection*{4.1. Thuật toán bốn: xương rồng, không có sửa}
+
+Với bài toán trên xương rồng, một phương pháp kinh điển là quy hoạch động trên
+xương rồng. Độ phức tạp \(O(n)\), có thể qua các tập con 1 và 3, được 9 điểm.
+Phần này không liên quan đến chủ đề chính của bài viết nên không nói kỹ; có
+thể tham khảo bài của Chen Junkun về \emph{Đồ thị con kỳ diệu} và mở rộng.
+
+Tập con 6 có ràng buộc ``mọi trọng số đỉnh đều bằng 0''. Ràng buộc này giúp gì
+cho lời giải? Trước hết xét trường hợp trên cây.
+
+\subsection*{4.2. Thuật toán năm: cây, mọi trọng số đỉnh bằng 0}
+
+Khi mọi trọng số đỉnh bằng 0, giá trị phương án tô chỉ liên quan đến việc hai
+đầu của mỗi cạnh có cùng màu hay khác màu. Ta gọi cạnh có hai đầu cùng màu là
+cạnh đồng màu, cạnh có hai đầu khác màu là cạnh dị màu.
+
+Một ý tưởng là xét mỗi cạnh là đồng màu hay dị màu, rồi kiểm tra có tồn tại
+phương án tô thỏa điều kiện hay không. Trên cây, giả sử đã quyết định trạng
+thái đồng/dị màu của từng cạnh, ta có thể đặt \(c_1=0\) rồi DFS một lần. Với
+mỗi đỉnh không phải gốc, màu của nó được xác định bởi màu của cha và trạng
+thái đồng/dị màu của cạnh nối với cha. Điều này chứng minh rằng mọi cách chọn
+trạng thái cạnh đều có một phương án tô hợp lệ. Vì vậy trên cây với trọng số
+đỉnh bằng 0, có thể tham lam lấy đóng góp lớn hơn của mỗi cạnh, đáp án là
+\[
+  \sum_{e\in E}\max\{s_e,d_e\}.
+\]
+
+\subsection*{4.3. Thuật toán sáu: xương rồng, mọi trọng số đỉnh bằng 0}
+
+Vẫn có thể dùng DFS để kiểm tra một phương án trạng thái cạnh có tương ứng với
+một cách tô hợp lệ hay không. Lấy một cây DFS bất kỳ, xác định màu từng đỉnh
+như ở 4.2, rồi kiểm tra mọi cạnh không thuộc cây.
+
+Có thể thấy phương án tô hợp lệ tồn tại khi và chỉ khi không có chu trình đơn
+nào chứa số cạnh dị màu lẻ. Vì trên xương rồng mỗi cạnh thuộc nhiều nhất một
+chu trình đơn, ta có thể tính đáp án độc lập cho từng chu trình đơn và từng
+cầu rồi cộng lại.
+
+Với cầu, cộng trực tiếp \(\max\{s_i,d_i\}\) vào đáp án. Với chu trình, trước
+hết cộng \(\max\{s_i,d_i\}\) của mọi cạnh. Nếu số cạnh dị màu là chẵn, ta đạt
+được giá trị lớn nhất lý thuyết và hợp lệ. Nếu số đó là lẻ, tìm cạnh có
+\(|s_i-d_i|\) nhỏ nhất và đảo trạng thái đồng/dị màu của hai đầu cạnh ấy, thu
+được nghiệm tối ưu. Khi sửa, lấy đáp án của truy vấn trước cộng với độ biến
+thiên của chu trình hoặc cầu chứa cạnh bị sửa.
+
+Độ phức tạp thời gian là \(O((n+Q)\log n)\). Có thể qua tập con 6, kỳ vọng 19
+điểm. Kết hợp các phần trên cây và xương rồng (thuật toán ba, bốn, sáu) được
+51 điểm.
+
+\section*{5. Dạng đồ thị tổng quát hơn}
+
+Tính chất của đồ thị nối tiếp-song song tổng quát là với bất kỳ 4 đỉnh nào
+cũng không tồn tại 6 đường đi đôi một không chung cạnh nối từng cặp trong 4
+đỉnh ấy. Các thuật toán trước đòi hỏi dạng đồ thị đặc biệt hơn, nên không phù
+hợp cho tình huống tổng quát hơn này. Tuy nhiên ta vẫn có thể xuất phát từ
+cây và xương rồng để tìm cách làm phổ quát hơn. Để tiện phân tích, tạm thời
+không xét sửa đổi.
+
+\subsection*{5.1. Một cách giải khác cho bài toán trên cây}
+
+\paragraph{Ví dụ 1. Bài toán tập độc lập trọng số lớn nhất trên cây.}
+Cho một cây \(T\) có \(n\) đỉnh, đỉnh \(i\) có trọng số \(a_i\). Hãy tìm một
+tập con \(S\) của tập đỉnh sao cho không có hai đỉnh trong \(S\) kề nhau, và
+tổng trọng số các đỉnh trong \(S\) là lớn nhất.
+
+Ràng buộc: \(1\le n\le10^5,\ 1\le a_i\le10^9\). Giới hạn thời gian 1 giây,
+bộ nhớ 128 MB. Đây là bài toán kinh điển.
+
+Bài này tất nhiên có quy hoạch động giống thuật toán hai, nhưng giờ xét một
+thuật toán khác. Khi mọi \(a_i=1\), có cách tham lam kinh điển: mỗi lần tìm
+một đỉnh \(u\) có bậc không quá 1, đưa nó vào \(S\), rồi xóa khỏi \(T\) đỉnh
+kề \(v\) với nó (nếu tồn tại; nếu \(u\in S\) thì theo đề \(v\notin S\)) và xóa
+chính \(u\). Lặp cho tới khi \(T\) không còn đỉnh; khi đó \(S\) là một nghiệm
+tối ưu.
+
+\paragraph{Chứng minh.}
+Giả sử tồn tại một nghiệm tối ưu \(S^\ast\ne S\). Khi mọi \(a_i=1\), tối đa
+hóa tổng trọng số tương đương tối đa hóa \(|S|\).
+
+Nếu \(u\) có bậc 0 và không thuộc \(S^\ast\), rõ ràng có thể thêm \(u\) vào
+\(S^\ast\) để tăng kích thước, mâu thuẫn với tối ưu.
+
+Nếu \(u\) có bậc 1 và không thuộc \(S^\ast\), gọi \(v\) là đỉnh kề của nó.
+Nếu \(v\notin S^\ast\), thêm \(u\) vào \(S^\ast\) cũng cho nghiệm tốt hơn,
+mâu thuẫn. Nếu \(v\in S^\ast\), thay \(v\) bằng \(u\) trong \(S^\ast\) vẫn cho
+một nghiệm hợp lệ và tối ưu.
+
+Vì vậy ta có thể giải tối ưu bài toán sau khi xóa \(u\) và \(v\) (nếu có),
+gọi nghiệm là \(S'\), rồi lấy \(S=S'\cup\{u\}\). Biên đệ quy là đồ thị rỗng,
+khi đó \(S=\varnothing\) hiển nhiên tối ưu.
+
+Mỗi phép toán xóa ít nhất một đỉnh. Mọi đồ thị con không rỗng của cây đều có
+một đỉnh bậc không quá 1, vì mỗi thành phần liên thông của nó vẫn là cây, và
+theo nguyên lý chuồng bồ câu cây luôn có đỉnh bậc không quá 1. Do đó thuật
+toán kết thúc sau hữu hạn bước. \(\square\)
+
+Nếu bỏ ràng buộc mọi \(a_i=1\), thuật toán tham lam này sai, vì trong chứng
+minh, thay \(v\) bằng \(u\) có thể làm nghiệm kém đi. Nhưng phần còn lại của
+chứng minh vẫn dùng được.
+
+Do đó ta cải tiến như sau: sau khi đưa \(u\) vào \(S\), cho phép về sau hủy
+thao tác ấy và đưa \(v\) vào \(S\). Điều này tương đương với việc sau này có
+thể xét chọn \(v\), nhưng phải trả thêm chi phí \(a_u\) để loại \(u\) đã chọn
+khỏi \(S\). Ta làm bằng cách đổi \(a_v\) thành \(a_v-a_u\). Nếu \(a_v<a_u\),
+nghiệm tối ưu chắc chắn chứa \(u\) và không chứa \(v\), vì nếu chứa \(v\) thì
+thay \(v\) bằng \(u\) sẽ tốt hơn. Thuật toán cải tiến xử lý được trường hợp
+tổng quát.
+
+Áp dụng ý tưởng cải tiến này cho bài toán trên cây của ta cũng tương tự. Khi
+gặp một đỉnh bậc 1 là \(u\), gọi đỉnh kề của nó là \(v\). Nếu tô \(v\) màu
+đen, phần \(u\) và cạnh \((u,v)\) đóng góp nhiều nhất
+\[
+  \max\{s_{(u,v)}+b_u,\ d_{(u,v)}+w_u\}.
+\]
+Nếu tô \(v\) màu trắng, đóng góp nhiều nhất là
+\[
+  \max\{d_{(u,v)}+b_u,\ s_{(u,v)}+w_u\}.
+\]
+Vậy có thể đổi
+\[
+b_v\leftarrow b_v+\max\{s_{(u,v)}+b_u,\ d_{(u,v)}+w_u\},
+\]
+\[
+w_v\leftarrow w_v+\max\{d_{(u,v)}+b_u,\ s_{(u,v)}+w_u\},
+\]
+rồi xóa đỉnh \(u\) và cạnh \((u,v)\). Sau thao tác này đáp án không đổi,
+nhưng quy mô bài toán giảm một đỉnh. Ta gọi thao tác xóa một đỉnh bậc 1 và
+sửa trọng số đỉnh kề là phép xóa đỉnh bậc 1.
+
+Một cây có hơn một đỉnh luôn có đỉnh bậc 1, và sau khi xóa một đỉnh bậc 1 vẫn
+là một cây. Vì vậy liên tục xóa đỉnh bậc 1 sẽ biến cây thành đồ thị chỉ còn
+một đỉnh, trong khi đáp án không đổi. Với đồ thị chỉ có một đỉnh \(u\), đáp án
+là \(\max\{b_u,w_u\}\). Do đó bài toán tĩnh trên cây được giải trong \(O(n)\)
+thời gian.
+
+Phép xóa đỉnh bậc 1 không yêu cầu hình dạng tổng thể của đồ thị; hễ đồ thị có
+đỉnh bậc 1 thì có thể áp dụng.
+
+\subsection*{5.2. Ứng dụng trên xương rồng}
+
+Trước hết nêu vài kiến thức về thành phần song liên thông đỉnh mà không chứng
+minh.
+
+\paragraph{Định lý 5.1.}
+Với mọi đồ thị vô hướng không rỗng \(G\), tồn tại một thành phần song liên
+thông đỉnh \(B\) của \(G\) sao cho trong \(B\) có không quá một đỉnh là khớp
+của \(G\). Nếu trong \(B\) không có khớp của \(G\), thì \(B=G\).
+
+\paragraph{Định lý 5.2.}
+Nếu một thành phần song liên thông đỉnh không phải \(K_2\)\footnote{\(K_n\)
+là đồ thị đầy đủ gồm \(n\) đỉnh.}, thì trong thành phần ấy có ít nhất một chu
+trình đơn.
+
+\paragraph{Bổ đề 5.1.}
+Mỗi thành phần song liên thông đỉnh trên xương rồng hoặc là \(K_2\), hoặc là
+một chu trình đơn.
+
+\paragraph{Bổ đề 5.2.}
+Với một điểm bất kỳ \(u\) trong một thành phần song liên thông đỉnh không
+phải \(K_2\), tồn tại một chu trình đơn \(C\) chứa \(u\).
+
+Trên cây ta có thể xóa đỉnh bậc 1 (lá) để đơn giản hóa bài toán. Xương rồng
+có thể làm tương tự hay không?
+
+Trước hết, nếu tồn tại đỉnh bậc 1 thì vẫn dùng phép xóa đỉnh bậc 1. Ngược
+lại, theo định lý 5.1, tìm một thành phần song liên thông đỉnh \(B\) sao cho
+trong \(B\) có không quá một đỉnh là khớp của \(G\); kết hợp bổ đề 5.1, \(B\)
+nhất định là một chu trình đơn.
+
+Khi đó vai trò của \(B\) trong đồ thị giống vai trò của đỉnh bậc không quá 1
+trên cây. Liệu có thể biến \(B\) thành một đỉnh để giảm số thành phần song
+liên thông đỉnh của \(G\) hay không? Câu trả lời là có.
+
+Vì \(B\) là một chu trình, ngoài khớp (nếu có), các đỉnh của \(B\) đều có bậc
+2. Khi gặp đỉnh bậc 1, ta tính đóng góp của nó theo màu của đỉnh kề; khi gặp
+đỉnh bậc 2 cũng có thể làm tương tự.
+
+Gọi \(x\) là đỉnh bậc 2, hai đỉnh kề là \(u,v\). Khi \(c_u,c_v\) lần lượt là
+\(0,0\), đóng góp lớn nhất của \(x\) và hai cạnh kề với nó là
+\[
+  w_{00}=\max\{s_{(u,x)}+b_x+s_{(x,v)},\
+              d_{(u,x)}+w_x+d_{(x,v)}\}.
+\]
+Tương tự,
+\[
+  w_{01}=\max\{s_{(u,x)}+b_x+d_{(x,v)},\
+              d_{(u,x)}+w_x+s_{(x,v)}\},
+\]
+\[
+  w_{10}=\max\{d_{(u,x)}+b_x+s_{(x,v)},\
+              s_{(u,x)}+w_x+d_{(x,v)}\},
+\]
+\[
+  w_{11}=\max\{d_{(u,x)}+b_x+d_{(x,v)},\
+              s_{(u,x)}+w_x+s_{(x,v)}\}.
+\]
+Vì đóng góp phụ thuộc đồng thời vào \(c_u,c_v\), ta không cập nhật trọng số
+đỉnh \(u,v\) như khi xóa đỉnh bậc 1, mà tạo một cạnh mới nối \(u,v\), trên
+cạnh ghi đóng góp cho từng giá trị của \(c_u,c_v\).
+
+Dùng \((u,v,(w_{00},w_{01},w_{10},w_{11}))\) để biểu diễn cạnh có đóng góp
+\(w_{c_uc_v}\). Trọng số của nó là
+\[
+  \begin{bmatrix}w_{00}&w_{01}&w_{10}&w_{11}\end{bmatrix}^{T}.
+\]
+Cạnh đầu vào dạng \((u,v,(s,d))\) có thể đổi thành
+\((u,v,(s,d,d,s))\) để thống nhất định dạng.
+
+Ta gọi phép biến một đỉnh bậc 2 và hai cạnh kề thành một cạnh là phép co đỉnh
+bậc 2. Chú ý phép co đỉnh bậc 2 không làm thay đổi bậc của \(u,v\).
+
+Vì thế với một chu trình \(n\) đỉnh (\(n\ge3\)), một lần co đỉnh bậc 2 biến nó
+thành chu trình \(n-1\) đỉnh. Riêng với tam giác, sau một lần co sẽ xuất hiện
+hai cạnh song song.
+
+Do đóng góp có thể cộng dồn, nếu gặp hai cạnh song song
+\[
+  (u,v,(w_{00},w_{01},w_{10},w_{11}))
+  \quad\text{và}\quad
+  (u,v,(w'_{00},w'_{01},w'_{10},w'_{11})),
+\]
+có thể hợp nhất thành
+\[
+  (u,v,(w_{00}+w'_{00},\,w_{01}+w'_{01},\,
+        w_{10}+w'_{10},\,w_{11}+w'_{11})).
+\]
+Ta gọi phép hợp nhất hai cạnh song song là phép chồng cạnh song song. Nếu hai
+cạnh song song có hướng biểu diễn ngược nhau, ví dụ
+\[
+  (u,v,(w_{00},w_{01},w_{10},w_{11}))
+  \quad\text{và}\quad
+  (v,u,(w'_{00},w'_{01},w'_{10},w'_{11})),
+\]
+chỉ cần đổi hướng một cạnh rồi
+chồng; cạnh thu được là
+\[
+ (u,v,(w_{00}+w'_{00},\,w_{01}+w'_{10},\,
+       w_{10}+w'_{01},\,w_{11}+w'_{11})).
+\]
+
+Giả sử \(B\) có \(k\) đỉnh. Vì trong \(B\) chỉ có một khớp của \(G\), các
+đỉnh còn lại đều có bậc 2, và phép co đỉnh bậc 2 cùng phép chồng cạnh song
+song không làm đỉnh bậc 2 tăng bậc quá 2, sau \(k-2\) lần co và một lần chồng,
+\(B\) biến thành \(K_2\). Tiếp tục xóa một đỉnh bậc 1, số thành phần song liên
+thông đỉnh của \(G\) giảm một. Do đó sau \(O(n)\) phép toán, có thể biến
+\(G\) thành một đỉnh và giải bài toán tĩnh trên xương rồng trong \(O(n)\).
+
+\subsection*{5.3. Đồ thị nối tiếp-song song tổng quát}
+
+Sau đây chứng minh không chỉ xương rồng, mà mọi đồ thị nối tiếp-song song tổng
+quát đều có thể biến thành đồ thị chỉ còn một đỉnh sau một số phép co đỉnh
+bậc 2, chồng cạnh song song và xóa đỉnh bậc 1.
+
+\subsubsection*{5.3.1. Chứng minh}
+
+Ta chứng minh mệnh đề phản đảo: mọi đồ thị vô hướng liên thông không thể dùng
+các phép trên để biến thành đồ thị chỉ còn một đỉnh đều không phải đồ thị nối
+tiếp-song song tổng quát. Trước hết chứng minh hai kết luận.
+
+\paragraph{Định lý 5.3.}
+Nếu một đồ thị vô hướng liên thông \(G\) có ba đỉnh bậc 1 khác nhau \(x,y,z\),
+thì tồn tại một đỉnh \(u\notin\{x,y,z\}\) sao cho có 3 đường đi đơn đôi một
+không chung cạnh, cùng có một đầu là \(u\), đầu còn lại lần lượt là \(x,y,z\).
+
+\paragraph{Chứng minh.}
+Lấy một cây khung bất kỳ \(T\) của \(G\). Vì \(x,y,z\) là đỉnh bậc 1 trong
+\(G\), chúng cũng là đỉnh bậc 1 trong \(T\). Do số đỉnh bậc lẻ trong mọi đồ
+thị là chẵn, \(G\) có một đỉnh khác \(x,y,z\). Chọn một đỉnh như vậy làm gốc,
+biến \(T\) thành cây có gốc. Đặt \(u=\operatorname{LCA}(x,y)\). Vì \(x,y,z\)
+đều là lá và không phải gốc, nên \(u\ne x,u\ne y,u\ne z\).
+
+Nếu \(z\) không nằm trong cây con của \(u\), hoặc cả \(\operatorname{LCA}(x,z)\)
+và \(\operatorname{LCA}(y,z)\) đều bằng \(u\), thì ba đường trong \(T\) từ
+\(u\) tới \(x,y,z\) đôi một không chung cạnh.
+
+Ngược lại, đúng một trong \(\operatorname{LCA}(x,z)\) và
+\(\operatorname{LCA}(y,z)\) khác \(u\). Không mất tính tổng quát, giả sử
+\(w=\operatorname{LCA}(x,z)\ne u\). Khi đó \(y\) không nằm trong cây con của
+\(w\), và vì \(\operatorname{LCA}(x,z)=w\), ba đường trong \(T\) từ \(w\) tới
+\(x,y,z\) đôi một không chung cạnh. \(\square\)
+
+\paragraph{Định lý 5.4.}
+Với một đồ thị vô hướng \(G\), nếu sau một số lần xóa đỉnh bậc 1, co đỉnh bậc
+2 và chồng cạnh song song ta thu được đồ thị không phải nối tiếp-song song
+tổng quát, thì \(G\) cũng không phải nối tiếp-song song tổng quát.
+
+\paragraph{Chứng minh.}
+Xét việc hoàn nguyên các phép toán. Giả sử trong đồ thị sau thao tác có bốn
+đỉnh \(a,b,c,d\) làm vi phạm tính chất nối tiếp-song song tổng quát, với sáu
+đường đi đôi một không chung cạnh
+\[
+p(a,b),p(a,c),p(a,d),p(b,c),p(b,d),p(c,d).
+\]
+
+Nghịch đảo của xóa đỉnh bậc 1 là chọn một đỉnh \(u\in V\), thêm đỉnh mới
+\(v\) và cạnh \((u,v)\). Nghịch đảo của chồng cạnh song song là chọn một cạnh
+\((u,v)\in E\) rồi thêm một cạnh song song mới \((u,v)\). Hai nghịch đảo này
+không xóa đỉnh hay cạnh, nên nếu đồ thị sau phép xóa đỉnh bậc 1 hoặc chồng
+cạnh song song không phải nối tiếp-song song tổng quát, đồ thị trước thao tác
+cũng không phải.
+
+Nghịch đảo của co đỉnh bậc 2 là chọn cạnh \((u,v)\in E\), xóa cạnh ấy, thêm
+đỉnh mới \(w\) và hai cạnh \((u,w),(w,v)\). Nếu khi hoàn nguyên không xóa cạnh
+nào trên sáu đường đi nêu trên, chính sáu đường cũ vẫn chứng minh đồ thị trước
+thao tác không phải nối tiếp-song song tổng quát. Nếu có, không mất tính tổng
+quát giả sử cạnh bị xóa nằm trên \(p(a,b)\). Thay cạnh đó trong \(p(a,b)\)
+bằng hai cạnh và đỉnh mới của nghịch đảo, ta vẫn có sáu đường đôi một không
+chung cạnh. Vậy sau bao nhiêu thao tác nếu đồ thị thu được không phải nối
+tiếp-song song tổng quát thì đồ thị ban đầu cũng không phải. \(\square\)
+
+Một đồ thị vô hướng đơn giản không còn thao tác nào để làm được khi và chỉ khi
+mỗi thành phần liên thông của nó hoặc là một đỉnh bậc 0, hoặc là một đồ thị
+có mọi đỉnh bậc ít nhất 3. Ta có định lý sau.
+
+\paragraph{Định lý 5.5.}
+Mọi đồ thị vô hướng đơn giản liên thông mà mọi đỉnh đều có bậc ít nhất 3 đều
+không phải đồ thị nối tiếp-song song tổng quát.
+
+\paragraph{Chứng minh.}
+Giả sử \(G\) là một đồ thị vô hướng đơn giản liên thông mà mọi đỉnh đều có bậc
+ít nhất 3. Theo định lý 5.1, trong \(G\) có một thành phần song liên thông
+đỉnh \(B\) sao cho trong \(B\) có không quá một đỉnh là khớp của \(G\).
+Thành phần \(B\) chắc chắn không phải \(K_2\), nếu không \(G\) sẽ có một đỉnh
+bậc 1.
+
+Nếu \(B\) có khớp của \(G\), theo bổ đề 5.2, trong \(B\) tồn tại một chu trình
+đơn chứa khớp duy nhất ấy; gọi nó là \(C\). Nếu không, theo định lý 5.2, trong
+\(B\) tồn tại một chu trình đơn; lấy tùy ý một chu trình như vậy làm \(C\).
+
+Gọi các đỉnh trên \(C\) theo thứ tự là \(v_0,v_1,\ldots,v_{l-1}\), với
+\(v_0\) kề \(v_{l-1}\), và \(v_i\) kề \(v_{i+1}\) với \(0\le i<l-1\).
+Đặt \(V'=V\setminus V_C,\ E'=E\setminus E_C\). Trên \(V'\cup E'\), định nghĩa
+quan hệ nhị nguyên \(\sim\): với \(u,e\in V'\cup E'\), \(u\sim e\) khi và chỉ
+khi \(u\in V'\), \(e\in E'\), và \(u\) là một đầu mút của \(e\). Lại định
+nghĩa \(\leftrightarrow\) là quan hệ tương đương nhỏ nhất chứa \(\sim\). Trực
+giác, nếu \(a,b\) là đỉnh hoặc cạnh của \(G\) không nằm trên \(C\), thì
+\(a\leftrightarrow b\) khi và chỉ khi từ \(a\) có thể đi qua một chuỗi đỉnh và
+cạnh không nằm trên \(C\) để tới \(b\).
+
+Ta gọi mỗi lớp tương đương của \(\leftrightarrow\) là một mảnh. Với mảnh \(U\),
+tập đỉnh của nó là \(U\cap V\), tập cạnh là \(U\cap E\), và tập điểm liên hệ
+với \(C\) là
+\[
+  A(U)=\{v\in V_C\mid \exists u\in V,\ e=(u,v)\in U\cap E\}.
+\]
+Nói trực giác, sau khi xóa mọi đỉnh và cạnh trên \(C\) khỏi \(G\) (nhưng các
+cạnh không nằm trên \(C\) vẫn giữ lại dù một hoặc hai đầu mút bị xóa), các
+phần còn ``liên thông'' là mảnh; \(A(U)\) là tập đầu mút bị thiếu của những
+cạnh trong mảnh có không đủ hai đầu mút.
+
+Vì mọi đỉnh của \(G\) có bậc ít nhất 3, với mỗi đỉnh \(v_i\) trên chu trình,
+tồn tại ít nhất một mảnh \(U\) sao cho \(v_i\in A(U)\). Nếu \(B\) có khớp của
+\(G\), gọi khớp ấy là \(v_k\); nếu không có khớp thì đặt \(k=-1\). Nếu tồn tại
+mảnh \(U\) với \(|A(U)|=1\), xóa phần tử duy nhất trong \(A(U)\) sẽ làm \(G\)
+không liên thông, nên phần tử đó là khớp của \(G\). Vì vậy mọi mảnh thỏa
+\(|A(U)|=1\) đều có \(A(U)=\{v_k\}\). Khi \(k=-1\), điều này có nghĩa là không
+tồn tại mảnh với \(|A(U)|=1\).
+
+Ta chia ba trường hợp để chứng minh \(G\) không phải đồ thị nối tiếp-song song
+tổng quát.
+
+\paragraph{Trường hợp 1.}
+Tồn tại mảnh \(U\) sao cho \(|A(U)|\ge3\).
+
+Giả sử \(U\) có một cạnh \(e\) mà cả hai đầu mút đều không thuộc \(U\). Khi đó
+\(e\) không thể có quan hệ \(\sim\) với bất kỳ phần tử \(u\in V'\) nào, và do
+đó không có phần tử \(a\in V'\cup E'\) nào thỏa \(e\leftrightarrow a\). Suy
+ra \(U=\{e\}\), và \(A(U)\) chỉ gồm hai đầu mút của \(e\), mâu thuẫn với
+\(|A(U)|\ge3\). Vậy trong \(U\) không có cạnh nào mà cả hai đầu mút đều không
+thuộc \(U\).
+
+Thêm mọi phần tử của \(A(U)\) vào \(U\), thu được đồ thị
+\[
+  U'=((U\cap V)\cup A(U),\,U\cap E').
+\]
+Trong \(U'\), tập \(U\cap V\) liên thông vì \(U\) là một lớp tương đương của
+\(\leftrightarrow\), và các cạnh của \(U\) có một đầu ngoài \(U\) không làm
+mất tính liên thông ấy. Xóa một số cạnh kề các đỉnh trong \(A(U)\) sao cho
+mỗi đỉnh của \(A(U)\) có bậc 1; khi đó các đỉnh trong \(A(U)\) vẫn nối với tập
+đỉnh của \(U\) bằng một cạnh trong \(U'\), nên \(U'\) liên thông.
+
+Theo định lý 5.3, với ba đỉnh \(x,y,z\in A(U)\), trong \(U'\) tồn tại một đỉnh
+\(u\) và ba đường đôi một không chung cạnh nối \(u\) lần lượt với \(x,y,z\).
+Mặt khác, \(x,y,z\) nằm trên cùng chu trình \(C\), nên trên \(C\) có ba đường
+đôi một không chung cạnh nối \(x\) với \(y\), \(y\) với \(z\), và \(z\) với
+\(x\). Vì \(U'\) và \(C\) không chung cạnh, ta tìm được bốn đỉnh \(x,y,z,u\)
+và sáu đường đôi một không chung cạnh nối từng cặp trong bốn đỉnh ấy. Vậy
+\(G\) không phải nối tiếp-song song tổng quát.
+
+\paragraph{Trường hợp 2.}
+Với mọi mảnh \(U\) đều có \(|A(U)|\le2\), và tồn tại \(U_1,U_2\) sao cho
+\[
+  A(U_1)=\{v_x,v_y\},\qquad A(U_2)=\{v_z,v_w\},
+\]
+trong đó \(x<z<y<w\).
+
+Khi đó trên chu trình \(C\) tìm được bốn đường đôi một không chung cạnh nối
+\(v_x\) với \(v_z\), \(v_z\) với \(v_y\), \(v_y\) với \(v_w\), và \(v_w\) với
+\(v_x\). Trong \(G\) có một đường nối \(v_x\) với \(v_y\) có tập cạnh nằm trong
+tập cạnh của \(U_1\), và một đường nối \(v_z\) với \(v_w\) có tập cạnh nằm
+trong tập cạnh của \(U_2\). Vì tập cạnh của \(U_1\), tập cạnh của \(U_2\) và
+tập cạnh của \(C\) đôi một rời nhau, ta tìm được sáu đường đôi một không chung
+cạnh nối từng cặp trong bốn đỉnh, nên \(G\) không phải nối tiếp-song song tổng
+quát.
+
+\paragraph{Trường hợp 3.}
+Với mọi mảnh \(U\) đều có \(|A(U)|\le2\), và tồn tại \(U_0,i\) sao cho
+\(A(U_0)=\{v_i,v_{i+1}\}\).
+
+Trước hết giải thích rằng ba trường hợp trên bao quát mọi khả năng. Nếu không
+thỏa trường hợp 1, ta biết: với mọi \(v_i\) trên chu trình có mảnh \(U\) sao
+cho \(v_i\in A(U)\); mọi \(U\) thỏa \(|A(U)|=1\) đều có \(A(U)=\{v_k\}\);
+chu trình đơn \(C\) có ít nhất 3 đỉnh; và không có \(U\) nào với
+\(|A(U)|\ge3\). Từ bốn sự kiện này, chắc chắn tìm được một mảnh \(U\) với
+\(|A(U)|=2\).
+
+Giả sử \(A(U)=\{v_x,v_y\}\ (x<y)\). Vì có thể định hướng chu trình theo chiều
+kim đồng hồ hoặc ngược chiều kim đồng hồ, không mất tính tổng quát giả sử
+\(k\notin(x,y)\). Ta chứng minh nếu không thỏa trường hợp 1 và 2, thì nhất
+định tồn tại \(U_0,i\) với \(A(U_0)=\{v_i,v_{i+1}\}\). Nếu \(y-x=1\), lấy
+\(U_0=U,i=x\). Ngược lại, tìm \(U_1,z\) sao cho
+\(A(U_1)=\{v_{x+1},v_z\}\). Theo các sự kiện trên và \(k\notin(x,y)\), \(U_1,z\)
+như vậy luôn tồn tại. Nếu \(z=x\), lấy \(U_0=U_1,i=x\). Nếu \(z\notin[x,y]\),
+thì \(U\) và \(U_1\) thỏa trường hợp 2, mâu thuẫn. Do đó nếu \(z\ne x\) thì
+\(z\in(x+1,y]\). Đặt \(x'=x+1,y'=z\), khi đó
+\[
+  y'-x'=y'-x-1\le y-x-1
+\]
+và vẫn có \(y'>x'\), \(k\notin(x',y')\). Mỗi lần lặp từ \(x,y\) sang
+\(x',y'\) làm \(y-x\) giảm, nên sau hữu hạn lần sẽ tìm được \(U_0,i\) cần
+thiết.
+
+Gọi \(G'=(V_{G'},E_{G'})\) là đồ thị thu được từ \(U_0\) sau khi thêm hai đỉnh
+\(v_i,v_{i+1}\) và cạnh \((v_i,v_{i+1})\). Khi đó
+\(\deg(v_i)\ge2,\ \deg(v_{i+1})\ge2\), và với mọi \(u\in U_0\),
+\(\deg(u)\ge3\). Vì vậy \(G'\) không có đỉnh bậc không quá 1, số đỉnh bậc 2
+không quá 2, và nếu có 2 đỉnh bậc 2 thì hai đỉnh ấy kề nhau.
+
+Có thể chứng minh \(V_{G'}\subseteq V_B\). Nếu \(k\ne-1\), giả sử tồn tại
+\(u\in V_{G'}\) mà \(u\notin V_B\). Mọi đường nối \(u\) với một điểm bất kỳ
+trong \(B\) đều phải qua \(v_k\), mà \(v_k\in V_C\), suy ra
+\(A(U_0)=\{v_k\}\), mâu thuẫn với \(|A(U_0)|=2\). Nếu \(k=-1\), theo định lý
+5.1 có \(B=G\), nên \(V_{G'}\subseteq V=V_B\).
+
+Tiếp theo chứng minh \(G'\) là đồ thị song liên thông đỉnh, tức là \(G'\)
+không có khớp. Trước hết \(v_i\) và \(v_{i+1}\) không phải khớp của \(G'\),
+nếu không \(U_0\) không liên thông. Các đỉnh còn lại của \(G'\) cũng không
+phải khớp của \(G'\), nếu không chúng đồng thời là khớp của \(G\). Khi
+\(k=-1\), \(B\) không có khớp của \(G\); khi \(k\ne-1\), khớp duy nhất của
+\(G\) trong \(B\) là \(v_k\), nhưng do \(V_{G'}\cap V_C=\{v_i,v_{i+1}\}\), chắc
+chắn \(v_k\notin V_{G'}\setminus\{v_i,v_{i+1}\}\). Vậy \(G'\) không có khớp.
+
+Bằng cách liệt kê các đồ thị đơn có không quá 3 đỉnh, có thể thấy không đồ thị
+nào đồng thời song liên thông đỉnh và không có đỉnh bậc không quá 1 trong khi
+số đỉnh bậc 2 không quá 2. Do đó \(G'\) có ít nhất 4 đỉnh.
+
+Xét việc thực hiện co đỉnh bậc 2 và chồng cạnh song song trên \(G'\). Phép co
+đỉnh bậc 2 không ảnh hưởng đến bậc của hai đỉnh \(u,v\) kề với đỉnh bị co;
+phép chồng cạnh song song sau đó, nếu cần, chỉ làm bậc của \(u,v\) giảm 1.
+
+Nếu \(G'\) chỉ có một đỉnh bậc 2, sau thao tác, \(G'\) vẫn không có đỉnh bậc
+không quá 1, số đỉnh bậc 2 vẫn không quá 2, và nếu có 2 đỉnh bậc 2 thì chúng
+kề nhau. Nếu \(G'\) có hai đỉnh bậc 2 kề nhau \(x,y\), gọi đỉnh kề còn lại
+của \(x\) là \(z\), của \(y\) là \(w\). Khi đó \(z\ne w\), nếu không \(z\) có
+bậc 2 hoặc là khớp của \(G'\). Không mất tính tổng quát, co \(x\). Vì giữa
+\(y\) và \(z\) không có cạnh, không cần chồng cạnh song song; bậc của \(y,z\)
+không đổi, nên sau thao tác \(G'\) chỉ còn một đỉnh bậc 2 và không có đỉnh bậc
+1.
+
+Ta còn cần chứng minh sau một lần co đỉnh bậc 2 và một lần chồng cạnh song
+song nếu xuất hiện cạnh song song, \(G'\) vẫn song liên thông đỉnh. Gọi đồ thị
+sau thao tác là \(G''\). Cạnh song song không thay đổi tính liên thông theo
+đỉnh, nên phép chồng cạnh song song không ảnh hưởng đến song liên thông đỉnh.
+Xét phép co đỉnh bậc 2: giả sử đỉnh bậc 2 bị co trong \(G'\) là \(x\), hai
+đỉnh kề là \(y,z\). Nếu trong cạnh \((y,z)\) của \(G''\) ``chèn'' lại đỉnh
+\(x\), tức là thay \((y,z)\) bằng \((y,x),(x,z)\), ta thu được \(G'\). Vì thế
+chứng minh xóa bất kỳ đỉnh nào của \(G''\) thì \(G''\) vẫn liên thông tương
+đương chứng minh xóa bất kỳ đỉnh nào khác \(x\) trong \(G'\) thì \(G'\) vẫn
+liên thông. Điều này đúng vì \(G'\) song liên thông đỉnh.
+
+Do đó tại mọi thời điểm trong quá trình thao tác, \(G'\) vẫn song liên thông
+đỉnh, không có đỉnh bậc không quá 1, và có không quá 2 đỉnh bậc 2. Mỗi lần co
+đỉnh bậc 2 làm số đỉnh của \(G'\) giảm 1. Nếu một lúc nào đó \(G'\) có 3
+đỉnh, vì \(G'\) song liên thông đỉnh nên \(G'\) phải là \(K_3\), nhưng \(K_3\)
+có 3 đỉnh bậc 2, trái với bất biến. Vì mọi lúc \(G'\) không có đỉnh bậc 1,
+sau một số hữu hạn đủ lớn (có thể bằng 0) các phép co đỉnh bậc 2 và chồng
+cạnh song song, mọi đỉnh của \(G'\) đều có bậc ít nhất 3.
+
+Ban đầu \(G'\) chỉ có hai đỉnh nằm trên \(C\), trong khi \(C\) có ít nhất 3
+đỉnh, nên số đỉnh của \(G'\) nhỏ hơn số đỉnh của \(G\). Lấy đồ thị \(G'\) sau
+thao tác, vốn có mọi đỉnh bậc ít nhất 3, làm \(G\) mới để lặp lại. Đồ thị mới
+vẫn rơi vào một trong ba trường hợp trên. Nếu rơi vào trường hợp 1 hoặc 2, nó
+không phải nối tiếp-song song tổng quát; nếu rơi vào trường hợp 3, số đỉnh
+tiếp tục giảm nhưng luôn ít nhất 4. Vì vậy sau hữu hạn lần lặp, chắc chắn tìm
+được sáu đường đôi một không chung cạnh nối từng cặp trong bốn đỉnh. Theo
+định lý 5.4, \(G\) ban đầu không phải nối tiếp-song song tổng quát.
+
+Vậy mọi đồ thị vô hướng đơn giản liên thông mà mọi đỉnh có bậc ít nhất 3 đều
+không phải đồ thị nối tiếp-song song tổng quát. \(\square\)
+
+Hiển nhiên, với đồ thị liên thông, các phép co đỉnh bậc 2, chồng cạnh song
+song và xóa đỉnh bậc 1 đều không thể làm đồ thị trở nên không liên thông.
+Theo định lý 5.4 và 5.5, mọi đồ thị vô hướng liên thông không thể dùng các
+phép ấy để biến thành một đỉnh đều không phải đồ thị nối tiếp-song song tổng
+quát.
+
+Vì phép xóa đỉnh bậc 1 và co đỉnh bậc 2 đều làm số đỉnh và số cạnh giảm 1,
+còn phép chồng cạnh song song chỉ có thể xảy ra sau co đỉnh bậc 2 và làm số
+cạnh giảm 1, suy ra mọi đồ thị nối tiếp-song song tổng quát có thể biến thành
+đồ thị một đỉnh sau \(O(n)\) lần co đỉnh bậc 2, chồng cạnh song song và xóa
+đỉnh bậc 1. Ngoài ra, cạnh của đồ thị nối tiếp-song song tổng quát đơn giản là
+\(O(n)\); cụ thể \(m\le2n\).
+
+\subsection*{5.4. Thuật toán bảy: đồ thị nối tiếp-song song tổng quát, không có sửa}
+
+Với kết luận trên, có thể dùng trực tiếp thuật toán ở 5.2 để qua các tập con
+1, 3, 4. Nếu sau mỗi lần sửa tính lại thô bạo, có thể qua các tập con 2, 5.
+Độ phức tạp thời gian \(O(nQ)\), kỳ vọng 30 điểm.
+
+\section*{6. Xét sửa đổi}
+
+Nay đã có thuật toán giải một truy vấn trong thời gian tuyến tính, ta tối ưu
+trên cơ sở đó để hỗ trợ sửa hiệu quả hơn. Trước hết xét tình huống đơn giản
+hơn: trong tập con 7, mọi trọng số đỉnh đều bằng 0, nên không cần xét ảnh
+hưởng của trọng số đỉnh.
+
+\subsection*{6.1. Thuật toán tám: đồ thị nối tiếp-song song tổng quát, mọi trọng số đỉnh bằng 0}
+
+Xét các phép toán cần dùng. Phép chồng cạnh song song cộng tương ứng trọng số
+của hai cạnh song song và thay bằng một cạnh mới. Phép co đỉnh bậc 2 lấy hai
+cạnh kề của một đỉnh bậc 2, tính rồi thay bằng một cạnh mới. Vì trọng số đỉnh
+đều bằng 0, trọng số của đỉnh bậc 2 không ảnh hưởng tới trọng số cạnh mới.
+
+Khi trọng số đỉnh bằng 0, ta có \(w_{00}=w_{11}\) và \(w_{01}=w_{10}\), nên
+như mô tả đề bài, chỉ cần dùng \(s_e,d_e\) để biểu diễn trọng số cạnh \(e\).
+Với phép xóa đỉnh bậc 1, vì có thể chọn màu của đỉnh bậc 1 để tối đa hóa đóng
+góp của cạnh kề, ta cộng trực tiếp \(\max\{s_i,d_i\}\) của cạnh ấy vào đáp
+án.
+
+Vì phép chồng cạnh song song và co đỉnh bậc 2 đều biến trọng số của hai cạnh
+thành trọng số của một cạnh mới, ta có thể biểu diễn chúng bằng phép toán.
+
+\subsubsection*{6.1.1. Định nghĩa phép toán}
+
+Gọi trọng số của cạnh \(e\) là
+\[
+  v_e=\begin{bmatrix}s_e\\d_e\end{bmatrix}.
+\]
+Với trọng số của hai cạnh, định nghĩa phép \(+\) là kết quả sau phép chồng
+cạnh song song:
+\[
+  \begin{bmatrix}s_1\\d_1\end{bmatrix}
+  +
+  \begin{bmatrix}s_2\\d_2\end{bmatrix}
+  =
+  \begin{bmatrix}s_1+s_2\\d_1+d_2\end{bmatrix}.
+\]
+Định nghĩa phép \(\ast\) là kết quả sau phép co đỉnh bậc 2:
+\[
+  \begin{bmatrix}s_1\\d_1\end{bmatrix}
+  \ast
+  \begin{bmatrix}s_2\\d_2\end{bmatrix}
+  =
+  \begin{bmatrix}
+  \max\{s_1+s_2,d_1+d_2\}\\
+  \max\{s_1+d_2,d_1+s_2\}
+  \end{bmatrix}.
+\]
+Dễ thấy \(+\) và \(\ast\) đều giao hoán. Với phép xóa đỉnh bậc 1, có thể định
+nghĩa đáp án ban đầu là \(\operatorname{ans}=\begin{bmatrix}0&0\end{bmatrix}^T\);
+khi gặp đỉnh bậc 1 thì đặt \(\operatorname{ans}\leftarrow\operatorname{ans}
+\ast v_e\), trong đó \(e\) là cạnh kề đỉnh bậc 1.
+
+Vì trọng số của mỗi cạnh đều có thể biểu diễn từ trọng số ban đầu bằng các
+phép \(+\) và \(\ast\), đáp án toàn bài cũng có thể biểu diễn bằng một biểu
+thức. Ta xây cây biểu thức của biểu thức ấy, biến bài toán lại thành quy
+hoạch động trên cây, rồi dùng phân rã chuỗi để tối ưu sửa đổi.
+
+\subsubsection*{6.1.2. Xây cây biểu thức}
+
+Quá trình xây cây biểu thức như sau. Gọi \(\operatorname{op}_v\) là toán tử ở
+đỉnh không lá \(v\) của cây biểu thức. Trước hết với mỗi cạnh \(e\), tạo đỉnh
+tương ứng \(v_e=\begin{bmatrix}s_e&d_e\end{bmatrix}^T\) trong cây biểu thức;
+với đáp án ban đầu, tạo đỉnh
+\(\operatorname{ans}=\begin{bmatrix}0&0\end{bmatrix}^T\).
+
+Sau đó dùng thuật toán bảy thao tác trên \(G\) tới khi chỉ còn một đỉnh:
+\begin{enumerate}
+  \item Nếu cần co đỉnh bậc 2, sau thao tác tạo đỉnh \(v_{e'}\) của cây biểu
+        thức ứng với cạnh mới \(e'\). Đặt hai đỉnh ứng với hai cạnh cũ làm con
+        của \(v_{e'}\), và đặt \(\operatorname{op}_{e'}=\ast\).
+  \item Nếu cần chồng cạnh song song, sau thao tác tạo đỉnh \(v_{e'}\) ứng với
+        cạnh mới \(e'\). Đặt hai đỉnh ứng với hai cạnh cũ làm con của
+        \(v_{e'}\), và đặt \(\operatorname{op}_{e'}=+\).
+  \item Nếu cần xóa đỉnh bậc 1, sau thao tác tạo đỉnh \(v\) trong cây biểu
+        thức. Đặt \(\operatorname{ans}\) và đỉnh ứng với cạnh bị xóa làm con
+        của \(v\), đặt \(\operatorname{op}_v=\ast\), rồi đặt
+        \(\operatorname{ans}=v\).
+\end{enumerate}
+
+\subsubsection*{6.1.3. Phân rã}
+
+Tiếp tục dùng phân rã của thuật toán ba. Trong cây biểu thức, mỗi đỉnh không
+lá có đúng hai con. Ký hiệu \(c_{v,0},c_{v,1}\) là hai con của \(v\), và
+\(\operatorname{sn}_v\) là chỉ số tham số của con nặng, tức là
+\(c_{v,\operatorname{sn}_v}=\operatorname{son}_v\).
+
+Để duy trì nhanh thông tin trên chuỗi nặng, vẫn dùng định nghĩa \(g_v\) trong
+thuật toán ba:
+\[
+  f_v=g_v f_{\operatorname{son}_v}.
+\]
+Với đỉnh không lá \(v\), giả sử
+\[
+  \operatorname{son}_v=\begin{bmatrix}x\\y\end{bmatrix},\qquad
+  c_{v,1-\operatorname{sn}_v}=\begin{bmatrix}z\\w\end{bmatrix}.
+\]
+Nếu \(\operatorname{op}_v=+\), thì
+\[
+  v=\begin{bmatrix}x+z\\y+w\end{bmatrix},\qquad
+  g_v=\begin{bmatrix}z&-\infty\\-\infty&w\end{bmatrix}.
+\]
+Nếu \(\operatorname{op}_v=\ast\), thì
+\[
+  v=\begin{bmatrix}\max\{x+z,y+w\}\\ \max\{x+w,y+z\}\end{bmatrix},\qquad
+  g_v=\begin{bmatrix}z&w\\w&z\end{bmatrix}.
+\]
+Sau đó có thể áp dụng thuật toán ba. Điểm khác biệt là trong thuật toán ba,
+\(g\) không thể tính thô bạo mà phải duy trì bằng chênh lệch; còn ở đây \(g\)
+có thể tính trực tiếp. Độ phức tạp \(O(n+Q\log^2 n)\), qua được các tập con
+6, 7, kỳ vọng 36 điểm.
+
+Cuối cùng xét ảnh hưởng của trọng số đỉnh.
+
+\subsection*{6.2. Thuật toán chín: đồ thị nối tiếp-song song tổng quát, có sửa}
+
+Cải tiến trên cơ sở thuật toán tám. Lúc này phép co đỉnh bậc 2 và xóa đỉnh
+bậc 1 đều phải xét trọng số đỉnh, và trọng số cạnh cần ghi bốn giá trị
+\(w_{00},w_{01},w_{10},w_{11}\), tức là
+\[
+  v_e=\begin{bmatrix}w_{00}\\w_{01}\\w_{10}\\w_{11}\end{bmatrix}.
+\]
+Ngoài ra cần ghi trọng số đỉnh; với đỉnh \(u\),
+\[
+  v_u=\begin{bmatrix}b_u\\w_u\end{bmatrix}.
+\]
+Các phép \(+\) và \(\ast\) của thuật toán tám không còn phù hợp, nên cần định
+nghĩa lại.
+
+\subsubsection*{6.2.1. Mở rộng phép toán}
+
+Tương tự, phép \(+\) là kết quả của phép chồng cạnh song song:
+\[
+  \begin{bmatrix}a\\b\\c\\d\end{bmatrix}
+  +
+  \begin{bmatrix}x\\y\\z\\w\end{bmatrix}
+  =
+  \begin{bmatrix}a+x\\b+y\\c+z\\d+w\end{bmatrix}.
+\]
+Phép \(\ast\) là trọng số cạnh mới sinh ra khi co đỉnh bậc 2; lúc này nó phụ
+thuộc vào trọng số của một đỉnh bị xóa và hai cạnh. Giả sử
+\[
+e_0=(u_0,u_1,(a,b,c,d)),\quad
+e_1=(u_1,u_2,(x,y,z,w)),\quad u_1=(\alpha,\beta).
+\]
+Khi đó
+\[
+\ast\left(
+\begin{bmatrix}a\\b\\c\\d\end{bmatrix},
+\begin{bmatrix}\alpha\\\beta\end{bmatrix},
+\begin{bmatrix}x\\y\\z\\w\end{bmatrix}
+\right)
+=
+\begin{bmatrix}
+\max\{a+\alpha+x,\ b+\beta+z\}\\
+\max\{a+\alpha+y,\ b+\beta+w\}\\
+\max\{c+\alpha+x,\ d+\beta+z\}\\
+\max\{c+\alpha+y,\ d+\beta+w\}
+\end{bmatrix}.
+\]
+Với phép xóa đỉnh bậc 1, định nghĩa phép \(\oplus\) là trọng số của đỉnh bị
+sửa, tức là đỉnh kề với đỉnh bị xóa. Giả sử
+\[
+e_0=(u_0,u_1,(a,b,c,d)),\quad
+u_0=(\alpha,\beta),\quad u_1=(\gamma,\delta),
+\]
+và \(u_1\) là đỉnh bậc 1 được chọn để xóa, thì
+\[
+\oplus\left(
+\begin{bmatrix}\alpha\\\beta\end{bmatrix},
+\begin{bmatrix}a\\b\\c\\d\end{bmatrix},
+\begin{bmatrix}\gamma\\\delta\end{bmatrix}
+\right)
+=
+\begin{bmatrix}
+\max\{\alpha+a+\gamma,\alpha+b+\delta\}\\
+\max\{\beta+c+\gamma,\beta+d+\delta\}
+\end{bmatrix}.
+\]
+Ngoài ra còn cần xét đổi hướng một cạnh: biến
+\[
+  (u,v,(w_{00},w_{01},w_{10},w_{11}))
+  \quad\text{thành}\quad
+  (v,u,(w_{00},w_{10},w_{01},w_{11})).
+\]
+Định nghĩa phép \(R\):
+\[
+  R\begin{bmatrix}a\\b\\c\\d\end{bmatrix}
+  =
+  \begin{bmatrix}a\\c\\b\\d\end{bmatrix}.
+\]
+
+\subsubsection*{6.2.2. Xây cây biểu thức}
+
+Cách xây cây biểu thức tương tự thuật toán tám, nhưng \(\ast\) và \(\oplus\)
+không giao hoán, nên cần xét thứ tự con. Lúc này \(c_{v,0},c_{v,1},c_{v,2}\)
+lần lượt là ba tham số của phép \(\ast\) hoặc \(\oplus\), tức là
+\[
+  v=\ast(c_{v,0},c_{v,1},c_{v,2})
+  \quad\text{hoặc}\quad
+  v=\oplus(c_{v,0},c_{v,1},c_{v,2}).
+\]
+
+Dùng thuật toán bảy thao tác trên \(G\) đến khi chỉ còn một đỉnh:
+\begin{enumerate}
+  \item Nếu co đỉnh bậc 2, sau thao tác tạo đỉnh \(v_{e'}\) ứng với cạnh mới
+        \(e'\) trong cây biểu thức. Đặt các đỉnh ứng với một đỉnh bị xóa và
+        hai cạnh bị xóa làm con của \(v_{e'}\), xác định
+        \(c_{v_{e'},0},c_{v_{e'},1},c_{v_{e'},2}\), và đặt
+        \(\operatorname{op}_{e'}=\ast\).
+  \item Nếu chồng cạnh song song, sau thao tác tạo đỉnh \(v_{e'}\) ứng với
+        cạnh mới \(e'\). Đặt hai đỉnh ứng với hai cạnh cũ làm con của
+        \(v_{e'}\), và đặt \(\operatorname{op}_{e'}=+\).
+  \item Nếu xóa đỉnh bậc 1, sau thao tác tạo đỉnh \(v_{u'}\) ứng với đỉnh được
+        sửa \(u'\). Đặt hai đỉnh và một cạnh liên quan đến thao tác làm con
+        của \(v_{u'}\), xác định \(c_{v_{u'},0},c_{v_{u'},1},c_{v_{u'},2}\),
+        và đặt \(\operatorname{op}_{u'}=\oplus\).
+  \item Khi thao tác phải xét hướng cạnh, nếu cần đổi hướng cạnh thì sau thao
+        tác tạo đỉnh \(v_{e'}\) của cây biểu thức, đặt đỉnh ứng với cạnh cần
+        đổi hướng làm con của \(v_{e'}\), và đặt \(\operatorname{op}_{e'}=R\).
+\end{enumerate}
+
+\subsubsection*{6.2.3. Phân rã}
+
+Tương tự, chỉ cần tính được ma trận \(g\) là có thể dùng cách phân rã của
+thuật toán tám. Với đỉnh không lá \(v\):
+
+\paragraph{1. \(\operatorname{op}_v=+\).}
+Giả sử
+\[
+\operatorname{son}_v=\begin{bmatrix}x\\y\\z\\w\end{bmatrix},\qquad
+c_{v,1-\operatorname{sn}_v}=\begin{bmatrix}a\\b\\c\\d\end{bmatrix}.
+\]
+Theo phép \(+\),
+\[
+v=\begin{bmatrix}x+a\\y+b\\z+c\\w+d\end{bmatrix},
+\]
+nên
+\[
+g_v=
+\begin{bmatrix}
+a&-\infty&-\infty&-\infty\\
+-\infty&b&-\infty&-\infty\\
+-\infty&-\infty&c&-\infty\\
+-\infty&-\infty&-\infty&d
+\end{bmatrix}.
+\]
+
+\paragraph{2. \(\operatorname{op}_v=R\).}
+Theo định nghĩa \(R\),
+\[
+g_v=
+\begin{bmatrix}
+0&-\infty&-\infty&-\infty\\
+-\infty&-\infty&0&-\infty\\
+-\infty&0&-\infty&-\infty\\
+-\infty&-\infty&-\infty&0
+\end{bmatrix}.
+\]
+
+\paragraph{3. \(\operatorname{op}_v=\ast\).}
+Giả sử
+\[
+c_{v,0}=\begin{bmatrix}a\\b\\c\\d\end{bmatrix},\quad
+c_{v,1}=\begin{bmatrix}\alpha\\\beta\end{bmatrix},\quad
+c_{v,2}=\begin{bmatrix}x\\y\\z\\w\end{bmatrix}.
+\]
+Khi đó
+\[
+v=
+\begin{bmatrix}
+\max\{a+\alpha+x,\ b+\beta+z\}\\
+\max\{a+\alpha+y,\ b+\beta+w\}\\
+\max\{c+\alpha+x,\ d+\beta+z\}\\
+\max\{c+\alpha+y,\ d+\beta+w\}
+\end{bmatrix}.
+\]
+Nếu \(\operatorname{sn}_v=0\),
+\[
+g_v=
+\begin{bmatrix}
+\alpha+x&\beta+z&-\infty&-\infty\\
+\alpha+y&\beta+w&-\infty&-\infty\\
+-\infty&-\infty&\alpha+x&\beta+z\\
+-\infty&-\infty&\alpha+y&\beta+w
+\end{bmatrix}.
+\]
+Nếu \(\operatorname{sn}_v=1\),
+\[
+g_v=
+\begin{bmatrix}
+a+x&b+z\\
+a+y&b+w\\
+c+x&d+z\\
+c+y&d+w
+\end{bmatrix}.
+\]
+Nếu \(\operatorname{sn}_v=2\),
+\[
+g_v=
+\begin{bmatrix}
+a+\alpha&-\infty&b+\beta&-\infty\\
+-\infty&a+\alpha&-\infty&b+\beta\\
+c+\alpha&-\infty&d+\beta&-\infty\\
+-\infty&c+\alpha&-\infty&d+\beta
+\end{bmatrix}.
+\]
+
+\paragraph{4. \(\operatorname{op}_v=\oplus\).}
+Giả sử
+\[
+c_{v,0}=\begin{bmatrix}\alpha\\\beta\end{bmatrix},\quad
+c_{v,1}=\begin{bmatrix}a\\b\\c\\d\end{bmatrix},\quad
+c_{v,2}=\begin{bmatrix}\gamma\\\delta\end{bmatrix}.
+\]
+Theo định nghĩa,
+\[
+v=\begin{bmatrix}
+\max\{\alpha+a+\gamma,\alpha+b+\delta\}\\
+\max\{\beta+c+\gamma,\beta+d+\delta\}
+\end{bmatrix}.
+\]
+Nếu \(\operatorname{sn}_v=0\),
+\[
+g_v=
+\begin{bmatrix}
+\max\{a+\gamma,b+\delta\}&-\infty\\
+-\infty&\max\{c+\gamma,d+\delta\}
+\end{bmatrix}.
+\]
+Nếu \(\operatorname{sn}_v=1\),
+\[
+g_v=
+\begin{bmatrix}
+\alpha+\gamma&\alpha+\delta&-\infty&-\infty\\
+-\infty&-\infty&\beta+\gamma&\beta+\delta
+\end{bmatrix}.
+\]
+Nếu \(\operatorname{sn}_v=2\),
+\[
+g_v=
+\begin{bmatrix}
+\alpha+a&\alpha+b\\
+\beta+c&\beta+d
+\end{bmatrix}.
+\]
+
+Cách dựng ma trận \(g\) ở đây tương tự dựng ma trận chuyển của một quan hệ
+tuyến tính thông thường. Khi cài đặt, không cần phân trường hợp theo
+\(\operatorname{sn}_v\) để tính \(g_v\); chi tiết có thể xem hàm `tran' trong
+mã nguồn của tôi tại \url{https://loj.ac/submission/433979}. Các bước còn lại
+giống thuật toán tám nên không nhắc lại.
+
+Độ phức tạp thời gian của thuật toán là \(O(n+Q\log n)\), qua được toàn bộ
+điểm, kỳ vọng 100 điểm.
+
+\subsection*{6.3. Ưu nhược điểm}
+
+\subsubsection*{6.3.1. Ưu điểm}
+
+Giải bài toán bằng cách thu nhỏ quy mô giúp quá trình quy hoạch động trực quan
+hơn, qua đó giảm lượng suy nghĩ cần thiết.
+
+So với thuật toán phân rã chuỗi thông thường, cách dùng phân rã chuỗi trên
+cây biểu thức không cần xử lý tình huống một đỉnh có nhiều con nhẹ, nên giảm
+độ khó cài đặt.
+
+\subsubsection*{6.3.2. Hạn chế}
+
+Cách dùng phân rã chuỗi trên cây biểu thức thường chỉ hỗ trợ truy vấn toàn cục
+hoặc truy vấn cây con, khó hỗ trợ truy vấn trên đường đi. Ngoài ra, phương
+pháp này thường phải duy trì tích ma trận trên cây đoạn, kéo theo hằng số
+không nhỏ.
+
+\section*{7. Mở rộng}
+
+Trong một số bài toán, ta cần đếm số phương án tối ưu. Khi đó có thể đồng thời
+ghi số phương án tối ưu trong từng phần tử ma trận. Cho mỗi phần tử ma trận là
+một cặp \((a,\mathit{cnt})\), trong đó \(a\) là giá trị tối ưu và
+\(\mathit{cnt}\) là số phương án tối ưu. Định nghĩa
+\[
+(a_1,\mathit{cnt}_1)+(a_2,\mathit{cnt}_2)
+=\bigl(\max\{a_1,a_2\},\,
+\mathit{cnt}_1[a_1\ge a_2]+\mathit{cnt}_2[a_2\ge a_1]\bigr),
+\]
+\[
+(a_1,\mathit{cnt}_1)\times(a_2,\mathit{cnt}_2)
+=(a_1+a_2,\mathit{cnt}_1\times\mathit{cnt}_2).
+\]
+Không khó thấy phép cộng và phép nhân định nghĩa ở đây đều giao hoán, kết hợp,
+và phép nhân phân phối với phép cộng, nên có thể dùng dạng nhân ma trận để
+chuyển. Vì vậy nếu \emph{Công viên} hoặc một bài tương tự yêu cầu in số
+phương án tối ưu (lấy modulo một số nguyên tố lớn), vẫn có thể dùng cây đoạn
+theo phân rã cây thành chuỗi để duy trì tích ma trận.
+
+\section*{8. Ý tưởng ra đề}
+
+Bài toán này ban đầu xuất phát từ một số suy nghĩ của tôi về bài toán tập độc
+lập. Khi tìm kiếm tập độc lập lớn nhất\footnote{Bài toán tập độc lập lớn nhất:
+cho đồ thị \(G=(V,E)\), tìm tập con lớn nhất \(S\subseteq V\) sao cho với mọi
+cạnh trong \(E\), ít nhất một trong hai đầu mút không thuộc \(S\).}, có một
+cách cắt nhánh: nếu tồn tại một đỉnh bậc 1, thì luôn tồn tại một nghiệm tối
+ưu chứa đỉnh bậc 1 ấy, nên có thể xóa đỉnh bậc 1 và đỉnh kề của nó để giảm
+quy mô. Nếu đặt vào bài toán tập độc lập trọng số lớn nhất\footnote{Bài toán
+tập độc lập trọng số lớn nhất: cho đồ thị \(G=(V,E)\) và hàm trọng số
+\(w:V\to\mathbb R^+\), tìm \(S\subseteq V\) sao cho với mọi cạnh trong \(E\),
+ít nhất một đầu mút không thuộc \(S\), và \(\sum_{u\in S}w(u)\) lớn nhất.},
+liệu có cách tương tự hay không?
+
+Có thể thấy nếu trọng số của đỉnh bậc 1 không nhỏ hơn trọng số của đỉnh kề,
+kết luận trên\footnote{Tức là ``luôn tồn tại một nghiệm tối ưu chứa đỉnh bậc
+1 ấy''.} vẫn đúng. Ngược lại, ta có thể trước hết giả định cạnh kề với đỉnh
+bậc 1 ấy không tồn tại, và chọn đỉnh bậc 1. Nếu về sau chọn đỉnh kề với đỉnh
+bậc 1 ban đầu, điều đó đồng nghĩa không thể chọn đỉnh bậc 1 ấy nữa; vì vậy có
+thể trừ trọng số của đỉnh bậc 1 khỏi trọng số của đỉnh kề để xử lý tình huống
+này.
+
+Trong luận văn \emph{Bước đầu về bài toán tập độc lập trong thi tin học} của
+đội tuyển ứng viên IOI Trung Quốc 2017, Zhong Zhixian nhắc đến một thuật toán
+ưu tiên tìm kiếm các đỉnh bậc ít nhất 3; độ phức tạp của thuật toán ấy phụ
+thuộc nhiều vào số đỉnh bậc ít nhất 3 cần liệt kê. Tôi nhận ra rằng xóa đỉnh
+bậc 1 có thể giảm phần nào số đỉnh bậc ít nhất 3 cần liệt kê (ví dụ bài toán
+tập độc lập trên cây không cần liệt kê đỉnh bậc ít nhất 3 nào). Từ đó tôi tự
+hỏi có thể làm thao tác tương tự với đỉnh bậc 2 hay không, để tiếp tục giảm
+số đỉnh bậc ít nhất 3 cần liệt kê, tăng hiệu quả thuật toán hoặc thậm chí cải
+thiện độ phức tạp. Qua nghiên cứu tương tự cách xóa đỉnh bậc 1, tôi phát hiện
+điều này làm được, và thiết kế một thuật toán tốt hơn cho bài toán tập độc lập
+trọng số lớn nhất.
+
+Tiếp đó tôi nghĩ: thuật toán này không cần liệt kê bất kỳ đỉnh bậc ít nhất 3
+nào khi đồ thị thỏa tính chất gì? Đầu tiên tôi nghĩ tới xương rồng; rõ ràng
+xương rồng thỏa điều kiện. Nhưng tôi cảm thấy không chỉ xương rồng mới thỏa,
+có thể xét trường hợp tổng quát hơn. Nghiên cứu cho thấy thuật toán không cần
+liệt kê đỉnh bậc ít nhất 3 khi và chỉ khi mỗi thành phần liên thông của đồ thị
+là đồ thị nối tiếp-song song tổng quát. Điều này tạo nên ý tưởng ban đầu của
+bài \emph{Công viên}.
+
+Sau đó tôi cho rằng tập độc lập trọng số lớn nhất là bài toán kinh điển; nếu
+đưa thẳng vào kiểm tra chéo đội tập huấn thì cả độ mới lẫn độ khó đều hơi
+thiếu. Vì vậy tôi suy nghĩ cách tăng cường và cải tạo bài toán. Trước hết tôi
+nghĩ tới việc đưa đóng góp đáp án lên cạnh, làm đề trông bớt kinh điển hơn
+nhưng độ khó vẫn hơi thấp. Sau đó, xét tới việc gần đây có nhiều bài sửa động
+trên cây, thậm chí trên xương rồng, rồi hỏi nghiệm tối ưu toàn cục, tôi cũng
+thử đột phá theo hướng sửa động trên đồ thị nối tiếp-song song tổng quát.
+
+Ban đầu tôi xét việc dùng hình dạng đồ thị đối ngẫu (tương tự một cây) rồi
+dùng phân rã chuỗi và cây đoạn để duy trì thông tin cạnh sau khi co đỉnh bậc 2
+(khi ấy bài toán của tôi bảo đảm đồ thị song liên thông đỉnh và không có trọng
+số đỉnh). Nhưng tôi phát hiện nếu cho sẵn đồ thị đối ngẫu, bài toán trực tiếp
+trở thành bài toán trên cây, vì không cần xây đồ thị gốc vẫn giải được; còn
+nếu không cho đồ thị đối ngẫu, việc thu được hình dạng đồ thị đối ngẫu lại khá
+khó. Vì vậy tôi chuyển hướng sang trực tiếp duy trì quá trình thay đổi thông
+tin trên đồ thị khi co đỉnh bậc 2 (trong bài này chính là trọng số cạnh). Tôi
+nhận ra làm vậy chính là xây một cây biểu thức. Với các suy nghĩ trước đó, tôi
+giải được bài toán khá thuận lợi.
+
+Nhưng tôi vẫn chưa hoàn toàn hài lòng, vì cây biểu thức này thực chất biểu
+diễn trực tiếp cấu trúc nối tiếp-song song của đồ thị gốc; với lớp đồ thị này,
+tính một số đáp án chỉ liên quan đến cạnh (chẳng hạn tính điện trở tương đương
+giữa hai điểm trong mạch nối tiếp-song song) vốn tương đối dễ, bởi bản thân
+``nối tiếp-song song'' mô tả quan hệ giữa các cạnh. Để bài toán tổng quát hơn,
+tôi bắt đầu xét vấn đề liên quan đến đỉnh. Tôi phát hiện cách xây cây biểu
+thức rồi phân rã chuỗi vẫn dùng được sau khi thêm trọng số đỉnh, chỉ cần bổ
+sung một lượng chi tiết xử lý nhất định. Vì vậy \emph{Công viên} trở thành
+hình thức cuối cùng như trên.
+
+Về thiết kế tập con, các tập 1, 2, 3 giúp thí sinh phân tích thuật toán đơn
+giản, đồng thời cung cấp ý tưởng cho tập 4, 5. Tập 4, 5 và tập 8 lần lượt đại
+diện cho hai hướng then chốt để giải bài toán. Tập 6, 7 đơn giản hóa chi tiết
+từ góc nhìn đặc biệt không cần xét trọng số đỉnh, giúp suy ra lời giải chuẩn
+cho tập 9 dễ hơn.
+
+\section*{9. Tổng kết}
+
+\emph{Công viên} là một bài toán có độ khó nhất định. Bài này thiết kế điểm
+thành ba mảng bộ phận để dẫn dắt thí sinh tới lời giải chuẩn, đồng thời cung
+cấp nhiều hướng đột phá; nhưng điều đó cũng có nghĩa là muốn lấy nhiều điểm
+bộ phận, thí sinh phải viết nhiều đoạn mã. Để qua đúng bài này cần tư duy lập
+trình rõ ràng và năng lực xử lý chi tiết thích hợp.
+
+\section*{10. Lời cảm ơn}
+
+Xin cảm ơn Hội Máy tính Trung Quốc đã cung cấp nền tảng học tập và trao đổi.
+
+Xin cảm ơn cô Chen Ying của Trường Trung học số 1 Phúc Châu đã quan tâm và chỉ
+dẫn.
+
+Xin cảm ơn huấn luyện viên đội tuyển quốc gia Zhang Ruizhe đã chỉ dẫn và giúp
+đỡ.
+
+Xin cảm ơn các đàn anh Dong Kefan, Chen Junkun, Zhong Zhixian của Đại học
+Thanh Hoa, và đàn anh Yang Haoxiang của Đại học Bắc Kinh đã quan tâm, chỉ dạy
+và khích lệ.
+
+Xin cảm ơn các bạn Chen Yanxu và Chen Yuxin của Trường Trung học số 1 Phúc
+Châu đã hỗ trợ một số phần trong chứng minh.
+
+Xin cảm ơn các bạn Chen Hongji, Chen Yanxu, Chen Yuxin và những bạn khác trong
+nhóm tin học Trường Trung học số 1 Phúc Châu đã đọc duyệt bản thảo.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Wikipedia. Biconnected component.
+  \item Wikipedia. Series-parallel graph.
+  \item Nhà xuất bản Công nghiệp Cơ khí. \emph{Đại số tuyến tính}.
+  \item Qi Zichao. \emph{Ứng dụng của thuật toán chia để trị trong các bài
+        toán đường đi trên cây}.
+  \item Zhong Zhixian. \emph{Bước đầu về bài toán tập độc lập trong thi tin
+        học}. Tập luận văn ứng viên đội tuyển quốc gia IOI Trung Quốc 2017.
+  \item Chen Junkun. \emph{Báo cáo ra đề ``Đồ thị con kỳ diệu'' và mở rộng}.
+        Tập luận văn ứng viên đội tuyển quốc gia IOI Trung Quốc 2017.
 \end{enumerate}
 
 \end{document}

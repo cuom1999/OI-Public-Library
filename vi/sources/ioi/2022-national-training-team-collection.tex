@@ -18,7 +18,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2022. Tệp này
 là bản quét ảnh: \texttt{pdftotext} chỉ trả về các dấu sang trang và không khôi
 phục được văn bản thân bài. Vì vậy bản LaTeX này chuyển ngữ phần nhận diện tập
-sách, mục lục và mười hai bài đầu tiên bằng cách đọc trực tiếp các trang đã
+sách, mục lục và mười ba bài đầu tiên bằng cách đọc trực tiếp các trang đã
 render từ PDF, kết hợp OCR bằng \texttt{tesseract}.
 \end{abstract}
 
@@ -6847,6 +6847,360 @@ quan; cảm ơn gia đình đã quan tâm và ủng hộ.
   \href{https://rqy.moe/Solutions/loj3123/}{rqy.moe}.
 \end{enumerate}
 
+\section{Báo cáo ra đề \emph{Chuỗi của Cutie Duo}}
+
+\begin{center}
+\textbf{Feng Shiyuan, Trường Trung học Thạch Thất Thành Đô}
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết giới thiệu lời giải và bối cảnh ra đề của một bài toán chuỗi do tác giả
+đặt trong kỳ thi đối kháng đội tuyển trên UOJ. Ngoài ra, bài viết đưa ra thêm
+ba ví dụ để tổng kết cách kết hợp cây hậu tố với \emph{dsu on tree} trong một
+số bài toán chuỗi.
+
+\subsection{Bài toán}
+
+\subsubsection{Một số quy ước}
+
+Với chuỗi $S$ độ dài $n$, bài viết dùng các ký hiệu:
+\begin{itemize}
+  \item $S[i]$ là ký tự thứ $i$;
+  \item $S[l,r]$ là chuỗi con từ $l$ đến $r$;
+  \item $\operatorname{lcp}(i,j)$ là độ dài tiền tố chung dài nhất của hai hậu
+  tố $S[i,n]$ và $S[j,n]$;
+  \item $\operatorname{lcs}(i,j)$ là độ dài hậu tố chung dài nhất của hai tiền
+  tố $S[1,i]$ và $S[1,j]$;
+  \item nếu $S[1,i]=S[n-i+1,n]$ thì $S[1,i]$ là một border của $S$.
+\end{itemize}
+Với mệnh đề $P$, ngoặc Iverson $[P]$ bằng $1$ khi $P$ đúng và bằng $0$ khi $P$
+sai. Nếu không nói thêm, chuỗi đang xét có độ dài $n$.
+
+\subsubsection{Mô tả bài toán}
+
+Với một chuỗi độ dài $n$, thuật toán KMP tính mảng $\operatorname{next}$, trong
+đó
+\[
+  \operatorname{next}_i=\max\{x:\ x<i,\ S[1,x]=S[i-x+1,i]\}.
+\]
+Nối cạnh từ $i$ tới $\operatorname{next}_i$ tạo thành một cây gốc $0$, gọi là
+cây \(\operatorname{next}\); độ sâu của $0$ bằng $0$.
+
+Cho chuỗi $S$ độ dài $n$ và một mảng trọng số $w$. Có $q$ truy vấn, mỗi truy vấn
+cho đoạn $[l,r]$. Đặt $S'=S[l,r]$ và $w'=(w_l,w_{l+1},\ldots,w_r)$. Cần tính
+tổng có trọng số của độ sâu trong cây \(\operatorname{next}\) của $S'$:
+\[
+  \sum_i \operatorname{dep}_i\,w'_i.
+\]
+Bản OCR của dòng công thức cuối bị nhiễu nhẹ; công thức trên là ý nghĩa nhất
+quán với các phần lời giải tiếp theo.
+
+\subsubsection{Dữ liệu}
+
+\begin{itemize}
+  \item Subtask 1, $5$ điểm: $n,m\le 10^4$.
+  \item Subtask 2, $10$ điểm: $n,m\le 10^5$, $r=n$, $w_i=1$.
+  \item Subtask 3, $20$ điểm: $n,m\le 10^5$, $r=n$.
+  \item Subtask 4, $10$ điểm: $n,m\le 10^5$, mỗi ký tự được chọn ngẫu nhiên trong
+  $\{0,1\}$ và $w_i=1$.
+  \item Subtask 5, $10$ điểm: $n,m\le 10^5$, mỗi ký tự được chọn ngẫu nhiên trong
+  $\{0,1\}$.
+  \item Subtask 6, $5$ điểm: $n,m\le 10^5$, $w_i=1$.
+  \item Subtask 7, $20$ điểm: $n,m\le 10^5$.
+  \item Subtask 8, $20$ điểm: $n,m\le 2\cdot 10^5$.
+\end{itemize}
+Giới hạn thời gian và bộ nhớ là khoảng $6$ giây và $1$ GB.
+
+\subsubsection{Phân bố điểm}
+
+Trong kỳ thi có $2$ thí sinh đạt $80$ điểm, $1$ thí sinh đạt $55$ điểm, $1$ thí
+sinh đạt $40$ điểm, $1$ thí sinh đạt $35$ điểm, $8$ thí sinh đạt $25$ điểm, $1$
+thí sinh đạt $15$ điểm và $11$ thí sinh đạt $5$ điểm.
+
+\subsection{Giới thiệu thuật toán}
+
+\subsubsection{Thuật toán 1}
+
+Cách làm trực tiếp là chạy KMP cho từng truy vấn rồi tính đáp án. Độ phức tạp
+$O(nq)$, kỳ vọng đạt $5$ điểm.
+
+\subsubsection{Cây hậu tố}
+
+Bài viết gọi cấu trúc cây của automaton hậu tố xây trên chuỗi đảo là cây hậu tố.
+Ký hiệu:
+\begin{itemize}
+  \item $\operatorname{fa}_x$ là cha của nút $x$ trên cây;
+  \item $\operatorname{len}_x$ là độ dài lớn nhất của các chuỗi do nút $x$ đại
+  diện;
+  \item $\operatorname{Right}_x$ là tập đầu mút phải của các lần xuất hiện trong
+  chuỗi đảo, tương đương tập đầu mút trái trong chuỗi gốc;
+  \item $\operatorname{pt}_i$ là nút trên cây hậu tố tương ứng với hậu tố
+  $S[i,n]$.
+\end{itemize}
+Ta có
+\[
+  \operatorname{lcp}(i,j)=
+  \operatorname{len}_{\operatorname{lca}(\operatorname{pt}_i,\operatorname{pt}_j)}.
+\]
+Cách xây automaton hậu tố và quan hệ với cây hậu tố được nhắc tới trong các tài
+liệu tham khảo [1] và [2].
+
+\subsubsection{Thuật toán 2}
+
+Thuật toán này xử lý trường hợp $r=n$ và mọi $w_i=1$. Thay vì tính tổng độ sâu
+của mọi điểm trong cây \(\operatorname{next}\), ta tính tổng kích thước các cây
+con; hai cách đếm là tương đương vì mỗi nút được tính đúng theo số tổ tiên của
+nó.
+
+Xét tính chất của cây \(\operatorname{next}\). Nếu $S[1,x]$ là border của
+$S[1,y]$, thì $x$ nằm trong cây con của $y$; mặt khác, $y$ ứng với một lần xuất
+hiện của $S[1,x]$ trong $S[1,y]$. Vì vậy đóng góp của $x$ bằng số lần xuất hiện
+của tiền tố $S[1,x]$ trong đoạn cần xét.
+
+Do đó, bài toán trở thành thống kê số lần xuất hiện của mọi tiền tố của $S[1,n]$
+trong đoạn. Xây automaton hậu tố từ phải sang trái; với mỗi vị trí, cộng trên
+đường từ $\operatorname{pt}_i$ lên gốc các lượng dạng
+\[
+  (\operatorname{len}_x-\operatorname{len}_{\operatorname{fa}_x})
+  \cdot |\operatorname{Right}_x|.
+\]
+Dùng LCT để duy trì, độ phức tạp $O(n\log n)$, kỳ vọng đạt $15$ điểm.
+
+\subsubsection{Thuật toán 3}
+
+Thuật toán này xử lý dữ liệu ngẫu nhiên với $w_i=1$. Tiếp tục ý tưởng của thuật
+toán 2, ta cần tính số lần xuất hiện của mỗi tiền tố của $S[l,r]$ trong chính
+$S[l,r]$. Gọi $x$ là nút trên cây hậu tố ứng với $S[l,r]$. Với mỗi nút trên đường
+từ $x$ lên gốc và mỗi độ dài
+\[
+  \operatorname{len}_{\operatorname{fa}_x}+1
+  \le \ell \le
+  \operatorname{len}_x,
+\]
+cần truy vấn số phần tử của $\operatorname{Right}_x$ trong một đoạn vị trí. Có
+thể dùng hợp nhất cây đoạn để làm truy vấn này.
+
+Với dữ liệu ngẫu nhiên, chọn ngưỡng $B>2\log n+\log q+c$. Xác suất hai chuỗi con
+độ dài $B$ bằng nhau rất nhỏ. Tiền xử lý hash cho các chuỗi độ dài dưới $B$ rồi
+đếm trực tiếp các chuỗi cùng hash trong đoạn. Vì số độ dài cần xét kỳ vọng là
+$O(\log n)$, độ phức tạp là $O(n\log n+q\log^2 n)$, kết hợp thuật toán 2 đạt
+khoảng $25$ điểm.
+
+\subsubsection{Thuật toán 4}
+
+Thuật toán này xử lý dữ liệu ngẫu nhiên không còn giả sử $w_i=1$. Khi xét độ dài
+$\ell$, ta cần cộng các trọng số $w$ của những vị trí có chuỗi con cùng hash với
+$S[l,l+\ell-1]$.
+
+Nếu dùng cây hậu tố, tại một nút $x$ và độ dài $\ell$, ta cần chuyển lần xuất
+hiện trong cây hậu tố của chuỗi đảo sang lần xuất hiện tương ứng trong cây hậu
+tố của chuỗi xuôi. Chọn một phần tử của $\operatorname{Right}_x$, xây automaton
+hậu tố xuôi, rồi dùng nhảy bậc hai để tìm nút $y$ ứng với đoạn kết thúc tương
+ứng. Tập $\operatorname{Right}_x$ và $\operatorname{Right}_y$ tương ứng một-một,
+nên truy vấn trở thành truy vấn tổng trọng số trong cây con của $y$. Bài viết
+gọi cách chuyển này là \emph{cây hậu tố đối xứng}. Độ phức tạp
+$O(n\log n+q\log^2 n)$, kết hợp thuật toán 2 đạt khoảng $35$ điểm.
+
+\subsubsection{Thuật toán 5}
+
+Thuật toán này xử lý trường hợp $r=n$. Với một tiền tố của chuỗi con truy vấn,
+đóng góp có thể viết thành tổng theo các vị trí xuất hiện của chuỗi con. Tách
+đường từ $\operatorname{pt}_i$ lên gốc bằng phân rã nặng nhẹ. Với mỗi heavy path,
+đặt $z_j$ là nút đầu tiên trên heavy path gặp được khi đi từ $\operatorname{pt}_j$
+lên gốc, và đặt độ dài tương ứng là $\ell'_j$.
+
+Nếu một nút nằm trong cây con của con nặng, ta dùng cây hậu tố đối xứng để đổi
+sang truy vấn cây con ở phía chuỗi xuôi. Với phần còn lại, cần xử lý các cây con
+nhẹ trên tiền tố của một heavy path. Dùng \emph{dsu on tree}: quét heavy path từ
+trên xuống, khi tới một nút thì đưa toàn bộ thông tin của các cây con nhẹ vào
+cây Fenwick theo chỉ số vị trí, với trọng số phù hợp. Mỗi nút chỉ bị đưa vào
+$O(\log n)$ lần, đúng bằng số cạnh nhẹ trên đường tới gốc. Độ phức tạp
+$O((n+q)\log^2 n)$, kết hợp thuật toán 4 đạt khoảng $55$ điểm.
+
+\subsubsection{Thuật toán 6}
+
+Thuật toán này xử lý $w_i=1$. Tiếp tục từ thuật toán 5, tổng cần tính rút về các
+biểu thức dạng
+\[
+  \sum_j \min(\operatorname{lcp}(\cdots), r-j+1).
+\]
+Khi đó bài toán gần với Codeforces 1098F, nên bài viết chỉ phác thảo lời giải
+chính thức.
+
+Với một heavy path, mỗi lần xuất hiện có thể biểu diễn thành các điểm trên mặt
+phẳng. Số lần đóng góp bằng số điểm thỏa đồng thời các bất đẳng thức theo $r$ và
+theo độ dài đang xét. Các điểm trên cùng cấu trúc tạo thành những đoạn thẳng;
+lấy sai phân thành hai tia, rồi dùng quét đường thẳng cùng cây Fenwick để trả
+lời. Độ phức tạp $O((n+q)\log^2 n)$, kết hợp thuật toán 5 đạt khoảng $60$ điểm.
+
+\subsubsection{Thuật toán 7}
+
+Thuật toán này xử lý $n,m\le 10^5$. Đặt $s_i$ là tổng tiền tố của mảng trọng số.
+Biểu thức cần tính được viết lại qua các tổng tiền tố này và các điều kiện dạng
+$\ell'_j+j>r+1$, $\ell'_j<\ell$.
+
+Vẫn dùng \emph{dsu on tree}. Tại một nút $x$ trên heavy path, truy vấn trở thành
+một bài toán đếm điểm trong hình chữ nhật với trọng số. Số lần chèn và số lần
+truy vấn lần lượt là $O(n\log n)$ và $O(q\log n)$, nên dùng cấu trúc cây lồng cây
+cho độ phức tạp $O((n+q)\log^3 n)$. Các truy vấn cây con phát sinh $O(\log n)$
+lần vẫn xử lý bằng kỹ thuật của thuật toán 5. Kỳ vọng đạt $80$ điểm.
+
+\subsubsection{Thuật toán 8}
+
+Thuật toán này tối ưu thuật toán 7. Trước hết bỏ yêu cầu phần giao với heavy path
+phải nằm phía trên $x$. Với các điểm nằm phía dưới, đóng góp có thể xử lý bằng
+truy vấn cây con; chính việc này lại loại bỏ một chiều ràng buộc. Cây hậu tố đối
+xứng được dùng để trừ đi cây con nhẹ chứa điểm truy vấn.
+
+Biểu thức sau biến đổi chỉ còn các trường hợp:
+\begin{itemize}
+  \item nếu biên phải của đoạn bị chặn trước khi đạt đủ độ dài, dùng quét đường
+  thẳng và cây Fenwick;
+  \item nếu độ dài trên một phía nhỏ hơn độ dài trên phía kia, dùng cây Fenwick
+  sau khi sắp thứ tự;
+  \item trường hợp còn lại dùng truy vấn cây hậu tố đối xứng.
+\end{itemize}
+Độ phức tạp giảm còn $O((n+q)\log^2 n)$ và đạt $100$ điểm.
+
+\subsubsection{Thuật toán 9}
+
+Bài viết còn đưa ra một cách nhìn khác cho thuật toán 7. Xem cặp $(j,\ell')$ là
+một điểm trên mặt phẳng. Các điều kiện trong truy vấn đều có dạng
+\[
+  x_j<a,\qquad y_j<b,\qquad x_j+y_j<c.
+\]
+Nếu $c>a+b$ thì truy vấn chỉ là truy vấn hình chữ nhật. Nếu $c<a+b$, tách miền
+cần đếm thành ba tập:
+\[
+  A=\{j:\ x_j<a,\ x_j+y_j<c\},\quad
+  B=\{j:\ y_j<b,\ x_j+y_j<c\},\quad
+  C=\{j:\ x_j+y_j<c\},
+\]
+rồi lấy $A+B-C$. Mỗi tập chỉ có một hoặc hai ràng buộc, nên đều xử lý được bằng
+quét đường thẳng. Các trường hợp còn lại cũng tách tương tự, từ đó thu được
+$O((n+q)\log^2 n)$.
+
+\subsection{Bối cảnh ra đề và tổng kết bài toán}
+
+Nguồn cảm hứng của tác giả đến từ bài \emph{Simple KMP}, yêu cầu tính tổng độ
+sâu cây \(\operatorname{next}\) trên mọi chuỗi con của một chuỗi. Bài đó có thể
+giải bằng LCT và automaton hậu tố. Tác giả thử sửa thành nhiều truy vấn trên một
+chuỗi con, nhưng biểu thức thu được lại trùng tinh thần với Codeforces 1098F, nên
+tiếp tục tăng cường thành truy vấn tổng độ sâu \(\operatorname{next}\) có trọng
+số.
+
+Trong quá trình thử lời giải, ngoài \emph{dsu on tree}, tác giả dùng thêm tư
+tưởng cây hậu tố đối xứng để đạt $O((n+q)\log^3 n)$, tức thuật toán 7. Sau đó
+anh Ma Yaohua đưa ra cách tối ưu hơn $O((n+q)\log^2 n)$, tức thuật toán 8.
+
+Bài toán có độ phân hóa tốt: với dữ liệu ngẫu nhiên, chỉ cần hash đơn giản đã có
+thể vượt qua một phần lớn; thí sinh phát hiện thêm tính chất ở các trường hợp
+$r=n$ hoặc $w_i=1$ cũng nhận được số điểm tương ứng. Ngoài hướng dựa trên cây hậu
+tố và \emph{dsu on tree}, anh Peng Sijin còn đưa ra lời giải chia khối
+$O((n+q)\sqrt n)$ ngắn gọn, xem thêm tài liệu [5].
+
+\subsection{\emph{dsu on tree} trên cây hậu tố}
+
+Ba ví dụ sau đều dùng được phương pháp cây hậu tố kết hợp \emph{dsu on tree}.
+
+\subsubsection{Ví dụ 1}
+
+\paragraph{Mô tả.}
+Cho chuỗi $S$ và số nguyên dương $K$, hỏi $S$ có bao nhiêu chuỗi con có thể chia
+thành $K$ đoạn bằng nhau.
+
+\paragraph{Phân tích.}
+Cách làm trong bài tính được, với mỗi vị trí bắt đầu $i$, có bao nhiêu chuỗi con
+bắt đầu tại $i$ thỏa điều kiện. Điều kiện có thể đổi thành một ràng buộc trên
+$\operatorname{lcp}$, rồi chuyển sang quan hệ giữa vị trí xuất hiện và độ dài
+trên cây hậu tố.
+
+Khi xử lý từng heavy path từ trên xuống, DFS thô qua các cây con nhẹ và thực
+hiện cộng đoạn; tại vị trí $i$ chỉ cần hỏi điểm. Với các truy vấn tới con nặng,
+dùng truy vấn cây con. Độ phức tạp $O(n\log^2 n)$. Bài này còn có lời giải tốt
+hơn nhưng không liên quan trực tiếp tới chủ đề nên không bàn tiếp.
+
+\subsubsection{Ví dụ 2: bốn cách tìm border}
+
+\paragraph{Mô tả.}
+Cho chuỗi $S$ và $m$ truy vấn $[l,r]$, cần tìm border dài nhất của $S[l,r]$ khác
+chính nó.
+
+\paragraph{Phân tích.}
+Theo tính chất border, đáp án có thể viết thành vị trí nhỏ nhất $x\in(l,r]$ sao
+cho phần chồng từ $x$ tới $r$ khớp với tiền tố của đoạn. Dùng cùng phương pháp
+với cây hậu tố: đưa các điểm $x$ vào cây đoạn, khóa theo giá trị $\ell'_x+x-1$,
+duy trì giá trị lớn nhất rồi nhị phân trên cây đoạn để tìm $x$ nhỏ nhất hợp lệ.
+
+Với $O(\log n)$ truy vấn con nặng, dùng hợp nhất cây đoạn để lấy tập
+\(\operatorname{Right}\) và truy vấn. Cây con nhẹ chứa chính điểm đang hỏi không
+cần loại riêng, vì đáp án thu được vẫn hợp lệ theo giới hạn LCA. Độ phức tạp
+$O((n+m)\log^2 n)$.
+
+Nếu dùng tư tưởng của thuật toán 8, điều kiện có thể đổi thành truy vấn vị trí
+hợp lệ nhỏ nhất trong một đoạn, kèm điều kiện $x+\ell_x>r+1$. Sắp bằng radix
+sort theo ngưỡng, giữ các điểm còn sống và dùng DSU để tìm vị trí hợp lệ kế
+tiếp; độ phức tạp gần $O((n+q)\alpha(n)\log n)$. Bài toán này còn có lời giải
+tốt hơn nhờ tính chất riêng của border.
+
+\subsubsection{Ví dụ 3}
+
+\paragraph{Mô tả.}
+Hai chuỗi độ dài $m$ được gọi là tương tự nếu chúng bằng nhau hoặc chỉ khác đúng
+một vị trí. Với mỗi chuỗi con độ dài $m$, hãy tính có bao nhiêu chuỗi con độ dài
+$m$ khác tương tự với nó.
+
+\paragraph{Phân tích.}
+Cần đếm số vị trí $j$ thỏa
+\[
+  \operatorname{lcp}(i,j)+
+  \operatorname{lcs}(i+m-1,j+m-1)\ge m-1.
+\]
+Xây automaton hậu tố xuôi để biểu diễn phần $\operatorname{lcs}$. Dùng
+\emph{dsu on tree} như trước, ràng buộc chuyển thành điều kiện về
+\(\operatorname{lcp}\) và độ dài trên heavy path. Với mảng hậu tố, từ thứ hạng
+của hậu tố có thể nhị phân ra đoạn hạng $[L,R]$ thỏa điều kiện LCP; mỗi lần gặp
+một vị trí $j$ thì cộng $1$ trên đoạn hạng đó, cuối cùng hỏi tại hạng của vị trí
+cần tính. Với các truy vấn con nặng, cũng nhị phân trên mảng hậu tố rồi hỏi số
+phần tử trong cây con. Độ phức tạp $O(n\log^2 n)$.
+
+\subsection{Tổng kết và triển vọng}
+
+Từ bài toán chính và các ví dụ, có thể thấy \emph{dsu on tree} rất hiệu quả khi
+xử lý các biểu thức liên quan tới \(\operatorname{lcp}\). Lý do là trên một
+heavy path, \(\operatorname{lcp}\) thường có thể viết đơn giản thành một độ dài
+\(\operatorname{len}\), sau đó kết hợp với cấu trúc dữ liệu để chuyển thành các
+bài toán đếm điểm. Những cây con đặc biệt xuất hiện $O(\log n)$ lần thường có
+dạng đủ đơn giản để trả lời bằng truy vấn cây con.
+
+Nhìn chung, công thức sinh ra từ \emph{dsu on tree} trên cây hậu tố khá gọn,
+không cần biến đổi quá dài, và sau vài phân loại ngắn thường trở thành bài toán
+cấu trúc dữ liệu quen thuộc. Bài viết tổng kết phương pháp này và đưa ra ba ví
+dụ nhằm gợi mở thêm các ứng dụng mới trên cây hậu tố.
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn cha mẹ đã nuôi dưỡng; cảm ơn China Computer Federation đã cung
+cấp cơ hội giao lưu; cảm ơn các thầy Zeng Guisheng và Liang Dewei của Trường
+Trung học Thạch Thất Thành Đô đã hướng dẫn và giúp đỡ nhiều năm; cảm ơn các bạn
+Tu Xiaodi, Zhang Jiarui và Cao Yue đã đọc kiểm bài viết; cảm ơn UOJ cung cấp
+nền tảng thi và các quản trị viên UOJ đã hỗ trợ; cảm ơn mọi người đã giúp đỡ
+tác giả trên con đường OI.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Chen Lijie. \emph{Automaton hậu tố}. Trao đổi trại đông, 2012.
+  \item Zhang Tianyang. \emph{Automaton hậu tố và ứng dụng}. Tập luận văn đội
+  tuyển quốc gia Trung Quốc 2015.
+  \item Codeforces Blog. \url{http://codeforces.com/blog/entry/44351}.
+  \item Codeforces Blog. \url{https://codeforces.com/blog/entry/64331}.
+  \item Blog UOJ của Itst. \href{https://itst.blog.uoj.ac/blog/7514}{itst.blog.uoj.ac}.
+  \item Wikipedia. \emph{Suffix Array}.
+  \url{https://en.wikipedia.org/wiki/Suffix_array}.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục đã đọc được trên ảnh render, tập năm 2022 bao phủ các nhóm chủ đề
@@ -6923,5 +7277,10 @@ in 182--203. Bài này gồm nhiều công thức về border, runs, Lyndon arra
 nhận diện và truy hồi đếm; bản dịch giữ các định nghĩa, bổ đề, ví dụ và công
 thức đọc chắc được, đồng thời diễn giải những chứng minh có chỉ số bị OCR nhiễu
 thay vì tự suy diễn từng dòng biến đổi.
+Bài thứ mười ba được OCR từ các trang vật lý 208--216 của PDF, tương ứng trang
+in 204--212. Đây là báo cáo ra đề về bài \emph{Chuỗi của Cutie Duo}; OCR làm
+nhiễu một số chỉ số trong công thức truy vấn, nên bản dịch giữ cấu trúc thuật
+toán, các độ phức tạp, điều kiện hình học dữ liệu và ví dụ, đồng thời diễn giải
+những công thức có ký hiệu không đọc chắc được.
 
 \end{document}

@@ -23,7 +23,7 @@
 \begin{abstract}
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2020. Tệp được
 tạo bằng XeTeX và có lớp văn bản Unicode đọc được. Bản LaTeX này chuyển ngữ
-phần nhận diện tập sách, toàn bộ mục lục, và mười một bài đầu tiên: bài của Jiang
+phần nhận diện tập sách, toàn bộ mục lục, và mười ba bài đầu tiên: bài của Jiang
 Mingrun về tối ưu các bài toán chia khối cổ điển bằng fractional cascading, bài
 của Chen Sunli về cây thống trị, báo cáo ra đề \emph{Ghép số} của Jiang
 Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, bài của
@@ -31,8 +31,9 @@ Chen Yu về nguyên lý chuyển vị, và bài của Li Baitian về duy trì 
 cực trị của hàm số, cùng báo cáo ra đề \emph{Trò chơi trên đồ thị} của Zuo
 Junchi, bài của Zhou Yuyang về một loại DFT không bình thường, và bài của Zhang
 Zheyu về bài toán rừng hướng vào nhỏ nhất, và bài của Xu Yixuan về suffix
-automaton nén, bài của Luo Yuxiang về nimber và thuật toán đa thức, và bài của
-Wang Zhanpeng về các bài toán liên quan tới định thức trong thi tin học. Các
+automaton nén, bài của Luo Yuxiang về nimber và thuật toán đa thức, bài của
+Wang Zhanpeng về các bài toán liên quan tới định thức trong thi tin học, và bài
+của Zhou Renfei về tính diện tích vùng ghép trên mặt cầu. Các
 hình nhỏ trong báo cáo thứ tư và thứ bảy được dựng lại bằng
 TikZ từ bản render PDF; các hình minh họa trong bài thứ chín, thứ mười và thứ
 mười hai được
@@ -9194,6 +9195,1089 @@ Cảm ơn cha mẹ đã quan tâm, ủng hộ và chăm sóc tôi chu đáo.
   matrix}. Algorithms Seminar 2001--2002, F. Chyzak (ed.), INRIA, pp. 29--32,
   2003.
   \item Wikipedia. \emph{Schur complement}.
+\end{enumerate}
+
+\section{Thuật toán hiệu quả để tính diện tích vùng ghép trên mặt cầu}
+
+\begin{center}
+Zhou Renfei, Trường Trung học Học Quân Hàng Châu
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Trên mặt cầu, nếu lặp lại các phép toán Boolean như giao, hợp và hiệu trên các
+vùng dạng chỏm cầu, ta có thể biểu diễn nhiều vùng phức tạp; trong bài viết
+này gọi là ``vùng ghép''. Tính diện tích vùng ghép trên mặt cầu là một bài toán
+quan trọng và có nhiều ứng dụng thực tế. Bài viết đưa ra định nghĩa cho bài
+toán diện tích vùng ghép được cho dưới dạng biểu thức Boolean, đồng thời đề
+xuất một thuật toán tốt để tính chính xác diện tích vùng ghép trên mặt cầu trong
+độ phức tạp thời gian xấu nhất \(O(nm\log m)\), trong đó \(n\) là số vùng dạng
+chỏm cầu và \(m\) là độ dài biểu thức Boolean.
+
+\subsection{Dẫn nhập}
+
+Cho \(n\) vùng dạng chỏm cầu \(D_1,D_2,\ldots,D_n\) trên mặt cầu, cùng một biểu
+thức Boolean độ dài \(m\) nhận các vùng này làm tham số, ta định nghĩa được một
+vùng ghép \(D^*\). Các chỏm cầu đôi một khác nhau; biểu thức Boolean được cho
+tường minh, và mỗi vùng có thể xuất hiện nhiều lần trong biểu thức. Cách tính
+diện tích của vùng ghép \(D^*\) đó chính là vấn đề chính của bài viết này: bài
+toán diện tích vùng ghép trên mặt cầu.
+
+Loại bài toán này có nhiều ứng dụng thực tế, chẳng hạn tính lượng nguyên liệu
+cho đồ thủ công hình cầu, tính diện tích một vùng địa lý xác định, tính phạm vi
+phủ sóng của trạm thông tin, tính vùng dịch vụ hữu hiệu trên bề mặt Trái Đất
+của hệ thống định vị vệ tinh Bắc Đẩu, v.v. Những ứng dụng đó đặc biệt quan
+trọng trong thiết kế hỗ trợ bởi máy tính và hệ thống thông tin địa lý.
+
+Trường hợp đặc biệt trên mặt phẳng đã xuất hiện từ lâu trong các kỳ thi thuật
+toán. Ngay từ NOI 2004 đã có bài \emph{Lượng mưa}, yêu cầu tính diện tích hợp
+của một số hình bình hành trên mặt phẳng. Vài năm sau, NOI tiếp tục có một số
+bài ``diện tích hợp'' trên mặt phẳng, trong đó nổi tiếng hơn cả là NOI 2005
+\emph{Cây chanh dưới trăng} [2]. Bài toán diện tích vùng ghép trên mặt cầu cũng
+từng xuất hiện một lần trong ICPC [6].
+
+Trước đây chưa có phương pháp tổng quát cho loại bài toán này. Một phương pháp
+truyền thống là tích phân số, chỉ tính được giá trị gần đúng. Ngoài ra còn có
+một phương pháp quét đường thẳng, cắt vùng ghép ra rồi tính chính xác diện tích
+vùng ghép trên mặt phẳng trong độ phức tạp xấu nhất \(O(n^2m\log m)\). Bài viết
+này đưa ra một thuật toán tốt, tính chính xác diện tích vùng ghép trên mặt
+phẳng hoặc mặt cầu trong độ phức tạp xấu nhất \(O(nm\log m)\), với các ưu điểm
+hiệu quả cao, độ chính xác cao, ổn định số tốt và dễ mở rộng.
+
+Bài viết gồm sáu chương. Chương 2 bắt đầu từ một bài toán đơn giản hơn, bài
+toán diện tích hợp trên mặt phẳng, và đưa ra phương pháp công thức Green để có
+một thuật toán chính xác với thời gian \(O(n^2\log n)\). Chương 3 áp dụng
+phương pháp công thức Green lên mặt cầu và giải bài toán diện tích hợp trên mặt
+cầu với cùng cận thời gian. Chương 4 dùng toán tử Boolean và biểu thức Boolean
+để đưa ra định nghĩa chính xác của bài toán diện tích vùng ghép trên mặt cầu,
+đồng thời giới thiệu thuật toán hiệu quả cho bài toán này. Chương 5 thảo luận
+một số bối cảnh ứng dụng của thuật toán, và trình bày cách điều chỉnh thích hợp
+từng giai đoạn thuật toán để phù hợp với bài toán cụ thể. Chương 6 tổng kết
+ngắn gọn.
+
+\subsection{Bài toán diện tích hợp trên mặt phẳng}
+
+\paragraph{Bài toán 1 (diện tích hợp trên mặt phẳng).}
+Cho \(n\) vùng tròn \(D_1,\ldots,D_n\) trên mặt phẳng, định nghĩa
+\[
+  D^*=D_1\cup D_2\cup\cdots\cup D_n,
+\]
+trong đó mỗi \(D_i\) là phần trong của một đường tròn. Hãy tính diện tích của
+\(D^*\).
+
+Chương này đưa ra một thuật toán dựa trên công thức Green để giải bài toán
+trên.
+
+\paragraph{Công thức Green.}
+Giả sử \(\Omega\subset\mathbb R^2\) là một miền đóng được bao bởi hữu hạn đường
+cong trơn từng khúc. Nếu các hàm \(P(x,y)\), \(Q(x,y)\) liên tục trên
+\(\Omega\), và có các đạo hàm riêng liên tục \(\partial Q/\partial x\) và
+\(\partial P/\partial y\), thì
+\[
+  \oint_{\partial\Omega} P\,dx+Q\,dy
+  =
+  \iint_{\Omega}\left(\frac{\partial Q}{\partial x}
+  -\frac{\partial P}{\partial y}\right)\,dx\,dy.
+\]
+Ở đây \(\partial\Omega\) là biên của miền \(\Omega\). Hướng của nó được quy
+định như sau: khi một người đi dọc theo chiều dương của \(\partial\Omega\),
+miền \(\Omega\) luôn nằm bên trái người đó.
+
+Chứng minh định lý này có thể tìm trong giáo trình giải tích toán học, nên ở
+đây không nhắc lại; ta chỉ mô tả cách dùng nó để tính diện tích của \(D^*\).
+Ký hiệu \(S_{D^*}\) là diện tích \(D^*\), ta có
+\[
+  S_{D^*}=\iint_{D^*} dx\,dy.
+\]
+Nếu đặt
+\[
+  \Omega=D^*,\qquad P(x,y)=-y,\qquad Q(x,y)=0,
+\]
+thì \(\Omega,P,Q\) thỏa điều kiện áp dụng công thức Green. Thay vào công thức,
+ta được
+\[
+  \oint_{\partial D^*}(-y)\,dx
+  =\iint_{D^*} dx\,dy
+  =S_{D^*},
+\]
+tức là bài toán tính diện tích được chuyển thành bài toán tính tích phân đường
+trên biên \(\partial D^*\).
+
+Trong một ví dụ của bài toán 1, vùng \(D^*\) là phần được tô, các đường tròn là
+đường nét đứt, còn \(\partial D^*\) là các nét liền. Như vậy, \(\partial D^*\)
+được tạo bởi một số cung tròn. Gọi các cung này là \(A_1,\ldots,A_m\), theo
+tính cộng được của tích phân,
+\[
+  \oint_{\partial D^*}(-y)\,dx
+  =\sum_{i=1}^{m}\int_{A_i}(-y)\,dx,
+\]
+trong đó mỗi \(A_i\) đều có hướng ngược chiều kim đồng hồ. Ta dùng vế phải để
+tính vế trái. Vì vậy bài toán 1 được chuyển thành hai bài toán con:
+
+\paragraph{Bài toán 1.1.}
+Tìm \(A_1,A_2,\ldots,A_m\).
+
+\paragraph{Bài toán 1.2.}
+Tính \(\int_{A_i}(-y)\,dx\).
+
+Trước hết xét bài toán 1.1. Không mất tính tổng quát, giả sử các đường tròn
+\(D_1,D_2,\ldots,D_n\) đôi một khác nhau; nếu có một đường tròn xuất hiện nhiều
+lần, ta chỉ giữ lại một bản và xóa các bản còn lại, đáp án không đổi. Trên mỗi
+đường tròn, phần không bị các đường tròn khác phủ tạo thành \(\partial D^*\);
+phần bị phủ thì không phải thành phần của \(\partial D^*\). Vì vậy để tìm các
+cung tạo nên \(\partial D^*\), ta cần xét riêng từng đường tròn và tính phần
+đường tròn không bị các đường tròn khác phủ.
+
+Định nghĩa phép toán ``góc cực''. Giả sử tâm đường tròn đang xử lý là \(O\).
+Với điểm \(P\) trên đường tròn, định nghĩa \(\operatorname{Angle}(P)\) là góc
+quay từ chiều dương trục \(x\) tới hướng vector \(\overrightarrow{OP}\). Đây là
+góc có hướng, quay ngược chiều kim đồng hồ lấy dấu dương, miền giá trị quy định
+là \([-\pi,\pi)\). Phép góc cực là song ánh từ đường tròn tới \([-\pi,\pi)\).
+Ta chuyển sang tính các phần chưa bị phủ trên \([-\pi,\pi)\). Phần mà một
+đường tròn phủ lên đường tròn \(O\), nếu có, là một cung tròn; góc cực tương
+ứng của nó là hợp của nhiều nhất hai khoảng trong \([-\pi,\pi)\). Bài toán lại
+được chuyển thành:
+
+\paragraph{Bài toán 1.1a.}
+Cho \(n'\) khoảng trên \([-\pi,\pi)\), hãy tìm phần không bị bất kỳ khoảng nào
+phủ, biểu diễn bằng một số khoảng rời nhau. Ở đây \(n'\le 2n\).
+
+Đây là một bài toán cổ điển; thuật toán \(O(n'\log n')\) được mô tả ngắn gọn
+như sau. Dùng tư tưởng quét đường thẳng, cho điểm động \(P\) di chuyển dần từ
+\(-\pi\) tới \(\pi\), trong quá trình đó duy trì số khoảng chứa \(P\). Những vị
+trí mà giá trị này đổi từ \(1\) thành \(0\), hoặc từ \(0\) thành \(1\), chính
+là đầu mút trái và phải của các khoảng chưa bị phủ. Trước quá trình này cần sắp
+xếp tất cả đầu mút khoảng, nên cận thời gian là \(O(n'\log n')\).
+
+Sau khi tìm được các khoảng chưa bị phủ trên \([-\pi,\pi)\), ta có thể tìm các
+cung tròn tương ứng trong thời gian tuyến tính. Làm như vậy cho \(n\) đường
+tròn, ta tìm được \(A_1,\ldots,A_m\) trong độ phức tạp xấu nhất
+\(O(n^2\log n)\), giải xong bài toán 1.1.
+
+Cuối cùng xét bài toán 1.2. Giả sử cần tính \(\int_{A_i}(-y)\,dx\) cho cung
+tròn \(A_i=\widehat{PMQ}\), hướng đường cong là ngược chiều kim đồng hồ,
+\(P\to Q\). Gọi \(\Omega_1\) là hình quạt cong tạo bởi \(A_i\) và đoạn
+\(\overline{QP}\); gọi \(\Omega_2\) là miền được bao bởi đoạn \(\overline{QP}\),
+trục \(x\) và hai đường thẳng đứng qua hai đầu mút. Áp dụng công thức Green cho
+\(\Omega_1\), ta có
+\[
+\begin{aligned}
+  S_{\Omega_1}
+  &=\oint_{\partial\Omega_1}(-y)\,dx\\
+  &=\int_{A_i}(-y)\,dx+\int_{\overline{QP}}(-y)\,dx,
+\end{aligned}
+\]
+suy ra
+\[
+  \int_{A_i}(-y)\,dx
+  =S_{\Omega_1}+\int_{\overline{QP}} y\,dx
+  =S_{\Omega_1}+S_{\Omega_2}.
+\]
+Ở đây \(S_{\Omega_2}\) là diện tích có hướng của \(\Omega_2\): nếu hoành độ của
+\(Q\) lớn hơn của \(P\), thì \(S_{\Omega_2}<0\). Bước cuối dùng ý nghĩa hình
+học của tích phân trên \(\overline{QP}\).
+
+\(\Omega_1\) là hình quạt cong, \(\Omega_2\) là hình thang, diện tích của chúng
+dễ tính. Vì vậy công thức trên tính được tích phân của một cung \(A_i\) trong
+thời gian hằng số, giải xong bài toán 1.2.
+
+Nhìn lại bài toán 1, ta tìm tất cả cung tròn \(A_1,\ldots,A_m\) cấu thành
+\(\partial D^*\) trong độ phức tạp xấu nhất \(O(n^2\log n)\), với cận trên
+\(m\le n^2\). Sau đó tính tích phân đường cho từng \(A_i\), mỗi lần tốn thời
+gian hằng số, rồi cộng lại để được \(S_{D^*}\). Như vậy ta có một thuật toán
+tốt với thời gian \(O(n^2\log n)\) cho bài toán 1.
+
+\subsection{Bài toán diện tích hợp trên mặt cầu}
+
+Trong chương trước, ta dùng công thức Green để chuyển tích phân kép trên
+\(D^*\) thành tích phân đường trên \(\partial D^*\), rồi tính riêng tích phân
+đường trên từng cung tròn cấu thành \(\partial D^*\). Chương này dùng cùng tư
+tưởng để giải bài toán diện tích hợp trên mặt cầu.
+
+\paragraph{Bài toán 2 (diện tích hợp trên mặt cầu).}
+Cho \(n\) vùng dạng chỏm cầu \(D_1,\ldots,D_n\) trên mặt cầu, mỗi chỏm cầu không
+lớn hơn một bán cầu. Định nghĩa
+\[
+  D^*=D_1\cup D_2\cup\cdots\cup D_n,
+\]
+hãy tính diện tích của \(D^*\).
+
+Việc quy định chỏm cầu không lớn hơn bán cầu không có nghĩa là chỏm cầu lớn
+không xử lý được. Sau khi đưa vào phép toán Boolean, ta có thể dùng phần bù của
+một chỏm cầu nhỏ hơn để biểu diễn chỏm cầu vượt quá bán cầu, nên không cần bàn
+riêng trường hợp đó. Quy định này giúp xử lý hình học thuận tiện hơn.
+
+Trước khi giới thiệu lời giải, ta nhắc ngắn gọn một số kiến thức cơ bản của
+hình học cầu và thống nhất ý nghĩa của vài thuật ngữ.
+
+\begin{enumerate}
+  \item Giả sử mặt cầu trong bài toán là mặt cầu đơn vị, tâm tại gốc
+  \(O=(0,0,0)\), bán kính \(1\). Có thể làm vậy vì tác động của phép tịnh tiến
+  và co giãn lên đáp án là dễ xử lý.
+
+  \item Cắt mặt cầu bằng một mặt phẳng, phần giao là một đường tròn. Phần mặt
+  cầu nằm ở một phía của mặt phẳng đó gọi là chỏm cầu. Hai đối tượng này tương
+  ứng với nhau: đường tròn là biên của chỏm cầu, còn chỏm cầu là phần trong của
+  đường tròn. Khi không cần phân biệt, ta có thể dùng lẫn hai tên gọi.
+
+  Với một chỏm cầu, gọi đỉnh của nó là điểm trung tâm trên mặt cầu. Điểm này
+  nằm trên chỏm cầu và cách đều mọi điểm trên biên chỏm cầu. Mặt phẳng chứa
+  đường tròn tương ứng được gọi là mặt đáy.
+
+  \item Hai điểm trên mặt cầu được gọi là đối kính khi và chỉ khi đoạn nối chúng
+  đi qua tâm cầu. Điều này tương đương với việc chúng đối xứng qua tâm cầu.
+
+  \item Đường tròn lớn là đường tròn lớn nhất, tức đường tròn thu được khi cắt
+  mặt cầu bởi mặt phẳng đi qua tâm cầu. Ngoài đường tròn lớn, mọi đường tròn
+  khác gọi là đường tròn nhỏ. Đường tròn lớn chia toàn bộ mặt cầu thành hai
+  phần bằng nhau, tức hai bán cầu. Vai trò của đường tròn lớn trong hình học
+  cầu giống vai trò của đường thẳng trong hình học phẳng. Với hai điểm khác
+  nhau \(A,B\) trên mặt cầu, nếu chúng không đối kính, có đúng một đường tròn
+  lớn đi qua cả hai điểm, gọi là đường thẳng cầu \(AB\), hay đường tròn lớn
+  \(AB\). Khi đó \(A,B\) chia đường tròn lớn này thành hai cung có độ dài khác
+  nhau; cung ngắn hơn gọi là đoạn cầu \(AB\), là đường đi ngắn nhất trên mặt
+  cầu từ \(A\) tới \(B\).
+
+  Mỗi đường tròn lớn \(AB\) xác định duy nhất một mặt phẳng \(OAB\).
+
+  Nếu \(A,B\) đối kính, có vô hạn đường đi ngắn nhất trên mặt cầu từ \(A\) tới
+  \(B\). Lấy tùy ý một đường tròn lớn đi qua \(A,B\), hai điểm này chia nó
+  thành hai cung bằng nhau, mỗi cung đều là đường đi ngắn nhất từ \(A\) tới
+  \(B\). Ta gọi bất kỳ đường đi ngắn nhất nào như vậy là đoạn cầu suy rộng giữa
+  chúng. Nhưng để chỉ định một đoạn cầu suy rộng, ta cần cho thêm một điểm
+  \(M\) nằm trên nó, khác \(A,B\).
+
+  \item Nếu \(AB,AC\) đều là các đoạn cầu, có thể định nghĩa góc cầu
+  \(\angle BAC\). Qua \(A\), kẻ tiếp tuyến của cung \(AB\) và tiếp tuyến của
+  cung \(AC\), khi đó \(\angle BAC\) là góc giữa hai tiếp tuyến này. Điều này
+  tương đương với góc nhị diện giữa hai mặt phẳng \(OAB\) và \(OAC\).
+
+  \item Nếu ba điểm \(A,B,C\) trên mặt cầu đôi một khác nhau, đôi một không đối
+  kính, và không cùng nằm trên một đường tròn lớn, ta định nghĩa được tam giác
+  cầu \(\triangle ABC\). Ba cạnh của nó lần lượt là các đoạn cầu \(AB,BC,CA\).
+  Ba cạnh này chia mặt cầu thành hai phần; phần nhỏ hơn là phần trong của
+  \(\triangle ABC\). Ba góc trong của tam giác cầu đều nhỏ hơn góc bẹt.
+
+  \item Tương tự trên Trái Đất, định nghĩa cực nam \(P_S=(0,0,-1)\), cực bắc
+  \(P_N=(0,0,1)\), đồng thời định nghĩa kinh tuyến và vĩ tuyến. Cụ thể, tất cả
+  đoạn cầu nối \(P_N\) với \(P_S\) được gọi là kinh tuyến; đường tròn do mặt
+  phẳng \(z=z_0\) cắt mặt cầu được gọi là vĩ tuyến.
+\end{enumerate}
+
+Ta có thể dùng kinh độ và vĩ độ để biểu diễn điểm trên mặt cầu. Với mỗi điểm
+\(P=(x,y,z)\) trên mặt cầu, đặt các số thực
+\(\lambda\in[0,2\pi)\), \(\varphi\in[-\pi/2,\pi/2]\) thỏa
+\[
+  x=\cos\varphi\cos\lambda,\qquad
+  y=\cos\varphi\sin\lambda,\qquad
+  z=\sin\varphi.
+\]
+Khi đó \((\lambda,\varphi)\) được gọi là biểu diễn kinh-vĩ của điểm \(P\).
+Trong đó \(\lambda\) là kinh độ, \(\varphi\) là vĩ độ.
+
+Hai cực có nhiều biểu diễn kinh-vĩ khác nhau. Ta bỏ hai cực khỏi mặt cầu, tạo
+thành mặt cầu bỏ cực; điều này không thay đổi diện tích mà ta muốn tính. Mỗi
+điểm \(P\) trên mặt cầu bỏ cực có đúng một biểu diễn kinh-vĩ
+\[
+  (\lambda,\varphi)\in [0,2\pi)\times\left(-\frac{\pi}{2},\frac{\pi}{2}\right).
+\]
+Miền chữ nhật ở vế phải được gọi là mặt phẳng kinh-vĩ. Trên mặt phẳng này,
+\(\lambda\) là hoành độ, \(\varphi\) là tung độ.
+
+Biểu diễn kinh-vĩ tạo ra song ánh từ mặt cầu bỏ cực tới mặt phẳng kinh-vĩ. Ta
+có thể dùng ánh xạ này để chuyển diện tích vùng trên mặt cầu thành tích phân
+kép trên mặt phẳng kinh-vĩ, rồi liên hệ với tích phân đường qua công thức
+Green.
+
+\paragraph{Định lý 1.}
+Giả sử \(\Omega\) là một vùng trên mặt cầu được bao bởi hữu hạn đường cong trơn
+từng khúc, và cực bắc \(P_N\) không nằm trên biên của \(\Omega\). Khi đó
+\[
+  S_{\Omega}
+  =
+  \oint_{\partial\Omega}(-\sin\varphi-1)\,d\lambda
+  +[P_N\in\Omega]\,4\pi.
+\]
+
+\paragraph{Chứng minh.}
+Ta có
+\[
+  S_{\Omega}=\iint_{\Omega} da,
+\]
+trong đó vế phải là tích phân mặt trên \(\Omega\), \(da\) là vi phân diện
+tích. Từ hình học của hệ kinh-vĩ,
+\[
+  da=\cos\varphi\,d\lambda\,d\varphi.
+\]
+
+Giả sử \(\widehat{\Omega}\) là vùng tương ứng của \(\Omega\) trên mặt phẳng
+kinh-vĩ. Công thức trên có thể viết thành
+\[
+  S_{\Omega}=\iint_{\widehat{\Omega}}
+  \cos\varphi\,d\lambda\,d\varphi.
+\]
+Chú ý rằng tích phân vế phải không chứa hai cực; tại bước này hai cực đã được
+bỏ đi, nhưng diện tích vùng không thay đổi.
+
+Theo công thức Green trên mặt phẳng kinh-vĩ,
+\[
+  \oint_{\partial\widehat{\Omega}}P\,d\lambda+Q\,d\varphi
+  =
+  \iint_{\widehat{\Omega}}
+  \left(\frac{\partial Q}{\partial\lambda}
+  -\frac{\partial P}{\partial\varphi}\right)
+  d\lambda\,d\varphi.
+\]
+Đặt
+\[
+  P(\lambda,\varphi)=-\sin\varphi-1,\qquad Q(\lambda,\varphi)=0,
+\]
+ta được
+\[
+  \oint_{\partial\widehat{\Omega}}(-\sin\varphi-1)\,d\lambda
+  =
+  \iint_{\widehat{\Omega}}\cos\varphi\,d\lambda\,d\varphi
+  =
+  S_{\Omega}.
+\]
+
+Biên của \(\widehat{\Omega}\) có thể chia làm hai phần: phần nằm trên biên của
+mặt phẳng kinh-vĩ, và phần nằm trong nội bộ mặt phẳng kinh-vĩ. Phần thứ hai
+trùng với \(\partial\Omega\). Với phần thứ nhất, trên hai biên trái-phải có
+\(d\lambda=0\), trên biên dưới có \(-\sin\varphi-1=0\), nên tích phân đường
+dọc theo ba biên này đều bằng \(0\); vì vậy ta không cần quan tâm chính xác
+những đoạn nào thuộc biên của \(\widehat{\Omega}\). Nếu cực bắc nằm trong
+\(\Omega\), toàn bộ biên trên của mặt phẳng kinh-vĩ thuộc
+\(\partial\widehat{\Omega}\), hướng từ phải sang trái, giá trị tích phân là
+\[
+  \int_{2\pi}^{0}\left(-\sin\frac{\pi}{2}-1\right)\,d\lambda
+  =
+  \int_{2\pi}^{0}(-2)\,d\lambda
+  =4\pi.
+\]
+Ngược lại, nếu cực bắc không nằm trong \(\Omega\), toàn bộ biên trên không
+thuộc \(\partial\widehat{\Omega}\). Do đó với phần biên thứ nhất,
+\[
+  \int_{\text{Part-1}}(-\sin\varphi-1)\,d\lambda
+  =[P_N\in\Omega]\,4\pi.
+\]
+Kết hợp với \(\text{Part-2}=\partial\Omega\), ta có
+\[
+\begin{aligned}
+  \oint_{\partial\widehat{\Omega}}(-\sin\varphi-1)\,d\lambda
+  &=
+  \int_{\text{Part-1}}(-\sin\varphi-1)\,d\lambda
+  +\int_{\text{Part-2}}(-\sin\varphi-1)\,d\lambda\\
+  &=[P_N\in\Omega]\,4\pi
+  +\oint_{\partial\Omega}(-\sin\varphi-1)\,d\lambda.
+\end{aligned}
+\]
+Vế trái của đẳng thức này bằng \(S_{\Omega}\), còn vế phải chính là phát biểu
+của định lý 1. \(\proofbox\)
+
+Cần chú ý quan hệ giữa mặt cầu bỏ cực và mặt phẳng kinh-vĩ trong chứng minh
+trên. Tích phân ta thực hiện trên mặt cầu chỉ chứa các biến
+\(\lambda,\varphi\), giống như trên mặt phẳng kinh-vĩ. Với điểm, đường cong,
+vùng, khi xét trên mặt cầu hay trên mặt phẳng kinh-vĩ thì không có khác biệt
+trong giá trị tích phân. Khác biệt duy nhất xuất hiện khi dùng công thức Green
+trên mặt phẳng kinh-vĩ: nếu dùng một vùng để định nghĩa biên của nó, thì
+\(\partial\Omega\) khác \(\partial\widehat{\Omega}\); biên sau nhiều hơn biên
+trước một phần, chính là phần thứ nhất đã nêu ở trên.
+
+Một điểm cần bổ sung là khi đường cong cắt qua kinh tuyến gốc, \(\lambda\) có
+một điểm gián đoạn. Khi đó ta có thể cắt đường cong tại điểm gián đoạn thành
+hai đoạn, trên mỗi đoạn \(\lambda\) liên tục nên tích phân được định nghĩa tốt;
+rồi dùng tính cộng được của tích phân để định nghĩa tích phân của cả đường
+cong là tổng hai đoạn. Để trình bày gọn, trong bài vẫn dùng ký hiệu tích phân
+đường thông thường cho trường hợp này.
+
+\paragraph{Hệ quả.}
+\(S_{\Omega}\) và
+\(\oint_{\partial\Omega}(-\sin\varphi-1)\,d\lambda\) có thể suy ra lẫn nhau:
+biết một trong hai thì có thể tính giá trị còn lại trong thời gian hằng số.
+
+Trở lại bài toán 2. Giả sử \(D_1,\ldots,D_n\) đôi một khác nhau.
+
+Trước khi giải, ta xoay ngẫu nhiên toàn bộ mặt cầu. Cụ thể, chọn đều ngẫu nhiên
+một điểm \(P'_N\) trên mặt cầu, rồi xoay để đưa điểm đó tới \((0,0,1)\). Sau
+khi xoay, định nghĩa lại nam-bắc cực và kinh-vĩ độ như trên. Điều này khiến
+xác suất để một đường tròn trong \(D_1,\ldots,D_n\) đi qua cực bắc là \(0\), và
+ta giả sử việc đó không xảy ra. Ngoài ra, với một cung tròn mà vị trí do
+\(D_1,\ldots,D_n\) quyết định và không phụ thuộc vào cách chọn điểm xoay, chẳng
+hạn đoạn nối hai đỉnh chỏm cầu, ta cũng giả sử nó không đi qua cực bắc.
+
+Theo hệ quả, bài toán 2 chuyển thành tính
+\[
+  \oint_{\partial D^*}(-\sin\varphi-1)\,d\lambda.
+\]
+Tương tự chương trước, \(\partial D^*\) được tạo bởi một số cung tròn, tức phần
+của mỗi đường tròn không bị các đường tròn khác phủ. Bài toán chuyển thành hai
+bài toán con:
+
+\paragraph{Bài toán 2.1.}
+Tìm các cung tròn không bị các đường tròn khác phủ trên từng đường tròn.
+
+\paragraph{Bài toán 2.2.}
+Với một cung tròn có hướng \(C\), tính tích phân đường
+\[
+  \int_C(-\sin\varphi-1)\,d\lambda.
+\]
+
+Xét bài toán 2.1 trước. Giả sử cần tìm phần chưa bị phủ trên đường tròn \(O'\).
+Đường tròn này nằm trong mặt phẳng \(\alpha\), và \(O'\) là tâm của nó trong
+\(\alpha\). Lập hệ tọa độ vuông góc \(xO'y\) trên \(\alpha\), lấy \(O'\) làm
+tâm để định nghĩa phép góc cực, tạo song ánh giữa điểm trên đường tròn và
+\([-\pi,\pi)\). Dùng phương pháp của bài toán 1.1 ở chương trước, ta tìm được
+phần chưa bị phủ trên đường tròn. Hướng của chúng khi là thành phần của
+\(\partial\Omega\) cũng dễ xác định, nên không trình bày thêm.
+
+Xét tiếp bài toán 2.2. Giả sử cần tính tích phân đường của cung
+\(C_1=\widehat{PQ}\):
+\[
+  \int_{C_1}(-\sin\varphi-1)\,d\lambda,
+\]
+trong đó hướng đường cong là \(P\to Q\).
+
+Trường hợp thứ nhất: \(C_1\) là một phần của đường tròn nhỏ. Lấy đoạn cầu có
+hướng \(C_2=\overrightarrow{QP}\), khi đó \(C_1\) và \(C_2\) bao một hình quạt
+cong \(A\). Theo hệ quả, từ \(S_A\) có thể suy ra
+\[
+  \int_{C_1}(-\sin\varphi-1)\,d\lambda
+  +
+  \int_{C_2}(-\sin\varphi-1)\,d\lambda,
+\]
+rồi kết hợp với tích phân của \(C_2\) để suy ra tích phân của \(C_1\). Bài toán
+chuyển thành hai phần:
+
+\paragraph{Bài toán 2.2a.}
+Tính diện tích hình quạt cong trên mặt cầu.
+
+\paragraph{Bài toán 2.2b.}
+Cho đoạn cầu có hướng \(C_2=\overrightarrow{QP}\), tính
+\[
+  \int_{C_2}(-\sin\varphi-1)\,d\lambda.
+\]
+
+Trường hợp thứ hai: \(C_1\) là một phần của đường tròn lớn. Nếu \(C_1\) lớn hơn
+hoặc bằng nửa đường tròn lớn, lấy trung điểm \(M\) của \(C_1\) và chia thành hai
+đoạn cầu \(\overrightarrow{QM}\) và \(\overrightarrow{MP}\); nếu không,
+\(C_1\) tự nó đã là một đoạn cầu. Như vậy lại chuyển về bài toán 2.2b.
+
+Xét bài toán 2.2a trước. Nối hai đầu mút của hình quạt cong với đỉnh của chỏm
+cầu chứa nó, ta biểu diễn hình quạt cong thành tổng hoặc hiệu của một hình quạt
+cầu và một tam giác cầu. Bài toán chuyển thành hai bài toán sau:
+
+\paragraph{Bài toán 2.2c.}
+Tính diện tích hình quạt cầu.
+
+\paragraph{Bài toán 2.2d.}
+Tính diện tích tam giác cầu.
+
+Tiếp theo xét bài toán 2.2b. Nối \(P_SP\) và \(P_SQ\), rồi xét
+\(\triangle P_SPQ\) nằm bên nào của \(\overrightarrow{QP}\). Nếu nó nằm bên
+phải, ta tính tích phân trên \(\overrightarrow{PQ}\) rồi lấy số đối. Theo hệ
+quả,
+\[
+\begin{aligned}
+  S_{\triangle P_SPQ}
+  &=
+  \oint_{\partial\triangle P_SPQ}(-\sin\varphi-1)\,d\lambda\\
+  &=
+  \int_{\overrightarrow{P_SP}}(-\sin\varphi-1)\,d\lambda
+  +\int_{\overrightarrow{PQ}}(-\sin\varphi-1)\,d\lambda
+  +\int_{\overrightarrow{QP_S}}(-\sin\varphi-1)\,d\lambda\\
+  &=
+  \int_{\overrightarrow{PQ}}(-\sin\varphi-1)\,d\lambda.
+\end{aligned}
+\]
+Bước cuối vì trên \(\overrightarrow{P_SP}\) và \(\overrightarrow{QP_S}\) có
+\(d\lambda=0\), nên tích phân bằng \(0\). Đến đây, bài toán 2.2b đã chuyển
+thành bài toán 2.2d.
+
+Từ tính toán đơn giản, diện tích chỏm cầu có công thức \(S=2\pi h\), trong đó
+\(h\) là khoảng cách từ đỉnh chỏm cầu tới mặt đáy. Dựa vào tính đối xứng của
+chỏm cầu, dễ suy ra công thức diện tích hình quạt cầu
+\[
+  S=2\pi h\theta,
+\]
+trong đó \(\theta\) là góc của hình quạt.
+
+Về diện tích tam giác cầu, [4] nêu công thức
+\[
+  S_{\triangle ABC}=\angle A+\angle B+\angle C-\pi.
+\]
+Trong đó \(\angle A,\angle B,\angle C\) lần lượt là các góc cầu tại
+\(A,B,C\). Tài liệu [7] đưa ra một công thức ổn định số hơn:
+\[
+  \tan\frac{S_{\triangle ABC}}{2}
+  =
+  \frac{\tan\frac a2 \tan\frac b2\sin\angle C}
+  {1+\tan\frac a2 \tan\frac b2\cos\angle C},
+\]
+trong đó \(a,b\) lần lượt là độ dài hai cạnh \(BC,CA\), đối diện
+\(\angle A,\angle B\).
+
+Đến đây, bài toán 2 đã được giải hoàn chỉnh. Cấu trúc tổng quát của thuật toán
+giống phương pháp giải bài toán 1 ở chương trước, và có cùng cận thời gian
+\(O(n^2\log n)\).
+
+\subsection{Phép toán Boolean}
+
+Trong ứng dụng thực tế, thứ ta cần tính thường không phải hợp của \(n\) vùng.
+Ví dụ, trong không gian quanh Trái Đất có \(n\) vệ tinh định vị, ta muốn tính
+diện tích vùng trên mặt đất có thể nối trực tiếp với ít nhất ba vệ tinh. Hoặc
+trong thiết kế hỗ trợ bởi máy tính cho đồ thủ công, người dùng lặp đi lặp lại
+các phép giao, hợp, bù để tự quy định một vùng phức tạp. Ngay cả khi chỉ xét
+bài toán diện tích hợp, cũng có thể dùng giao của ba bán cầu để biểu diễn tam
+giác cầu, rồi dùng hợp các tam giác để biểu diễn đa giác cầu. Những điều đó đặt
+ra yêu cầu tính diện tích vùng ghép tổng quát hơn.
+
+Hàm Boolean \(k\) ngôi \(F(x_1,\ldots,x_k)\) là một ánh xạ
+\(\{0,1\}^k\to\{0,1\}\). \(x_1,\ldots,x_k\) được gọi là các tham số của nó.
+
+Giả sử \(D_1,\ldots,D_n\) là các chỏm cầu đã cho. Ta có thể dùng một hàm
+Boolean \(n\) ngôi \(F(\lambda_1,\ldots,\lambda_n)\) để định nghĩa vùng ghép
+\(D^*\):
+\[
+  D^*=\{P\mid F(\lambda_1,\lambda_2,\ldots,\lambda_n)=1\},
+\]
+tức là
+\[
+  [P\in D^*]=F(\lambda_1,\lambda_2,\ldots,\lambda_n)\qquad(\forall P),
+\]
+trong đó \(\lambda_i\) biểu thị việc điểm \(P\) có nằm trong \(D_i\) hay không,
+tức \(\lambda_i=[P\in D_i]\). Nói chặt chẽ, \(\lambda_i\) là một hàm theo
+\(P\), ký hiệu \(\lambda_i(P)\), nhưng để rõ ràng hơn, khi điểm \(P\) đang xét
+đã hiển nhiên, ta lược bỏ tham số \(P\); dưới đây tiếp tục dùng cách lược bỏ
+này. Hai công thức trên nói rằng hàm Boolean \(F\) quy định tổ hợp nào của
+\(D_1,\ldots,D_n\) thuộc vùng ghép \(D^*\).
+
+Có một lớp hàm Boolean cơ bản và đơn giản, gọi là toán tử Boolean. Với một toán
+tử Boolean \(f(x_1,\ldots,x_k)\), phải tồn tại một cấu trúc dữ liệu hỗ trợ:
+
+\begin{enumerate}
+  \item \texttt{INITIALIZE}: khởi tạo cấu trúc dữ liệu, đặt
+  \(x_i=0\) với mọi \(i\in[1,k]\).
+  \item \texttt{MODIFY(i,b)}: sửa giá trị tham số, đặt \(x_i=b\).
+  \item \texttt{QUERY}: hỏi giá trị hàm, tức \(f(x_1,\ldots,x_k)\).
+\end{enumerate}
+
+Trong đó \texttt{INITIALIZE} cần chạy trong \(O(k)\), còn \texttt{MODIFY} và
+\texttt{QUERY} phải chạy trong thời gian hằng số.
+
+Ta xem logic bên trong toán tử Boolean là một hộp đen, và chỉ lấy thông tin
+thông qua cấu trúc dữ liệu của nó. Mọi hàm Boolean tính được với số ngôi
+\(\Theta(1)\) đều thuộc loại toán tử Boolean.
+
+Ta định nghĩa biểu thức Boolean bằng đệ quy. Một biểu thức Boolean \(\alpha\)
+hoặc là một \(\lambda_i\) nào đó \((i\in[1,n])\), hoặc có dạng
+\[
+  \alpha=f(\beta_1,\beta_2,\ldots,\beta_k),
+\]
+trong đó \(f\) là một toán tử Boolean, còn \(\beta_1,\ldots,\beta_k\) lần lượt
+là các biểu thức Boolean.
+
+Định nghĩa độ dài của biểu thức \(\alpha\):
+\[
+|\alpha|=
+\begin{cases}
+1, & \text{nếu }\alpha=\lambda_i,\\
+1+\displaystyle\sum_{j=1}^{k}|\beta_j|,
+& \text{nếu }\alpha=f(\beta_1,\ldots,\beta_k).
+\end{cases}
+\]
+
+Ta cho hàm Boolean \(F\) dưới dạng biểu thức Boolean, và chính thức phát biểu
+bài toán sau.
+
+\paragraph{Bài toán 3 (diện tích vùng ghép trên mặt cầu).}
+Cho \(n\) vùng dạng chỏm cầu \(D_1,\ldots,D_n\) trên mặt cầu. Cho thêm một biểu
+thức Boolean \(\alpha_F\) độ dài \(m\), định nghĩa
+\[
+  D^*=\{P\mid F(\lambda_1,\lambda_2,\ldots,\lambda_n)=1\},
+\]
+trong đó \(F(\lambda_1,\ldots,\lambda_n)=\alpha_F\) là hàm Boolean \(n\) ngôi
+do biểu thức Boolean \(\alpha_F\) định nghĩa. Cần tính diện tích của \(D^*\).
+
+Vẫn giả sử \(D_1,\ldots,D_n\) đôi một khác nhau và không có chỏm cầu nào lớn hơn
+bán cầu. Có thể giả sử như vậy vì chỏm cầu lớn hơn bán cầu có thể biểu diễn
+bằng phần bù của một chỏm cầu nhỏ hơn. Hơn nữa, ta giả sử các biên của chúng
+cũng không trùng nhau, tức không tồn tại hai chỏm cầu \(D_i,D_j\) mà hợp của
+chúng bằng toàn bộ mặt cầu.
+
+Dùng phương pháp của chương trước, chỉ cần tìm \(\partial D^*\) là có thể tính
+diện tích \(D^*\). Vì vậy xét riêng từng đường tròn \(\partial D_i\).
+
+Trong chương trước,
+\[
+  F=\lambda_1\vee\lambda_2\vee\cdots\vee\lambda_n.
+\]
+Ta đã thấy một cung tròn thuộc \(\partial D^*\) khi và chỉ khi nó không bị các
+chỏm cầu khác phủ, và hướng của nó là ngược chiều kim đồng hồ tương đối với
+phần trong của chỏm cầu. Lý do là: với một cung có hướng thỏa điều kiện, phía
+trái của nó, tức phía trong đối với chỏm cầu, nằm trong \(D^*\), còn phía phải
+nằm ngoài \(D^*\), nên nó là thành phần của \(\partial D^*\); với cung bị một
+chỏm cầu khác phủ, cả hai phía trái-phải đều nằm trong \(D^*\), nên nó không
+phải thành phần của \(\partial D^*\). Theo tư tưởng này, nếu \(A\) là một cung
+có hướng của \(\partial D_i\), phía trái của \(A\) nằm trong \(D^*\) và phía
+phải nằm ngoài \(D^*\), thì \(A\subset\partial D^*\); nếu phía trái của \(A\)
+nằm ngoài \(D^*\), phía phải nằm trong \(D^*\), thì cung đảo hướng của \(A\) là
+một thành phần của \(\partial D^*\). Vì vậy ta tính hai bài toán sau:
+
+\paragraph{Bài toán 3a.}
+Tính mọi phần của \(\partial D_i\) mà phía trái của chúng nằm trong \(D^*\).
+
+\paragraph{Bài toán 3b.}
+Tính mọi phần của \(\partial D_i\) mà phía phải của chúng nằm trong \(D^*\).
+
+Đáp án hai bài toán trên có thể hợp nhất nhanh để thành thông tin cần tìm. Khác
+biệt duy nhất giữa chúng là: phía trái của \(\partial D_i\) có \(\lambda_i=1\),
+còn phía phải có \(\lambda_i=0\). Với \(j\ne i\), phần của \(\partial D_i\) bị
+\(D_j\) phủ có \(\lambda_j=1\), phần không bị \(D_j\) phủ có \(\lambda_j=0\).
+Cách giải hai bài toán là giống nhau, nên dưới đây chỉ bàn bài toán 3a.
+
+Dùng phép góc cực đã định nghĩa ở chương trước để ánh xạ các điểm trên
+\(\partial D_i\) tới \([-\pi,\pi)\). Bài toán 3a chuyển thành:
+
+\paragraph{Bài toán 3.1.}
+Với mọi \(i\in[1,n]\), có nhiều nhất hai khoảng đã cho trên \([-\pi,\pi)\) làm
+\(\lambda_i=1\), các vị trí khác có \(\lambda_i=0\). Hãy tìm mọi vị trí làm
+\(F(\lambda_1,\ldots,\lambda_n)=1\), biểu diễn bằng một số khoảng rời nhau trên
+\([-\pi,\pi)\).
+
+Dùng tư tưởng quét đường thẳng, cho điểm động \(P\) đi từ \(-\pi\) tới \(\pi\),
+và trong quá trình đó duy trì giá trị \(F(\lambda_1,\ldots,\lambda_n)\). Khi
+di chuyển có \(O(n)\) ``sự kiện'': một \(\lambda_i\) nào đó đổi giá trị, làm
+giá trị \(F\) cập nhật theo. Những vị trí mà \(F\) đổi từ \(1\) sang \(0\), hoặc
+từ \(0\) sang \(1\), chính là đầu mút trái-phải của các khoảng cần tìm.
+
+Dùng cây biểu thức để thể hiện cấu trúc của biểu thức Boolean. Với một biểu
+thức Boolean \(\alpha\), định nghĩa cây biểu thức \(T(\alpha)\) như sau: nếu
+\(\alpha=\lambda_i\), \(T(\alpha)\) chỉ có một nút mang nhãn \(\lambda_i\); nếu
+\(\alpha=f(\beta_1,\ldots,\beta_k)\), gốc của \(T(\alpha)\) mang nhãn \(f\), và
+các con theo thứ tự là \(T(\beta_1),\ldots,T(\beta_k)\). Trong trường hợp đầu,
+nút duy nhất của \(T(\alpha)\) gọi là ``nút vào''; trong trường hợp sau, nút
+gốc gọi là ``nút phép toán'', và \(f\) gọi là toán tử của nút đó. Cây biểu thức
+là cây có gốc, các nút vào đều là lá. Các con của một nút phép toán là một danh
+sách có thứ tự, tương ứng với các tham số của toán tử, không được tráo đổi.
+
+Xây cây biểu thức của \(\alpha_F\); mọi thảo luận dưới đây đều diễn ra trên cây
+này. Dễ kiểm tra rằng độ dài biểu thức bằng số nút trên cây biểu thức, nên
+\(T(\alpha_F)\) có \(m\) nút. Với mỗi nút \(u\), gọi cây con \(u\) là cây con
+gồm \(u\) và toàn bộ hậu duệ của nó. Cây con \(u\) quy định một biểu thức
+Boolean; đôi khi ta cũng dùng chính tên nút \(u\) để chỉ biểu thức đó, hoặc giá
+trị của biểu thức đó.
+
+Khi các giá trị \(\lambda_1,\ldots,\lambda_n\) đã xác định, định nghĩa giá trị
+của nút \(u\), ký hiệu \(W(u)\), là giá trị biểu thức do cây con \(u\) quy định:
+\[
+W(u)=
+\begin{cases}
+\lambda_i, & \text{nếu }u\text{ là nút vào},\\
+f_u(W(v_1),W(v_2),\ldots,W(v_k)), & \text{ngược lại},
+\end{cases}
+\]
+trong đó \(v_1,\ldots,v_k\) là các nút con của \(u\), còn \(f_u\) là toán tử
+của nút \(u\) trong trường hợp thứ hai. Áp dụng công thức này từ dưới lên trên,
+ta tính được giá trị nút gốc, tức \(F(\lambda_1,\ldots,\lambda_n)\).
+
+Khi \(\lambda_1,\ldots,\lambda_n\) đã xác định, giá trị các nút vào cũng được
+xác định. Lúc này một nút vào chứa biến \(\lambda_i\) tương đương với một nút
+phép toán chứa toán tử \(0\) ngôi; giá trị của nút đó hoặc luôn là \(0\), hoặc
+luôn là \(1\), do giá trị \(\lambda_i\) quyết định. Ta biểu diễn chúng trên cây
+biểu thức như các nút phép toán, để cây biểu thức không còn liên hệ trực tiếp
+với \(\lambda_1,\ldots,\lambda_n\). Tuy vậy, để trình bày thuận tiện, ta vẫn
+gọi các nút này là ``nút vào chứa \(\lambda_i\)''. Khi một \(\lambda_i\) bị sửa,
+toán tử của các nút vào chứa \(\lambda_i\) cần bị sửa. Mỗi nút nhiều nhất bị
+sửa \(O(1)\) lần. Ta cần giải bài toán sau:
+
+\paragraph{Bài toán 3.2.}
+Thiết kế một cấu trúc dữ liệu hỗ trợ ba thao tác:
+
+\begin{enumerate}
+  \item \texttt{INITIALIZE-TREE}: khởi tạo cấu trúc dữ liệu. Xây cây biểu thức
+  và đặt giá trị mọi nút vào bằng \(0\).
+  \item \texttt{MODIFY-TREE(u,b)}: sửa giá trị nút vào \(u\), đặt \(W(u)=b\).
+  \item \texttt{QUERY-TREE}: hỏi giá trị nút gốc \(W(\texttt{root})\).
+\end{enumerate}
+
+Khi một lá bị sửa, giá trị mọi tổ tiên của nó cũng cần được tính lại. Trong một
+số bài toán đặc biệt, nếu độ sâu cây không quá \(O(\log m)\), có thể dùng cách
+ngây thơ: cập nhật lần lượt từ dưới lên trên.
+
+\paragraph{Thuật toán 1. Cài đặt ngây thơ của cấu trúc dữ liệu.}
+
+\begin{verbatim}
+procedure INITIALIZE-TREE-SIMPLE
+  for each node u bottom-up do
+    assume u = f_u(v_1, ..., v_k)
+    let u.processor be a new data structure of operator f_u
+    u.processor.INITIALIZE
+    for each v_i do
+      u.processor.MODIFY(i, W(v_i))
+    end for
+    W(u) <- u.processor.QUERY
+  end for
+end procedure
+
+procedure MODIFY-TREE-SIMPLE(u, b)
+  W(u) <- b
+  if u = root then exit
+  p <- u.parent
+  assume p = f_p(v_1, ..., v_k) and v_i = u
+  p.processor.MODIFY(i, b)
+  MODIFY-TREE-SIMPLE(p, p.processor.QUERY)
+end procedure
+
+function QUERY-TREE-SIMPLE
+  return W(root)
+end function
+\end{verbatim}
+
+Giả mã trên trình bày cài đặt ngây thơ. \texttt{INITIALIZE-TREE-SIMPLE} tạo cho
+mỗi nút một hộp đen cấu trúc dữ liệu toán tử \texttt{u.processor}, rồi đặt tham
+số của hộp đen về đúng giá trị. Thủ tục \texttt{MODIFY-TREE-SIMPLE} đệ quy đi
+qua các nút cần tính lại. Với mỗi nút, nhiều nhất một tham số của nó thay đổi.
+Dòng sửa và hỏi trong giả mã dùng hộp đen để điều chỉnh tham số trong thời gian
+hằng số và lấy kết quả phép toán mới. Thời gian của
+\texttt{INITIALIZE-TREE-SIMPLE} là \(\Theta(m)\), thời gian của
+\texttt{MODIFY-TREE-SIMPLE} bị chặn bởi độ sâu lớn nhất của cây, còn
+\texttt{QUERY-TREE-SIMPLE} chạy trong thời gian hằng số. Nếu độ sâu lớn nhất
+không vượt quá \(O(\log m)\), thuật toán này đã đủ hiệu quả.
+
+Khi cây có độ sâu lớn, dùng phân rã nặng-nhẹ. Với mỗi nút \(u\), ký hiệu \(s_u\)
+là số nút trong cây con \(u\). Với nút không phải lá \(u\), nếu trong các con
+của nó, nút có \(s\) lớn nhất là \(v\), thì \((u,v)\) gọi là cạnh nặng, \(v\)
+là con nặng của \(u\); các cạnh từ \(u\) tới những con khác là cạnh nhẹ, các
+con đó là con nhẹ. Các tính chất sau đúng:
+
+\begin{itemize}
+  \item Các cạnh nặng tạo thành một số đường xích; mỗi nút thuộc đúng một đường
+  xích, có thể chỉ gồm một nút. Những đường xích này gọi là xích nặng.
+  \item Đường đi từ một nút bất kỳ tới gốc đi qua nhiều nhất \(O(\log m)\) cạnh
+  nhẹ và nhiều nhất \(O(\log m)\) xích nặng.
+\end{itemize}
+
+Xét một nút bất kỳ \(u\), giả sử \(u=f_u(v_1,\ldots,v_k)\), trong đó \(v_i\) là
+con nặng của nó, tức nút tiếp theo trên xích nặng. Ta có thể xem \(k-1\) tham
+số ngoài \(v_i\) là hằng số và định nghĩa
+\[
+  g_u(v_i)=f_u(v_1,\ldots,v_i,\ldots,v_k).
+\]
+Khi đó \(g_u(x)\) là một hàm Boolean một ngôi. Đặc biệt, nếu \(f_u\) là toán tử
+\(0\) ngôi, không có tham số, ta thêm một tham số giả \(x\) và đặt
+\[
+  g_u(x)=f_u().
+\]
+Khi đó \(g_u(x)\) tuy hình thức là hàm một ngôi, nhưng \(g_u(0)=g_u(1)\), tức
+giá trị hàm không phụ thuộc tham số. Ngoài ra, định nghĩa phép hợp thành của
+hai hàm một ngôi \(f,g\) là
+\[
+  (f\circ g)(x)=f(g(x)),
+\]
+phép này thỏa tính kết hợp.
+
+Với một xích nặng, hợp thành các \(g_u\) trên xích theo thứ tự sẽ cho một hàm
+một ngôi \(g^*\), thỏa
+\[
+  g^*(0)=g^*(1)=W(r),
+\]
+trong đó \(r\) là đỉnh xích, tức nút cao nhất của xích. Định nghĩa của \(g_u\)
+trực tiếp cho thấy công thức này đúng.
+
+Với mỗi xích nặng, dùng cây đoạn để duy trì dãy hàm một ngôi \(g_u\), đồng thời
+duy trì giá trị \(W(r)\) của đỉnh xích. Khi toán tử \(0\) ngôi của một lá bị
+sửa, hàm một ngôi tương ứng trên xích nặng của nó cũng bị sửa. Thực hiện sửa
+này trên cây đoạn, rồi truy vấn hợp thành của toàn bộ hàm một ngôi để tính
+giá trị \(W(r)\). Sau khi \(W(r)\) được cập nhật, cha của \(r\), nếu tồn tại,
+có một con nhẹ đổi giá trị, làm hàm một ngôi của cha thay đổi; tiếp tục lặp lại
+quá trình này. Giả mã thuật toán 2 trình bày một cách cài đặt.
+
+Trong thủ tục \texttt{MODIFY-CHILD-VALUE}, ta vẫn dùng hộp đen của toán tử để
+tính hàm một ngôi \(g_u\); thủ tục này chạy trong thời gian hằng số.
+\texttt{segment-tree.QUERY} luôn truy vấn hợp thành của toàn bộ hàm một ngôi,
+thông tin này đã được lưu ở gốc cây đoạn, nên cũng chạy trong thời gian hằng
+số. Trong một lần \texttt{MODIFY-TREE}, số lần gọi
+\texttt{segment-tree.MODIFY} không vượt quá \(O(\log m)\), mỗi lần chạy trong
+\(O(\log m)\), do đó thời gian của \texttt{MODIFY-TREE} có cận trên
+\(O(\log^2 m)\).
+
+Trên cơ sở đó, nếu dùng ``cây nhị phân cân bằng toàn cục'' thay cho cây đoạn,
+có thể hạ cận thời gian của \texttt{MODIFY-TREE} xuống \(O(\log m)\), xem [1].
+Ngoài ra, \texttt{INITIALIZE-TREE} chạy trong \(\Theta(m)\), còn
+\texttt{QUERY-TREE} chạy trong \(\Theta(1)\). Như vậy ta đã có một lời giải
+hiệu quả cho bài toán 3.2.
+
+\paragraph{Thuật toán 2. Cài đặt hiệu quả của cấu trúc dữ liệu.}
+
+\begin{verbatim}
+procedure INITIALIZE-TREE
+  INITIALIZE-TREE-SIMPLE
+  build heavy-light decomposition
+  calculate g_u for all u
+  for each chain c do
+    let c.segment-tree be a new segment tree of g_u
+    initialize c.segment-tree
+  end for
+end procedure
+
+procedure MODIFY-CHILD-VALUE(u, v, b)
+  assume v_1, ..., v_k are children of u
+  assume v = v_i, and v_j is the heavy child of u (i != j)
+  u.processor.MODIFY(i, b)
+  u.processor.MODIFY(j, 0)
+  g_u(0) <- u.processor.QUERY
+  u.processor.MODIFY(j, 1)
+  g_u(1) <- u.processor.QUERY
+end procedure
+
+procedure RECALCULATE(u)
+  assume u is the i-th node of chain c
+  r <- c.top
+  c.segment-tree.MODIFY(i, g_u)
+  g_star <- c.segment-tree.QUERY
+  W(r) <- g_star(0)
+  if r != root then
+    p <- r.parent
+    MODIFY-CHILD-VALUE(p, r, W(r))
+    RECALCULATE(p)
+  end if
+end procedure
+
+procedure MODIFY-TREE(u, b)
+  g_u(0) <- b, g_u(1) <- b
+  RECALCULATE(u)
+end procedure
+
+function QUERY-TREE
+  return W(root)
+end function
+\end{verbatim}
+
+Tiếp theo áp dụng cấu trúc dữ liệu trên để giải bài toán 3.1. Trước khi bắt
+đầu ``quét'', khởi tạo cấu trúc dữ liệu tốn \(\Theta(m)\). Trong quá trình
+quét, mỗi lá trên cây biểu thức bị sửa số lần hằng số, nên phần này có cận
+thời gian \(O(m\log m)\). Vì vậy bài toán 3.1 được giải trong thời gian
+\(O(m\log m)\).
+
+Ở đầu chương, ta đã chuyển bài toán 3 thành \(\Theta(n)\) bài toán 3.1 độc lập
+với nhau. Do đó phương pháp trên cho một thuật toán với cận thời gian
+\(O(nm\log m)\) cho bài toán 3.
+
+\subsection{Ứng dụng và thảo luận}
+
+Trong chương này, ta thảo luận một số biến thể, mở rộng và ứng dụng của bài
+toán diện tích vùng ghép trên mặt cầu.
+
+\paragraph{Đa giác cầu.}
+Đa giác cầu là vùng được bao bởi một số đoạn cầu nối đầu-cuối, thường dùng
+trong thực tế để biểu diễn một vùng trên bề mặt Trái Đất.
+
+Thuật toán của ta xử lý được đa giác cầu. Có thể dùng giao của ba ``bán cầu''
+để biểu diễn tam giác cầu, trong đó bán cầu là vùng nằm ở một phía của một
+đường tròn lớn. Tiếp đó, dùng hợp các tam giác cầu để biểu diễn đa giác cầu; ở
+đây ta không lặp đi lặp lại toán tử nhị ngôi ``hoặc'' thông thường, mà dùng
+trực tiếp toán tử hoặc \(k\) ngôi. Trong cách làm trên, đa giác cầu được quy
+định bởi một biểu thức mà cây biểu thức có độ sâu hằng số. Sau khi biểu diễn
+được đa giác cầu, chúng có thể tiếp tục tham gia các phép toán Boolean để tạo
+thành vùng ghép phức tạp hơn.
+
+\paragraph{Vùng ghép trên mặt phẳng.}
+Khác với ứng dụng thực tế, trong thi thuật toán người ta thường trừu tượng hóa
+bài toán thành bài toán diện tích trên mặt phẳng. Lý do là mã hình học cầu dài
+và nhiều chi tiết, thường không liên quan nhiều tới điểm cần khảo sát về tư
+duy, nên được lược bỏ bằng cách trừu tượng hóa thành bài toán phẳng.
+
+Kết hợp nội dung chương 2 và chương 4, ta trực tiếp nhận được một thuật toán
+tính diện tích vùng ghép được quy định bằng các phép toán Boolean trên một số
+đường tròn trong mặt phẳng. Nhưng như vậy vẫn chưa đủ, vì ``đường thẳng'' trên
+mặt cầu là một loại đường tròn đặc biệt, còn trên mặt phẳng thì không. Do đó,
+ngoài đường tròn, ta đưa thêm một loại vùng khác: nửa mặt phẳng.
+
+Nửa mặt phẳng là vùng bên trái một đường thẳng có hướng. Đường thẳng có hướng
+đó chính là biên của nửa mặt phẳng và đã có hướng đúng.
+
+Bắt chước phép góc cực, ta định nghĩa phép tích vô hướng đối với đường thẳng có
+hướng. Giả sử tập điểm trên một đường thẳng có hướng là
+\[
+  \vec a+\vec b\,t\qquad(t\in\mathbb R),
+\]
+trong đó \(t\) tăng theo hướng đường thẳng. Với một điểm \(P\) trên đường
+thẳng, định nghĩa
+\[
+  \operatorname{Dot}(P)=(P-\vec a)\cdot\vec b,
+\]
+vế phải là tích vô hướng của hai vector. Phép này tạo song ánh từ mọi điểm trên
+đường thẳng có hướng tới khoảng \((-\infty,+\infty)\). Dễ kiểm tra rằng với
+hai vùng bất kỳ \(D_i,D_j\), mỗi vùng là đường tròn hoặc nửa mặt phẳng, phần mà
+\(D_j\) phủ lên \(\partial D_i\) được ánh xạ lên trục số thành hợp của nhiều
+nhất hai khoảng. Như vậy, ta tiếp tục dùng phương pháp của chương 4, với tư
+tưởng quét đường thẳng, để tìm biên \(\partial D^*\) của vùng ghép. Tích phân
+trên \(\partial D^*\) là đơn giản.
+
+Nhờ đó, ta giải được bài toán ``diện tích vùng ghép trên mặt phẳng'' chứa
+đường tròn và nửa mặt phẳng, với cùng cận thời gian \(O(nm\log m)\). Việc dùng
+nửa mặt phẳng để biểu diễn đa giác phẳng là dễ dàng, nên không trình bày thêm.
+Phương pháp này có thể trực tiếp vượt qua ba bài loại này từng xuất hiện ở NOI:
+
+\begin{itemize}
+  \item NOI 2004 \emph{Lượng mưa};
+  \item NOI 2005 \emph{Cây chanh dưới trăng};
+  \item NOI 2009 \emph{Tô biên}.
+\end{itemize}
+
+\paragraph{Trường hợp biên dễ tính.}
+Trong một số bài, do có tính chất đặc biệt, ta có thể dùng phương pháp chuyên
+biệt cho tính chất của bài để tính nhanh \(\partial D^*\). Việc chia đoạn để
+tính tích phân đường trên \(\partial D^*\) sẽ không trở thành nút thắt hiệu
+năng, vì thời gian phần này tỉ lệ với số cung tròn trong \(\partial D^*\), tức
+đầu ra của giai đoạn trước.
+
+\paragraph{Ví dụ 1. \emph{Cây chanh dưới trăng} [2].}
+Cho \(n\) đường tròn \(A_1,\ldots,A_n\) trên mặt phẳng, tâm của chúng đều nằm
+trên trục \(x\), và hoành độ tâm tăng dần. Với hai đường tròn kề nhau \(A_i\)
+và \(A_{i+1}\), nếu chúng không chứa nhau, vẽ hai tiếp tuyến chung ngoài và nối
+bốn tiếp điểm thành một hình thang, ký hiệu vùng hình thang này là \(B_i\).
+Định nghĩa
+\[
+  D^*=\bigcup_i A_i\cup \bigcup_i B_i,
+\]
+hãy tính diện tích \(D^*\).
+
+Trong bài này, \(\partial D^*\) đối xứng qua trục \(x\), nên chỉ cần tính phần
+phía trên trục \(x\), ký hiệu là \(C\) và bỏ qua hướng. Gọi \(A'_i\) là hợp của
+đường tròn \(A_i\) với hình thang \(B_{i-1}\) ở bên trái nó, nếu tồn tại. Ban
+đầu đặt \(C\) rỗng, rồi lần lượt thêm \(A'_i\) từ trái sang phải, sau mỗi lần
+thêm tính biên mới \(C'\). Dễ chứng minh rằng mỗi khi thêm \(A'_i\), biên cũ
+\(C\) có đúng một ``hậu tố'', tức một đoạn liên tiếp ngoài cùng bên phải, bị
+\(A'_i\) phủ và bị xóa, thay bằng một phần của \(\partial A'_i\). Dùng ngăn xếp
+để duy trì quá trình này, ta tính được \(C\), rồi suy ra \(\partial D^*\), trong
+\(\Theta(n)\).
+
+Tóm lại, ta có một thuật toán \(\Theta(n)\) cho bài gốc. Thuật toán này đạt
+cận dưới lý thuyết về thời gian của bài, nhanh hơn nhiều so với thuật toán mẫu
+\(O(n^3)\) của người ra đề.
+
+\paragraph{Hàm Boolean dạng DAG.}
+Trong chương 4, ta dùng cấu trúc cây để biểu diễn quá trình tính toán từ các
+\(\lambda_i\) tới hàm Boolean cuối cùng. Việc dùng cấu trúc này để giải bài
+thực tế dựa khá nhiều vào tính linh hoạt của toán tử Boolean. Ví dụ, ta biết
+\[
+  a\oplus b=(a\vee b)\wedge\neg(a\wedge b),
+\]
+tức có thể dùng các phép logic cơ bản \(\neg,\wedge,\vee\) để định nghĩa phép
+``xor''. Nhưng dạng khai triển ở vế phải không dùng được trực tiếp trong thuật
+toán của ta, vì \(a,b\) mỗi biến xuất hiện hai lần, còn cấu trúc cây không thể
+dùng giá trị của một nút làm đầu vào cho nhiều toán tử. Nếu sao chép cả cây con,
+độ phức tạp thời gian sẽ tăng theo cấp số nhân, không chấp nhận được. Cách ta
+dùng là trực tiếp định nghĩa một toán tử ``xor'', và xử lý việc tái sử dụng
+biến trung gian bên trong toán tử này.
+
+Cách trên chỉ xử lý được tái sử dụng biến mang tính ``cục bộ''. Trong thiết kế
+hỗ trợ bởi máy tính, thường có tình huống sau: toàn bộ quá trình tính toán do
+người dùng cho, mỗi kết quả tính toán đều được lưu làm biến trung gian và có
+thể được truy cập tùy ý về sau. Với quá trình tính toán tự do như vậy, ta chỉ
+có thể dùng DAG, tức đồ thị có hướng không chu trình, để biểu diễn. Trong đồ
+thị, mỗi nút biểu diễn một biến trung gian, là kết quả trực tiếp của một toán
+tử; các tham số của toán tử tương ứng với các cạnh vào của nút. Ở đây danh sách
+cạnh vào của một nút có thứ tự, tương ứng với thứ tự các tham số của toán tử,
+không được tùy ý đổi chỗ.
+
+Bằng cách hy sinh một phần hiệu quả, thuật toán của ta xử lý được tình huống
+này. Giả sử DAG có \(m\) cạnh. Khi giá trị của
+\(\lambda_1,\ldots,\lambda_n\) đã xác định, giá trị hàm Boolean cuối cùng
+\(F\) có thể tính trong \(O(m)\). Ta không dùng cấu trúc dữ liệu để duy trì giá
+trị \(F\), mà khi một biến thay đổi, tính lại hoàn toàn \(F\) trong \(O(m)\).
+Toàn bộ thuật toán có độ phức tạp \(O(n^2m)\).
+
+\paragraph{Ví dụ 2. \emph{Tính thể tích} [3].}
+Đầu vào gồm \(n\) lệnh, mỗi lệnh thuộc một trong các loại sau:
+
+\begin{enumerate}
+  \item tạo một quả cầu;
+  \item tạo một hình hộp chữ nhật mà mỗi cạnh song song với một trục tọa độ;
+  \item nhập hai chỉ số lệnh \(i,j\) đứng trước lệnh hiện tại, tạo một khối
+  bằng giao, hợp hoặc hiệu của khối do lệnh \(i\) và lệnh \(j\) tạo ra.
+\end{enumerate}
+
+Với mỗi lệnh, xuất thể tích khối mà nó tạo ra.
+
+Sau khi offline, xử lý tất cả hình cùng nhau. Quy mô dữ liệu, miền giá trị và
+yêu cầu độ chính xác của bài đều khá thấp, nên có thể dùng tích phân số theo
+một chiều để chuyển bài toán thành bài toán hai chiều. Đầu vào của bài hai
+chiều này chỉ chứa đường tròn và hình chữ nhật, còn phép toán được cho bởi DAG;
+DAG có \(O(n)\) cạnh. Điểm đặc biệt là ta cần tìm diện tích vùng ghép \(D^*_u\)
+do giá trị của mỗi nút \(u\) trên DAG quy định, tức mọi nút đều là nút xuất.
+Khi một biến \(\lambda_i\) thay đổi, tính lại giá trị mọi nút trên DAG tổng
+cộng tốn \(O(n)\), nên bài toán hai chiều được giải trong \(O(n^3)\). Độ phức
+tạp của bài gốc là \(O(n^3I)\), trong đó \(I\) là số lần phương pháp tích phân
+số gọi hàm tính giá trị.
+
+\paragraph{Diện tích bề mặt của hợp các quả cầu.}
+
+\paragraph{Ví dụ 3.}
+Cho \(n\) quả cầu trong không gian, tính diện tích bề mặt của hợp chúng.
+
+Với một mặt cầu, phần không bị các quả cầu khác phủ trở thành bề mặt của hợp
+các quả cầu. Xét lần lượt từng mặt cầu, tính diện tích phần chưa bị phủ, tức
+diện tích trên mặt cầu của
+\[
+  D^*=U-\bigcup_i D_i,
+\]
+trong đó \(U\) là toàn bộ mặt cầu, còn \(D_i\) là vùng của mặt cầu đó bị quả
+cầu thứ \(i\) phủ, tức một chỏm cầu. Như vậy bài toán chuyển thành bài toán
+diện tích vùng ghép trên mặt cầu, cho một thuật toán \(O(n^3\log n)\).
+
+Một bài toán thú vị khác là tính thể tích hợp các quả cầu. Tuy phương pháp trên
+có thể tìm biên của hợp các quả cầu, tác giả vẫn chưa tìm được thuật toán chính
+xác để tính thể tích hợp các quả cầu. Bài toán này còn cần được nghiên cứu
+tiếp.
+
+\subsection{Tổng kết}
+
+Bài viết giới thiệu bài toán diện tích vùng ghép trên mặt cầu và đề xuất
+phương pháp công thức Green để giải nó. Bài toán có ứng dụng rộng trong thực
+tế, chủ yếu là các bài toán diện tích trên bề mặt Trái Đất. Hình học cầu có mã
+dài và nhiều chi tiết, không phù hợp để ra đề trong thi thuật toán, nhưng thuật
+toán của ta có thể sửa đổi để thích ứng với trường hợp phẳng, qua đó thể hiện
+ưu thế trong thi thuật toán.
+
+Tuy vậy, việc nghiên cứu bài toán này chưa kết thúc. Trong ứng dụng thực tế,
+nếu cần diện tích một vùng chính xác hơn, nên trừu tượng hóa bề mặt Trái Đất
+thành một mặt ellipsoid, từ đó cần giải bài toán diện tích vùng ghép trên mặt
+ellipsoid. Ngoài ra, ở chương 5, với hàm Boolean dạng DAG, ta mới chỉ có thuật
+toán thời gian \(O(n^2m)\); hiệu quả của nó có lẽ vẫn còn không gian cải thiện.
+Hai vấn đề liên quan trên còn cần được nghiên cứu thêm.
+
+\subsection*{Lời cảm ơn}
+
+Cảm ơn bạn Zhou Hangrui đã cung cấp thuật toán tuyến tính và chương trình cài
+đặt cho bài \emph{Cây chanh dưới trăng} [2], đồng thời hỗ trợ vẽ một phần hình
+minh họa.
+
+Cảm ơn bạn Xu Zhean đã thảo luận với tôi về ứng dụng của phương pháp công thức
+Green.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Yang Zhe. \emph{Nghiên cứu một số lời giải cho SPOJ375 QTREE}. Bài tập
+  đội tuyển quốc gia Olympic Tin học Trung Quốc, 2007: 9--11.
+  \item Hu Weidong. \emph{Cây chanh dưới trăng}. National Olympiad in
+  Informatics, 2005. \url{https://www.luogu.com.cn/problem/P4207}.
+  \item Xu Mingkuan. \emph{Thuật toán hình học tính toán hai chiều và ứng dụng
+  thực chiến}. Trại đông Olympic Tin học toàn quốc, 2018: 70--72.
+  \item People's Education Press, Curriculum and Teaching Materials Research
+  Institute, Experimental Research Group for Secondary-School Mathematics
+  Textbooks. \emph{Mathematics Elective 3-3 for the Ordinary Senior High School
+  Curriculum Standard Experimental Textbook (B edition): Geometry on the
+  Sphere}. People's Education Press, 2008: 27--28.
+  \item Chang Gengzhe, Shi Jihuai. \emph{Giáo trình giải tích toán học}. Ấn bản
+  thứ 3. University of Science and Technology of China Press, 2012.
+  \item \emph{Area}. ACM/ICPC Asia Regional Nanjing Online, 2013.
+  \url{http://acm.hdu.edu.cn/showproblem.php?pid=4748}.
+  \item I. Todhunter. \emph{Spherical Trigonometry, for the use of colleges and
+  schools: with numerous examples}. Macmillan, 1863: 67--71.
 \end{enumerate}
 
 \end{document}
