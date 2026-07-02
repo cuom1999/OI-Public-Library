@@ -31,7 +31,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2019. Tệp được
 tạo bằng XeTeX và có lớp văn bản đọc được; tuy nhiên các trang có watermark
 chéo, nên kết quả trích xuất xen thêm chữ từ watermark vào nội dung chính. Bản
-LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và mười một bài viết đầu
+LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và mười hai bài viết đầu
 tiên: ``Tính chất và ứng dụng của hai loại dãy truy hồi'' của Zhong Ziqian,
 ``Bàn về bài toán bước đi ngẫu nhiên trên mô hình đồ thị'' của Wang Xiuhan,
 ``Báo cáo ra đề \emph{Bài toán nhỏ dễ}'' của Yang Junzhao, ``Bàn về bài toán
@@ -42,7 +42,8 @@ thi thuật toán và bước đầu về số nguyên Gauss'' của Li Jiaheng,
 ra đề \emph{Đếm điểm nguyên} và một số nghiên cứu về số nguyên Gauss'' của Xu
 Yixuan, ``Bàn về thuật toán chia để trị trên cây'' của Zhang Zheyu, ``Báo cáo
 ra đề \emph{Tổng tổ hợp}'' của Wu Siyang, và ``Bàn về một lớp cấu trúc dữ liệu
-ngắn gọn'' của Wang Siqi.
+ngắn gọn'' của Wang Siqi, ``Thuật toán liên quan tới truy vấn chu kỳ xâu con
+và ứng dụng'' của Chen Sunli.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -8797,6 +8798,796 @@ Cảm ơn các thầy cô và bạn học khác từng giúp đỡ tôi.
         Discrete Algorithms, SIAM, Philadelphia, pp. 841--850, 2003.
   \item M. Burrows and D. J. Wheeler, A block-sorting lossless data compression
         algorithm. Digital SRC Reports 124, 1994.
+\end{enumerate}
+
+\clearpage
+\section*{Thuật toán liên quan tới truy vấn chu kỳ xâu con và ứng dụng}
+
+\begin{center}
+Chen Sunli, Trường Ngoại ngữ Nam Kinh
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết này giới thiệu cách giải bài toán truy vấn chu kỳ xâu con, cùng một
+số kết luận và công cụ xâu dùng trong lời giải, đó là từ điển xâu con cơ bản
+(Dictionary of Basic Factors). Sau đó bài viết trình bày một số ứng dụng của
+những kết luận và công cụ nói trên.
+
+Mục 2 đưa vào một số định nghĩa và ký hiệu cơ sở.
+
+Mục 3 chứng minh ba bổ đề quan trọng và giới thiệu từ điển xâu con cơ bản.
+
+Mục 4 mô tả phương pháp giải bài toán truy vấn chu kỳ xâu con.
+
+Mục 5 giới thiệu một số ứng dụng của từ điển xâu con cơ bản.
+
+\section*{1. Dẫn nhập}
+
+Ở giai đoạn hiện nay, nghiên cứu về xâu trong khoa học máy tính ngày càng chú
+trọng khảo sát tính chất của chu kỳ, tức các ``mẫu lặp''. Hướng này cũng có ý
+nghĩa thực tế lớn: chẳng hạn nhận dạng tiếng nói và khớp DNA đều cần mô tả
+tinh tế những mẫu xâu lặp lại với số lượng lớn.
+
+Bài toán truy vấn chu kỳ xâu con là một bài toán kinh điển có mô tả đơn giản
+nhưng lời giải phức tạp. Từ đó còn có thể mở rộng thành bài toán khớp mẫu nội
+bộ (Internal Pattern Matching) có phạm vi ứng dụng rộng hơn. Bài viết này tập
+trung giới thiệu cách giải bài toán ấy và một số mở rộng.
+
+\section*{2. Ký hiệu, định nghĩa cơ sở và mô tả bài toán}
+
+\subsection*{2.1. Ký hiệu và định nghĩa}
+
+Gọi \(S\) là một xâu, \(|S|\) là độ dài của nó, \(S[i]\) là ký tự thứ \(i\) của
+\(S\), và \(S[l,r]\) là xâu mới tạo bởi các ký tự từ vị trí \(l\) đến vị trí
+\(r\) của \(S\). Nếu \(l>r\) thì \(S[l,r]=\emptyset\).
+
+Ký hiệu \(\operatorname{pref}(S,x)=S[1,\ldots,x]\) là tiền tố độ dài \(x\) của
+\(S\). Tương tự, \(\operatorname{suf}(S,x)=S[|S|-x+1,\ldots,|S|]\) là hậu tố độ
+dài \(x\) của \(S\).
+
+Nếu \(T[x,\ldots,x+|S|-1]=S\), ta nói \(S\) xuất hiện trong \(T\) tại vị trí
+\(x\), và \(x\) là vị trí xuất hiện hay vị trí khớp của \(S\) trong \(T\).
+
+\paragraph{Định nghĩa 1.}
+Nếu xâu \(S\) và số nguyên \(x\) thỏa mãn \(1\le x\le |S|\), đồng thời với mọi
+\(1\le i\le |S|-x\) đều có \(S[i]=S[i+x]\), thì gọi \(x\) là một chu kỳ, hay độ
+dài chu kỳ, của \(S\). Đặc biệt, nếu \(x\) còn là ước của \(|S|\), thì gọi
+\(x\) là một chu kỳ nguyên của \(S\), và gọi \(S\) là xâu chu kỳ nguyên.
+
+Hiển nhiên, nếu \(x\) là chu kỳ của \(S\), thì \(kx\)
+\((k\in\mathbb Z^+, kx\le |S|)\) cũng là chu kỳ của \(S\); ngoài ra \(x\) cũng
+là chu kỳ của \(\operatorname{pref}(S,y)\) với \(y\ge x\).
+
+\paragraph{Định nghĩa 2.}
+\(\operatorname{per}(S)\) biểu thị tập hợp tất cả các chu kỳ của \(S\), còn
+\(\operatorname{minper}(S)\) biểu thị giá trị nhỏ nhất trong
+\(\operatorname{per}(S)\). Dễ thấy với xâu không rỗng \(S\), \(|S|\) luôn là
+một chu kỳ của \(S\), nên \(|\operatorname{per}(S)|>0\).
+
+\paragraph{Định nghĩa 3.}
+Nếu xâu \(S\) và số nguyên \(x\) thỏa mãn \(0\le x<|S|\), đồng thời
+\(\operatorname{pref}(S,x)=\operatorname{suf}(S,x)\), thì gọi
+\(\operatorname{pref}(S,x)\) là một border của \(S\).
+
+\paragraph{Hệ quả 1.}
+\(|S|-x\) là chu kỳ của \(S\) khi và chỉ khi \(\operatorname{pref}(S,x)\) là
+một border của \(S\).
+
+\paragraph{Chứng minh.}
+Theo định nghĩa của border và của hai xâu bằng nhau, \(\operatorname{pref}(S,x)\)
+là border của \(S\) khi và chỉ khi với mọi
+\(1\le i\le |\operatorname{pref}(S,x)|\) đều có
+\[
+  \operatorname{pref}(S,x)[i]=\operatorname{suf}(S,x)[i],
+\]
+tức \(S[i]=S[|S|-x+i]\), đúng với định nghĩa chu kỳ. \(\square\)
+
+\paragraph{Hệ quả 2.}
+Nếu \(p\) là chu kỳ của \(S\), và một xâu con \(S[l,\ldots,r]\) thỏa
+\(r-l+1\ge p\) có chu kỳ \(q\), trong đó \(q\mid p\), thì \(q\) cũng là chu kỳ
+của \(S\).
+
+Hệ quả này khá hiển nhiên.
+
+\subsection*{2.2. Mô tả bài toán}
+
+Cho một xâu \(S\) và nhiều truy vấn. Mỗi truy vấn cho hai số \(l,r\), yêu cầu
+đưa ra \(\operatorname{per}(S[l,\ldots,r])\).
+
+Nhờ các kết luận sẽ nêu bên dưới, ta có thể dùng một cách ngắn gọn để biểu
+diễn \(\operatorname{per}(S[l,\ldots,r])\), chỉ tốn \(O(\log n)\) không gian
+thay vì \(O(|S|)\) trong trường hợp xấu nhất. Đồng thời, ta sẽ đưa ra một thuật
+toán tiền xử lý trong \(O(n\log n)\) thời gian và không gian, rồi trả lời mỗi
+truy vấn trong \(O(\log n)\) thời gian và không gian.
+
+\section*{3. Chuẩn bị cho lời giải}
+
+\subsection*{3.1. Một số tính chất về ``lặp''}
+
+Về chu kỳ của xâu có một bổ đề quan trọng gọi là Periodicity Lemma. Chứng minh
+của nó tương đối rườm rà; dưới đây ta chứng minh một phiên bản yếu hơn.
+
+\paragraph{Bổ đề 1 (Weak Periodicity Lemma).}
+Nếu \(p,q\in\operatorname{per}(S)\) và \(p+q\le |S|\), thì
+\(\gcd(p,q)\in\operatorname{per}(S)\).
+
+\paragraph{Chứng minh.}
+Không mất tính tổng quát, giả sử \(p<q\). Với mọi \(1\le i\le |S|\), nếu
+\(p<i\le |S|-q+p\), thì
+\[
+  S[i]=S[i-p]=S[i+q-p].
+\]
+Nếu \(i\le p\), thì
+\[
+  S[i]=S[i+q]=S[i+q-p].
+\]
+Suy ra \(q-p\) cũng là chu kỳ của \(S\). Ở đây ta dùng định nghĩa chu kỳ và
+điều kiện \(p+q\le |S|\). Lại có \(p+(q-p)\le |S|\), nên có thể áp dụng thuật
+toán Euclid liên tiếp để thu được \(\gcd(p,q)\) là chu kỳ của \(S\). \(\square\)
+
+\paragraph{Hệ quả 3.}
+Nếu \(p=\operatorname{minper}(S)\le |S|/2\), thì với mọi
+\(x\in\operatorname{per}(S)\) thỏa \(x+p\le |S|\), ta có \(p\mid x\).
+
+\paragraph{Chứng minh.}
+Nếu \(p\nmid x\), theo Bổ đề 1 có \(\gcd(p,x)\in\operatorname{per}(S)\). Vì
+\(p<x\), nên \(\gcd(p,x)<p\), mâu thuẫn với
+\(p=\operatorname{minper}(S)\). \(\square\)
+
+Từ đây trở đi, ta viết tắt Weak Periodicity Lemma là WPL.
+
+\paragraph{Bổ đề 2.}
+Nếu hai xâu \(S,T\) thỏa \(2|S|\ge |T|\), thì các vị trí xuất hiện của \(S\)
+trong \(T\) tạo thành một cấp số cộng.
+
+\paragraph{Chứng minh.}
+Nếu \(S\) xuất hiện trong \(T\) một hoặc hai lần thì bổ đề đã đúng, nên chỉ cần
+xét trường hợp \(S\) xuất hiện trong \(T\) ít nhất ba lần.
+
+Với hai vị trí xuất hiện \(p<q\), do \(S\) là border của
+\(T[p,\ldots,q+|S|-1]\), \(q-p\) là chu kỳ của \(T[p,\ldots,q+|S|-1]\). Đồng
+thời, từ \(1\le p,q\le |T|-|S|+1\), ta có
+\[
+  p+|S|-1\ge |S|\ge |T|-|S|\ge q,
+\]
+nên \(q-p<|S|\). Do đó \(q-p\) cũng là chu kỳ của \(S\).
+
+Xét hai vị trí xuất hiện đầu tiên \(p_1<p_2\) của \(S\) trong \(T\), và một vị
+trí xuất hiện \(q>p_2\). Ta có
+\[
+  p_2-p_1,\ q-p_2\in\operatorname{per}(S).
+\]
+Lại có \(q-p_1\le |T|-|S|\le |S|\). Theo WPL,
+\[
+  r=\gcd(p_2-p_1,q-p_2)\in\operatorname{per}(S).
+\]
+Đồng thời
+\[
+  r\le \min(p_2-p_1,q-p_2)\le \frac{q-p_1}{2}\le \frac{|S|}{2}.
+\]
+Đặt \(r'=\operatorname{minper}(S)\). Theo Hệ quả 3, \(r'\mid r\). Theo Hệ quả
+2, \(r'\) là chu kỳ của \(T[p_1,\ldots,p_2+|S|-1]\). Giả sử \(r'<r\), theo kết
+luận phía trên, \(S\) cũng xuất hiện tại vị trí \(p_1+r'\), mâu thuẫn với việc
+\(p_2\) là vị trí xuất hiện thứ hai. Vì vậy \(r=r'=\operatorname{minper}(S)\).
+
+Đến đây, áp dụng Hệ quả 3 thêm một lần nữa, ta có \(r\mid q-p_2\). Mặt khác,
+nếu gọi \(q\) là vị trí khớp cuối cùng của \(S\) trong \(T\), thì mọi
+\(x=p_1+kr\le q\), \(k\in\mathbb Z\), theo kết luận trên đều là vị trí xuất
+hiện của \(S\). Kết hợp hai kết luận này, Bổ đề 2 được chứng minh. \(\square\)
+
+Không chỉ vậy, ta còn thu được: nếu \(S\) xuất hiện trong \(T\) ít nhất ba lần,
+thì công sai của cấp số cộng tương ứng bằng \(\operatorname{minper}(S)\).
+
+\paragraph{Bổ đề 3.}
+Tất cả độ dài border của xâu \(S\) không nhỏ hơn \(|S|/2\) tạo thành một cấp số
+cộng.
+
+\paragraph{Chứng minh.}
+Chỉ cần chứng minh mọi chu kỳ của \(S\) không lớn hơn \(|S|/2\) tạo thành một
+cấp số cộng; kết luận này suy ra trực tiếp từ Hệ quả 3. \(\square\)
+
+Đến đây, ba bổ đề cần thiết để giải bài toán truy vấn chu kỳ xâu con đã được
+chứng minh.
+
+\subsection*{3.2. Cấu trúc dữ liệu: từ điển xâu con cơ bản}
+
+Để giải bài toán truy vấn chu kỳ xâu con, ta còn cần một cấu trúc dữ liệu gọi
+là từ điển xâu con cơ bản.
+
+\paragraph{Định nghĩa 4.}
+Từ điển xâu con cơ bản (Dictionary of Basic Factors) của một xâu \(S\), ký
+hiệu \(\operatorname{DBF}(S)\), gồm \(\lfloor\log_2|S|\rfloor+1\) mảng. Cụ thể,
+mảng thứ \(t\) được ký hiệu \(\operatorname{Name}_t\), có độ dài
+\(|S|-2^t+1\), và thỏa mãn
+\[
+  \operatorname{Name}_t(i)\le \operatorname{Name}_t(j)
+\]
+khi và chỉ khi
+\[
+  S[i,\ldots,i+2^t-1]\le S[j,\ldots,j+2^t-1].
+\]
+Thông thường, ta có thể đặt thêm ràng buộc rằng các giá trị trong mỗi
+\(\operatorname{Name}_t\) là số nguyên dương và miền giá trị đúng bằng
+\(\{1,2,\ldots,k\}\), với \(k\in\mathbb Z\).
+
+Dễ thấy mảng \(\operatorname{Name}_t\) có thể được suy ra từ
+\(\operatorname{Name}_{t-1}\). Vì vậy, để tìm từ điển xâu con cơ bản của xâu
+\(S\), chỉ cần dùng thuật toán nhân đôi tìm mảng hậu tố tương tự Manber--Myers,
+với độ phức tạp \(O(n\log n)\).
+
+Chỉ có các mảng \(\operatorname{Name}\) có thể vẫn chưa đủ. Một mở rộng đơn
+giản là tách mỗi mảng \(\operatorname{Name}_t\) theo giá trị: với mỗi \(x\),
+duy trì một danh sách có thứ tự ghi lại mọi \(i\) thỏa
+\(\operatorname{Name}_t[i]=x\). Không khó thấy bước này cũng có thể hoàn thành
+trong quá trình xây dựng từ điển xâu con cơ bản, và độ phức tạp vẫn là
+\(O(n\log n)\).
+
+Phần sau sẽ cho thấy để đạt độ phức tạp tối ưu hiện tại \(O(\log n)\) cho một
+truy vấn, ta còn phải mở rộng từ điển xâu con cơ bản thêm một lần nữa.
+
+\section*{4. Giải bài toán truy vấn chu kỳ xâu con}
+
+\subsection*{4.1. Thuật toán cơ bản}
+
+\paragraph{Định nghĩa 5.}
+Với hai xâu \(S,T\) thỏa \(|S|=|T|\), định nghĩa
+\[
+  \operatorname{PS}(S,T)=\{k\mid \operatorname{pref}(S,k)=\operatorname{suf}(T,k)\},
+\]
+\[
+  \operatorname{LargePS}(S,T)=\{k\mid k\in\operatorname{PS}(S,T),\ k\ge |S|/2\}.
+\]
+
+\paragraph{Hệ quả 4.}
+Các phần tử của \(\operatorname{LargePS}(S,T)\) tạo thành một cấp số cộng.
+
+\paragraph{Chứng minh.}
+Xét phần tử lớn nhất \(p\) trong tập này. Với mọi
+\(q\in\operatorname{LargePS}(S,T)\), \(\operatorname{pref}(S,q)\) là tiền tố
+của \(\operatorname{pref}(S,p)\), còn \(\operatorname{suf}(T,q)\) là hậu tố của
+\(\operatorname{suf}(T,p)\). Do đó \(\operatorname{pref}(S,q)\) là border của
+\(\operatorname{pref}(S,p)\). Theo Bổ đề 3, các phần tử này tạo thành một cấp
+số cộng. \(\square\)
+
+\paragraph{Hệ quả 5.}
+Với một xâu \(S\) và số nguyên \(k\le |S|/2\), tất cả độ dài border \(x\) của
+\(S\) thỏa \(k\le x<2k\) tạo thành một cấp số cộng.
+
+\paragraph{Chứng minh.}
+Tập các \(x\) nói trên đúng bằng
+\[
+  \operatorname{LargePS}(\operatorname{pref}(S,2k),\operatorname{suf}(S,2k)).
+\]
+\(\square\)
+
+Nhờ kết luận này, ta có thể chia các border của \(S\) thành \(O(\log |S|)\)
+lớp. Lớp thứ \(i\) gồm mọi border có độ dài thuộc \([2^{i-1},2^i)\), nhưng nếu
+\(|S|\) không phải lũy thừa của 2 thì khoảng cuối cùng cần đổi thành
+\([2^{\lfloor\log_2|S|\rfloor},|S|)\). Trong mỗi khoảng, các độ dài border đều
+có thể được biểu diễn bằng một cấp số cộng. Vì vậy ta thu được một cách biểu
+diễn các độ dài border của \(S\), tức \(\operatorname{per}(S)\), chỉ tốn
+\(O(\log |S|)\) không gian.
+
+Với khoảng kiểu \([2^{i-1},2^i)\), thứ ta cần chính là
+\[
+  \operatorname{LargePS}(\operatorname{pref}(S,2^i),\operatorname{suf}(S,2^i)).
+\]
+Ta dùng bổ đề sau; chứng minh của nó khá hiển nhiên.
+
+\paragraph{Bổ đề 4.}
+Với \(2^{k-1}\le x<|S|=|T|=2^k\), ta có
+\[
+  x\in\operatorname{LargePS}(S,T)
+\]
+khi và chỉ khi
+\[
+  \operatorname{suf}(\operatorname{pref}(S,x),2^{k-1})
+  =\operatorname{suf}(T,2^{k-1}),
+\]
+và tương ứng
+\[
+  \operatorname{pref}(\operatorname{suf}(T,x),2^{k-1})
+  =\operatorname{pref}(S,2^{k-1}).
+\]
+
+Có bổ đề này, trước hết ta tìm mọi vị trí xuất hiện của
+\(\operatorname{pref}(S,2^{i-1})\) trong \(\operatorname{suf}(S,2^i)\), và mọi
+vị trí xuất hiện của \(\operatorname{suf}(S,2^{i-1})\) trong
+\(\operatorname{pref}(S,2^i)\), đều biểu diễn bằng cấp số cộng. Để thu được
+\(\operatorname{LargePS}(\operatorname{pref}(S,2^i),\operatorname{suf}(S,2^i))\),
+ta chỉ cần tịnh tiến hai cấp số cộng nói trên rồi lấy giao.
+
+Việc tìm mọi vị trí xuất hiện của \(\operatorname{pref}(S,2^{i-1})\) trong
+\(\operatorname{suf}(S,2^i)\) chính là tìm vị trí xuất hiện đầu tiên, thứ hai
+và cuối cùng. Vì hai xâu này đều là xâu con của xâu mẹ, chỉ cần cài đặt hai
+thao tác \(\operatorname{succ}(S,i)\) và \(\operatorname{pred}(S,i)\), tức tìm
+vị trí xuất hiện đầu tiên của xâu \(S\) không trước hoặc không sau vị trí \(i\).
+Cụ thể, giả sử xâu mẹ là \(T\), xâu thứ nhất là
+\(S_1=T[l,\ldots,r]\), xâu thứ hai là \(S_2=T[l',\ldots,r']\), trong đó
+\[
+  2(r-l+1)=r'-l'+1.
+\]
+Đặt
+\[
+  s=\operatorname{succ}(S_1,l'),\quad
+  d=\operatorname{succ}(S_1,s+1)-s,\quad
+  t=\operatorname{pred}(S_1,r'-|S_1|+1).
+\]
+Cấp số cộng cần tìm có số hạng đầu \(s\), số hạng cuối \(t\), công sai \(d\).
+
+Vì vậy, ta xây dựng từ điển xâu con cơ bản của xâu mẹ, rồi trong
+\(\operatorname{Name}_{i-1}\) tìm danh sách có thứ tự chứa
+\(\operatorname{pref}(S,2^{i-1})\). Với mỗi truy vấn \(\operatorname{succ}\) hoặc
+\(\operatorname{pred}\), chỉ cần tìm kiếm nhị phân trên danh sách có thứ tự này.
+
+Với khoảng kiểu \([2^{\lfloor\log_2|S|\rfloor},|S|)\), cách làm tương tự như
+trên, nhưng sau khi lấy giao hai cấp số cộng còn phải cắt kết quả để chỉ giữ
+đoạn nhỏ hơn \(|S|\).
+
+Đến đây, khung thuật toán cơ bản cho bài toán truy vấn chu kỳ xâu con đã hoàn
+thành.
+
+\subsection*{4.2. Lấy giao cấp số cộng và tối ưu}
+
+Ta dùng ba tham số \((s,d,k)\) để mô tả cấp số cộng
+\[
+  s,\ s+d,\ \ldots,\ s+(k-1)d.
+\]
+Xét việc tìm phần chung của hai cấp số cộng \((s_1,d_1,k_1)\) và
+\((s_2,d_2,k_2)\), tức tìm tất cả nghiệm nguyên của
+\[
+  s_1+xd_1=s_2+yd_2,
+\]
+rồi cắt lấy đoạn thích hợp. Với bài toán tổng quát, chỉ có thể dùng thuật toán
+Euclid mở rộng để giải phương trình Diophantine này, độ phức tạp
+\(O(\log\max(|d_1|,|d_2|))\).
+
+Tuy nhiên trong bài toán này, ta có thể chứng minh bổ đề sau, nhờ đó lấy giao
+hai cấp số cộng trong \(O(1)\).
+
+\paragraph{Bổ đề 5.}
+Nếu bốn xâu thỏa \(|x_1|=|y_1|\ge |x_2|=|y_2|\), \(x_1\) khớp trong \(y_2y_1\)
+ít nhất 3 lần, và \(y_1\) khớp trong \(x_1x_2\) ít nhất 3 lần, thì
+\[
+  \operatorname{minper}(x_1)=\operatorname{minper}(y_1).
+\]
+
+\paragraph{Chứng minh.}
+Dùng phản chứng, giả sử
+\(\operatorname{minper}(x_1)\ne\operatorname{minper}(y_1)\). Nếu
+\(\operatorname{minper}(x_1)>\operatorname{minper}(y_1)\), xét vị trí khớp cuối
+cùng của \(x_1\) trong \(y_2y_1\), và gọi phần giao của lần khớp đó với \(y_1\)
+là \(z\). Theo Bổ đề 2, khoảng cách giữa hai lần khớp kề nhau của \(x_1\)
+trong \(y_2y_1\) đúng bằng \(\operatorname{minper}(x_1)\). Lại có
+\(|y_2|\le |x_1|\), nên
+\[
+  |y_2|+|z|\ge |x_1|+2\operatorname{minper}(x_1)
+  \ge |y_2|+2\operatorname{minper}(x_1),
+\]
+tức \(|z|\ge 2\operatorname{minper}(x_1)\).
+
+Lúc này có thể thấy \(z\) có hai chu kỳ
+\(\operatorname{minper}(x_1)\) và \(\operatorname{minper}(y_1)\). Vì
+\[
+  |z|\ge 2\operatorname{minper}(x_1)
+  \ge \operatorname{minper}(x_1)+\operatorname{minper}(y_1),
+\]
+theo WPL, \(z\) có chu kỳ
+\[
+  d=\gcd(\operatorname{minper}(x_1),\operatorname{minper}(y_1))
+  \mid \operatorname{minper}(x_1).
+\]
+Do đó \(d\) cũng là chu kỳ của \(x_1\), mâu thuẫn với
+\(\operatorname{minper}(x_1)\).
+
+Khi \(\operatorname{minper}(x_1)<\operatorname{minper}(y_1)\), quá trình dẫn
+đến mâu thuẫn gần như tương tự, chỉ khác ở ý nghĩa ``lật ngược'', nên không
+lặp lại. Mâu thuẫn trên chứng tỏ
+\(\operatorname{minper}(x_1)=\operatorname{minper}(y_1)\). \(\square\)
+
+Nếu \(k_1<3\) hoặc \(k_2<3\), có thể trực tiếp liệt kê mọi phần tử trong cấp số
+cộng tương ứng rồi kiểm tra nó có thuộc cấp số cộng còn lại hay không. Ngược
+lại, theo Bổ đề 5, \(d_1=d_2\), và có thể lấy giao hai cấp số cộng trực tiếp
+trong \(O(1)\).
+
+Kết hợp hai phần, ta thu được cách lấy giao cấp số cộng trong \(O(1)\) cho bài
+toán này.
+
+\subsection*{4.3. Tối ưu truy vấn \texorpdfstring{\(\operatorname{succ}\)}{succ}
+và \texorpdfstring{\(\operatorname{pred}\)}{pred}}
+
+Trước hết phân tích độ phức tạp hiện tại. Thời gian tiền xử lý đã là
+\(O(n\log n)\). Một truy vấn chu kỳ xâu con được chia thành \(O(\log |S|)\)
+truy vấn \(\operatorname{LargePS}\), mỗi truy vấn \(\operatorname{LargePS}\) cần
+\(O(1)\) truy vấn \(\operatorname{succ}\), \(\operatorname{pred}\), và một lần
+lấy giao cấp số cộng. Phần sau đã được tối ưu thành \(O(1)\) ở mục trước,
+nhưng phần đầu vẫn cần tìm kiếm nhị phân, mỗi lần \(O(\log |S|)\), khiến tổng
+độ phức tạp mỗi truy vấn là \(O(\log^2 n)\). Độ phức tạp không gian lúc này là
+\(O(n\log n)\).
+
+Nếu xét việc thực sự cài đặt chức năng \(\operatorname{succ}\) và
+\(\operatorname{pred}\), có vẻ chỉ có một phương án khả thi là tìm kiếm nhị
+phân trên danh sách chỉ số. Nhưng trong bài toán truy vấn chu kỳ xâu con, ta
+dùng chúng để tìm cấp số cộng của các vị trí xuất hiện, dường như hơi quá mức
+cần thiết. Vì vậy ta xét từ chính bài toán để tìm vật thay thế cho hai thao
+tác này.
+
+Trong bài toán này, \(\operatorname{succ}\) và \(\operatorname{pred}\) không
+cần được cài đặt đầy đủ, vì các truy vấn của ta có dạng ``mọi vị trí xuất hiện
+của \(\operatorname{pref}(S,2^{i-1})\) trong \(\operatorname{suf}(S,2^i)\)''.
+Nói cách khác, ta chỉ quan tâm tới lớp bài toán ``mọi vị trí xuất hiện của một
+xâu độ dài \(2^{i-1}\) trong một khoảng có độ dài không quá \(2^i\)''.
+
+Xét mở rộng nội dung của từ điển xâu con cơ bản thêm một lần nữa. Trong lần mở
+rộng thứ nhất, trong \(\operatorname{Name}_t\), ta lưu mọi vị trí xuất hiện của
+các xâu bằng nhau độ dài \(2^t\) vào cùng một danh sách có thứ tự, rồi tìm kiếm
+nhị phân trên danh sách ấy để thực hiện truy vấn \(\operatorname{succ}\). Trên
+cơ sở đó, ta chia xâu mẹ \(S\) thành các đoạn dài \(2^t\) ký tự, tức các đoạn
+\[
+  [1,2^t],\ [2^t+1,2^{t+1}],\ [2^{t+1}+1,3\cdot 2^t],\ldots,
+  [k\cdot 2^t+1,(k+1)\cdot 2^t].
+\]
+Với mỗi đoạn, lưu lại mọi chỉ số trong danh sách có thứ tự hiện tại nằm trong
+đoạn ấy.
+
+Cụ thể, với mỗi xâu \(T\) độ dài \(2^t\) khác nhau về bản chất, ta lưu
+\(\operatorname{seg}(T,x)\), \(1\le x\le \lceil |S|/2^t\rceil\), biểu thị mọi
+vị trí xuất hiện của \(T\) trong xâu mẹ \(S\) nằm trong khoảng
+\[
+  [2^t(x-1)+1,2^t x].
+\]
+Theo Bổ đề 2, mỗi \(\operatorname{seg}(T,x)\) có thể được biểu diễn bằng một
+cấp số cộng. Nếu cấp số cộng được biểu diễn là rỗng, thì
+\(\operatorname{seg}(T,x)=\emptyset\).
+
+Nếu lưu trực tiếp như vậy, không gian sẽ lên tới mức \(O(|S|^2\log |S|)\).
+Nhưng để ý rằng không cần cấp phát không gian cho mọi \(\operatorname{seg}(T,x)\).
+Với một \(t\) cố định, số cặp thỏa \(\operatorname{seg}(T,x)\ne\emptyset\)
+không vượt quá tổng số lần xuất hiện của mọi xâu \(T\), mà tổng này bằng
+\(|S|-2^t+1\). Vì vậy trong toàn bộ từ điển xâu con cơ bản, số lượng
+\(\operatorname{seg}(T,x)\) khác rỗng là \(O(|S|\log |S|)\).
+
+Để độ phức tạp không gian cùng bậc với số lượng \(\operatorname{seg}\) khác
+rỗng, với mỗi \(T\) ta cần duy trì tập mọi giá trị \(x\) sao cho
+\(\operatorname{seg}(T,x)\) khác rỗng, đồng thời hỗ trợ truy vấn nhanh xem một
+số có thuộc tập này hay không. Không khó thấy có thể dùng bảng băm để hoàn
+thành thao tác truy vấn.
+
+Cuối cùng, nếu cần truy vấn mọi vị trí xuất hiện của
+\[
+  S[i,\ldots,i+2^t-1]
+\]
+trong khoảng \([j,j+2^t-1]\), chỉ cần tìm mọi khoảng trong
+\(\operatorname{seg}(S[i,\ldots,i+2^t-1])\) có giao với \([j,j+2^t-1]\). Số
+khoảng như vậy hiển nhiên nhiều nhất là hai. Ta lấy ra các giá trị
+\(\operatorname{seg}(T,x)\) tương ứng rồi cắt đoạn thích hợp. Do bảo đảm đáp án
+cuối cùng cũng là một cấp số cộng, chỉ cần hợp nhất trực tiếp các
+\(\operatorname{seg}(T,x)\) sau khi cắt.
+
+Như vậy, ta đã thay thế thành công các truy vấn \(\operatorname{succ}\) và
+\(\operatorname{pred}\) dùng trong thuật toán bằng những truy vấn kỳ vọng
+\(O(1)\) trên bảng băm của \(\operatorname{seg}\).
+
+Tổng hợp phân tích phía trên, bài toán truy vấn chu kỳ xâu con đạt tiền xử lý
+kỳ vọng \(O(n\log n)\) thời gian và không gian, và mỗi truy vấn có độ phức tạp
+kỳ vọng \(O(\log n)\).
+
+\section*{5. Mở rộng và ứng dụng của từ điển xâu con cơ bản}
+
+Mục này chủ yếu giới thiệu một số mở rộng và ứng dụng của từ điển xâu con cơ
+bản. Vì từ điển xâu con cơ bản có nhiều liên hệ với mảng hậu tố, cũng có thể
+xem nó là hướng ứng dụng mảng hậu tố vào các xâu con cơ bản, tức các xâu con
+có độ dài là lũy thừa của 2.
+
+\subsection*{5.1. So sánh xâu con}
+
+Một ứng dụng cơ sở của từ điển xâu con cơ bản là so sánh thứ tự hai xâu con
+trong \(O(1)\). Dù bài toán này cũng có thể được giải với cùng độ phức tạp
+bằng mảng hậu tố, mảng độ cao và truy vấn giá trị nhỏ nhất trên đoạn (RMQ),
+thậm chí đạt tiền xử lý tốt hơn \(O(|S|)\), cách dùng từ điển xâu con cơ bản
+đơn giản, theo tôi có tính gợi mở nhất định, và khả năng mở rộng mạnh hơn cách
+làm RMQ.
+
+\subsubsection*{5.1.1. Mô tả bài toán}
+
+Cho xâu \(S\). Mỗi truy vấn cho \(i,j,i',j'\), yêu cầu so sánh thứ tự của
+\(S[i,\ldots,j]\) và \(S[i',\ldots,j']\).
+
+\subsubsection*{5.1.2. Cách làm}
+
+Nếu \(j-i\ne j'-i'\), hai xâu con không thể bằng nhau. Có thể xóa bớt một số
+ký tự cuối của xâu con dài hơn để nó có độ dài bằng xâu con ngắn hơn, rồi thực
+hiện một truy vấn mới. Nếu câu trả lời của truy vấn mới là không bằng nhau,
+câu trả lời của truy vấn ban đầu giống câu trả lời mới; nếu không, xâu con dài
+hơn lớn hơn.
+
+Bây giờ giả sử \(j-i=j'-i'\). Tìm số nguyên dương \(m\) thỏa
+\[
+  2^m<j-i+1\le 2^{m+1}.
+\]
+Khi đó việc so sánh hai xâu con có thể hoàn thành bằng cách so sánh
+\[
+  S[i,\ldots,i+2^m-1]\quad\text{với}\quad S[i',\ldots,i'+2^m-1],
+\]
+và so sánh
+\[
+  S[j-2^m+1,\ldots,j]\quad\text{với}\quad S[j'-2^m+1,\ldots,j'].
+\]
+Hai phép so sánh đầu có thể được thực hiện bằng cách so sánh
+\(\operatorname{Name}_m[i]\) với \(\operatorname{Name}_m[i']\), và
+\(\operatorname{Name}_m[j-2^m+1]\) với
+\(\operatorname{Name}_m[j'-2^m+1]\).
+
+Tóm lại, ta thu được một cách làm tiền xử lý \(O(n\log n)\), truy vấn \(O(1)\).
+
+\subsubsection*{5.1.3. Mở rộng đơn giản}
+
+Đổi bài toán ban đầu thành: cho một cây trie kích thước \(n\). Định nghĩa
+\(\operatorname{up}(i,l)\) là xâu nhận được bằng cách từ đỉnh \(i\) đi lên
+\(l\) cạnh và nối lần lượt các ký tự trên các cạnh đó. Mỗi truy vấn cho
+\(i,l,i',l'\), yêu cầu so sánh \(\operatorname{up}(i,l)\) và
+\(\operatorname{up}(i',l')\).
+
+Lúc này thuật toán nhân đôi tìm mảng hậu tố vẫn dùng được, nhưng thuật toán
+tuyến tính tìm mảng độ cao lại mất hiệu lực. Khi gặp tình huống này, thường
+chỉ có thể dùng cách nhị phân cộng băm xâu với hằng số lớn, hoặc dùng cây hậu
+tố tổng quát hay tự động hậu tố khó hiểu hơn.
+
+Tuy nhiên, cách dựa trên từ điển xâu con cơ bản vẫn còn hiệu lực, thậm chí có
+thể kết hợp với cách RMQ để thu được một phương pháp mới tìm mảng độ cao. Vì
+phần băm trong nhị phân cộng băm chỉ dùng để phán định hai xâu có bằng nhau
+hay không, có thể thay trực tiếp nó bằng phép so sánh xâu dựa trên từ điển xâu
+con cơ bản, qua đó có hằng số tốt hơn.
+
+Dĩ nhiên, có thể thấy mọi thuật toán trên đều không tránh được nhu cầu nhanh
+chóng tìm tổ tiên cấp \(k\), \(\operatorname{anc}(x,k)\), của một đỉnh \(x\).
+Ghi lại
+\[
+  f(i,k)=\operatorname{anc}(i,2^k),
+\]
+và dùng chuyển tiếp
+\[
+  f(i,k)=f(f(i,k-1),k-1)
+\]
+để suy ra mọi giá trị \(f\), khi đó truy vấn \(\operatorname{anc}\) có thể
+được giải trong \(O(\log n)\) thời gian. Nhưng như vậy độ phức tạp mỗi truy
+vấn tăng lên \(O(\log n)\). Để đạt truy vấn \(O(1)\), còn cần kết hợp phân rã
+chuỗi dài và kỹ thuật ladder; chi tiết có thể tham khảo các tài liệu liên quan.
+
+\subsection*{5.2. Liên quan tới chu kỳ nguyên}
+
+Trong một số bài toán về chu kỳ nguyên, xâu lũy thừa (String Powers) là đối
+tượng nghiên cứu quan trọng.
+
+\paragraph{Định nghĩa 6.}
+Nếu một xâu \(T\) có chu kỳ \(|T|/k\), với \(k\in\mathbb Z\), \(k>1\), thì gọi
+\(T\) là một xâu lũy thừa bậc \(k\). Khi đó \(T\) có thể biểu diễn dưới dạng
+\[
+  \operatorname{pref}(T,|T|/k)^k.
+\]
+Nếu còn thỏa \(k\cdot\operatorname{minper}(T)=|T|\), thì gọi \(T\) là một xâu
+lũy thừa bậc \(k\) nguyên thủy. Đặc biệt, khi \(k=2\), \(T\) là xâu bình
+phương (xâu bình phương nguyên thủy); khi \(k=3\), \(T\) là xâu lập phương
+(xâu lập phương nguyên thủy). Nếu không có \(k\) nào thỏa điều kiện, thì gọi
+\(T\) là xâu nguyên thủy.
+
+\subsubsection*{5.2.1. Tính chất đơn giản của chu kỳ nguyên}
+
+\paragraph{Tính chất 1.}
+Nếu \(T\) vừa là xâu lũy thừa bậc \(k_1\), vừa là xâu lũy thừa bậc \(k_2\),
+thì \(T\) là xâu lũy thừa bậc
+\[
+  \frac{k_1k_2}{\gcd(k_1,k_2)}.
+\]
+
+\paragraph{Tính chất 2.}
+\(T\) là xâu nguyên thủy khi và chỉ khi \(T^k\) là xâu lũy thừa bậc \(k\)
+nguyên thủy. Đặc biệt, khi \(k=2\), \(T\) là xâu nguyên thủy khi và chỉ khi
+trong \(T^2\), \(T\) chỉ xuất hiện với vai trò tiền tố và hậu tố.
+
+Hai tính chất này dễ chứng minh bằng WPL.
+
+\subsubsection*{5.2.2. Tìm xâu con lũy thừa bậc \texorpdfstring{\(k\)}{k}}
+
+Cho một xâu \(S\), cần tìm một xâu con \(S[l,\ldots,r]\) của \(S\) sao cho nó
+là xâu lũy thừa bậc \(k\). Ta trực tiếp đưa ra cách làm và giải thích tính
+đúng đắn của nó. Chú ý thuật toán có thể đưa ra nhiều xâu con lũy thừa bậc
+\(k\) giống nhau.
+
+\begin{center}
+\begin{tabular}{ll}
+\multicolumn{2}{l}{\textbf{Algorithm 1} Detect \(k\)-th Powers}\\
+\multicolumn{2}{l}{\textbf{Require:} \(S,k\)}\\
+\multicolumn{2}{l}{\textbf{Require:} Function \(\operatorname{IsPower}_k(\mathit{pos},\mathit{root})\)}\\
+\multicolumn{2}{l}{\textbf{Ensure:} Report if \(S\) contains a \(k\)-th power}\\
+1 & \(\mathit{Name}\leftarrow \operatorname{DBF}(S)\)\\
+2 & \textbf{for} \(t=0\) \textbf{to} \(\lfloor\log_2|S|\rfloor\) \textbf{do}\\
+3 & \quad \(\mathit{Prev}\leftarrow (0,0,\ldots,0)\)\\
+4 & \quad \textbf{for} \(i=1\) \textbf{to} \(|S|-2^t+1\) \textbf{do}\\
+5 & \quad\quad \(\mathit{name}\leftarrow \operatorname{Name}_t(i)\)\\
+6 & \quad\quad \(\mathit{pos}\leftarrow \mathit{Prev}[\mathit{name}]\)\\
+7 & \quad\quad \(\mathit{root}\leftarrow i-\mathit{pos}\)\\
+8 & \quad\quad \textbf{if} \(\operatorname{IsPower}_k(\mathit{pos},\mathit{root})\) \textbf{then}\\
+9 & \quad\quad\quad Report that \(S\) contains a \(k\)-th power
+      \(S[\mathit{pos},\ldots,\mathit{pos}+k\cdot\mathit{root}-1]\)\\
+10 & \quad\quad \textbf{end if}\\
+11 & \quad\quad \(\mathit{Prev}[\mathit{name}]\leftarrow i\)\\
+12 & \quad \textbf{end for}\\
+13 & \textbf{end for}\\
+14 & \textbf{if} No \(k\)-th power detected \textbf{then}\\
+15 & \quad Report that \(S\) does not contain a \(k\)-th power\\
+16 & \textbf{end if}
+\end{tabular}
+\end{center}
+
+Hàm \(\operatorname{IsPower}_k(\mathit{pos},\mathit{root})\) trong thuật toán
+trả về việc \(S[\mathit{pos},\ldots,\mathit{pos}+k\cdot\mathit{root}-1]\) có
+phải là một xâu lũy thừa bậc \(k\) hay không. Có thể giải quyết bằng cách phán
+định
+\[
+  S[\mathit{pos},\ldots,\mathit{pos}+(k-1)\mathit{root}-1]
+\]
+và
+\[
+  S[\mathit{pos}+\mathit{root},\ldots,\mathit{pos}+k\cdot\mathit{root}-1]
+\]
+có bằng nhau hay không, từ đó áp dụng phương pháp phán định \(O(1)\) phía
+trước.
+
+Hiển nhiên nếu thuật toán trả lời rằng tồn tại xâu con lũy thừa bậc \(k\), thì
+câu trả lời ấy chắc chắn đúng. Ta chỉ cần giải thích rằng nếu thuật toán trả
+lời không tồn tại, thì trong \(S\) chắc chắn không có xâu con lũy thừa bậc
+\(k\).
+
+\paragraph{Định lý 1.}
+Khi \(k=2\), nếu \(S\) tồn tại xâu con bình phương, thì Algorithm 1 nhất định
+sẽ tìm được mọi xâu con bình phương có độ dài ngắn nhất.
+
+\paragraph{Bổ đề 6.}
+Nếu
+\[
+  w=S[i,\ldots,j]=S[i',\ldots,j']
+\]
+và hai khoảng \([i,j]\), \([i',j']\) có giao không rỗng, thì trong \(S\) tồn
+tại một xâu bình phương có độ dài không vượt quá \(2|w|-1\).
+
+\paragraph{Chứng minh.}
+Đặt \(l=\min(i,i')\), \(r=\max(j,j')\). Xét xâu \(S[l,\ldots,r]\). \(w\) là
+border của nó, nên \(r-l+1-|w|\) là một chu kỳ của nó. Vì \(r-l+1<2|w|\), suy
+ra
+\[
+  S[l,\ldots,l-1+2(r-l+1-|w|)]
+\]
+là một xâu bình phương. \(\square\)
+
+\paragraph{Chứng minh Định lý 1.}
+Gọi \(S[j,\ldots,j+2r-1]\) là một xâu con bình phương có độ dài ngắn nhất, và
+đặt \(v=S[j,\ldots,j+r-1]\). Tìm \(s\) thỏa \(2^s\le |v|<2^{s+1}\), rồi xét
+thời điểm Algorithm 1 chạy tới \(t=s\), \(i=j+r\). Vì
+\[
+  S[j,\ldots,j+2^s-1]=S[i,\ldots,i+2^s-1],
+\]
+ta có \(i>\mathit{pos}\ge j\), nên chỉ cần chứng minh \(\mathit{pos}=j\).
+
+Đặt \(w=S[i,\ldots,i+2^s-1]\). Giả sử \(\mathit{pos}>j\). Khi đó
+\[
+  S[i,\ldots,i+2^s-1]
+  =S[\mathit{pos},\ldots,\mathit{pos}+2^s-1]
+  =S[j,\ldots,j+2^s-1]=w.
+\]
+Do \(j-i=|v|<2^{s+1}=2|w|\) theo độ dài tuyệt đối của khoảng cách, khoảng
+\([\mathit{pos},\mathit{pos}+2^s-1]\) nhất định giao với một trong hai khoảng
+\([i,i+2^s-1]\) và \([j,j+2^s-1]\). Theo Bổ đề 6, ta thu được một xâu bình
+phương ngắn hơn \(2|v|\), mâu thuẫn. \(\square\)
+
+\paragraph{Định lý 2.}
+Khi \(k\ge 3\), Algorithm 1 sẽ tìm được mọi xâu con lũy thừa bậc \(k\) nguyên
+thủy trong \(S\).
+
+\paragraph{Chứng minh.}
+Gọi \(S[j,\ldots,j+k r-1]\) là một xâu con lũy thừa bậc \(k\) nguyên thủy. Đặt
+\(v=S[j,\ldots,j+r-1]\). Tìm \(s\) thỏa \(2^{s-1}<|v|\le 2^s\), rồi xét thời
+điểm Algorithm 1 chạy tới \(t=s\), \(i=j+r\). Vì
+\[
+  S[j,\ldots,j+2^s-1]=S[i,\ldots,i+2^s-1],
+\]
+ta có \(i>\mathit{pos}\ge j\), nên chỉ cần chứng minh \(\mathit{pos}=j\).
+
+Xét \(S[j,\ldots,j+2r-1]=v^2\). Nếu \(i>\mathit{pos}>j\), thì \(v\) còn xuất
+hiện một lần nữa tại vị trí \(\mathit{pos}\). Theo Tính chất 1 và Tính chất 2,
+\(v\) không phải xâu nguyên thủy, mâu thuẫn với việc \(v^k\) là xâu lũy thừa
+bậc \(k\) nguyên thủy. \(\square\)
+
+Kết hợp Định lý 1 và Định lý 2, ta đã chứng minh tính đúng đắn của Algorithm
+1.
+
+\subsubsection*{5.2.3. Runs và Cubic Runs}
+
+Một khái niệm quan trọng khác liên quan tới chu kỳ nguyên là khái niệm Run.
+
+\paragraph{Định nghĩa 7.}
+Một Run của xâu \(S\) là một bộ ba \((i,j,l)\) thỏa
+\[
+  l\in\operatorname{per}(S[i,\ldots,j]),\qquad l\le \frac{j-i+1}{2},
+\]
+và \(S[i-1,\ldots,j]\) cũng như \(S[i,\ldots,j+1]\) đều không xác định hoặc
+không thỏa điều kiện trên. Nếu \(l\le (j-i+1)/3\), thì bộ ba \((i,j,l)\) được
+gọi là một Cubic Run.
+
+Theo WPL, cũng không khó thu được kết luận sau: các khoảng \([i,j]\) tương ứng
+với mọi Run của xâu \(S\) không có quan hệ chứa nhau.
+
+Có thể hiểu Run là một xâu con có chu kỳ, lặp ít nhất hai lần và không thể mở
+rộng sang trái hay sang phải. Định lý quan trọng dưới đây cho biết cận trên
+của số lượng Run. Chứng minh của định lý có thể tham khảo tài liệu liên quan.
+
+\paragraph{Định lý 3 (The Runs Theorem).}
+Một xâu \(S\) có nhiều nhất \(|S|\) Run.
+
+Độ phức tạp tối ưu để tìm mọi Run của xâu \(S\) là \(O(|S|)\), nhưng cần dùng
+xây dựng tuyến tính mảng hậu tố, cùng RMQ tiền xử lý tuyến tính và truy vấn
+\(O(1)\) dựa trên Method of Four Russians, nên khá rườm rà và không phù hợp
+để cài đặt trong thi thuật toán. Bài toán này có một cách làm
+\(O(|S|\log |S|)\) dễ hiểu và dễ cài đặt hơn; độc giả quan tâm có thể đọc tài
+liệu tham khảo.
+
+Trong một số bài toán, điều ta quan tâm không phải mọi Run, mà là Cubic Run có
+tính chất mạnh hơn. Vì Cubic Run là tập con của Run, số lượng Cubic Run cũng
+nhiều nhất là \(|S|\). Không khó thấy bất kỳ xâu lập phương nguyên thủy nào
+cũng được chứa đúng trong một Cubic Run có chu kỳ bằng chu kỳ của nó, và một
+Cubic Run nhất định chứa ít nhất một xâu lập phương nguyên thủy. Điều này gợi
+ý rằng ta có thể giải những bài toán kiểu này bằng cách tìm mọi xâu lập phương
+nguyên thủy. Ta nêu không chứng minh định lý sau, nhờ đó có thể trực tiếp dùng
+Algorithm 1 để tìm mọi xâu lập phương nguyên thủy.
+
+\paragraph{Định lý 4.}
+Mọi xâu lũy thừa bậc \(k\) do Algorithm 1 tìm được đều là nguyên thủy.
+
+Sau khi tìm được mọi xâu lập phương nguyên thủy, việc thu được mọi Cubic Run
+trở nên dễ dàng: mỗi lần lấy xâu lập phương nguyên thủy có vị trí xuất hiện
+sớm nhất, rồi mở rộng tối đa để thu được một Cubic Run.
+
+\section*{6. Tổng kết}
+
+Trong bài viết này, chúng ta đã giải trọn vẹn bài toán kinh điển truy vấn chu
+kỳ xâu con. Tuy bài toán đã được giải, cách làm của nó, ba bổ đề được dùng và
+cấu trúc dữ liệu từ điển xâu con cơ bản vẫn đáng được nghiên cứu thêm.
+
+Hy vọng bài viết này có thể đóng vai trò gợi mở, dẫn dắt độc giả bước đầu cảm
+nhận vẻ đẹp của chu kỳ trong xâu, đồng thời hiểu sâu hơn những tri thức và kết
+quả nghiên cứu liên quan không chỉ giới hạn trong bài viết này.
+
+\section*{Lời cảm ơn}
+
+Xin cảm ơn Hội Máy tính Trung Quốc đã cung cấp nền tảng học tập và trao đổi.
+
+Xin cảm ơn huấn luyện viên đội tuyển quốc gia Zhang Ruizhe đã chỉ dẫn.
+
+Xin cảm ơn thầy Li Shu của Trường Ngoại ngữ Nam Kinh đã chỉ dẫn và hỗ trợ.
+
+Xin cảm ơn các bạn Yang Junzhao và Wang Zeyuan đã đọc duyệt bản thảo.
+
+Xin cảm ơn mọi thầy cô và bạn học từng giúp đỡ tôi.
+
+Xin cảm ơn cha mẹ tôi đã luôn hết lòng ủng hộ và khích lệ.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Jin Ce. \emph{Chuyên đề thuật toán xâu}, trại đông CCF NOI 2017.
+  \item Tomasz Kociumaka, Jakub Radoszewski, Wojciech Rytter, Tomasz Walen.
+        Efficient Data Structure for the Factor Periodicity Problem.
+  \item Maxime Crochemore, Costas Iliopoulos, Marcin Kubica, Jakub
+        Radoszewski, Wojciech Rytter, Krzysztof Stencel, Tomasz Walen.
+        New Simple Efficient Algorithms Computing Powers and Runs in Strings.
+  \item Udi Manber, Gene Myers. Suffix Arrays: a new method for on-line string
+        searches.
+  \item Hideo Bannai, Tomohiro I, Shunsuke Inenaga, Yuto Nakashima, Masayuki
+        Takeda, Kazuya Tsuruta. The ``Runs'' Theorem.
+  \item Xu Mingkuan. \emph{Bước đầu về thuật toán chia khối kích thước phi
+        thông thường}. Tập luận văn ứng viên đội tuyển quốc gia IOI Trung
+        Quốc 2018.
 \end{enumerate}
 
 \end{document}
