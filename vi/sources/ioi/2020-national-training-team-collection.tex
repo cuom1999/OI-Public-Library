@@ -23,12 +23,13 @@
 \begin{abstract}
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2020. Tệp được
 tạo bằng XeTeX và có lớp văn bản Unicode đọc được. Bản LaTeX này chuyển ngữ
-phần nhận diện tập sách, toàn bộ mục lục, và năm bài đầu tiên: bài của Jiang
+phần nhận diện tập sách, toàn bộ mục lục, và sáu bài đầu tiên: bài của Jiang
 Mingrun về tối ưu các bài toán chia khối cổ điển bằng fractional cascading, bài
-của Chen Sunli về cây thống trị, và báo cáo ra đề \emph{Ghép số} của Jiang
-Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, cùng bài
-của Chen Yu về nguyên lý chuyển vị. Các hình nhỏ trong báo cáo thứ tư được dựng
-lại bằng TikZ từ bản render PDF.
+của Chen Sunli về cây thống trị, báo cáo ra đề \emph{Ghép số} của Jiang
+Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, bài của
+Chen Yu về nguyên lý chuyển vị, và bài của Li Baitian về duy trì động giá trị
+cực trị của hàm số. Các hình nhỏ trong báo cáo thứ tư được dựng lại bằng TikZ
+từ bản render PDF.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -3202,6 +3203,625 @@ bản thảo bài viết này.
   Practice}. 2005.
   \item Alin Bostan, Bruno Salvy, và Eric Schost. \emph{Power Series
   Composition and Change of Basis}. 2008.
+\end{enumerate}
+
+\section{Bàn về duy trì động giá trị cực trị của hàm số}
+
+\begin{center}
+Li Baitian, Trường Trung học trực thuộc Đại học Bắc Kinh
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bằng cách đưa vào thảo luận về cấu trúc đường bao trên của nhiều hàm số, bài
+viết này chủ yếu cải tiến một số bài toán nổi tiếng trong OI như sau:
+
+\begin{itemize}
+  \item Cộng vào một đoạn của dãy một cấp số cộng có công sai dương, và truy vấn
+  giá trị cực trị trên đoạn. Cách làm vốn được biết rộng rãi cho bài toán này là
+  \(\Theta(\sqrt n)\), còn cách làm trong bài viết này hiện có cận trên
+  \(O(\log^2 n)\).
+  \item Cây đoạn Li Chao có thể thêm một đoạn thẳng trong mặt phẳng trong
+  \(\Theta(\log^2 n)\), và truy vấn giá trị \(y\) lớn nhất tại một vị trí \(x\)
+  trong \(\Theta(\log n)\). Bài viết này dùng một phương pháp hoàn toàn khác để
+  giữ nguyên độ phức tạp truy vấn, đồng thời cải tiến độ phức tạp thêm một đoạn
+  thẳng thành độ phức tạp lý thuyết trung bình \(\Theta(\alpha(n)\log n)\). Hơn
+  nữa, cách làm này có thể mở rộng một cách tổng quát cho các hàm bậc cao.
+\end{itemize}
+
+\subsection{Tổng quan}
+
+Với dãy hàm \(f_i:\mathbb{R}\to\mathbb{R}\), ta muốn hỗ trợ một số thao tác sửa
+đổi trên dãy hàm, và ít nhất phải hỗ trợ truy vấn cực trị toàn cục: cho \(x\),
+hỏi
+\[
+  \max_{j=1}^n f_j(x).
+\]
+Trong phân tích tiếp theo, ta cần đưa vào khái niệm dãy Davenport--Schinzel.
+
+\subsubsection{Dãy Davenport--Schinzel}
+
+\paragraph{\term{Định nghĩa 1.}}
+Gọi một dãy độ dài \(m\),
+\(\sigma_1,\sigma_2,\ldots,\sigma_m\), là một dãy Davenport--Schinzel
+\((n,s)\), viết tắt là dãy \(DS(n,s)\), khi và chỉ khi \(\sigma_i\) là số
+nguyên từ \(1\) đến \(n\), đồng thời thỏa:
+
+\begin{itemize}
+  \item Hai phần tử kề nhau trong \(\sigma\) có giá trị khác nhau.
+  \item Với mọi \(x\ne y\), nếu một dãy luân phiên tạo bởi \(x,y\) là dãy con
+  của \(\sigma\), thì độ dài của nó không vượt quá \(s+1\).
+\end{itemize}
+
+Định lý sau mô tả dãy DS một cách đặc biệt hữu hiệu.
+
+\paragraph{\term{Định lý 1.}}
+Ký hiệu \(\lambda_s(n)\) là độ dài lớn nhất có thể của một dãy \(DS(n,s)\). Khi
+đó
+\[
+\lambda_s(n)=
+\begin{cases}
+n, & s=1,\\
+2n-1, & s=2,\\
+2n\alpha(n)+O(n), & s=3,\\
+\Theta(n2^{\alpha(n)}), & s=4,\\
+\Theta(n\alpha(n)2^{\alpha(n)}), & s=5,\\
+n2^{\alpha(n)^t/t!+O(\alpha(n)^{t-1})}, & s\ge 6,\quad
+  t=\left\lfloor\dfrac{s-2}{2}\right\rfloor.
+\end{cases}
+\]
+Ở đây \(\alpha(n)\) là hàm Ackermann ngược. Từ tốc độ tăng của nó, ta biết rằng
+với mọi hằng số \(s\), \(\lambda_s(n)\) đều gần như tuyến tính.
+
+Sau đây ta chứng minh hai trường hợp \(s\) nhỏ.
+
+\subsubsection{Chứng minh trường hợp \texorpdfstring{\(s=1\)}{s=1}}
+
+Giả sử trong dãy tồn tại hai phần tử bằng nhau
+\(\sigma_i=\sigma_j\ (i<j)\). Khi đó \(\sigma_{i+1}\ne\sigma_i\), và
+\(\sigma_i,\sigma_{i+1},\sigma_j\) tạo thành một dãy con luân phiên độ dài \(3\),
+mâu thuẫn.
+
+Vì vậy dãy không có phần tử lặp. Do các phần tử của \(\sigma\) đều là số nguyên
+dương từ \(1\) đến \(n\), ta có \(m\le n\). Mọi hoán vị của \(1,\ldots,n\) đều
+đạt dấu bằng, nên \(\lambda_1(n)=n\).
+
+\subsubsection{Chứng minh trường hợp \texorpdfstring{\(s=2\)}{s=2}}
+
+Ta chứng minh bằng quy nạp mạnh. Với \(n=1\), \(\lambda_2(1)=1\) là hiển nhiên.
+
+Xét \(n>1\). Khi đó với mọi \(n'<n\) đều đã có
+\(\lambda_2(n')=2n'-1\). Xét một dãy \(DS(n,2)\), không mất tính tổng quát giả
+sử \(\sigma_1=1\).
+
+\begin{itemize}
+  \item Nếu \(1\) chỉ xuất hiện một lần, thì
+  \(m\le 1+\lambda_2(n-1)=2n-2\le 2n-1\).
+  \item Giả sử vị trí tiếp theo mà \(1\) xuất hiện là \(i\). Với mọi phần tử
+  \(\sigma_j\) có \(1<j<i\), do không tồn tại dãy con luân phiên độ dài \(4\),
+  phần tử đó sẽ không xuất hiện lại ở vị trí \(>i\). Giả sử trong các vị trí từ
+  \(2\) đến \(i-1\) có tổng cộng \(k\) loại phần tử, thì các vị trí từ \(2\) đến
+  \(i-1\) tạo thành một dãy \(DS(k,2)\), còn phần từ \(i\) trở đi tạo thành một
+  dãy \(DS(n-k,2)\). Vì vậy
+  \[
+    m\le 1+\lambda_2(k)+\lambda_2(n-k)
+     =1+2k-1+2(n-k)-1=2n-1.
+  \]
+\end{itemize}
+
+Mặt khác, \(m=2n-1\) dễ đạt được bằng dãy có dạng
+\[
+  1,2,\ldots,n-1,n,n-1,\ldots,2,1.
+\]
+Tổng hợp lại, \(\lambda_2(n)=2n-1\) được chứng minh bằng quy nạp.
+
+\subsubsection{Liên hệ giữa dãy DS và bài toán}
+
+Ta xem \(s\) như một đại lượng phần nào đo được ``độ phức tạp'' của họ hàm cần
+duy trì. Chú ý rằng với một họ hàm ta đang duy trì, nếu với mọi hai hàm \(f,g\),
+số đoạn của \(\max(f(x),g(x))\) không vượt quá \(s+1\), thì cách chia đoạn của
+đường bao trên của \(n\) hàm trong họ đó tương đương với một dãy \(DS(n,s)\). Ta
+gọi họ hàm này là luân phiên bậc \(s\). Vì vậy độ dài chia đoạn của đường bao
+trên tối đa chỉ là \(\lambda_s(n)\).
+
+Trường hợp thường gặp nhất là các đa thức bậc không quá \(s\). Vì hai đa thức
+bậc \(s\) có nhiều nhất \(s\) giao điểm, số đoạn của cực trị không vượt quá
+\(s+1\). Do đó, với \(n\) đa thức bậc không quá \(s\), độ dài chia đoạn của
+đường bao trên không vượt quá \(\lambda_s(n)\).
+
+Một trường hợp khác đáng chú ý là đa thức bậc \(s\) được định nghĩa trên một
+đoạn. Ta có thể định nghĩa hàm từng đoạn như sau: ngoài miền xác định ban đầu,
+giá trị hàm đều là \(-\infty\). Như vậy hai hàm từng đoạn bậc \(s\) bất kỳ là
+luân phiên bậc \(s+2\), nên độ dài chia đoạn của đường bao trên của \(n\) hàm
+từng đoạn bậc \(s\) không vượt quá \(\lambda_{s+2}(n)\).
+
+Trong các bài toán đã được nghiên cứu trước đây trong OI, thường gặp nhất là
+hàm bậc nhất và hàm bậc nhất từng đoạn; hai bài toán này lần lượt có \(s=1\) và
+\(s=3\).
+
+Trong phần thảo luận tiếp theo, ta sẽ thêm các ràng buộc đặc biệt khác nhau lên
+bài toán, và trên các ràng buộc đó thiết kế được những thuật toán khá hiệu quả
+dựa trên cận trên của \(\lambda_s(n)\).
+
+\begin{enumerate}
+  \item Không sửa hàm, chỉ duy trì chúng như một tập hợp. Dưới ràng buộc này có
+  thể thiết kế bằng ý tưởng nhóm nhị phân.
+  \item Các giá trị \(x\) trong truy vấn được bảo đảm tăng đơn điệu. Dưới ràng
+  buộc này có thể thiết kế bằng ý tưởng tương tự Segment Tree Beats.
+\end{enumerate}
+
+\subsection{Duy trì tập hàm}
+
+Cho \(n\) hàm \(f_i:\mathbb{R}\to\mathbb{R}\). Với mỗi
+\(x_k\) trong \(x_1,x_2,\ldots,x_m\), cần tính
+\[
+  \max_{j=1}^n f_j(x_k).
+\]
+
+Khi mọi hàm đã được xác định ngay từ đầu, ta có thể chia để trị: mỗi lần chia
+tập hàm hiện tại thành hai phần để xử lý, rồi gộp hai nhóm hàm từng đoạn thu
+được. Độ phức tạp thỏa
+\[
+  T(n)=2T\left(\frac n2\right)+\Theta(\lambda_s(n)).
+\]
+Theo định lý chính, suy ra \(T(n)=\Theta(\lambda_s(n)\log n)\). Thời gian trả
+lời là \(\Theta(m\log n)\).
+
+Với trường hợp các hàm được xác định lần lượt, ta có thể dùng nhóm nhị phân.
+
+Nếu chèn \(n\) hàm bậc không quá \(s\), ta có thể duy trì trong tổng thời gian
+\(\Theta(\lambda_s(n)\log n)\) và tổng không gian \(\Theta(\lambda_s(n))\); cách
+cài đặt mộc mạc trả lời mỗi truy vấn trong \(\Theta(\log^2 n)\). Thực ra ta còn
+có thể trả lời mỗi truy vấn trong \(\Theta(\log n)\).
+
+So với trường hợp \(s=3\), thuật toán này hỗ trợ chèn đoạn thẳng với thời gian
+trung bình \(\Theta(\alpha(n)\log n)\), còn truy vấn đạt \(\Theta(\log n)\).
+Độ phức tạp này tốt hơn cây đoạn Li Chao. Ngoài ra còn có một ưu điểm phụ:
+thuật toán này không cần biết trước các giá trị \(x\) sẽ được truy vấn, mà hoàn
+toàn trực tuyến.
+
+\subsubsection{Cài đặt mộc mạc}
+
+Đặt \(k=\lfloor\log_2 n\rfloor\), phân rã nhị phân của \(n\) là
+\[
+  \sum_{j=0}^k n_j\cdot 2^j\qquad(n_j\in\{0,1\}).
+\]
+Với mỗi \(j\) có \(n_j=1\), ta duy trì một khối \(L_j\), gồm các đoạn tạo nên
+đường bao trên của \(2^j\) hàm trong khối đó. Mỗi khi thêm một hàm, nếu tồn tại
+hai khối chứa cùng số hàm, ta gộp chúng lại, bằng cách dùng các đoạn của hai
+khối ban đầu để tính các đoạn sau khi gộp. Khi quá trình gộp kết thúc, kích
+thước các khối còn lại đúng bằng phân rã nhị phân của \(n\).
+
+Toàn bộ quá trình có thể xem như thực hiện không đầy đủ một phép chia để trị cỡ
+\(2^{k+1}\), nên độ phức tạp duy trì là
+\(\Theta(\lambda_s(2^k)k)=\Theta(\lambda_s(n)\log n)\).
+
+Với truy vấn, cách mộc mạc là tìm kiếm nhị phân trên mỗi khối để tìm đoạn chứa
+tọa độ truy vấn. Độ phức tạp thời gian là \(\Theta(\log^2 n)\).
+
+\subsubsection{Fractional cascading}
+
+Bằng kỹ thuật fractional cascading, ta có thể tối ưu độ phức tạp truy vấn.
+
+Ta duy trì các mảng phụ \(T_k=L_k\). Với \(0\le j<k\), lấy mọi vị trí bội của
+\(3\) trong \(T_{j+1}\), rồi trộn với \(L_j\) để thu được \(T_j\). Đồng thời,
+trong \(T_j\) ghi lại nguồn của mỗi phần tử và tiền nhiệm/hậu nhiệm theo từng
+nguồn khác nhau; nhờ đó, từ vị trí \(\operatorname{lowerbound}\) trong \(T_j\),
+ta có thể tìm \(\operatorname{lowerbound}\) trong \(L_j\) và trong \(T_{j+1}\)
+trong \(\Theta(1)\). Vì vậy độ phức tạp truy vấn là \(\Theta(\log n)\).
+
+Do \(|L_j|\le\lambda_s(2^j)\), và \(\lambda_s(n)=o(n^{1+\epsilon})\), ta có thể
+chặn độ dài của \(T_j\) như sau:
+\[
+\begin{aligned}
+|T_j|
+&\le \sum_{t=j}^k \frac{\lambda_s(2^t)}{3^{t-j}}\\
+&= \sum_{t=0}^{k-j}\Theta\!\left(\lambda_s\!\left(\frac{2^{t+j}}{3^t}\right)\right)\\
+&= \Theta\!\left(\lambda_s\!\left(\sum_{t=0}^{k-j}
+      \frac{2^{t+j}}{3^t}\right)\right)\\
+&= \Theta(\lambda_s(3\cdot 2^j))\\
+&= \Theta(\lambda_s(2^j)).
+\end{aligned}
+\]
+Khi một lần cộng nhớ lên tới bit thứ \(j\), độ phức tạp dựng lại là
+\[
+  \sum_{t=0}^j \Theta(\lambda_s(2^t))=\Theta(\lambda_s(2^j)).
+\]
+Vì vậy tổng độ phức tạp duy trì vẫn là \(\Theta(\lambda_s(n)\log n)\).
+
+\subsubsection{Ứng dụng}
+
+\paragraph{\term{Duy trì cực trị của hàm bậc nhất từng đoạn.}}
+Khi cấu trúc dữ liệu này được dùng để duy trì hàm bậc nhất từng đoạn, thay
+\(s=1\) vào ta được tổng độ phức tạp duy trì
+\[
+  \Theta(\lambda_{1+2}(n)\log n)=\Theta(n\alpha(n)\log n).
+\]
+Về mặt lý thuyết, độ phức tạp này tốt hơn độ phức tạp \(\Theta(\log^2 n)\) để
+thêm một đoạn thẳng của cây đoạn Li Chao trước đây. Đáng nói là tồn tại cách
+dựng khiến số đoạn trên đường bao trên của \(n\) đoạn thẳng đạt bậc
+\(\Theta(n\alpha(n))\). Vì vậy phân tích độ phức tạp ở trên là chặt.
+
+\paragraph{\term{Bài toán quy hoạch động.}}
+Với bài toán quy hoạch động có dạng
+\[
+  a_i=\max_{0\le j<i} a_j+w_{j,i},
+\]
+nếu \(a_j+w_{j,i}\) có thể viết lại thành dạng \(f_j(x_i)\), và họ hàm \(f_i\)
+có bậc luân phiên thấp, thì ta có thể dùng cấu trúc trên để tối ưu chuyển trạng
+thái.
+
+Trong các bài toán kiểu này trước đây, thường cần viết lại bài toán thành dạng
+hàm bậc nhất, hoặc dựa vào tính đơn điệu của quyết định.
+
+Thực ra có thể chỉ ra rằng cả hai trường hợp đều là những trường hợp đặc biệt
+khi hàm luân phiên bậc \(s=1\). Với trường hợp viết lại được thành hàm bậc nhất
+thì điều này hiển nhiên. Với tính đơn điệu của quyết định, ta thường yêu cầu
+\(w\) thỏa bất đẳng thức tứ giác, từ đó thu được
+\[
+\begin{aligned}
+&\forall i<j,\quad w_{i,j+1}+w_{i+1,j}\le w_{i,j}+w_{i+1,j+1},\\
+&a_i+w_{i,j+1}+a_{i+1}+w_{i+1,j}
+  \le a_i+w_{i,j}+a_{i+1}+w_{i+1,j+1},\\
+&f_i(j+1)+f_{i+1}(j)\le f_i(j)+f_{i+1}(j+1),\\
+&\Delta f_i\le \Delta f_{i+1},\\
+&0\le \Delta(f_{i+1}-f_i).
+\end{aligned}
+\]
+Điều này cho thấy với những bài toán có thể tối ưu bằng tính đơn điệu quyết
+định thông qua bất đẳng thức tứ giác, họ hàm \(f\) ứng với \(i\le i_0\) trên
+miền xác định \(j\ge i_0\) là luân phiên bậc \(s=1\).
+
+Do đó, cấu trúc dữ liệu trên tương thích tốt với một số điều kiện quen thuộc
+trước đây khi tối ưu quy hoạch động. Tuy trong các bài toán đơn điệu quyết định
+độ phức tạp không đạt tối ưu, cấu trúc dữ liệu trên lại xử lý được các hàm chi
+phí chuyển trạng thái có tính chất phức tạp hơn đôi chút.
+
+\subsection{Điểm truy vấn tăng đơn điệu}
+
+Cho \(n\) hàm \(f_i:\mathbb{R}\to\mathbb{R}\). Với mỗi
+\(x_k\) trong \(x_1<x_2<\cdots<x_m\), cần tính
+\[
+  \max_{j=1}^n f_j(x_k).
+\]
+Trong phần thảo luận tiếp theo, ta giả sử họ hàm cần xử lý là luân phiên bậc
+\(s\), và có thể tìm vị trí luân phiên trong thời gian hằng số.
+
+\subsubsection{Cây Kinetic Tournament}
+
+Ta xét một cây đoạn, trong đó mỗi lá biểu diễn một hàm, và mỗi đỉnh của cây lưu
+hàm trong các lá của cây con đạt giá trị lớn nhất tại \(x\) hiện tại. Khi \(x\)
+tăng, ta cần liên tục sửa giá trị tại một số đỉnh. Ta duy trì giá trị \(x\) đầu
+tiên lớn hơn hiện tại khiến một hàm đang được lấy bởi một phép \(\max\) trong
+cây con bị thay thế; khi truy vấn tiếp theo vượt quá giá trị \(x\) đó, ta đệ quy
+đi xuống và đặt lại phần xảy ra thay thế. Cây đoạn duy trì thông tin kiểu này
+được gọi là cây Kinetic Tournament. Sau đây ta viết tắt là KTT.
+
+Xét số lần mỗi đỉnh trên cây đoạn bị sửa. Đại lượng này tương đương với số đoạn
+trên đường bao của mọi hàm trong cây con đó, nên tổng số lần sửa của mọi đỉnh,
+tương tự chia để trị, là \(\Theta(\lambda_s(n)\log n)\). Vì vậy nếu duy trì trực
+tiếp trên cây đoạn, do mỗi lần sửa cần đi xuống tới lá tương ứng, độ phức tạp
+của thuật toán là \(\Theta(\lambda_s(n)\log^2 n)\). Kết quả này kém hơn chia để
+trị trực tiếp, nhưng ta sẽ thấy tiềm năng của phương pháp này trong bài toán
+mạnh hơn.
+
+\subsubsection{Bài toán cực trị của dãy hàm có sửa đổi}
+
+Phiên bản có sửa đổi của bài toán cho phép gán lại trực tuyến một hàm nào đó
+trong quá trình xử lý. Giả sử có tổng cộng \(m\) lần sửa và \(q\) lần truy vấn.
+
+Ta xét dùng KTT để duy trì. Khi gán lại một hàm, ta sửa đỉnh tương ứng trên cây
+đoạn, rồi cập nhật một chuỗi đỉnh lên tới gốc.
+
+Độ phức tạp duy trì là bao nhiêu? Ta xét phép biến đổi tương đương sau cho quá
+trình duy trì: giả sử lá thứ \(i\) bị sửa \(k_i\) lần, ta thay lá đó bằng
+\(k_i+1\) đỉnh đặt bên dưới nó; đỉnh đầu tiên là hàm ban đầu, các đỉnh sau là
+\(k_i\) hàm còn lại, và tất cả được xem như các hàm từng đoạn theo khoảng thời
+gian chúng tồn tại. Khi đó, với một đỉnh quản lý đoạn \([l,r]\), số đoạn trên
+đường bao trên trong cây con của nó không vượt quá
+\(\lambda_{s+2}(r-l+1+\sum_{i=l}^r k_i)\). Vì vậy tổng số đoạn đường bao ở cùng
+một tầng không vượt quá
+\[
+\begin{aligned}
+\sum_{[l,r]}\lambda_{s+2}\left(r-l+1+\sum_{i=l}^r k_i\right)
+&\le
+\lambda_{s+2}\left(\sum_{[l,r]}\left(r-l+1+\sum_{i=l}^r k_i\right)\right)\\
+&=\lambda_{s+2}(n+m).
+\end{aligned}
+\]
+
+Qua phân tích trên, với truy vấn cực trị có sửa đổi trực tuyến, KTT có thể hoàn
+thành tính toán trong thời gian
+\[
+  \Theta(\lambda_{s+2}(n+m)\log^2 n+q).
+\]
+
+Ta sẽ thấy cấu trúc này được dùng như thế nào để tối ưu một bài toán kinh điển
+liên quan tới hàm bậc nhất.
+
+\subsection{Mở rộng cho trường hợp tuyến tính}
+
+Do hàm tuyến tính có tính chất tốt, ta có thể nghiên cứu một số bài toán mở rộng
+trên chúng. Đáng tiếc là tác giả tạm thời chưa xác nhận được liệu các bài toán
+duy trì tương tự trong trường hợp bậc cao hơn có độ phức tạp gần như vậy hay
+không.
+
+\subsubsection{Bài toán cực trị của dãy có hai loại sửa đoạn}
+
+Với các dãy \(k_i,b_i\), ta có hai loại thao tác sửa sau:
+
+\begin{itemize}
+  \item Cho \(l,r,x\). Với \(l\le i\le r\), đặt \(b_i\gets k_ix+b_i\).
+  \item Cho \(l,r,c,k',b'\). Với \(l\le i\le r\), đặt
+  \(k_i\gets ck_i+k'\), \(b_i\gets cb_i+b'\).
+\end{itemize}
+
+Ngoài ra cần truy vấn cực trị của \(b_i\) trên một đoạn.
+
+Cách làm cho bài toán này được cải tiến từ ý tưởng của Daniel Zhang.
+
+Bài toán này xuất hiện một phần trong một số đề OI; trước đây các bài đó về cơ
+bản chỉ có cách làm chia khối với độ phức tạp \(\Theta(n+(m+q)\sqrt n)\). Ta sẽ
+thấy bằng KTT có thể hoàn thành thao tác và truy vấn trong
+\[
+  O(n\log^2 n+m\log^3 n+q\log n),
+\]
+với ràng buộc bổ sung là thao tác sửa loại thứ nhất bảo đảm \(x>0\), và để trình
+bày ý chính, ở đây chỉ xét trường hợp \(c>0\).
+
+Ý tưởng cụ thể khá đơn giản: trên cây đoạn, lưu thẻ lười biểu diễn hiệu ứng tích
+lũy của thao tác 2 và tổng \(x\) tích lũy của thao tác 1. Chú ý rằng thao tác 1
+về bản chất là bắt đầu thực hiện thao tác ``\(x\) tăng'' trên một cây con nào đó
+của KTT, thay vì chỉ bắt đầu từ gốc như KTT nguyên bản.
+
+\paragraph{\term{Phân tích độ phức tạp.}}
+Ta phân tích độ phức tạp của thuật toán này bằng thế năng.
+
+Định nghĩa một tập \(P\) gồm các đỉnh không phải lá. Với một đỉnh không phải lá
+\(v\), nếu đường thẳng tương ứng với con đang giữ giá trị lớn hơn của \(v\) có
+hệ số góc nhỏ hơn hẳn con còn lại, thì \(v\in P\).
+
+Định nghĩa hàm thế
+\[
+  \Phi=\sum_{v\in P} d(v),
+\]
+trong đó \(d(v)\) là độ sâu của đỉnh \(v\) trên cây đoạn, và độ sâu của gốc là
+\(1\).
+
+Xét trường hợp xấu nhất của thao tác 1, tức mỗi thao tác cập nhật đỉnh được thực
+hiện đơn lẻ. Ta định nghĩa chi phí của một thao tác cập nhật là \(1\), còn chi
+phí khấu hao của nó là \(1+\Delta\Phi\). Với đỉnh bị sửa \(v\), ta biết \(v\)
+chắc chắn chuyển từ thuộc \(P\) sang không thuộc \(P\), còn cha \(p\) của \(v\)
+có thể chuyển từ không thuộc \(P\) sang thuộc \(P\). Do đó
+\[
+\begin{aligned}
+\hat c &= 1+\Delta\Phi\\
+&\le 1-d(v)+d(p)\\
+&=1-d(v)+(d(v)-1)\\
+&=0.
+\end{aligned}
+\]
+
+Định nghĩa này khiến những thao tác cập nhật mà ban đầu ta không xác định được
+số lần phát sinh không cần được xét trong chi phí khấu hao. Tiếp theo xét thao
+tác 1 và thao tác 2; về bản chất chúng tương tự nhau. Chú ý rằng khi thẻ lười
+của một đỉnh bị sửa, hoặc các số trong cây con lấy đỉnh đó làm gốc bị cập nhật,
+cha của đỉnh này có thể chuyển từ không thuộc \(P\) sang thuộc \(P\), làm thế
+năng tăng nhiều nhất \(d(p)=\Theta(\log n)\). Một thao tác ảnh hưởng tới
+\(\Theta(\log n)\) đỉnh, nên một thao tác làm thế năng tăng nhiều nhất
+\(\Theta(\log^2 n)\).
+
+Còn một điểm cần chú ý: do
+\[
+  \sum \hat c_i=\sum c_i+\Phi_t-\Phi_s,
+\]
+ta phải cộng thêm \(\Phi_s-\Phi_t=\Theta(n\log n)\) vào tổng chi phí, vì trường
+hợp xấu nhất là ban đầu mọi đỉnh đều thuộc \(P\).
+
+Tổng hợp lại, trong quá trình thao tác nhiều nhất sẽ phát sinh
+\(\Theta(n\log n+m\log^2 n)\) lần cập nhật, nên độ phức tạp có cận trên
+\[
+  O(n\log^2 n+m\log^3 n+q\log n).
+\]
+
+\paragraph{\term{Trường hợp đặc biệt.}}
+Trong các bài toán như ``cộng vào đoạn một cấp số cộng có công sai dương'', ta
+rút ra được một điều kiện ẩn: dãy \(k\) tăng đơn điệu. Vì vậy các thao tác cập
+nhật được phát sinh chắc chắn là một đỉnh chuyển lựa chọn \(\max\) từ con trái
+sang con phải.
+
+Khi đó ta định nghĩa thế năng \(\Phi\) là số đỉnh có ``\(\max\) nằm ở con
+trái''. Vì quá trình thao tác nhiều nhất phát sinh \(\Theta(n+m\log n)\) lần
+cập nhật, ta có cận trên độ phức tạp
+\[
+  O(n\log n+m\log^2 n+q\log n).
+\]
+
+\subsubsection{Ví dụ}
+
+\paragraph{\term{Ví dụ 1. Bear and Bowling.}}
+\term{Nguồn bài:} Codeforces 573E, \url{https://codeforces.com/problemset/problem/573/E}.
+
+Ở đây chỉ thảo luận một lời giải liên quan tới bài viết này. Trong lời giải đó,
+ta cần lấy lần lượt từng số khỏi một dãy \(a_n\) theo một thứ tự nào đó. Giả sử
+bên trái số được lấy đã có \(k_i-1\) số bị lấy, còn tổng các số đã bị lấy ở bên
+phải là \(s_i\). Mỗi lần, số được lấy bắt buộc là số làm \(k_i\cdot a_i+s_i\)
+lớn nhất.
+
+Nếu dùng cấu trúc dữ liệu nói trên, chỉ cần ban đầu đặt \(b_i=a_i\). Mỗi lần lấy
+một số, ta cộng \(-\infty\) vào \(b_i\), cộng \(a_i\) vào đoạn \([1,i-1]\), và
+thực hiện \(b_j\gets b_j+a_j\) trên đoạn \([i+1,n]\).
+
+\paragraph{\term{Ví dụ 2. Innophone.}}
+\term{Nguồn bài:} ROI 2018, \url{https://loj.ac/problem/2845}.
+
+Cho một số cặp \(x_i,y_i\), chọn \(a,b\) để cực đại hóa
+\[
+  \sum_{i=1}^n [a\le x_i]a+[a>x_i][b\le y_i]b.
+\]
+Ta sắp xếp theo \(y\), trong quá trình quét thì tăng hệ số góc trên đoạn trong
+KTT, rồi truy vấn theo giá trị \(y\) tương ứng là được.
+
+\subsubsection{Tổng đoạn con liên tiếp lớn nhất}
+
+\term{Ý chính đề bài:} Với một dãy \(a_n\), hỗ trợ cộng một số dương vào toàn bộ
+một đoạn, và truy vấn tổng đoạn con lớn nhất trên một đoạn.
+
+\term{Lời giải:} Đây là một bài toán khá phức tạp. Trước hết nhắc lại cách làm
+khi không có thao tác sửa. Trên mỗi đỉnh của cây đoạn, ta có thể duy trì bốn
+giá trị \(\operatorname{sum},\operatorname{lmax},\operatorname{rmax},
+\operatorname{totmax}\), với cách gộp:
+\[
+\begin{aligned}
+\operatorname{sum} &= ls.\operatorname{sum}+rs.\operatorname{sum},\\
+\operatorname{lmax} &= \max(ls.\operatorname{lmax},
+  ls.\operatorname{sum}+rs.\operatorname{lmax}),\\
+\operatorname{rmax} &= \max(rs.\operatorname{rmax},
+  rs.\operatorname{sum}+ls.\operatorname{rmax}),\\
+\operatorname{totmax} &= \max(ls.\operatorname{totmax},
+  rs.\operatorname{totmax},ls.\operatorname{rmax}+rs.\operatorname{lmax}).
+\end{aligned}
+\]
+Ta xét biểu diễn cả bốn thông tin cần duy trì hiện nay thành các hàm bậc nhất.
+Khi đó, mỗi đỉnh duy trì giá trị \(x\) tại thời điểm bị đánh bại, tức giá trị
+nhỏ nhất mà ở đó hàm được chọn trong mọi phép \(\max\) ở các công thức trên thay
+đổi.
+
+Ta gọi giá trị \(\operatorname{rank}\) của một biến có chứa so sánh \(\max\) là
+\(r(v,\operatorname{para})\):
+
+\begin{itemize}
+  \item Với \(r(v,\operatorname{lmax})\) hoặc \(r(v,\operatorname{rmax})\): nếu
+  công thức quyết định của biến đó là \(f(x)=\max(a(x),b(x))\), giá trị
+  \(\operatorname{rank}\) là số đường thẳng trong \(a,b\) có hệ số góc lớn hơn
+  hệ số góc của \(f\), nhân với \(d(v)^2\).
+  \item Với \(r(v,\operatorname{totmax})\): nếu công thức quyết định của biến đó
+  là \(f(x)=\max(a(x),b(x),c(x))\), giá trị \(\operatorname{rank}\) là số đường
+  thẳng trong \(a,b,c\) có hệ số góc lớn hơn hệ số góc của \(f\), nhân với
+  \(d(v)\).
+\end{itemize}
+
+Ta trực tiếp định nghĩa thế năng
+\[
+  \Phi=\sum_v\sum_{\operatorname{para}} r(v,\operatorname{para}).
+\]
+
+\begin{itemize}
+  \item Khi xảy ra một lần đánh bại ở \(\operatorname{lmax}\) hoặc
+  \(\operatorname{rmax}\), ta có
+  \[
+    \Delta\Phi\le 1-d^2+(d-1)^2+d-1=1-d\le 0.
+  \]
+  \item Khi xảy ra một lần đánh bại ở \(\operatorname{totmax}\), ta có
+  \[
+    \Delta\Phi\le 1-d+d-1=0.
+  \]
+\end{itemize}
+
+Từ đó nhận được một cận trên độ phức tạp cho thuật toán là
+\(\Theta(n\log^3 n+m\log^4 n+q\log n)\), trong đó \(m\) là số lần sửa, \(q\) là
+số lần truy vấn.
+
+Nhưng tương tự phân tích cho trường hợp đặc biệt có hệ số góc đơn điệu ở trên,
+ta xét số lần quyết định của \(\operatorname{lmax}\) và \(\operatorname{rmax}\)
+ở mỗi đỉnh thay đổi. Chú ý rằng điểm quyết định của \(\operatorname{lmax}\) chỉ
+tăng, còn điều kiện cần để một đỉnh xảy ra chuyển hệ số góc là vị trí quyết định
+chuyển từ \([l,\operatorname{mid}]\) sang \([\operatorname{mid}+1,r]\). Mỗi đỉnh
+chỉ kích hoạt nhiều nhất một lần, nên tổng độ phức tạp phụ của
+\(\operatorname{lmax},\operatorname{rmax}\) là \(\Theta(n\log n)\). Vì vậy lúc
+này ta biết tổng số đỉnh mà KTT đi DFS tới để duy trì \(\operatorname{lmax}\) và
+\(\operatorname{rmax}\) trong bài toán này là \(\Theta((n+q)\log n)\). Tiếp tục
+dùng phân tích thế năng cho \(\operatorname{totmax}\), độ phức tạp là
+\[
+  O((n+m)\log^3 n+q\log n).
+\]
+
+Tuy nhiên điều này không có nghĩa phân tích thế năng trước đó hoàn toàn dư
+thừa. Phân tích \(\log^4 n\) vừa nêu có thể hiểu là đang xét một thao tác tổng
+quát hơn: phép cộng có dạng \(a_i\gets a_i+k_ix\), còn trong bài toán gốc ẩn
+điều kiện \(k_i=1\), tức \(k_i>0\).
+
+\subsubsection{\texttt{henry\_y} và dãy số}
+
+\term{Ý chính đề bài:} Cho một dãy \(A_i\) độ dài \(n\), hỗ trợ thao tác sửa:
+cho \(l,r,a,b,c\), với \(l\le i\le r\), đặt
+\[
+  A_i\gets A_i+ai^2+bi+c,
+\]
+bảo đảm \(a,b\ge 0\); đồng thời truy vấn giá trị nhỏ nhất trên một đoạn.
+
+\term{Lời giải:} Trong bài toán này tuy nhìn qua có hạng bậc hai, nhưng
+\(i^2\) trong hạng bậc hai chỉ liên quan tới chỉ số, nên thực ra bài toán gần
+hơn với duy trì cực trị của một số hàm bậc nhất hai biến.
+
+Trước hết vẫn dùng ý tưởng tương tự KTT: xét dùng cây đoạn duy trì giá trị nhỏ
+nhất hiện tại, cũng như thời điểm sau khi cộng \((ai^2+bi)\) khiến một quan hệ
+so sánh nào đó trong cây con thay đổi. Do \(a,b\ge 0\) và \(i\ge 1\), giá trị
+nhỏ nhất chỉ có thể chuyển từ cây con phải sang cây con trái.
+
+Giả sử giá trị nhỏ nhất của cây con trái nằm ở \(A_i\), còn của cây con phải
+nằm ở \(A_j\). Nếu \(A_i>A_j\), thì trong tương lai \(A_j\) có thể vượt lại
+\(A_i\); điều này cần
+\[
+\begin{aligned}
+A_i+ai^2+bi &\le A_j+aj^2+bj,\\
+A_i-A_j &\le a(j^2-i^2)+b(j-i),\\
+\frac{A_i-A_j}{j-i} &\le a(i+j)+b.
+\end{aligned}
+\]
+
+Từ đó biết rằng khi \((a,b)\) đi vào một nửa mặt phẳng, giá trị nhỏ nhất của cây
+con sẽ chuyển. Nói ngược lại, nếu nó nằm trong phần bù của nửa mặt phẳng này,
+thì giá trị nhỏ nhất vẫn chưa chuyển. Vì vậy, nếu thao tác sửa hiện tại với
+\((a,b)\) không làm cây con chuyển, thì điểm đó phải nằm trong mọi ràng buộc của
+cây con, tức nằm trong giao của mọi nửa mặt phẳng. Do đường thẳng của nửa mặt
+phẳng có hệ số góc \(i+j\), mọi hệ số góc ở cây con trái đều nhỏ hơn mọi hệ số
+góc ở cây con phải. Ta có thể dùng cây cân bằng bền vững để duy trì giao nửa mặt
+phẳng, đồng thời tìm kiếm nhị phân trên cây cân bằng để nhận kết quả gộp của
+hai giao nửa mặt phẳng trong thời gian \(\Theta(\log n)\).
+
+Vì bài toán này có tính đơn điệu tương tự bài toán trước, ta có thể đặt thế
+năng \(\Phi\) là số đỉnh có ``\(\min\) nằm ở con phải''. Quá trình thao tác
+nhiều nhất phát sinh \(\Theta(n+m\log n)\) lần cập nhật, và mỗi thao tác tốn
+\(\Theta(\log^2 n)\) để cập nhật thông tin. Vì vậy ta có cận trên độ phức tạp
+\[
+  O((n+m\log n)\log^2 n+q\log n).
+\]
+
+\subsection{Tổng kết}
+
+Bài viết này chủ yếu xoay quanh một cận trên tốt cho độ dài của dãy \(DS(n,s)\).
+Thông qua cách thiết kế dựa trên việc ``giảm số giao điểm cần thiết phải duy
+trì'', ta thu được một số phương pháp có độ phức tạp khá tốt để duy trì cực trị
+của hàm số. Hy vọng những ý tưởng trên đây có thể gợi mở thêm cho các bài toán
+liên quan tới duy trì cực trị trong OI.
+
+\subsection{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+
+Cảm ơn thầy Xiao Ran ở Trường Trung học trực thuộc Đại học Bắc Kinh vì sự quan
+tâm và hướng dẫn.
+
+Cảm ơn gia đình, bạn bè vì sự ủng hộ và động viên.
+
+Cảm ơn bạn Dai Jiangqi và anh Liu Cheng'ao đã thảo luận và gợi ý cho tôi.
+
+Cảm ơn bạn Fang Lixing đã chỉ lỗi cho bài viết này.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Micha Sharir và Pankaj K. Agarwal. \emph{Davenport-Schinzel Sequences
+  and their Geometric Applications}. 1995.
+  \item Seth Pettie. \emph{Sharp Bounds on Davenport-Schinzel Sequences of Every
+  Order}. 2015.
+  \item Ady Wiernik và Micha Sharir. \emph{Planar realizations of nonlinear
+  Davenport-Schinzel sequences by segments}. 1988.
+  \item Xu Yixuan. Chuẩn bị đề bài cho bài tập giai đoạn một của đội tuyển quốc
+  gia Trung Quốc IOI 2020. 2019.
+  \item Daniel Zhang.
+  \url{https://codeforces.com/blog/entry/68534?#comment-530381}. 2019.
 \end{enumerate}
 
 \end{document}

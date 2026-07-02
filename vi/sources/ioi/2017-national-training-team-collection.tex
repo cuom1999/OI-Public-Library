@@ -34,8 +34,9 @@ một số tập trước đó, lớp văn bản của tập này trích xuất 
 mục lục, bài đầu tiên của Mao Xiao về công thức truy hồi của dãy số, và bài
 thứ hai của Yang Jiaqi về matching trên đồ thị tổng quát bằng đại số tuyến
 tính, bài thứ ba của Yuan Yutao về bài toán tính tổng đa thức, bài thứ tư
-của Zhong Zhixian về bài toán tập độc lập trong thi tin học, và bài thứ năm
-của Chen Junkun về \emph{Đồ thị con kỳ diệu}.
+của Zhong Zhixian về bài toán tập độc lập trong thi tin học, bài thứ năm của
+Chen Junkun về \emph{Đồ thị con kỳ diệu}, và bài thứ sáu của Sun Yaofeng về
+bài toán bao đóng bắc cầu động.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -4286,6 +4287,957 @@ nghênh đến trao đổi với tôi.
   \item Xu Yinzhan. \emph{Cây đoạn trong một lớp bài toán phân trị}.
 \end{enumerate}
 
+\section{Tìm hiểu bài toán bao đóng bắc cầu động}
+
+\begin{center}
+Sun Yaofeng, Trường Trung học số 1 Thiệu Hưng
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết này khảo sát bài toán bao đóng bắc cầu động: lần lượt đưa ra các
+thuật toán tương ứng cho bài toán bao đóng bắc cầu tĩnh, bài toán bao đóng bắc
+cầu động bộ phận và bài toán bao đóng bắc cầu động hoàn toàn; đồng thời thông
+qua các ví dụ tự sáng tác để giảng giải ứng dụng của bài toán bao đóng bắc cầu
+động trong thi tin học.
+
+\subsection{Lời nói đầu}
+
+``Bao đóng bắc cầu'' là một bài toán rất kinh điển trong lý thuyết đồ thị, dùng
+để tìm quan hệ có thể đi tới giữa mọi cặp đỉnh trong đồ thị có hướng. Hiện nay,
+trong thi thuật toán, bài toán bao đóng bắc cầu vẫn chủ yếu dừng ở tầng tĩnh,
+không hỗ trợ thao tác thêm, xóa cạnh; vì vậy không gian ra đề hẹp, tầm vóc bài
+toán chưa cao. Để thuận theo xu thế các thuật toán kiểu cấu trúc dữ liệu phát
+triển từ tĩnh sang động, đồng thời mở rộng lựa chọn ra đề trong thi thuật toán,
+tôi đã học tập và khảo sát hướng bài toán này.
+
+Bài viết sẽ giới thiệu chi tiết một số phương pháp giải bài toán bao đóng bắc
+cầu động, gồm mở rộng thuật toán đường đi ngắn nhất, thuật toán gộp cây có
+hướng, cũng như thuật toán ngẫu nhiên dựa trên đại số tuyến tính. Đồng thời,
+bài viết cũng dùng các ví dụ để giảng giải ứng dụng của bài toán bao đóng bắc
+cầu động trong thi tin học. Hy vọng bài viết có thể đưa bài toán này vào tầm
+nhìn của thí sinh và ít nhiều giúp ích cho các bạn tham gia thi tin học.
+
+Mục 2 mô tả bài toán bao đóng bắc cầu động và đưa ra các định nghĩa liên quan.
+Các mục 3 đến 5 lần lượt giới thiệu phương pháp tương ứng cho bài toán bao
+đóng bắc cầu tĩnh, bài toán bao đóng bắc cầu động bộ phận chỉ có thao tác thêm
+cạnh, và bài toán bao đóng bắc cầu động hoàn toàn. Trong mỗi mục đều có ví dụ.
+Mục 6 tổng kết và quy nạp nội dung của bài viết.
+
+\subsection{Dẫn nhập bài toán}
+
+\subsubsection{Định nghĩa}
+
+Định nghĩa đồ thị có hướng \(G=(V,E)\), trong đó
+\(V=\{1,2,\ldots,n\}\) là tập đỉnh, còn \(E\) là tập cạnh.
+
+Ta gọi đỉnh \(v\) là đỉnh có thể tới được từ đỉnh \(u\) khi và chỉ khi trong
+đồ thị \(G\) tồn tại một đường đi từ \(u\) đến \(v\). Khi đó, gọi \(u\) là
+\term{tổ tiên} (\emph{ancestor}) của \(v\), và \(v\) là \term{hậu duệ}
+(\emph{descendant}) của \(u\). Đặc biệt, mỗi đỉnh \(u\) vừa là tổ tiên của
+chính nó, vừa là hậu duệ của chính nó. Đồng thời, gọi tập gồm mọi tổ tiên của
+đỉnh \(u\) là \(\operatorname{anc}(u)\), và tập gồm mọi hậu duệ của đỉnh \(u\)
+là \(\operatorname{desc}(u)\).
+
+Nếu đồ thị có hướng \(G^*=(V,E^*)\) có cùng tập đỉnh với \(G\), và cạnh
+\((u,v)\) được đặt vào \(E^*\) khi và chỉ khi trong \(G\) tồn tại đường đi từ
+\(u\) đến \(v\), thì gọi \(G^*\) là \term{bao đóng bắc cầu}
+(\emph{transitive closure}) của \(G\).
+
+\subsubsection{Bài toán bao đóng bắc cầu động}
+
+Có thể mô tả hình thức bài toán bao đóng bắc cầu động như sau \([7]\):
+
+Cho một đồ thị có hướng \(G\), thực hiện một chuỗi thao tác trên nó, gồm ba
+kiểu:
+\begin{itemize}
+  \item \(\operatorname{Insert}(x,y)\): thêm vào \(G\) một cạnh có hướng từ
+  \(x\) đến \(y\);
+
+  \item \(\operatorname{Delete}(x,y)\): xóa khỏi \(G\) cạnh có hướng từ \(x\)
+  đến \(y\);
+
+  \item \(\operatorname{Query}(x,y)\): hỏi trong \(G\) có tồn tại đường đi từ
+  \(x\) đến \(y\) hay không.
+\end{itemize}
+
+Theo số kiểu thao tác được hỗ trợ, ta có các định nghĩa sau:
+\begin{itemize}
+  \item bài toán hỗ trợ cả thao tác thêm cạnh lẫn xóa cạnh được gọi là bài toán
+  bao đóng bắc cầu động hoàn toàn;
+
+  \item bài toán chỉ hỗ trợ một trong hai thao tác thêm, xóa cạnh được gọi là
+  bài toán bao đóng bắc cầu động bộ phận;
+
+  \item bài toán không có thao tác thêm, xóa cạnh được gọi là bài toán bao đóng
+  bắc cầu tĩnh.
+\end{itemize}
+
+Nếu không nói gì thêm, bài viết dùng \(n\) và \(m\) để chỉ số đỉnh và số cạnh
+của \(G\), dùng \(q\) để chỉ số thao tác được thực hiện.
+
+\subsection{Bài toán bao đóng bắc cầu tĩnh}
+
+\subsubsection{Thuật toán Floyd--Warshall}
+
+Thuật toán Floyd--Warshall \([4]\) thường được dùng để giải bài toán đường đi
+ngắn nhất giữa mọi cặp đỉnh. Đồng thời, nó cũng có thể dùng để giải bài toán
+bao đóng bắc cầu tĩnh. Ý tưởng đại khái là dùng phép hoặc logic \((\vee)\) và
+phép và logic \((\wedge)\) để thay thế các phép toán số học \(\min\) và \(+\)
+trong bài toán đường đi ngắn nhất.
+
+\paragraph{Định nghĩa 3.1.}
+Nếu trong đồ thị \(G\) tồn tại một đường đi từ đỉnh \(i\) đến đỉnh \(j\), và
+các đỉnh trung gian (không tính \(i\) và \(j\)) đều lấy từ tập
+\(\{1,2,\ldots,k\}\), thì \(t_{i,j}^{(k)}\) bằng \(1\); ngược lại
+\(t_{i,j}^{(k)}\) bằng \(0\).
+
+Ta có thể thu được \(t_{i,j}^{(k)}\) như sau:
+\[
+  t_{i,j}^{(0)} =
+  \begin{cases}
+    0, & \text{nếu } i\ne j \text{ và } (i,j)\notin E,\\
+    1, & \text{nếu } i=j \text{ hoặc } (i,j)\in E.
+  \end{cases}
+\]
+Với \(k\ge 1\),
+\[
+  t_{i,j}^{(k)}
+  = t_{i,j}^{(k-1)} \vee
+    \bigl(t_{i,k}^{(k-1)}\wedge t_{k,j}^{(k-1)}\bigr).
+  \tag{3.1}
+\]
+Vì vậy có thể tính được \(t_{i,j}^{(n)}\) trong độ phức tạp \(\Oh(n^3)\), từ
+đó thu được bao đóng bắc cầu.
+
+\paragraph{Định nghĩa 3.2.}
+Tập \(T_i^{(k)}=\{j\mid t_{i,j}^{(k)}=1\}\).
+
+Với \(k\ge 1\), theo công thức (3.1), ta có
+\[
+  T_i^{(k)} =
+  \begin{cases}
+    T_i^{(k-1)}, & \text{nếu } k\notin T_i^{(k-1)},\\
+    T_i^{(k-1)}\cup T_k^{(k-1)}, & \text{nếu } k\in T_i^{(k-1)}.
+  \end{cases}
+\]
+
+Với các thao tác tập hợp như hợp \((\cup)\) và giao \((\cap)\), ta có thể tối
+ưu bằng cách nén bit.
+
+Gọi \(w\) là độ dài từ máy, thường \(w=32\). Với một tập \(S\), giả sử \(S\)
+có nhiều nhất \(n\) phần tử, ta có thể dùng một dãy \(01\) độ dài \(n\) để
+biểu diễn mỗi phần tử có tồn tại trong \(S\) hay không. Để tăng tốc, cứ mỗi
+\(w\) bit trong dãy \(01\) lại nén thành một kiểu số nguyên, rồi thực hiện
+phép toán bit hàng loạt. Như vậy có thể thao tác trên tập \(S\) trong độ phức
+tạp \(\Oh(n/w)\).
+
+Dùng kỹ thuật này, ta có thể tính \(T_i^{(n)}\) trong độ phức tạp
+\(\Oh(n^3/w)\), từ đó thu được bao đóng bắc cầu.
+
+\subsubsection{Thứ tự tô-pô}
+
+\paragraph{Định nghĩa 3.3.}
+Với đồ thị có hướng không chu trình (DAG) \(G=(V,E)\), \term{thứ tự tô-pô} là
+một thứ tự tuyến tính của mọi đỉnh trong \(G\), cần thỏa mãn: với mọi cạnh
+\((u,v)\in E\), vị trí của \(u\) trong thứ tự tô-pô phải đứng trước vị trí của
+\(v\).
+
+\paragraph{Định lý 3.1.}
+Nếu đồ thị \(G\) chứa chu trình, thì không tồn tại thứ tự tô-pô.
+
+\paragraph{Định lý 3.2.}
+Có thể tìm thứ tự tô-pô của đồ thị có hướng không chu trình trong độ phức tạp
+\(\Oh(n+m)\) \([4]\).
+
+Lần lượt duyệt các đỉnh trong thứ tự tô-pô từ sau ra trước. Giả sử hiện tại
+đang duyệt tới đỉnh \(u\), các cạnh đi ra từ \(u\) là
+\((u,v_1),(u,v_2),\ldots,(u,v_k)\), khi đó
+\[
+  \operatorname{desc}(u)=
+  \operatorname{desc}(v_1)\cup\operatorname{desc}(v_2)\cup\cdots
+  \cup\operatorname{desc}(v_k)\cup\{u\}.
+\]
+Dùng tối ưu nén bit, có thể tính bao đóng bắc cầu cho đồ thị tô-pô trong độ
+phức tạp \(\Oh(nm/w)\).
+
+\subsubsection{Thành phần liên thông mạnh}
+
+\paragraph{Định nghĩa 3.4.}
+\term{Thành phần liên thông mạnh} (SCC) của đồ thị có hướng \(G=(V,E)\) là
+một tập đỉnh cực đại \(C\subseteq V\) sao cho với hai đỉnh bất kỳ
+\(u,v\in C\), \(u\) và \(v\) đều có thể tới được nhau.
+
+\paragraph{Định lý 3.3.}
+Có thể tìm mọi SCC trong đồ thị có hướng trong độ phức tạp \(\Oh(n+m)\)
+\([4]\).
+
+Nếu hai đỉnh \(x\) và \(y\) thuộc cùng một SCC, thì
+\(\operatorname{desc}(x)=\operatorname{desc}(y)\). Vì vậy ta có thể co các
+đỉnh trong cùng một SCC thành một đỉnh rồi xử lý thống nhất.
+
+Gọi đồ thị có hướng \(G'\) là đồ thị thu được sau khi co SCC của \(G\). Khi đó
+\(G'\) là một đồ thị tô-pô. Dùng thuật toán ở mục 3.2, ta có thể tính bao đóng
+bắc cầu của \(G'\); xử lý thêm một chút sẽ thu được bao đóng bắc cầu của \(G\).
+Độ phức tạp thời gian của thuật toán này là \(\Oh(nm/w)\).
+
+\subsubsection{Ví dụ 1}
+
+\paragraph{Ví dụ 1. Explosion.}
+(2014 ACM/ICPC Asia Regional Beijing Online)
+
+Có \(n\) căn phòng, trong mỗi phòng có chìa khóa để mở một số cửa. Ban đầu mọi
+cửa phòng đều bị khóa, và trong tay bạn không có chìa khóa nào.
+
+Khi không thể dùng chìa khóa trong tay để mở cửa phòng, bạn sẽ chọn ngẫu nhiên
+một căn phòng chưa mở và phá nó, từ đó lấy được mọi chìa khóa trong phòng đó.
+Khi có thể dùng chìa khóa trong tay để mở cửa phòng, bạn sẽ lập tức mở nó và
+nhận chìa khóa, không chọn phá phòng.
+
+Hỏi kỳ vọng số lần phá phòng để mở được toàn bộ các phòng.
+
+Dữ liệu: \(n\le 2000\).
+
+Trước hết chuyển bài toán thành mô hình đồ thị:
+\begin{itemize}
+  \item dựng đồ thị có hướng \(G\) gồm \(n\) đỉnh, phòng thứ \(i\) tương ứng
+  với đỉnh \(i\);
+
+  \item nếu trong phòng \(i\) có chìa khóa mở phòng \(j\), thì nối cạnh có
+  hướng từ \(i\) đến \(j\);
+
+  \item nếu phá phòng \(i\), thì mọi phòng tương ứng với các đỉnh
+  \(j\in\operatorname{desc}(i)\) trong \(G\) đều được mở.
+\end{itemize}
+
+Theo tính tuyến tính của kỳ vọng, chỉ cần tính xác suất mỗi phòng bị phá, rồi
+cộng tất cả lại là đáp án.
+
+Quan sát thấy phòng \(i\) có thể bị phá khi và chỉ khi mọi phòng tương ứng với
+các đỉnh \(j\in\operatorname{anc}(i)\) trong \(G\) đều chưa bị phá. Nói cách
+khác, phòng \(i\) là phòng đầu tiên được chọn để phá trong
+\(|\operatorname{anc}(i)|\) phòng ấy, nên xác suất nó bị phá là
+\(1/|\operatorname{anc}(i)|\). Vì vậy đáp án cuối cùng là
+\[
+  \sum_{i=1}^{n}\frac{1}{|\operatorname{anc}(i)|}.
+\]
+Dùng thuật toán ở mục 3.1 hoặc 3.3 là có thể tính \(\operatorname{anc}(i)\);
+độ phức tạp thời gian là \(\Oh(n^3/w)\) hoặc \(\Oh(nm/w)\).
+
+\subsubsection{Ví dụ 2}
+
+\paragraph{Ví dụ 2. Đường đi xor lớn nhất.}
+(Tự sáng tác)
+
+Cho đồ thị có hướng \(G\) gồm \(n\) đỉnh, \(m\) cạnh; trọng số của đỉnh thứ
+\(i\) là \(\operatorname{val}_i\).
+
+Định nghĩa cặp đỉnh \((u,v)\) là hợp lệ khi và chỉ khi tồn tại một đường đi từ
+\(u\) đến \(v\).
+
+Hỏi trong mọi cặp hợp lệ \((u,v)\), giá trị lớn nhất của
+\(\operatorname{val}_u\) xor \(\operatorname{val}_v\) là bao nhiêu.
+
+Dữ liệu: \(0\le n,m,\operatorname{val}_i\le 100000\).
+
+Đặt
+\[
+  S(u)=\{\operatorname{val}_v\mid v\in\operatorname{desc}(u)\}.
+\]
+Khi đó bài toán là: với mỗi đỉnh \(u\), tìm giá trị xor lớn nhất giữa
+\(\operatorname{val}_u\) và một số trong tập \(S(u)\).
+
+Dùng kỹ thuật nén bit, có thể nén tập \(S(u)\) thành tổng cộng
+\(|\operatorname{val}_i|/w\) số nguyên. Với mỗi số nguyên, có thể tính trong
+\(\Oh(1)\) số bit \(1\) trong biểu diễn nhị phân của nó, tức số phần tử của
+\(S(u)\) mà nó chứa, rồi tính tổng tiền tố cho các giá trị này.
+
+Dùng tư tưởng tham lam, duyệt từ bit cao nhất xuống bit thấp nhất, và thử bit
+hiện tại bằng \(0\) hay \(1\). Với đáp án đang thử, ta chỉ cần phán đoán trong
+tập \(S(u)\) có tồn tại phần tử có trọng số nằm trong một đoạn hay không. Nhờ
+tổng tiền tố đã tiền xử lý, có thể phán đoán trong \(\Oh(1)\).
+
+Cách tính tập \(S(u)\) tương tự bao đóng bắc cầu. Dùng thuật toán ở mục 3.3,
+có thể giải bài toán trong độ phức tạp
+\[
+  \Oh\left(\frac{(n+m)|\operatorname{val}_i|}{w}
+  + n\log |\operatorname{val}_i|\right).
+\]
+
+\subsection{Bài toán bao đóng bắc cầu động bộ phận chỉ có thao tác thêm cạnh}
+
+\subsubsection{Thuật toán đường đi ngắn nhất}
+
+Dựng đồ thị có hướng có trọng số \(G'=(V,E')\):
+\begin{itemize}
+  \item với cạnh có sẵn \((u,v)\in E\) trong \(G\), nối trong \(G'\) cạnh từ
+  \(u\) đến \(v\) có trọng số \(0\);
+
+  \item nếu thao tác thứ \(i\) thêm cạnh \((x_i,y_i)\), thì nối trong \(G'\)
+  cạnh từ \(x_i\) đến \(y_i\) có trọng số \(i\).
+\end{itemize}
+
+\paragraph{Định nghĩa 4.1.}
+Nếu trong \(G'\) tồn tại một đường đi từ đỉnh \(i\) đến đỉnh \(j\), và trọng số
+của mọi cạnh đi qua đều không vượt quá \(w\), thì \(h_{i,j}^{(w)}=1\); ngược
+lại \(h_{i,j}^{(w)}=0\).
+
+\paragraph{Định nghĩa 4.2.}
+\[
+  g_{i,j}=\min\{w\mid h_{i,j}^{(w)}=1\}.
+\]
+
+\paragraph{Hệ quả 4.1.}
+Sau thao tác thứ \(g_{i,j}\), trong đồ thị \(G\) sẽ tồn tại một đường đi từ
+đỉnh \(i\) đến đỉnh \(j\).
+
+Nếu có thể tính \(g_{i,j}\) cho mọi cặp \(i,j\), ta sẽ thu được bao đóng bắc
+cầu sau mỗi thao tác.
+
+Quan sát thấy bài toán này tương đương với tìm đường đi ngắn nhất giữa mọi cặp
+đỉnh. Dùng thuật toán Floyd--Warshall, độ phức tạp thời gian là \(\Oh(n^3)\).
+Dùng thuật toán Dijkstra kết hợp tối ưu bằng heap Fibonacci \([4]\), độ phức
+tạp thời gian là \(\Oh(n^2\log n+n(m+q))\).
+
+Cần chú ý rằng thuật toán này là thuật toán offline.
+
+\subsubsection{Mở rộng thuật toán Floyd--Warshall}
+
+Bản chất của thuật toán Floyd--Warshall khi tính bao đóng bắc cầu là thêm động
+các ``đỉnh trung chuyển'' để cập nhật bao đóng bắc cầu. Thực ra thứ tự thêm
+các đỉnh trung chuyển vào đồ thị không nhất thiết phải là
+\(1,2,\ldots,n\); nó có thể thêm mọi đỉnh theo một thứ tự bất kỳ. Tính chất đẹp
+đẽ này khiến nó có thể hỗ trợ bài toán động ở một mức độ nhất định.
+
+Ta dùng ví dụ dưới đây để hiểu rõ hơn ứng dụng của nó.
+
+\paragraph{Ví dụ 3. Tình hình đường sá thời gian thực.}
+(Vòng chung kết 2016 Ji Suan Zhi Dao)
+
+Cho đồ thị vô hướng \(n\) đỉnh, định nghĩa \(d(x,y,z)\) là đường đi ngắn nhất
+từ \(x\) đến \(z\) không đi qua đỉnh \(y\). Hãy tính giá trị
+\[
+  \sum_{x=1}^{n}\sum_{y=1}^{n}\sum_{z=1}^{n} d(x,y,z).
+\]
+
+Dữ liệu: \(n\le 200\).
+
+Xét dùng tư tưởng phân trị.
+
+Gọi thủ tục \(\operatorname{Work}(l,r)\) là xử lý đáp án khi
+\(y=l,l+1,\ldots,r\); lúc này các đỉnh số
+\(1,2,\ldots,l-1,r+1,\ldots,n\) đã được thêm vào đồ thị. Đồng thời duy trì
+\(\operatorname{dist}_{x,z}\) là đường đi ngắn nhất giữa mọi cặp đỉnh.
+
+Khi \(l=r\), duyệt \(\operatorname{dist}_{x,z}\) trong \(\Oh(n^2)\) là có thể
+thu được đáp án ứng với \(y=l\).
+
+Nếu \(l\ne r\), đặt \(\operatorname{mid}=\lfloor(l+r)/2\rfloor\). Thêm các
+đỉnh \(l,l+1,\ldots,\operatorname{mid}\) vào đồ thị rồi đệ quy
+\(\operatorname{Work}(\operatorname{mid}+1,r)\); sau đó thêm các đỉnh
+\(\operatorname{mid}+1,\operatorname{mid}+2,\ldots,r\) vào đồ thị rồi đệ quy
+\(\operatorname{Work}(l,\operatorname{mid})\). Mỗi khi thêm một đỉnh, dùng
+thuật toán Floyd--Warshall để cập nhật đường đi ngắn nhất giữa mọi cặp đỉnh.
+
+Độ phức tạp thời gian là \(\Oh(n^3\log n)\).
+
+\paragraph{``Cạnh trung chuyển''.}
+Bắt chước tư tưởng thêm động đỉnh trung chuyển của Floyd--Warshall, với mỗi
+cạnh được thêm bởi thao tác, ta dùng nó làm ``cạnh trung chuyển'' để cập nhật
+bao đóng bắc cầu.
+
+Giả sử thao tác hiện tại thêm cạnh \((u,v)\). Nếu đã có
+\(v\in\operatorname{desc}(u)\), thì việc thêm cạnh \((u,v)\) sẽ không cập nhật
+bao đóng bắc cầu, nên bỏ qua thao tác này.
+
+Ngược lại, đặt
+\[
+  C=(V-\operatorname{anc}(v))\cap\operatorname{anc}(u),
+\]
+tức tập gồm mọi đỉnh có thể tới \(u\) nhưng không thể tới \(v\). Với mọi
+đỉnh \(x\in C\), việc thêm cạnh \((u,v)\) sẽ làm
+\[
+  \operatorname{desc}(x)
+  = \operatorname{desc}(x)\cup\operatorname{desc}(v).
+\]
+Còn với mọi đỉnh \(x\notin C\), việc thêm cạnh \((u,v)\) sẽ không cập nhật
+\(\operatorname{desc}(x)\).
+
+\paragraph{Duy trì \(\operatorname{anc}(x)\).}
+\paragraph{Định nghĩa 4.3.}
+Nếu đồ thị có hướng \(\widetilde G=(V,\widetilde E)\) có cùng tập đỉnh với
+\(G\), và tập cạnh
+\[
+  \widetilde E=\{(u,v)\mid (v,u)\in E\},
+\]
+thì gọi \(\widetilde G\) là \term{đồ thị đảo} của \(G\).
+
+Dễ thấy tập tổ tiên của đỉnh \(x\) trong \(G\) bằng tập hậu duệ của đỉnh \(x\)
+trong \(\widetilde G\). Vì vậy trong mỗi thao tác thêm cạnh, chỉ cần thêm
+cạnh \((u,v)\) vào \(G\), thêm cạnh \((v,u)\) vào \(\widetilde G\), rồi dùng
+cách duy trì \(\operatorname{desc}(x)\) để duy trì
+\(\operatorname{anc}(x)\).
+
+\paragraph{Phân tích độ phức tạp.}
+Mỗi khi thực hiện phép hợp tập trên \(\operatorname{desc}(x)\), tập mới
+\(\operatorname{desc}'(x)\) đều có thêm phần tử so với \(\operatorname{desc}(x)\).
+Mặt khác, tổng số quan hệ có thể đi tới khác nhau chỉ là \(n^2\), nên phép hợp
+tập ấy nhiều nhất chỉ được thực hiện \(n^2\) lần. Trong trường hợp xấu nhất,
+mỗi thao tác thêm cạnh có thể thực hiện \(n\) phép hợp tập.
+
+Dùng tối ưu nén bit, độ phức tạp thời gian là
+\[
+  \Oh\left(qn+\min\{n^2,qn\}\frac{n}{w}\right).
+\]
+
+\paragraph{Tối ưu nhỏ.}
+Có thể dùng nén bit để tăng tốc việc duyệt mọi phần tử của tập \(C\).
+
+Theo phần xử lý trước đó, tập \(C\) đã được biểu diễn bởi \(n/w\) số nguyên.
+Duyệt \(n/w\) số nguyên này; nếu trong biểu diễn nhị phân của một số có bit
+\(1\) (tức số đó khác \(0\)), nghĩa là nó chứa ít nhất một phần tử. Lấy ra mọi
+vị trí có bit \(1\) là tìm được mọi phần tử của tập \(C\).
+
+Tổng hợp lại, độ phức tạp thời gian là
+\[
+  \Oh\left(q\frac{n}{w}+\min\{n^2,qn\}\frac{n}{w}\right).
+\]
+
+\paragraph{Tiểu kết.}
+Dễ thấy thuật toán này tốt nhất khi đồ thị dày và số thao tác nhiều.
+
+\subsubsection{Thuật toán gộp cây có hướng}
+
+\paragraph{Định nghĩa 4.4.}
+Với đồ thị có hướng \(G=(V,E)\), \term{cây có hướng} \(T_x=(V,E_x)\)
+\((E_x\subseteq E)\) gốc \(x\) là một đồ thị tô-pô thỏa mãn các điều kiện sau:
+\begin{itemize}
+  \item gốc \(x\) không có cạnh vào, các đỉnh còn lại có nhiều nhất một cạnh
+  vào;
+
+  \item nếu đỉnh \(y\in\operatorname{desc}(x)\) trong \(G\), thì trong \(T_x\)
+  cũng tồn tại một đường đi từ gốc \(x\) đến \(y\);
+
+  \item nếu đỉnh \(y\notin\operatorname{desc}(x)\) trong \(G\), thì trong
+  \(T_x\), \(y\) không có cạnh vào.
+\end{itemize}
+
+\paragraph{Định nghĩa 4.5.}
+Nếu trong cây có hướng \(T_x=(V,E_x)\) có cạnh \((u,v)\in E_x\), thì gọi
+đỉnh \(v\) là con của đỉnh \(u\).
+
+\paragraph{Định nghĩa 4.6.}
+Trong cây có hướng \(T_x=(V,E_x)\), tập cây con của đỉnh \(u\) là
+\[
+  \operatorname{subtree}_x(u)
+  = \{v\mid \text{trong } T_x \text{ tồn tại đường đi từ } u \text{ đến } v\}.
+\]
+
+\paragraph{Hệ quả 4.2.}
+Trong cây có hướng \(T_x=(V,E_x)\), với mọi đỉnh \(u\in V\), ta có
+\[
+  \operatorname{subtree}_x(u)\subseteq\operatorname{desc}(u).
+\]
+
+Trong thuật toán này, với mỗi đỉnh \(x\in V\), ta xây một cây có hướng \(T_x\)
+để duy trì \(\operatorname{desc}(x)\). Với mỗi thao tác thêm cạnh, chỉ cần gộp
+một số cây có hướng.
+
+\paragraph{Quy trình gộp.}
+Giả sử thao tác hiện tại thêm cạnh \((u,v)\). Nếu đã có
+\(v\in\operatorname{desc}(u)\), thì việc thêm cạnh \((u,v)\) sẽ không cập nhật
+bao đóng bắc cầu, nên bỏ qua thao tác này.
+
+Ngược lại, đặt \(C=(V-\operatorname{anc}(v))\cap\operatorname{anc}(u)\). Với
+mọi đỉnh \(x\in C\), gộp cây có hướng \(T_v\) vào các con của đỉnh \(u\) trong
+cây có hướng \(T_x\).
+
+Gọi thủ tục \(\operatorname{Merge}(x,y,a,b)\) là gộp cây con của đỉnh \(b\)
+trong cây có hướng \(T_y\) vào các con của đỉnh \(a\) trong cây có hướng
+\(T_x\). Khi đó với mọi \(x\in C\), chỉ cần gọi
+\(\operatorname{Merge}(x,v,u,v)\).
+
+Cụ thể, thủ tục \(\operatorname{Merge}(x,y,a,b)\) như sau:
+\begin{enumerate}
+  \item thêm cạnh \((a,b)\) vào cây có hướng \(T_x\), tức để \(b\) trở thành
+  con của \(a\);
+
+  \item duyệt mọi con \(w\) của đỉnh \(b\) trong cây có hướng \(T_y\):
+  \begin{itemize}
+    \item nếu \(w\in\operatorname{desc}(x)\), theo Hệ quả 4.2 ta có
+    \[
+      \operatorname{subtree}_y(w)\subseteq\operatorname{desc}(w)
+      \subseteq\operatorname{desc}(x),
+    \]
+    nên không cần tiếp tục đệ quy cây con của đỉnh \(w\) trong \(T_y\);
+
+    \item nếu \(w\notin\operatorname{desc}(x)\), gọi đệ quy
+    \(\operatorname{Merge}(x,y,b,w)\).
+  \end{itemize}
+\end{enumerate}
+
+\paragraph{Mã giả.}
+Mã giả sau giúp hiểu rõ hơn quá trình gộp cây có hướng:
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.76\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 1} Gộp cây có hướng}\\
+0: & procedure Merge(\(x,y,a,b\))\\
+1: & \quad insert \(b\) in \(T_x\) as a child of \(a\).\\
+2: & \quad for each \(w\) child of \(b\) in \(T_y\) do\\
+3: & \qquad if \(w\) is not in \(\operatorname{desc}(x)\) then\\
+4: & \qquad\quad Merge(\(x,y,b,w\))\\
+5: & \qquad end if\\
+6: & \quad end for
+\end{tabular}
+\end{center}
+
+\paragraph{Phân tích độ phức tạp.}
+Mỗi khi gọi thủ tục \(\operatorname{Merge}(x,y,a,b)\), ta đều thêm đỉnh \(b\)
+vào cây có hướng \(T_x\), đồng thời duyệt mọi con của đỉnh \(b\) trong cây có
+hướng \(T_y\). Một đỉnh không thể được thêm nhiều lần vào cùng một cây có
+hướng.
+
+Ta có thể phóng đại số con của đỉnh \(b\) trong cây có hướng \(T_y\) thành số
+cạnh đi ra từ đỉnh \(b\) trong đồ thị \(G\) sau thao tác hiện tại. Khi đó trong
+quá trình gộp, một cây có hướng nhiều nhất sẽ duyệt mọi cạnh trong \(G\) một
+lần. Nói cách khác, mỗi cạnh được thao tác thêm vào sẽ đóng góp \(\Oh(n)\), nên
+quá trình gộp có độ phức tạp phân bổ \(\Oh(n)\) cho mỗi thao tác.
+
+Đồng thời, mỗi thao tác chỉ cần duyệt \(\Oh(n)\) để tìm mọi đỉnh trong tập
+\(C\). Vì vậy thuật toán này có độ phức tạp phân bổ \(\Oh(n)\) cho mỗi thao
+tác.
+
+\paragraph{Tiểu kết.}
+Dễ thấy thuật toán này tốt nhất khi đồ thị thưa và số thao tác ít; nó bổ sung
+cho thuật toán đã nêu ở mục 4.2. Đồng thời, thuật toán này còn có thể tìm một
+đường đi từ đỉnh \(u\) đến đỉnh \(v\) trong độ phức tạp \(\Oh(n)\).
+
+\subsection{Bài toán bao đóng bắc cầu động hoàn toàn}
+
+\subsubsection{Thuật toán offline}
+
+\paragraph{Cây đoạn thời gian.}
+Dựng một cây đoạn thời gian \([6]\) kích thước \(q\); tổng cộng \(q\) lá của
+nó đại diện cho \(q\) thao tác. Với mỗi nút \(i\) trên cây đoạn thời gian, gọi
+đoạn nó phủ là \([l_i,r_i]\).
+
+Nếu cạnh \((u,v)\) được thêm vào \(G\) ở thao tác thứ \(l\), và bị xóa khỏi
+\(G\) ở thao tác thứ \(r\), thì cạnh \((u,v)\) tồn tại trên đoạn
+\([l,r-1]\) của cây đoạn thời gian. Có thể tìm \(\Oh(\log q)\) nút đại diện
+cho đoạn này trên cây đoạn thời gian, rồi lưu cạnh \((u,v)\) trên các nút ấy.
+
+Vì đồ thị ban đầu \(G\) có \(m\) cạnh và có \(q\) thao tác, nên mọi cạnh có
+tổng cộng \(\Oh(m+q)\) đoạn thời gian. Các đoạn này sẽ được ánh xạ lên tổng
+cộng \(\Oh((m+q)\log q)\) nút của cây đoạn thời gian.
+
+Duyệt cây đoạn thời gian; đến một nút thì thêm vào đồ thị mọi cạnh được lưu
+trên nút đó. Mỗi khi thêm một cạnh, dùng thuật toán đã nêu ở mục 4.2 để duy
+trì bao đóng bắc cầu.
+
+Độ phức tạp thời gian là
+\[
+  \Oh\left((m+q)\log q\frac{n^2}{w}\right).
+\]
+Cần chú ý rằng thuật toán này là thuật toán offline.
+
+\paragraph{Ví dụ 4. Bài khó của G nhỏ.}
+(Tự sáng tác)
+
+Cho một đồ thị có hướng \(G\) gồm \(n\) đỉnh, \(m\) cạnh; trọng số của đỉnh
+thứ \(i\) là \(\operatorname{val}_i\).
+
+Định nghĩa \(F(u,v)\) như sau: nếu trong \(G\) tồn tại một đường đi từ \(u\)
+đến \(v\), thì \(F(u,v)=1\); ngược lại \(F(u,v)=0\).
+
+Thực hiện \(q\) thao tác, gồm hai kiểu:
+\begin{itemize}
+  \item cho đỉnh \(p\), rồi cho \(tot\) số \(a_i\), thêm vào đồ thị các cạnh
+  từ \(a_i\) đến \(p\);
+
+  \item cho đỉnh \(p\), rồi cho \(tot\) số \(a_i\), xóa khỏi đồ thị các cạnh
+  từ \(a_i\) đến \(p\).
+\end{itemize}
+
+Sau mỗi thao tác, cần trả lời giá trị
+\[
+  \sum_{u=1}^{N}\sum_{v=1}^{N}
+  F(u,v)\times(\operatorname{val}_u\mathbin{\operatorname{xor}}\operatorname{val}_v).
+\]
+
+Dữ liệu: \(tot<n\le 400\), \(q\le 800\).
+
+Dùng thuật toán ở mục 5.1.1, có thể giải bài toán trong độ phức tạp
+\[
+  \Oh\left((m+q\times tot)\log q\frac{n^2}{w}\right),
+\]
+nhưng vẫn có thể tiếp tục tối ưu.
+
+Vì mỗi thao tác chỉ thêm, xóa các cạnh đi vào một đỉnh nào đó, ta có thể xét
+dùng ``đỉnh trung chuyển'' thay cho ``cạnh trung chuyển'' để cập nhật bao đóng
+bắc cầu.
+
+Cụ thể, đặt \(\operatorname{pre}(x)=\{y\mid (y,x)\in E\}\), tức tập các đỉnh
+có cạnh đi vào \(x\). Khi thêm đỉnh \(x\) vào đồ thị, duyệt mọi đỉnh
+\(t\in V\); nếu thỏa mãn
+\[
+  \operatorname{desc}(t)\cap\operatorname{pre}(x)\ne\varnothing,
+\]
+thì đặt
+\[
+  \operatorname{desc}(t)=\operatorname{desc}(t)\cup\operatorname{desc}(x).
+\]
+Như vậy có thể duy trì bao đóng bắc cầu sau khi thêm đỉnh trong độ phức tạp
+\(\Oh(n^2/w)\).
+
+Vì ban đầu có \(n\) đỉnh và có \(q\) thao tác, nên mọi đỉnh có tổng cộng
+\(\Oh(n+q)\) đoạn thời gian. Các đoạn này được ánh xạ lên tổng cộng
+\(\Oh((n+q)\log q)\) nút của cây đoạn thời gian.
+
+Duyệt cây đoạn thời gian; đến một nút thì thêm vào đồ thị mọi tập
+\(\operatorname{pre}(x)\) được lưu trên nút đó, còn độ phức tạp để thêm một
+\(\operatorname{pre}(x)\) là \(\Oh(n^2/w)\).
+
+Tổng hợp lại, độ phức tạp thời gian là
+\[
+  \Oh\left((n+q)\log q\frac{n^2}{w}+qn^2\right).
+\]
+
+\paragraph{Mở rộng ví dụ 4.}
+Nếu mỗi thao tác vừa thêm, xóa các cạnh đi vào một đỉnh, vừa thêm, xóa các
+cạnh đi ra từ một đỉnh, thì làm thế nào?
+
+Có thể vừa ghi \(\operatorname{pre}(x)\), vừa ghi thêm tập
+\(\operatorname{suf}(x)\), tức tập các đỉnh có cạnh đi ra từ \(x\). Đồng thời:
+\begin{itemize}
+  \item với mọi đỉnh \(y\in\operatorname{pre}(x)\), ghi thời điểm thao tác mà
+  cạnh \((y,x)\) được thêm vào;
+
+  \item với mọi đỉnh \(y\notin\operatorname{pre}(x)\), ghi thời điểm thao tác
+  mà cạnh \((y,x)\) bị xóa.
+\end{itemize}
+
+Các đỉnh trong \(\operatorname{suf}(x)\) cũng được xử lý tương tự.
+
+Như vậy, khi thêm đỉnh \(x\), dựa vào \(\operatorname{pre}(x)\),
+\(\operatorname{suf}(x)\) và thời điểm thao tác tương ứng với chúng, ta có thể
+phán đoán mỗi cạnh vào, ra của \(x\) có tồn tại hay không. Dùng thuật toán
+tương tự ví dụ 4 là tính được bao đóng bắc cầu.
+
+Độ phức tạp thời gian là
+\[
+  \Oh\left((n+q)\log q\frac{n^2}{w}+qn^2\right).
+\]
+
+\subsubsection{Một thuật toán dựa trên đại số tuyến tính}
+
+\paragraph{Chuyển hóa bài toán.}
+\paragraph{Định nghĩa 5.1.}
+\term{Phủ chu trình} của đồ thị có hướng \(G=(V,E)\) là dùng một số chu trình
+để phủ mọi đỉnh trong đồ thị, sao cho mỗi đỉnh xuất hiện đúng một lần trên
+một chu trình.
+
+Giả sử muốn hỏi trong đồ thị \(G\) có tồn tại đường đi từ đỉnh \(i\) đến đỉnh
+\(j\) hay không. Ta xử lý \(G\) như sau để chuyển bài toán thành bài toán phủ
+chu trình:
+\begin{enumerate}
+  \item nối một tự khuyên cho mỗi đỉnh (giả định đồ thị gốc không có tự
+  khuyên);
+
+  \item xóa mọi cạnh đi vào đỉnh \(i\), cũng như mọi cạnh đi ra từ đỉnh \(j\),
+  gồm cả các tự khuyên vừa nối;
+
+  \item nối một cạnh từ đỉnh \(j\) đến đỉnh \(i\).
+\end{enumerate}
+
+Gọi đồ thị mới là \(G'\). Khi đó trong \(G\) tồn tại đường đi từ đỉnh \(i\)
+đến đỉnh \(j\) khi và chỉ khi \(G'\) tồn tại phủ chu trình.
+
+\paragraph{Định nghĩa 5.2.}
+Với đồ thị có hướng \(G=(V,E)\), định nghĩa ma trận \(n\times n\) \(A\) là
+\[
+  A_{i,j} =
+  \begin{cases}
+    x_{i,j}, & \text{nếu } i=j \text{ hoặc cạnh } (i,j)\in E,\\
+    0, & \text{trường hợp khác}.
+  \end{cases}
+\]
+Trong đó \(x_{i,j}\) là một biến, nên trong ma trận \(A\) có tổng cộng
+\(n+m\) biến.
+
+\paragraph{Định nghĩa 5.3.}
+Định nghĩa ma trận \(AE(j,i)\) là ma trận thu được sau khi thực hiện các thao
+tác sau trên \(A\):
+\begin{itemize}
+  \item xóa mọi phần tử ở hàng \(j\) và cột \(i\) của \(A\) về \(0\);
+
+  \item đặt \(A_{j,i}=x_{j,i}\).
+\end{itemize}
+
+\paragraph{Định lý 5.1.}
+Đặt \(Z=AE(j,i)\). Khi đó trong đồ thị \(G\) tồn tại đường đi từ đỉnh \(i\) đến
+đỉnh \(j\) khi và chỉ khi
+\[
+  \sum_{\pi\in\Sigma_n}\prod_{k=1}^{n} Z_{k,\pi(k)}\ne 0.
+  \tag{5.1}
+\]
+
+\paragraph{Chứng minh.}
+Ý nghĩa của việc duyệt hoán vị \(\pi\) là duyệt một cách phủ chu trình có thể
+hợp lệ, trong đó \(\pi(k)\) biểu thị đỉnh kế tiếp của đỉnh \(k\). Nếu với mọi
+đỉnh \(k\) đều có \(Z_{k,\pi(k)}\ne 0\), thì cách phủ chu trình này là hợp lệ.
+\qedmark
+
+\paragraph{Định lý 5.2.}
+Công thức (5.1) đúng khi và chỉ khi \(\det Z\ne 0\).
+
+\paragraph{Chứng minh.}
+Tổng các tích ở vế trái của (5.1) thực chất là một đa thức \(n^2\) biến bậc
+\(n\). Theo định nghĩa định thức,
+\[
+  \det Z=\sum_{\pi\in\Sigma_n}\operatorname{sign}(\pi)
+  \prod_{k=1}^{n} Z_{k,\pi(k)}.
+\]
+\(\det Z\) cũng là một đa thức \(n^2\) biến bậc \(n\), và so với tổng các tích
+ở (5.1), nó chỉ thêm hệ số \(+1\) hoặc \(-1\) trước mỗi hạng tử. Hệ số ấy
+không ảnh hưởng tới việc tổng các tích này có đồng nhất bằng \(0\) hay không,
+nên Định lý 5.2 được chứng minh. \qedmark
+
+\paragraph{Hệ quả 5.1.}
+Trong đồ thị \(G\) tồn tại đường đi từ đỉnh \(i\) đến đỉnh \(j\) khi và chỉ
+khi
+\[
+  \det(AE(j,i))\ne 0.
+\]
+
+\paragraph{Chứng minh.}
+Suy ra từ Định lý 5.1 và Định lý 5.2. \qedmark
+
+\paragraph{Một số kiến thức đại số tuyến tính.}
+\paragraph{Định nghĩa 5.4.}
+\(A_{i,j}\) là ma trận con còn lại sau khi xóa hàng \(i\) và cột \(j\) khỏi
+ma trận \(A\).
+
+\paragraph{Định nghĩa 5.5.}
+Phần phụ của ma trận \(A\) theo hàng \(i\) và cột \(j\), ký hiệu \(M_{i,j}\),
+là \(\det A_{i,j}\).
+
+\paragraph{Định nghĩa 5.6.}
+Đại số phụ của ma trận \(A\) theo hàng \(i\) và cột \(j\), ký hiệu
+\(C_{i,j}\), là \((-1)^{i+j}M_{i,j}\).
+
+\paragraph{Định nghĩa 5.7.}
+Ma trận các phần phụ của \(A\) là một ma trận \(n\times n\) \(C\), trong đó
+\(C_{i,j}=(-1)^{i+j}M_{i,j}\).
+
+\paragraph{Định nghĩa 5.8.}
+Ma trận phụ hợp của \(A\) là chuyển vị của ma trận các phần phụ của \(A\), tức
+\[
+  \operatorname{adj} A=C^T.
+\]
+
+\paragraph{Định lý 5.3.}
+Với ma trận \(n\times n\) \(A\), với một hàng bất kỳ
+\(i\in\{1,2,\ldots,n\}\), ta có
+\[
+  \det A=\sum_{j=1}^{n} A_{i,j}(\operatorname{adj} A)_{j,i}.
+\]
+
+\paragraph{Định lý 5.4.}
+Nếu ma trận \(A\) khả nghịch, thì
+\[
+  A^{-1}=\frac{\operatorname{adj} A}{\det A}.
+\]
+
+Xét dùng các kiến thức đại số tuyến tính ở trên để đơn giản hóa bài toán gốc.
+Với ma trận \(A\) của đồ thị \(G\), ta có
+\[
+  \det(AE(j,i))=(\operatorname{adj} A)_{i,j}. \tag{5.2}
+\]
+Lại theo Định lý 5.4,
+\[
+  \operatorname{adj} A=\det A\times A^{-1}.
+\]
+Do đó, nếu sau mỗi thao tác ta có thể duy trì động định thức và ma trận nghịch
+đảo của ma trận \(A\) ứng với \(G\), thì sẽ thu được ma trận phụ hợp của
+\(A\). Theo (5.2), ta thu được \(\det(AE(j,i))\); rồi theo Hệ quả 5.1, ta có
+thể phán đoán trong \(G\) có tồn tại đường đi từ đỉnh \(i\) đến đỉnh \(j\) hay
+không, từ đó thu được bao đóng bắc cầu của \(G\).
+
+Tính trực tiếp ma trận phụ hợp của \(A\) là rất khó. May mắn là bài toán này
+không cần tính giá trị chính xác của chúng; chỉ cần phán đoán các đa thức ấy
+có bằng \(0\) hay không. Vì vậy có thể dùng bổ đề sau để đơn giản hóa bài
+toán.
+
+\paragraph{Bổ đề 5.1 (Schwartz--Zippel).}
+\([1]\)
+Với một đa thức \(n\) biến bậc \(d\) \(P(x_1,x_2,\ldots,x_n)\) trên trường
+\(F\), không đồng nhất bằng \(0\), giả sử \(r_1,r_2,\ldots,r_n\) là \(n\) số
+ngẫu nhiên trong \(F\) được chọn độc lập, khi đó
+\[
+  \Pr[P(r_1,r_2,\ldots,r_n)=0]\le \frac{d}{|F|}.
+\]
+
+Vì vậy, chỉ cần gán mỗi biến trong ma trận \(A\) thành một số ngẫu nhiên trong
+trường \(F\). Dựa vào việc \(\det(AE(j,i))\) trên trường \(F\) có bằng \(0\)
+hay không, ta có thể phán đoán trong \(G\) có tồn tại đường đi từ đỉnh \(i\)
+đến đỉnh \(j\) hay không.
+
+Vì quy mô dữ liệu của loại bài toán này đều khá nhỏ, và ta lấy số nguyên tố
+lớn \(P=10^9+7\) làm trường modulo, xác suất sai có thể bỏ qua.
+
+\paragraph{Duy trì động định thức và ma trận nghịch đảo.}
+Với đồ thị ban đầu \(G\), có thể dùng khử Gauss \([2]\) trong độ phức tạp
+\(\Oh(n^3)\) để tính định thức và ma trận nghịch đảo của \(A\).
+
+Với mỗi thao tác thêm, xóa cạnh, giả sử thao tác hiện tại sửa một vị trí nào
+đó ở cột \(i\) của ma trận \(A\). Gọi vector cột \(\delta\) biểu thị thay đổi
+của cột \(i\) trong ma trận \(A\), và gọi \(A'\) là ma trận sau thao tác hiện
+tại. Khi đó
+\[
+  A'_{j,i}=A_{j,i}+\delta_j,\qquad j\in\{1,2,\ldots,n\}.
+\]
+
+Gọi vector hàng \(e_i^T\) là \((0,0,\ldots,1,\ldots,0)\), trong đó cột chứa
+\(1\) là cột thứ \(i\). Khi ấy \(\delta e_i^T\) là ma trận chỉ có cột thứ
+\(i\) khác \(0\), và cột đó bằng \(\delta\). Do đó
+\[
+  A'=A+\delta e_i^T.
+\]
+
+Nếu ma trận \(B\) thỏa \(A'=A\times B\), thì
+\[
+  B=I+A^{-1}\delta e_i^T=I+(A^{-1}\delta)e_i^T=I+be_i^T,
+\]
+trong đó vector cột \(b=A^{-1}\delta\), có thể tính trong độ phức tạp
+\(\Oh(n^2)\).
+
+Viết ma trận \(B\) ra sẽ thấy nó chỉ khác ma trận đơn vị ở cột thứ \(i\):
+\[
+  B_{r,c}=
+  \begin{cases}
+    1, & r=c,\ c\ne i,\\
+    1+b_i, & r=c=i,\\
+    b_r, & c=i,\ r\ne i,\\
+    0, & \text{trường hợp khác}.
+  \end{cases}
+\]
+Quan sát được \(\det B=1+b_i\). Vì vậy từ công thức
+\[
+  \det A'=\det A\times\det B
+\]
+ta thu được định thức của ma trận sau thao tác.
+
+Vì dạng của \(B\) rất đơn giản, cũng có thể quan sát được ma trận nghịch đảo
+\(B^{-1}\):
+\[
+  (B^{-1})_{r,c}=
+  \begin{cases}
+    1, & r=c,\ c\ne i,\\
+    \dfrac{1}{1+b_i}, & r=c=i,\\
+    -\dfrac{b_r}{1+b_i}, & c=i,\ r\ne i,\\
+    0, & \text{trường hợp khác}.
+  \end{cases}
+\]
+
+Ma trận nghịch đảo \(B^{-1}\) là một ma trận thưa, trong đó chỉ có \(\Oh(n)\)
+phần tử khác \(0\). Vì vậy theo công thức
+\[
+  A'^{-1}=B^{-1}\times A^{-1}
+\]
+ta có thể dùng phép nhân ma trận thưa để tính \(A'^{-1}\) trong độ phức tạp
+\(\Oh(n^2)\).
+
+Sau khi duy trì động được định thức và ma trận nghịch đảo, xử lý thêm một
+chút là thu được bao đóng bắc cầu của \(G\). Độ phức tạp thời gian xấu nhất
+cho một thao tác của thuật toán này là \(\Oh(n^2)\).
+
+\paragraph{Tiểu kết.}
+Quy trình chính của thuật toán này là:
+\begin{enumerate}
+  \item thông qua xử lý đồ thị \(G\), chuyển bài toán bao đóng bắc cầu thành
+  bài toán phủ chu trình;
+
+  \item định nghĩa ma trận \(A\) cho \(G\); khi \(\det(AE(j,i))\ne 0\), điều
+  đó cho thấy tồn tại đường đi từ đỉnh \(i\) đến đỉnh \(j\);
+
+  \item dùng đại số tuyến tính và Bổ đề 5.1 để đơn giản hóa bài toán thành
+  tính ma trận phụ hợp của \(A\) trên trường modulo;
+
+  \item suy diễn toán học để duy trì động \(\operatorname{adj} A\) trong độ
+  phức tạp \(\Oh(n^2)\), rồi thu được bao đóng bắc cầu.
+\end{enumerate}
+
+Có thể thấy thuật toán này không chỉ giới hạn ở thao tác thêm, xóa một cạnh
+mỗi lần; nó còn hỗ trợ mỗi thao tác thêm, xóa một số cạnh vào, ra của một đỉnh
+mà hiệu suất không đổi.
+
+\subsection{Tổng kết}
+
+Bài viết đã đề xuất các thuật toán sau cho bài toán bao đóng bắc cầu động:
+\begin{itemize}
+  \item dùng thuật toán Floyd--Warshall, sắp xếp tô-pô và thuật toán thành phần
+  liên thông mạnh để giải bài toán bao đóng bắc cầu tĩnh;
+
+  \item dùng thuật toán đường đi ngắn nhất, mở rộng thuật toán Floyd--Warshall
+  và thuật toán gộp cây có hướng để giải bài toán bao đóng bắc cầu động bộ
+  phận;
+
+  \item dùng thuật toán cây đoạn thời gian và một thuật toán dựa trên đại số
+  tuyến tính để giải bài toán bao đóng bắc cầu động hoàn toàn.
+\end{itemize}
+
+Vì hiện nay trong thi tin học, các bài toán liên quan đến bao đóng bắc cầu
+động còn rất ít, nên lớp bài này vẫn còn nhiều không gian để khai thác. Hy
+vọng bài viết này có thể đóng vai trò gợi mở, để trong tương lai thi tin học
+có ngày càng nhiều nghiên cứu và ứng dụng theo hướng này.
+
+\subsection*{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+
+Cảm ơn thầy Chen Heli và thầy Dong Yehua của Trường Trung học số 1 Thiệu Hưng
+đã quan tâm và chỉ dạy tôi trong nhiều năm.
+
+Cảm ơn huấn luyện viên đội tuyển quốc gia Zhang Ruizhe và Yu Linyun đã chỉ
+dẫn.
+
+Cảm ơn các anh khóa trên Zhang Hengjie và Ren Zhizhou của Đại học Thanh Hoa đã
+cho tôi ý tưởng và gợi mở trong quá trình viết bài.
+
+Cảm ơn các bạn Sun Yican, Hong Huadun, Feng Zhe, Ye Jianing, Ren Xuandi và các
+bạn khác của Trường Trung học số 1 Thiệu Hưng đã giúp đỡ tôi.
+
+Cảm ơn tất cả thầy cô và bạn bè từng giúp đỡ tôi.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}[label={[\arabic*]}]
+  \item Wikipedia, Schwartz--Zippel lemma.
+
+  \item Wikipedia, Gaussian elimination.
+
+  \item Liu Rujia, Huang Liang. \emph{Nghệ thuật thuật toán và thi tin học}.
+
+  \item Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford
+  Stein. \emph{Introduction to Algorithms}.
+
+  \item Sun Yaofeng. \emph{Báo cáo lời giải bài khó của G nhỏ}, bài tập lần
+  thứ hai của đội tuyển tập huấn năm 2017.
+
+  \item Xu Yinzhan. \emph{Cây đoạn trong một lớp bài toán phân trị}, luận văn
+  đội tuyển tập huấn năm 2014.
+
+  \item Camil Demetrescu, Giuseppe F. Italiano. ``Fully Dynamic Transitive
+  Closure: Breaking Through the \(O(n^2)\) Barrier.'' FOCS 2000: 381--389.
+
+  \item M. Nivat. ``Amortized Efficiency of a Path Retrieval Data Structure.''
+  TCS 1986: 273--281.
+
+  \item Piotr Sankowski. ``Dynamic Transitive Closure via Dynamic Matrix
+  Inverse.'' FOCS 2004: 509--517.
+\end{enumerate}
+
 \section*{Ghi chú về trích xuất}
 
 Nội dung bài đầu được trích bằng \texttt{pdftotext} từ trang vật lý 3 đến 13
@@ -4323,5 +5275,12 @@ PDF, tương ứng trang bài viết 50 đến 74; trang vật lý 77 là bài k
 bảng và hình minh họa nhỏ được dựng lại bằng LaTeX/\texttt{tikz}. Các hình
 được kiểm tra bằng trang render sau khi biên dịch; không dùng ảnh cắt từ PDF.
 Nguồn không có mẫu mã chương trình cần giữ nguyên.
+
+Bài thứ sáu được trích bằng \texttt{pdftotext} từ trang vật lý 77 đến 91 của
+PDF, tương ứng trang bài viết 75 đến 89; trang vật lý 92 là bài kế tiếp. Bài
+này không có hình. Các công thức ma trận trong mục 5.2 được kiểm tra bằng
+trang render vì lớp văn bản trích ra làm nhiễu ngoặc và chỉ số; các ma trận
+\(B\) và \(B^{-1}\) được viết lại bằng công thức theo phần tử để giữ đúng nội
+dung mà gọn hơn bản in. Nguồn không có mẫu mã chương trình cần giữ nguyên.
 
 \end{document}

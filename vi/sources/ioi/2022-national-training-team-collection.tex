@@ -18,7 +18,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2022. Tệp này
 là bản quét ảnh: \texttt{pdftotext} chỉ trả về các dấu sang trang và không khôi
 phục được văn bản thân bài. Vì vậy bản LaTeX này chuyển ngữ phần nhận diện tập
-sách, mục lục và năm bài đầu tiên bằng cách đọc trực tiếp các trang đã render
+sách, mục lục và sáu bài đầu tiên bằng cách đọc trực tiếp các trang đã render
 từ PDF, kết hợp OCR bằng \texttt{tesseract}.
 \end{abstract}
 
@@ -3885,6 +3885,500 @@ các bạn Chu Xuanyu và Zhu Tianyi đã cung cấp một phần ví dụ; cả
 viên đội tuyển đã cung cấp các bài kiểm tra nội bộ chất lượng cao; và cảm ơn
 các thầy cô, bạn học khác từng giúp đỡ tác giả.
 
+\section{Bàn về thuật toán xấp xỉ trong OI}
+
+\begin{center}
+\textbf{Xu Tingqiang, Trường Trung học trực thuộc Đại học Nhân dân Trung Quốc}
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Trong nhiều bài OI, thí sinh chỉ cần xuất kết quả có sai số tương đối không
+vượt quá một ngưỡng $\varepsilon$ là được chấp nhận, với các giá trị thường gặp
+như $10^{-2},10^{-4},10^{-9}$. Bài viết này giới thiệu một số thuật toán xấp
+xỉ: kết quả của chúng có sai số tương đối hoặc tuyệt đối không vượt quá phạm vi
+cho trước. Dùng thuật toán xấp xỉ, nhiều bài toán tính giá trị trả về số thực
+có thể được xử lý tốt; một phần bài toán NP-hard cũng có thể được giải trong
+thời gian đa thức khi cho phép sai số đủ lớn, thậm chí sai số tùy ý; ngoài ra,
+một số bài toán vốn đã có thuật toán đa thức chính xác cũng có thể giảm bậc đa
+thức nếu chấp nhận một sai số nhỏ.
+
+\subsection{Lời nói đầu}
+
+Trong OI, nhiều bài toán có đáp án là số thực đặt giới hạn sai số tuyệt đối
+hoặc tương đối cỡ $10^{-9}$ để tránh lỗi độ chính xác của kiểu \texttt{double}
+trong C++. Trên thực tế, một số bài có thể xấp xỉ đáp án bằng khai triển
+Taylor, tích phân số và các kỹ thuật tương tự; đổi lại một phần thời gian để
+đạt đủ độ chính xác, ta có thể thu được độ phức tạp mà cách giải trực tiếp khó
+đạt tới. Những kỹ thuật này chưa thật sự phổ biến, nên mục 2 sẽ giới thiệu các
+thuật toán đó.
+
+Mặt khác, với một số bài toán NP, giới nghiên cứu đã nhiều năm tìm cách thu
+được nghiệm tương đối tốt hơn. Các thuật toán trong bài có thể giải tốt một
+phần lớp bài này. Những thuật toán ngẫu nhiên khác, chẳng hạn thuật toán điều
+chỉnh cục bộ, cũng có thể tìm nghiệm khá tốt, nhưng mức tốt của nghiệm không
+được bảo đảm trên mọi dữ liệu, và do đó tính đúng đắn cũng khó chứng minh.
+Ngược lại, các thuật toán dưới đây bảo đảm với mọi dữ liệu đều cho đáp án
+tương đối tốt. Mục 3 trình bày nhóm thuật toán này.
+
+Mục 4 mô tả một số thuật toán xấp xỉ trên đồ thị. Những bài toán này bản thân
+có thể giải chính xác bằng thuật toán đa thức khác, nhưng xấp xỉ cho phép đánh
+đổi một chút sai số để giảm mạnh độ phức tạp.
+
+\subsection{Xấp xỉ độ chính xác}
+
+\subsubsection{Tích phân số}
+
+Trong nhiều bài, đáp án có thể được biến đổi thành một tích phân số. Tức tồn
+tại một hàm khả tích $f(x)$ và một khoảng $[A,B]$, đề bài yêu cầu tính
+\[
+  \int_A^B f(x)\,dx.
+\]
+
+Trong đa số bài, $f(x)$ thường biểu thị độ dài đoạn thẳng, diện tích hình hoặc
+thông tin hình học tương tự. Vì vậy ở đây mặc định $f(x)$ liên tục, khả vi mọi
+cấp trừ hữu hạn điểm, và không âm trên $[A,B]$. Đôi khi $f$ khá phức tạp, khó
+tính trực tiếp nguyên hàm, khi đó cần tính gần đúng.
+
+\subsubsection{Xấp xỉ bằng tổng Riemann}
+
+Theo định nghĩa tích phân xác định, chọn một số nguyên dương $N$ và chia đều
+$[A,B]$ thành $N$ đoạn. Với mỗi đoạn, dùng giá trị của $f$ tại trung điểm để
+xấp xỉ giá trị trung bình trên đoạn ấy, rồi cộng lại:
+\[
+  S_N=\frac{B-A}{N}\sum_{i=0}^{N-1}
+  f\!\left(A+\left(i+\frac12\right)\frac{B-A}{N}\right).
+\]
+Khi $N\to\infty$, $S_N$ tiến tới giá trị tích phân thật. Thuật toán trả giá
+bằng $O(N)$ lần tính hàm, nên việc ước lượng sai số theo $N$ rất quan trọng.
+
+Với một số hàm thường gặp:
+\begin{itemize}
+  \item nếu $f(x)=ax+b$ thì công thức trung điểm cho kết quả chính xác;
+  \item nếu $f(x)=x^2$ thì sai số tương đối là bậc $O(N^{-2})$;
+  \item nếu $f(x)=\cos x$ trên khoảng không vượt qua điểm bất thường của hàm
+  trị tuyệt đối tương ứng, sai số cũng là bậc $O(N^{-2})$.
+\end{itemize}
+
+\paragraph{Định lý 2.1.}
+Nếu $f$ khả vi mọi cấp trên $[A,B]$, sai số tuyệt đối của xấp xỉ Riemann bằng
+trung điểm trong trường hợp xấu nhất không vượt quá một hằng số nhân với
+\[
+  \frac{(B-A)^3}{N^2}\max_{x\in[A,B]}|f''(x)|.
+\]
+Nguồn chỉ dẫn chứng minh trong tài liệu tham khảo [4].
+
+\paragraph{Ví dụ 1 (\emph{Xấp xỉ là đủ}).}
+Cho $n$ điểm nguyên trên mặt phẳng. Với mỗi điểm, hãy tính tổng khoảng cách từ
+nó tới mọi điểm còn lại. Cho phép sai số tương đối
+$\varepsilon=10^{-4}$, $n\le2\cdot10^5$, tọa độ có trị tuyệt đối không vượt quá
+$10^8$.
+
+Với hai điểm $(x_1,y_1),(x_2,y_2)$, khoảng cách giữa chúng có thể xem như
+\[
+  \int_0^\pi |(x_2-x_1)\cos\theta+(y_2-y_1)\sin\theta|\,d\theta,
+\]
+tức tích phân của độ dài hình chiếu đoạn thẳng lên mọi hướng. Đổi thứ tự tổng
+và tích phân, lấy $N$ góc đều nhau $\theta_1,\theta_2,\ldots,\theta_N$. Với
+mỗi góc, chiếu tất cả điểm lên đường thẳng vuông góc tương ứng, rồi tính tổng
+khoảng cách một chiều từ mỗi điểm tới các điểm còn lại. Sau khi sắp xếp các
+hình chiếu, bài toán một chiều này xử lý được tuyến tính.
+
+Trên các khoảng không chứa điểm không khả vi của $|\cos\theta|$, phân tích ở
+trên cho sai số $O(N^{-2})$. Gần các điểm $\cos\theta=0$, phần tích phân trong
+một đoạn ngắn cũng chỉ gây sai số bậc $O(N^{-2})$. Vì vậy chọn
+$N=O(\varepsilon^{-1/2})$ là đủ. Độ phức tạp thời gian là
+$O(n\varepsilon^{-1/2}\log n)$.
+
+\subsubsection{Tích phân Simpson}
+
+Ta thử dùng hàm bậc hai để xấp xỉ hàm dưới dấu tích phân. Khi
+$g(x)=ax^2+bx+c$, tích phân trên $[A,B]$ được xác định bởi các hệ số bậc hai.
+Quy tắc Simpson dùng ba điểm
+\[
+  (A,f(A)),\quad \left(\frac{A+B}{2},f\!\left(\frac{A+B}{2}\right)\right),
+  \quad (B,f(B))
+\]
+để quyết định một đa thức bậc hai, rồi dùng tích phân của đa thức đó xấp xỉ
+tích phân của $f$.
+
+\paragraph{Định nghĩa 2.1.}
+Tích phân Simpson của $f$ trên $[A,B]$ là
+\[
+  \operatorname{Simpson}(A,B)
+  =\frac{B-A}{6}\left(
+    f(A)+4f\!\left(\frac{A+B}{2}\right)+f(B)
+  \right).
+\]
+
+Hiệu quả xấp xỉ của Simpson tốt hơn công thức trung điểm.
+
+\paragraph{Định lý 2.2.}
+Chia $[A,B]$ thành $N$ đoạn đều nhau và dùng Simpson trên từng đoạn. Nếu $f$
+khả vi đủ cấp trên $[A,B]$, sai số tuyệt đối không vượt quá một hằng số nhân
+với
+\[
+  \frac{(B-A)^5}{N^4}\max_{x\in[A,B]}|f^{(4)}(x)|.
+\]
+Chứng minh xem tài liệu tham khảo [4].
+
+\subsubsection{Tích phân Simpson thích nghi}
+
+Khi $f(x)$ có đoạn khác quá xa hàm bậc hai, chẳng hạn gần điểm không khả vi,
+sai số Simpson tại vùng đó tăng mạnh. Nếu thu nhỏ mọi đoạn thì chi phí quá lớn,
+nên ta dùng Simpson thích nghi: nếu ước lượng sai số trên một đoạn đủ nhỏ thì
+trả luôn giá trị Simpson, ngược lại chia đôi đoạn và đệ quy.
+
+\begin{enumerate}
+  \item Đặt $\mathit{mid}=(A+B)/2$.
+  \item Nếu
+  \[
+    |\operatorname{Simpson}(A,\mathit{mid})
+    +\operatorname{Simpson}(\mathit{mid},B)
+    -\operatorname{Simpson}(A,B)|<\varepsilon,
+  \]
+  trả về $\operatorname{Simpson}(A,B)$.
+  \item Ngược lại, trả về tổng kết quả đệ quy trên
+  $[A,\mathit{mid}]$ và $[\mathit{mid},B]$.
+\end{enumerate}
+
+Simpson thích nghi giải được nhiều bài hình học tính toán trong OI và thường có
+hiệu năng tốt.
+
+\subsubsection{Khai triển Taylor}
+
+Với một hàm giải tích thực $f$, xét khai triển Taylor quanh $x_0$:
+\[
+  f(x)=f(x_0)+f'(x_0)(x-x_0)+\cdots+
+  \frac{f^{(n)}(\xi)}{n!}(x-x_0)^n,
+\]
+trong đó $\xi$ nằm giữa $x$ và $x_0$.
+
+\paragraph{Bổ đề 2.1.}
+Nếu tồn tại $M>0$ sao cho với mọi $n>0$,
+\[
+  \left|\frac{f^{(n)}(x_0)}{n!}(x-x_0)^n\right|\le M2^{-n},
+\]
+thì chỉ cần tính $O(\log\varepsilon^{-1})$ hạng đầu của khai triển Taylor để
+sai số tuyệt đối không vượt quá $\varepsilon$.
+
+\paragraph{Chứng minh.}
+Vì $f$ giải tích thực, chuỗi Taylor hội tụ tới $f(x)$. Lấy
+$N_0=\lceil\log\varepsilon^{-1}+\log M\rceil+1$, tổng trị tuyệt đối của các
+hạng sau $N_0$ không vượt quá một cấp số nhân nhỏ hơn $\varepsilon$.
+\hfill\rule{0.55em}{0.55em}
+
+Một hệ quả thường dùng hơn là: nếu các đạo hàm bị chặn bởi $M$ và
+$|x-x_0|$ đủ nhỏ, thì cũng chỉ cần giữ $O(\log\varepsilon^{-1})$ hạng. Lợi ích
+của Taylor là biến một hàm phức tạp thành một đa thức bậc thấp; đa thức có cấu
+trúc tốt và dễ cộng gộp.
+
+\paragraph{Ví dụ 2 (\emph{Lấy suất}).}
+Cho dãy số nguyên dương $a_1,a_2,\ldots,a_n$ và $q$ truy vấn trên đoạn. Mỗi
+truy vấn yêu cầu tính một tích/hàm của các $a_i$ trong đoạn, cho phép sai số
+$\varepsilon=10^{-9}$; ràng buộc đọc được từ bản quét là
+$n,q\le6\cdot10^5$ và các giá trị nằm trong phạm vi đa thức lớn.
+
+Lời giải chia các phần tử thành hai loại. Với các hạng quá lớn so với tham số
+truy vấn, đóng góp của chúng đã nhỏ hơn $\varepsilon$ nên có thể xử lý riêng
+hoặc bỏ qua an toàn. Với phần còn lại, viết biểu thức cần tính dưới dạng
+\[
+  \exp\!\left(\sum_i \log(1-u_i)\right),
+\]
+rồi khai triển
+\[
+  \log(1-u)=-u-\frac{u^2}{2}-\frac{u^3}{3}-\cdots .
+\]
+Do $|u_i|$ đủ nhỏ, theo bổ đề chỉ cần giữ $O(\log\varepsilon^{-1})$ hạng.
+Mỗi $\log(1-u_i)$ trở thành một đa thức bậc thấp theo tham số truy vấn; các
+hạng cùng bậc có thể cộng gộp bằng tiền xử lý tổng tiền tố. Nhờ vậy truy vấn
+được trả lời nhanh hơn nhiều so với tính trực tiếp từng phần tử.
+
+\paragraph{Ví dụ 3 (\emph{Game of Chance}).}
+Sau một số biến đổi, bài toán cần tính tổng các giá trị của một hàm phân thức
+dạng $f(x)$ trên nhiều cặp số dương $(a_i,b_i)$, với $n\le3\cdot10^5$ và sai
+số $10^{-9}$.
+
+Nếu $a_i<b_i$, đặt $x=a_i/b_i<1$ và khai triển quanh một điểm cố định như
+$x_0=1/2$. Giữ $O(\log\varepsilon^{-1})$ hạng rồi dùng nhị thức Newton, ta thu
+được một đa thức bậc thấp theo $x$. Khi cộng trên mọi $a_i<b_i$, chỉ cần biết
+các tổng lũy thừa $a_i^k$ và $b_i^{-k}$ tương ứng.
+
+Nếu $a_i>b_i$, khai triển trực tiếp không hội tụ tốt. Khi đó đổi góc nhìn, dùng
+$b_i/a_i<1$ và khai triển hàm tương đương theo biến nghịch đảo. Như vậy bài
+toán được tách thành hai miền $0<x<1$ và $x>1$, mỗi miền dùng một khai triển
+Taylor hội tụ. Đây là kỹ thuật rất thường gặp khi phải lấy tổng các hàm phân
+thức: chia miền để bảo đảm hội tụ, rồi trả thêm hệ số
+$O(\log\varepsilon^{-1})$ cho bậc đa thức.
+
+\subsection{Nghiệm xấp xỉ của một số bài toán NP}
+
+Nhiều bài toán NP có thuật toán xấp xỉ, chẳng hạn ba lô và tập độc lập lớn
+nhất. Cũng có những bài toán NP đã được chứng minh không tồn tại thuật toán xấp
+xỉ hiệu quả theo nghĩa thường dùng, ví dụ đếm số nghiệm 2-SAT. Dưới đây là một
+số bài có thể xấp xỉ.
+
+Ta dùng thuật ngữ $(1+\varepsilon)$-xấp xỉ để chỉ nghiệm có sai số tương đối
+không vượt quá $\varepsilon$.
+
+\subsubsection{Bài toán ba lô}
+
+Xét bài toán ba lô 0--1 kinh điển. Có $n$ vật phẩm, vật phẩm thứ $i$ có thể
+tích $w_i$ và giá trị $v_i$. Ba lô có dung lượng $W$; cần chọn các vật phẩm có
+tổng thể tích không vượt quá $W$ và tổng giá trị lớn nhất. Giả sử
+$w_i\le W$.
+
+Bài toán này là NP-hard, nên không thể kỳ vọng một thuật toán đa thức theo kích
+thước đầu vào để giải chính xác trong mọi trường hợp. Tuy nhiên, với mọi
+$\varepsilon>0$, ta có thuật toán đa thức cho nghiệm $(1+\varepsilon)$-xấp xỉ.
+
+Gọi $V$ là giá trị lớn nhất của một vật phẩm. Thay mỗi giá trị $v_i$ bằng
+\[
+  v'_i=\left\lfloor \frac{n v_i}{\varepsilon V}\right\rfloor .
+\]
+Sau đó chạy DP theo tổng giá trị đã làm tròn: $dp[j]$ là tổng thể tích nhỏ nhất
+để đạt tổng giá trị làm tròn $j$. Vì tổng $v'_i$ không vượt quá
+$O(n^2/\varepsilon)$, độ phức tạp là $O(n^3/\varepsilon)$ hoặc tốt hơn với cài
+đặt chuẩn.
+
+\paragraph{Bổ đề 3.1.}
+Lấy phương án có $dp[j]\le W$ và $j$ lớn nhất. Phương án tương ứng có sai số
+tương đối không vượt quá $\varepsilon$ so với tối ưu.
+
+\paragraph{Ý chứng minh.}
+Mỗi vật phẩm mất nhiều nhất $\varepsilon V/n$ giá trị khi làm tròn; một phương
+án chọn nhiều nhất $n$ vật phẩm nên mất không quá $\varepsilon V$. Vì nghiệm
+tối ưu có giá trị ít nhất $V$, sai số tương đối không vượt quá
+$\varepsilon$. \hfill\rule{0.55em}{0.55em}
+
+Trên thực tế, FPTAS tốt nhất cho ba lô 0--1 hiện có độ phức tạp thấp hơn nhiều
+so với cận đơn giản trên; xem tài liệu [3].
+
+\subsubsection{Lấy mẫu ngẫu nhiên}
+
+Trong một số bài NP, có thể dùng lấy mẫu ngẫu nhiên để ước lượng một đại lượng.
+Mô hình cơ bản sau cho thấy mức tốt của phương pháp này.
+
+\paragraph{Định lý 3.1.}
+Cho một bộ sinh ngẫu nhiên trả về số trong $[A,B]$ với kỳ vọng $E_0$ và phương
+sai bị chặn bởi $\sigma^2$. Lấy mẫu độc lập $N$ lần và lấy trung bình. Sai số
+tuyệt đối kỳ vọng so với $E_0$ là $O(\sigma N^{-1/2})$.
+
+\paragraph{Ý chứng minh.}
+Nếu các kết quả là $a_1,\ldots,a_N$, trung bình là
+$\overline a=\frac1N\sum_i a_i$. Phương sai của $\overline a$ bằng
+$\sigma^2/N$, nên sai số tuyệt đối kỳ vọng bị chặn bởi bậc căn của đại lượng
+này. \hfill\rule{0.55em}{0.55em}
+
+Trong thi thuật toán, không chỉ cần kỳ vọng nhỏ mà còn cần xác suất sai lớn là
+rất nhỏ. Dùng bất đẳng thức Hoeffding, ta có:
+
+\paragraph{Định lý 3.2.}
+Với giả thiết kết quả luôn nằm trong $[A,B]$, sau $N$ lần lấy mẫu, sai số tuyệt
+đối của trung bình so với kỳ vọng gần như chắc chắn không vượt quá
+$O((B-A)N^{-1/2})$, trong đó xác suất thất bại giảm theo hàm mũ của hằng số ẩn.
+
+Do đó nếu muốn sai số tuyệt đối không vượt quá $\varepsilon$, chỉ cần lấy
+$N=O((B-A)^2\varepsilon^{-2})$ mẫu, bỏ qua các hằng số xác suất.
+
+\paragraph{Ví dụ 5 (\emph{Number of Close Strings}).}
+Cho $k$ xâu nhị phân độ dài $n$ và số nguyên dương $m$. Hỏi có bao nhiêu xâu
+nhị phân độ dài $n$ có khoảng cách Hamming không quá $m$ tới ít nhất một xâu đã
+cho. Cho phép sai số tương đối $10^{-7}$, với
+$1\le n,k\le50$.
+
+Gọi $S_i$ là tập các xâu cách xâu thứ $i$ không quá $m$, và cần tính
+\[
+  \left|\bigcup_i S_i\right|.
+\]
+Mọi $|S_i|$ đều biết được bằng công thức tổ hợp. Xét một dãy khổng lồ trong đó
+mỗi phần tử của $S_i$ được liệt kê theo từng $i$; với một xâu $x$, nếu nó xuất
+hiện $c(x)$ lần thì đóng góp $1/c(x)$ trong dãy này. Kỳ vọng của biến ngẫu
+nhiên $1/c(x)$, khi chọn đều một phần tử từ dãy liệt kê, nhân với tổng độ dài
+dãy, chính là kích thước hợp cần tìm.
+
+Vì có thể lấy mẫu đều một phần tử từ một $S_i$ đã chọn và tính $c(x)$ bằng cách
+so sánh với các xâu ban đầu, ta dùng lấy mẫu ngẫu nhiên để ước lượng kỳ vọng.
+Theo định lý trên, lấy $O(k^2\varepsilon^{-2})$ mẫu là đủ để khống chế sai số
+tương đối trong phạm vi yêu cầu, với hằng số nhỏ trong thực tế.
+
+\subsection{Một số thuật toán xấp xỉ trên đồ thị}
+
+Thuật toán xấp xỉ có phạm vi ứng dụng rộng. Ngay cả với bài toán có thuật toán
+đa thức chính xác, nếu cho phép một phần sai số tương đối hoặc tuyệt đối, ta vẫn
+có thể đạt độ phức tạp tốt hơn.
+
+\paragraph{Ví dụ 6 (\emph{AIK}).}
+Cho một DAG $G=(V,E)$. Với mỗi đỉnh, cần tính số đỉnh mà nó tới được. Cho phép
+sai số tương đối $\varepsilon$. Ràng buộc đọc được:
+$|V|\le10^5, |E|\le10^6$.
+
+Trước hết dùng một bổ đề xác suất.
+
+\paragraph{Bổ đề 4.1.}
+Với $k$ biến ngẫu nhiên độc lập phân bố đều trên $[0,1]$, kỳ vọng của giá trị
+nhỏ nhất là $\frac1{k+1}$.
+
+Vì vậy, mỗi lần ta gán cho mỗi đỉnh một trọng số ngẫu nhiên đều trong $[0,1]$,
+rồi trên DAG tính với mỗi đỉnh trọng số nhỏ nhất trong tập các đỉnh nó tới
+được. Nếu đáp án thật của đỉnh $i$ là $\operatorname{ans}_i$, kỳ vọng của giá
+trị nhỏ nhất là xấp xỉ $\frac1{\operatorname{ans}_i+1}$. Sau $N$ lần lấy mẫu,
+lấy trung bình các giá trị nhỏ nhất, rồi nghịch đảo và trừ $1$ để ước lượng
+$\operatorname{ans}_i$.
+
+Phân tích phương sai trong nguồn cho thấy sai số tương đối gần như chắc chắn là
+$O(N^{-1/2})$, nên chọn $N=O(\varepsilon^{-2})$ là đủ. Độ phức tạp thời gian là
+\[
+  O((|V|+|E|)\varepsilon^{-2}).
+\]
+
+\paragraph{Định nghĩa 4.1.}
+Với một bài toán có đáp án chính xác là số nguyên dương $x$, nếu chỉ cần tìm
+$y$ thỏa $x\le y\le x+t$, ta gọi đó là xấp xỉ \emph{surplus-$t$}.
+
+\paragraph{Ví dụ 7.}
+Cho đồ thị vô hướng đơn không trọng số $G=(V,E)$. Hãy tìm xấp xỉ surplus-$2$
+của độ dài chu trình đơn ngắn nhất. Giả sử $|V|\le8000$.
+
+Cố định một đỉnh $v$, chạy BFS từ $v$, tìm khoảng cách ngắn nhất tới mọi đỉnh
+và đánh dấu đường ngắn nhất có duy nhất hay không. Duy trì $t$, ban đầu bằng
+$n$:
+\begin{enumerate}
+  \item nếu hai đỉnh kề nhau có cùng khoảng cách $d$ tới $v$, cập nhật
+  $t=\min(t,2d+1)$;
+  \item nếu một đỉnh có nhiều hơn một đường ngắn nhất tới $v$ và khoảng cách
+  là $d$, cập nhật $t=\min(t,2d)$.
+\end{enumerate}
+
+\paragraph{Bổ đề 4.3.}
+Giá trị $t$ cuối cùng không nhỏ hơn độ dài chu trình đơn ngắn nhất; nếu chu
+trình ngắn nhất đi qua $v$ hoặc một đỉnh kề $v$, thì $t\le g+2$, trong đó $g$
+là độ dài chu trình ngắn nhất.
+
+Ý tưởng chứng minh là: hai trường hợp cập nhật ở trên đều tạo ra một chu trình
+không suy biến, nên trong đồ thị tồn tại một chu trình đơn không dài hơn giá
+trị cập nhật. Ngược lại, nếu chu trình ngắn nhất đi qua $v$ hoặc lân cận của
+$v$, xét các đỉnh đối diện trên chu trình theo chẵn lẻ độ dài, BFS chắc chắn
+phát hiện một trong hai trường hợp với sai số không quá $2$.
+
+Nếu chu trình ngắn nhất đi qua $v$ hoặc lân cận của $v$, ta xuất $t$. Nếu
+không, xóa $v$ cùng lân cận của nó rồi chọn đỉnh mới, lặp lại quá trình. Chọn
+$v$ là đỉnh bậc lớn nhất hiện tại thì tổng thời gian là $O(|V|^2)$.
+
+\paragraph{Ví dụ 8.}
+Vẫn với đồ thị vô hướng đơn không trọng số, yêu cầu xấp xỉ surplus-$1$ của độ
+dài chu trình đơn ngắn nhất.
+
+Ta cải tiến việc tìm chu trình đi qua một đỉnh $v$. Chạy BFS từng lớp, nhưng
+mỗi cạnh sau khi được xét sẽ bị xóa khỏi tập cạnh đang xét. Khi đang duyệt cạnh
+$(u,x)$, nếu $x$ chưa thăm thì đánh dấu và đưa vào lớp tiếp theo; nếu $x$ đã
+thăm thì trả về
+\[
+  \operatorname{dist}(v,u)+\operatorname{dist}(v,x)+1.
+\]
+
+Mỗi đỉnh được đi qua nhiều nhất một lần trước khi trả về, nên chi phí cho một
+đỉnh gốc là $O(|V|)$. Nếu chu trình ngắn nhất đi qua $v$, thuật toán trả về
+xấp xỉ surplus-$1$; nếu độ dài chu trình ngắn nhất là chẵn, nó còn trả về đúng
+giá trị chính xác. Chạy với mọi $v$ cho độ phức tạp $O(|V|^2)$.
+
+\paragraph{Ví dụ 9 (\emph{Ước lượng là đủ}).}
+Cho đồ thị vô hướng đơn không trọng số $G=(V,E)$ và $q$ truy vấn khoảng cách
+giữa hai đỉnh. Cần trả về khoảng cách ngắn nhất surplus-$2$ cho mỗi truy vấn,
+với $|V|\le8000$, $q\le10^5$.
+
+Dùng kỹ thuật của ví dụ 7: chọn đỉnh bậc lớn nhất $v$, chạy BFS từ $v$ để có
+khoảng cách tới mọi đỉnh. Nếu đường đi ngắn nhất giữa $x,y$ đi qua $v$ hoặc
+lân cận của $v$, thì $d_v(x)+d_v(y)$ là xấp xỉ surplus-$2$. Xóa $v$ và lân cận
+của nó rồi lặp lại. Với mỗi truy vấn, lấy giá trị nhỏ nhất trong các tổng
+khoảng cách thu được.
+
+Nếu làm tới khi xóa hết đỉnh, số mốc có thể lớn. Ta chỉ chọn $B$ mốc đầu tiên,
+rồi xét đồ thị còn lại $G'$. Vì bậc của mọi đỉnh còn lại không vượt quá khoảng
+$|E|/B$, có thể chạy BFS từ mọi đỉnh trong $G'$ với tổng chi phí nhỏ hơn. Cân
+bằng tham số $B$ cho độ phức tạp tổng quát cỡ
+$O(|V||E|^{1/2}q^{1/2})$ trong phân tích của nguồn.
+
+\paragraph{Ví dụ 10.}
+Cho đồ thị vô hướng đơn không trọng số $G=(V,E)$, cần trả lời xấp xỉ
+surplus-$2$ cho mọi cặp khoảng cách ngắn nhất.
+
+Nếu áp dụng trực tiếp ví dụ 9 cho mọi truy vấn, độ phức tạp còn cao. Nguồn
+giới thiệu một thuật toán xấp xỉ mọi cặp với ý tưởng sau. Đặt
+$n=|V|$, $m=|E|$, chọn ngưỡng $s$ và một số đỉnh mốc $T$. Trước hết lấy tập
+$S$ gồm các đỉnh bậc lớn, rồi nhiều lần chọn một đỉnh che phủ nhiều đỉnh nhất
+trong $S$ (một đỉnh che phủ chính nó và các láng giềng), đưa nó vào $T$ và xóa
+các đỉnh được che phủ khỏi $S$.
+
+Sau đó xây dựng tập cạnh thưa $E'$ gồm:
+\begin{itemize}
+  \item các cạnh có ít nhất một đầu bậc nhỏ;
+  \item các cạnh liên quan tới phần đỉnh bậc lớn chưa xử lý;
+  \item các cạnh nối đỉnh được che phủ tới mốc che phủ nó.
+\end{itemize}
+Chạy BFS từ mỗi mốc trên đồ thị gốc để biết khoảng cách từ mốc tới mọi đỉnh.
+Cuối cùng, với mỗi đỉnh nguồn $v$, chạy BFS trên $E'$ và thêm các cạnh có trọng
+số từ $v$ tới mọi mốc $u\in T$ với trọng số $\operatorname{dist}(v,u)$. Kết quả
+thu được là khoảng cách surplus-$2$ từ $v$ tới mọi đỉnh.
+
+Phân tích của nguồn chứng minh hai điểm:
+\begin{itemize}
+  \item đường đi ngắn nhất nào đi qua một đỉnh bậc lớn đã được che phủ đều có
+  thể thay bằng đường qua mốc che phủ với sai số không quá $2$;
+  \item số cạnh trong $E'$ là $O(ns)$, nên tổng chi phí BFS trên đồ thị thưa
+  giảm đáng kể.
+\end{itemize}
+
+Kết hợp tham số phù hợp, nguồn thu được thuật toán mọi cặp surplus-$2$ có độ
+phức tạp cỡ $O(n^{2.5})$ theo cách trình bày dành cho OI. Thuật toán tương đối
+dễ cài đặt và có hằng số tốt.
+
+\subsection{Tổng kết}
+
+Thuật toán xấp xỉ có triển vọng ứng dụng rộng trong OI. Từ Simpson thích nghi
+đã được dùng khá phổ biến, tới các thuật toán xấp xỉ cho bài NP hoặc bài đồ
+thị còn ít được phổ biến, chúng đều có thể xuất hiện trong thi thuật toán. Với
+người giải, lớp bài này giống quy hoạch động hoặc tham lam ở chỗ khó có một
+khuôn mẫu chung, đòi hỏi kỹ năng tổ hợp và tư duy thiết kế.
+
+Một nhược điểm của bài xấp xỉ là dữ liệu kiểm thử không dễ xây dựng. Để chấm
+một lời giải, nhiều khi cần biết đáp án chính xác, trong khi chính đáp án chính
+xác lại khó tính hơn. Nếu yêu cầu độ chính xác rất cao, có thể chấp nhận rủi ro
+rằng một số đáp án sai số hơi lớn hơn ngưỡng vẫn được chấm đúng, đổi lại bảo
+đảm thuật toán chuẩn chạy được.
+
+Các thuật toán trong bài chỉ là phần rất nhỏ của lĩnh vực xấp xỉ. Còn rất nhiều
+bài toán khi cho phép sai số có thể được xử lý bằng các thuật toán khác nhau.
+Ngay cả trong học thuật, thuật toán xấp xỉ vẫn là một hướng rộng và chưa được
+khai phá hết; có thể trong tương lai độc giả sẽ đặt tên cho một thuật toán xấp
+xỉ mới.
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+đổi; cảm ơn thầy Ye Jinyi của Trường Trung học trực thuộc Đại học Nhân dân
+Trung Quốc đã quan tâm và hướng dẫn; cảm ơn gia đình và bạn bè đã ủng hộ, động
+viên; cảm ơn anh Deng Mingyang, bạn Zhou Hangrui, bạn Li Baitian và bạn Dai
+Jiangqi đã thảo luận và gợi mở; cảm ơn bạn Zhou Hangrui, bạn Chen Yusi, bạn
+Yang Juntian và bạn Wu Hang đã đọc kiểm tra bản thảo.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Dor, D.; Halperin, S.; Zwick, U. \emph{All-pairs almost shortest
+  paths}. SIAM Journal on Computing, 29(5):1740--1759, 2000.
+  \item Itai, A.; Rodeh, M. \emph{Finding a minimum circuit in a graph}. SIAM
+  Journal on Computing, 7(4), 413--423, 1978.
+  \item Jin, C. \emph{An Improved FPTAS for 0-1 Knapsack}. ICALP 2019,
+  Leibniz International Proceedings in Informatics 132, 76:1--76:14.
+  \item Fazekas Jr., E. C.; Mercer, P. R. \emph{Elementary proofs of error
+  estimates for the midpoint and Simpson's rules}. Mathematics Magazine,
+  82(5):365--370, 2009.
+  \item Wikipedia contributors. \emph{Approximation algorithm}, 2021.
+  \item Wikipedia contributors. \emph{Knapsack problem}, 2021.
+  \item Wikipedia contributors. \emph{Hoeffding's inequality}, 2022.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục đã đọc được trên ảnh render, tập năm 2022 bao phủ các nhóm chủ đề
@@ -3922,5 +4416,10 @@ Bài thứ năm được OCR từ các trang vật lý 76--85 của PDF, tương
 lục 72--81. Bài này có nhiều sơ đồ tương tác và trạng thái thanh ghi; bản dịch
 giữ nội dung thuật toán chính và dùng ghi chú trích xuất tiếng Việt cho các
 hình bị OCR nhiễu hoặc không cần thiết cho lập luận.
+Bài thứ sáu được OCR từ các trang vật lý 86--102 của PDF, tương ứng trang mục
+lục 82--98. Các công thức ước lượng sai số, khai triển Taylor và một số dòng
+phân tích xác suất bị OCR nhiễu; bản dịch giữ các công thức chuẩn đọc được và
+diễn giải ý chứng minh, đồng thời không tự suy diễn các hằng số chi tiết không
+ảnh hưởng tới thuật toán.
 
 \end{document}
