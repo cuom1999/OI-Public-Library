@@ -1805,4 +1805,950 @@ quan tâm có thể đọc thêm.
   IOI 2020.
 \end{enumerate}
 
+\section{Bàn về xây dựng và sinh dữ liệu trong thi tin học}
+
+\begin{center}
+Trường Trung học phổ thông số 1 Weifang, tỉnh Sơn Đông\\
+Liu Yiping
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Bài viết này giới thiệu các phương pháp sinh ngẫu nhiên và xây dựng nhiều loại
+dữ liệu như dãy, cây, đồ thị, xâu ngoặc, đồng thời trình bày các lỗi hash
+thường gặp và cách xây dựng dữ liệu tương ứng.
+\end{abstract}
+
+\subsection{Lời nói đầu}
+
+Trong thi tin học, ta thường cần kiểm tra tính đúng đắn của chương trình tại
+máy cục bộ.
+
+Một phương pháp thường dùng là tự xây dựng dữ liệu kiểm thử. Với dữ liệu kích
+thước nhỏ, kết hợp với một chương trình khác có độ phức tạp cao hơn nhưng bảo
+đảm đúng, ta có thể kiểm tra tính đúng đắn của chương trình; với dữ liệu kích
+thước lớn, ta có thể kiểm tra hiệu suất của chương trình. Thí sinh thường gọi
+cách này là ``đối phách''.
+
+Trong đối phách, nếu cường độ dữ liệu sinh ra chưa đủ, có thể khó tìm ra lỗi
+của chương trình, hoặc để thuật toán có độ phức tạp cao vượt qua dữ liệu kích
+thước lớn.
+
+Bài viết này sẽ giới thiệu vài cách sinh những loại dữ liệu thường gặp, cũng
+như cách sinh dữ liệu ngẫu nhiên hơn hoặc có tính nhắm mục tiêu hơn.
+
+\subsection{Dãy}
+
+\subsubsection{Hoán vị}
+
+Thông thường có hai cách sinh hoán vị ngẫu nhiên. Chúng nhìn khá giống nhau,
+nhưng nguyên lý không giống nhau.
+
+Cách thứ nhất như sau.
+
+\begin{quote}
+\textbf{Thuật toán 1: Hoán vị ngẫu nhiên}\\
+\textbf{Input:} $n$\\
+\textbf{Output:} một hoán vị ngẫu nhiên của $1$ tới $n$\\
+Đặt $p$ là một dãy độ dài $n$, ban đầu $p_i=i$.\\
+\textbf{for} $i=1$ \textbf{to} $n$ \textbf{do}\\
+\hspace*{1.5em}$j\leftarrow \operatorname{random}(1,i)$\\
+\hspace*{1.5em}$\operatorname{swap}(p_i,p_j)$\\
+\textbf{end for}\\
+\textbf{return} $p$
+\end{quote}
+
+Ở đây $\operatorname{random}(l,r)$ có tác dụng chọn đều một số nguyên trong
+$[l,r]$.
+
+\paragraph{Bổ đề 1.1.1.}
+Thuật toán 1 có thể sinh đều ngẫu nhiên một hoán vị của $1$ tới $n$.
+
+\emph{Chứng minh.}
+Chú ý rằng thuật toán xáo trộn này trước hết thực hiện xáo trộn kích thước
+$n-1$ trên $n-1$ phần tử đầu của $p$, sau đó đặt
+$j=\operatorname{random}(1,n)$ và hoán đổi $p_n$ với $p_j$.
+
+Xét quy nạp theo $n$.
+
+Mệnh đề hiển nhiên đúng với $n=1$; xét bước từ $n-1$ suy ra $n$.
+
+Sau khi hoán đổi ta có $p_j=n$. Vì $j$ được chọn đều từ $1$ tới $n$, chỉ cần
+chứng minh
+\[
+p_1,\ldots,p_{j-1},p_{j+1},\ldots,p_n
+\]
+là một hoán vị ngẫu nhiên đều.
+
+Mặt khác, $p_1,\ldots,p_{n-1}$ trước khi hoán đổi hiển nhiên song ánh với
+$p_1,\ldots,p_{j-1},p_{j+1},\ldots,p_n$ sau khi hoán đổi, nên hoán vị thu được
+là ngẫu nhiên đều. \hfill$\square$
+
+Cách thứ hai như sau.
+
+\begin{quote}
+\textbf{Thuật toán 2: Hoán vị ngẫu nhiên}\\
+\textbf{Input:} $n$\\
+\textbf{Output:} một hoán vị ngẫu nhiên của $1$ tới $n$\\
+Đặt $p$ là một dãy độ dài $n$, ban đầu $p_i=i$.\\
+\textbf{for} $i=1$ \textbf{to} $n$ \textbf{do}\\
+\hspace*{1.5em}$j\leftarrow \operatorname{random}(i,n)$\\
+\hspace*{1.5em}$\operatorname{swap}(p_i,p_j)$\\
+\textbf{end for}\\
+\textbf{return} $p$
+\end{quote}
+
+\paragraph{Bổ đề 1.1.2.}
+Thuật toán 2 có thể sinh đều ngẫu nhiên một hoán vị của $1$ tới $n$.
+
+\emph{Chứng minh.}
+Thuật toán này có thể xem là trước hết hoán đổi $p_1$ đều thành một trong các
+giá trị từ $1$ tới $n$, rồi thực hiện thuật toán kích thước $n-1$ trên
+$p_2$ tới $p_n$.
+
+Xét quy nạp theo $n$, tính đúng đắn là hiển nhiên. \hfill$\square$
+
+\subsubsection{Dãy không có phần tử lặp}
+
+Xét bài toán sau: cần sinh đều ngẫu nhiên một dãy độ dài $n$, miền giá trị là
+các số nguyên từ $1$ tới $m$ ($m\ge n$), và các phần tử trong dãy không lặp.
+
+Một phương pháp như sau.
+
+\begin{quote}
+\textbf{Thuật toán 3: Dãy ngẫu nhiên không có phần tử lặp}\\
+\textbf{Input:} $n$\\
+\textbf{Output:} một dãy ngẫu nhiên độ dài $n$ không có phần tử lặp\\
+Đặt $a$ là một dãy độ dài $n$.\\
+\textbf{for} $i=1$ \textbf{to} $n$ \textbf{do}\\
+\hspace*{1.5em}$a_i\leftarrow \operatorname{random}(1,m)$\\
+\hspace*{1.5em}\textbf{while} $a_i\in\{a_1,a_2,\ldots,a_{i-1}\}$ \textbf{do}\\
+\hspace*{3em}$a_i\leftarrow \operatorname{random}(1,m)$\\
+\hspace*{1.5em}\textbf{end while}\\
+\textbf{end for}\\
+\textbf{return} $p$
+\end{quote}
+
+\paragraph{Bổ đề 1.2.1.}
+Thuật toán 3 có thể sinh đều ngẫu nhiên một dãy độ dài $n$, miền giá trị
+$[1,m]\cap\mathbb{Z}$, và các phần tử không lặp.
+
+\emph{Chứng minh.}
+Hiển nhiên, dãy được sinh ra chắc chắn hợp lệ, thuật toán có thể sinh mọi dãy
+hợp lệ, và xác suất sinh mọi dãy hợp lệ đều bằng nhau, đều là $1/m^n$.
+\hfill$\square$
+
+Nhược điểm của phương pháp này là khi $m$ tương đối nhỏ thì quá trình sinh sẽ
+khá chậm.
+
+Ví dụ, khi $m=n$, số lần gọi $\operatorname{random}$ kỳ vọng có thể tính là
+\[
+\sum_{i=1}^n n/i=\Theta(n\log n).
+\]
+Việc kiểm tra $a_i\in\{a_1,a_2,\ldots,a_{i-1}\}$ có thể làm bằng bảng hash trong
+$\Theta(1)$, nên tổng độ phức tạp là $\Theta(n\log n)$.
+
+Nhưng chú ý rằng khi $m$ tương đối nhỏ, có thể dùng một thuật toán khác: sinh
+một hoán vị ngẫu nhiên của $1$ tới $m$, rồi lấy $n$ phần tử đầu.
+
+Khi $m\le 2n$, dùng thuật toán thứ hai, độ phức tạp của phần này là
+$\Theta(n)$.
+
+Khi $m>2n$, dùng thuật toán thứ nhất; với mỗi $i$, xác suất mỗi lần chọn được
+một giá trị chưa xuất hiện là $(m-i+1)/m\ge 1/2$, nên độ phức tạp kỳ vọng là
+$\Theta(n)$.
+
+Một phương pháp khác là dùng thuật toán 2: ta chỉ cần cho vòng lặp $i$ chạy tới
+$n$, dùng bảng hash lưu các vị trí đã bị thao tác và giá trị của chúng; độ phức
+tạp có thể đạt $\Theta(n)$.
+
+\subsubsection{Dãy có tổng cố định}
+
+Xét bài toán sau: cần sinh đều ngẫu nhiên một dãy số nguyên dương độ dài $n$,
+$a_1,a_2,\ldots,a_n$, yêu cầu
+\[
+\sum_{i=1}^n a_i=m.
+\]
+
+Đặt $s_i=\sum_{j=1}^i a_j$, và chuyển sang sinh $s$.
+
+Không khó thấy mọi $s$ thỏa
+\[
+1\le s_1<s_2<\cdots<s_n=m
+\]
+đều tương ứng một-một với $a$. Vì vậy, sinh đều ngẫu nhiên một $a$ tương đương
+với sinh đều ngẫu nhiên một $s$ như vậy.
+
+Sinh $s$ như vậy lại tương đương với: chọn đều ngẫu nhiên $n-1$ số nguyên dương
+khác nhau trong $[1,m-1]$. Điều này chuyển về bài toán sinh dãy không có phần tử
+lặp.
+
+Với trường hợp $a_i$ là số nguyên không âm, có thể cộng $1$ vào mọi $a_i$ để
+chuyển về trường hợp số nguyên dương.
+
+Tổng quát hơn, nếu cận dưới của $a_i$ là $b_i$, có thể trừ $b_i-1$ khỏi $a_i$,
+từ đó chuyển về trường hợp cận dưới bằng $1$.
+
+\subsection{Đồ thị}
+
+\subsubsection{Cây}
+
+\paragraph{Cách 1: cha ngẫu nhiên.}
+Một cách sinh cây ngẫu nhiên thường gặp trong thi tin học là: với mỗi
+$2\le i\le n$, chọn đều ngẫu nhiên một đỉnh trong $1$ tới $i-1$ làm cha của
+$i$.
+
+Với một cây có gốc, định nghĩa độ sâu của một đỉnh là số cạnh trên đường đi
+ngắn nhất từ nó tới gốc; định nghĩa chiều cao của cây là giá trị lớn nhất của
+độ sâu trên mọi đỉnh.
+
+\paragraph{Bổ đề 2.1.1.}
+Với mỗi $2\le i\le n$, chọn đều ngẫu nhiên một đỉnh trong $1$ tới $i-1$ làm cha
+của $i$; chiều cao kỳ vọng của cây sinh ra là $\Theta(\log n)$.
+
+\paragraph{Bổ đề 2.1.2 (bất đẳng thức Jensen).}
+Với hàm $f$ lồi xuống trên đoạn $[L,R]$, với các số thực bất kỳ
+$x_1,x_2,\ldots,x_n\in[L,R]$ và $a_1,a_2,\ldots,a_n$ thỏa
+$\sum_{i=1}^n a_i=1$ và $a_i>0$, ta có
+\[
+f\left(\sum_{i=1}^n a_i x_i\right)\le \sum_{i=1}^n a_i f(x_i).
+\]
+
+Chứng minh bổ đề 2.1.2 được lược bỏ; có thể tham khảo [1].
+
+\emph{Chứng minh bổ đề 2.1.1.}\footnote{Một phần tham khảo từ [2].}
+Giả sử chiều cao cây là $h$. Theo bất đẳng thức Jensen, có
+$2^{E[h]}\le E[2^h]$. Xét cận trên của $E[2^h]$.
+
+Gọi độ sâu của đỉnh $i$ là $d_i$, khi đó
+\[
+\begin{aligned}
+E[2^h]
+&= E\left[\max_{i=1}^n 2^{d_i}\right]\\
+&\le E\left[\sum_{i=1}^n 2^{d_i}\right]\\
+&= \sum_{i=1}^n E[2^{d_i}].
+\end{aligned}
+\]
+
+Đặt $f_i=E[2^{d_i}]$, khi đó $f_1=1$, và với mọi $2\le i\le n$ có
+\[
+f_i=\frac{2}{i-1}\sum_{j=1}^{i-1} f_j.
+\]
+Đặt $F_i=\sum_{j=1}^i f_j$, khi đó với mọi $2\le i\le n$ có
+\[
+F_i-F_{i-1}=\frac{2}{i-1}F_{i-1}.
+\]
+Do đó
+\[
+F_i=\frac{i+1}{i-1}F_{i-1}
+=\prod_{j=2}^i \frac{j+1}{j-1}
+=\frac{(i+1)i}{2}.
+\]
+Vì vậy
+\[
+2^{E[h]}\le E[2^h]\le F_n=\frac{(n+1)n}{2}.
+\]
+Lấy log hai vế được $E[h]=O(\log n)$.
+
+Theo chiều ngược lại,
+\[
+E[h]\ge E\left[\frac1n\sum_{i=1}^n d_i\right]
+=\frac1n\sum_{i=1}^n E[d_i].
+\]
+Đặt $g_i=E[d_i]$, khi đó $g_1=0$, và với $2\le i\le n$ có
+\[
+g_i=1+\frac{1}{i-1}\sum_{j=1}^{i-1}g_j.
+\]
+Đặt $G_i=\sum_{j=1}^i g_j$, với $2\le i\le n$ có
+\[
+G_i-G_{i-1}=1+\frac{1}{i-1}G_{i-1}.
+\]
+Do đó
+\[
+G_i=1+\frac{i}{i-1}G_{i-1}
+=\sum_{j=2}^i\prod_{k=j}^{i-1}\frac{k+1}{k}
+=\sum_{j=2}^i \frac{i}{j}
+=\Theta(i\log i).
+\]
+Vì vậy
+\[
+E[h]\ge \frac1n\sum_{i=1}^n E[d_i]=\frac1nG_n=\Theta(\log n).
+\]
+Nên $E[h]=\Omega(\log n)$.
+
+Tổng hợp lại, $E[h]=\Theta(\log n)$. \hfill$\square$
+
+Chiều cao kỳ vọng của cây là $\Theta(\log n)$; trong nhiều trường hợp, điều này
+không kiểm thử tốt hiệu suất thuật toán.
+
+Ví dụ, một số thuật toán có độ phức tạp
+$\Theta(\sum_i \operatorname{siz}_i)=\Theta(\sum_i \operatorname{dep}_i)$, trong
+đó $\operatorname{siz}_i$ và $\operatorname{dep}_i$ lần lượt biểu thị kích thước
+cây con và độ sâu của đỉnh $i$. Trên loại dữ liệu này, độ phức tạp kỳ vọng là
+$\Theta(n\log n)$, trong khi độ phức tạp lớn nhất thực tế là $\Theta(n^2)$.
+
+Nếu khi gộp heuristic không chọn con lớn nhất làm con nặng, hoặc trong một số
+tình huống sửa đổi trên dây chuyền xuất hiện lỗi, đều có thể làm độ phức tạp
+đạt tới $\Theta(\sum_i \operatorname{dep}_i)$; dùng loại dữ liệu này thường
+không phát hiện được lỗi.
+
+\paragraph{Cách 2: cha ngẫu nhiên trong một phạm vi nhất định.}
+Một cách sửa đổi thường gặp của cách 1 là giới hạn phạm vi chọn cha ngẫu nhiên.
+
+Ta có thể đặt một ngưỡng $B$, cha của đỉnh $i$ được chọn ngẫu nhiên trong
+$[\max(1,i-B),i-1]$.
+
+Khi dùng phương pháp này, thường cần điều chỉnh kích thước $B$ đúng lúc để sinh
+những loại dữ liệu khác nhau.
+
+Thông thường $B$ được đặt khá nhỏ; chẳng hạn với dữ liệu $n=2\times 10^5$ có
+thể đặt $B=10$ hoặc $20$, khi đó cây sinh ra khá phù hợp để kiểm thử gộp
+heuristic.
+
+\paragraph{Cách 3: dãy Prufer.}
+Với một cây vô hướng có nhãn, dãy Prufer của nó được sinh bằng cách sau.
+
+\begin{quote}
+\textbf{Thuật toán 4: Dãy Prufer}\\
+\textbf{Input:} một cây vô hướng có nhãn $T$ gồm $n$ đỉnh\\
+\textbf{Output:} dãy Prufer của $T$\\
+Đặt $a$ là một dãy độ dài $n-2$.\\
+\textbf{for} $i=1$ \textbf{to} $n-2$ \textbf{do}\\
+\hspace*{1.5em}$u\leftarrow$ lá có nhãn nhỏ nhất (đỉnh bậc $1$)\\
+\hspace*{1.5em}$a_i\leftarrow$ nhãn của đỉnh kề với $u$\\
+\hspace*{1.5em}Xóa $u$ và các cạnh kề nó.\\
+\textbf{end for}\\
+\textbf{return} $a$
+\end{quote}
+
+Có thể thấy, dãy Prufer của cây vô hướng có nhãn $n$ đỉnh ($n\ge 2$) là một
+dãy độ dài $n-2$, miền giá trị $[1,n]\cap\mathbb{Z}$.
+
+Một cây tương ứng duy nhất với một dãy Prufer; vậy một dãy hợp lệ có tương ứng
+với một cây hay không?
+
+\paragraph{Bổ đề 2.1.3.}
+Dãy Prufer xây dựng một song ánh từ các cây $n$ đỉnh tới các dãy độ dài $n-2$,
+miền giá trị $[1,n]\cap\mathbb{Z}$.
+
+\emph{Chứng minh.}
+Chỉ cần chứng minh mỗi dãy Prufer đều tồn tại duy nhất một cây $T$ tương ứng.
+
+Xét quy nạp theo $n$. Trường hợp $n=2$ đơn giản; xét dùng $n-1$ suy ra $n$.
+
+Giả sử dãy Prufer đã cho là $a_1,a_2,\ldots,a_{n-2}$.
+
+Không khó thấy số lần một nút xuất hiện trong dãy Prufer bằng bậc của nó trừ
+$1$.
+
+Từ đó có thể xác định toàn bộ lá trong cây; gọi lá có nhãn nhỏ nhất là $u$, khi
+đó đỉnh kề với $u$ là $a_1$.
+
+Xét dãy Prufer $a_2,\ldots,a_{n-2}$, với tập nhãn
+$\{1,\ldots,n\}\setminus\{u\}$. Theo giả thiết quy nạp, tồn tại duy nhất một cây
+tương ứng với nó; gọi cây này là $T'$.
+
+Thêm đỉnh $u$ vào $T'$ và nối cạnh với $a_1$, nhận được cây $T$; hiển nhiên đây
+là cây duy nhất tương ứng với $a$. \hfill$\square$
+
+Chứng minh trên đồng thời cho một phương pháp dựng cây tương ứng từ dãy Prufer:
+dựng từ sau ra trước, mỗi lần thêm một lá.
+
+Nếu muốn chọn đều ngẫu nhiên một cây vô hướng có nhãn trong tất cả các cây như
+vậy, chỉ cần chọn ngẫu nhiên dãy Prufer của nó. Cách sinh này còn có thể cố định
+bậc của từng đỉnh.
+
+\paragraph{Cách 4: dây chuyền.}
+Với đỉnh $i$ ($2\le i\le n$), chọn $i-1$ làm cha của $i$ là có thể sinh một dây
+chuyền.
+
+\paragraph{Cách 5: cây nhị phân hoàn chỉnh.}
+Với đỉnh $i$ ($2\le i\le n$), chọn $\lfloor i/2\rfloor$ làm cha của $i$ là có
+thể sinh một cây nhị phân hoàn chỉnh.
+
+Với cây sinh theo cách này, nếu thực hiện phân rã nặng nhẹ, tổng kích thước các
+con nhẹ của mọi đỉnh là cấp $\Theta(n\log n)$.
+
+\paragraph{Cách 6: kết hợp dây chuyền và cây nhị phân hoàn chỉnh.}
+Ta có thể lấy hai ngưỡng $B_1,B_2$: dùng $B_1$ đỉnh đầu để dựng cây nhị phân
+hoàn chỉnh, rồi cứ mỗi $B_2$ đỉnh phía sau nối thành một dây chuyền và gắn lên
+một trong $B_1$ đỉnh đầu.
+
+Thông thường $B_1$ và $B_2$ đều được chọn ở cấp $\Theta(\sqrt n)$.
+
+Một cách chọn thường gặp là $B_1=\lfloor 2\sqrt n\rfloor$,
+$B_2=\lfloor\sqrt n\rfloor$. Trong tiểu mục 2.1.7 dưới đây ta cũng chọn như
+vậy.
+
+Dữ liệu sinh theo cách này vừa có dây chuyền tương đối dài, vừa có tổng kích
+thước các con nhẹ của mọi đỉnh là $\Theta(n\log n)$.
+
+\paragraph{Đối chiếu.}
+Tiếp theo đối chiếu sáu phương pháp sinh.
+
+Trước hết sinh một cây kích thước $n$, quy định đỉnh $1$ là gốc. Sau đó xáo
+ngẫu nhiên các cạnh kề của từng đỉnh và thực hiện DFS. Cuối cùng thực hiện $Q$
+truy vấn; mỗi lần chọn ngẫu nhiên hai đỉnh $u,v$ và truy vấn thông tin trên
+đường đi từ $u$ tới $v$.
+
+Quá trình trên được thực hiện $T$ lần, sau đó đo các đại lượng dưới đây và lấy
+trung bình qua $T$ lần:
+
+\begin{itemize}
+  \item $S_{\mathrm{size}}$ biểu thị tổng kích thước cây con của mọi đỉnh. Một
+  phần thuật toán độ phức tạp cao phụ thuộc vào đại lượng này.
+  \item $S_{\mathrm{son}}$ biểu thị tổng kích thước các cây con nhẹ của mọi
+  đỉnh sau khi phân rã nặng nhẹ. Nó có thể dùng để đánh giá hiệu suất gộp
+  heuristic.
+  \item $S_{\mathrm{random}}$ biểu thị tổng kích thước các cây con nhẹ của mọi
+  đỉnh sau khi mỗi đỉnh chọn ngẫu nhiên một con làm con nặng. Nó có thể dùng để
+  đánh giá hiệu suất của phương pháp gộp heuristic sai.
+  \item $S_{\mathrm{len}}$ biểu thị độ dài đường đi trung bình trong $Q$ truy
+  vấn. Một phần thuật toán độ phức tạp cao phụ thuộc vào đại lượng này. Nó cũng
+  có thể dùng để đánh giá hiệu suất của cấu trúc dữ liệu trên dây chuyền.
+  \item $S_{\mathrm{jump}}$ biểu thị số cạnh nhẹ trung bình trên đường đi truy
+  vấn sau khi phân rã nặng nhẹ. Nó có thể dùng để đánh giá hiệu suất của phân
+  rã nặng nhẹ.
+\end{itemize}
+
+Lấy $n=10^5,Q=10^5,T=10^3$, kết quả đo được như sau (giữ ba chữ số thập phân):
+
+\begin{center}
+\scriptsize
+\begin{tabular}{lrrrrr}
+& $S_{\mathrm{size}}$ & $S_{\mathrm{son}}$ & $S_{\mathrm{random}}$ &
+$S_{\mathrm{len}}$ & $S_{\mathrm{jump}}$ \\
+\hline
+Cách 1 & 1212656.229 & 400679.705 & 873426.103 & 20.198 & 7.720 \\
+Cách 2 ($B=10$) & 909341143.306 & 116601.017 & 300801584.156 & 6069.061 & 2.332 \\
+Cách 2 ($B=20$) & 476433950.830 & 157012.831 & 166402833.765 & 3192.626 & 3.139 \\
+Cách 2 ($B=40$) & 244176851.716 & 198905.253 & 87602621.886 & 1664.193 & 3.972 \\
+Cách 3 & 39602294.635 & 325800.562 & 14507184.812 & 394.728 & 6.245 \\
+Cách 4 & 5000050000.000 & 0.000 & 0.000 & 33333.811 & 0.000 \\
+Cách 5 & 1568946.000 & 715030.000 & 734861.455 & 27.184 & 13.525 \\
+Cách 6 & 16675299.000 & 396342.000 & 418815.824 & 328.686 & 7.168
+\end{tabular}
+\end{center}
+
+Có thể thấy:
+
+\begin{itemize}
+  \item Cách 1: ưu điểm là mã ngắn, $S_{\mathrm{son}}$ tương đối lớn. Nhược
+  điểm là $S_{\mathrm{random}},S_{\mathrm{len}},S_{\mathrm{jump}}$ đều quá nhỏ,
+  khó kiểm thử các vấn đề độ phức tạp như gộp heuristic và phân rã nặng nhẹ.
+  \item Cách 2: $S_{\mathrm{size}},S_{\mathrm{random}},S_{\mathrm{len}}$ lớn,
+  và có xu hướng tăng khi $B$ giảm.
+  \item Cách 3: trong các loại dữ liệu được kiểm thử, các đại lượng có kích
+  thước tương đối trung gian.
+  \item Cách 4: $S_{\mathrm{size}},S_{\mathrm{len}}$ rõ ràng lớn; dây chuyền
+  khá phù hợp để kiểm thử hiệu suất của cấu trúc dữ liệu trên dây chuyền ở kích
+  thước cực hạn.
+  \item Cách 5: $S_{\mathrm{son}},S_{\mathrm{jump}}$ lớn, khá phù hợp để kiểm
+  thử hiệu suất của gộp heuristic và phân rã nặng nhẹ.
+  \item Cách 6: cường độ nằm giữa cách 4 và cách 5.
+\end{itemize}
+
+\subsubsection{Đồ thị tùy ý}
+
+Sinh đồ thị vô hướng $n$ đỉnh $m$ cạnh, không có cạnh bội và khuyên, chính là
+chọn $m$ cạnh trong $\binom{n}{2}$ cạnh; có thể dùng kỹ thuật về dãy ở trên.
+
+Nếu muốn sinh đồ thị liên thông, có thể liên tục sinh cho tới khi đồ thị liên
+thông.
+
+\subsubsection{Xương rồng}
+
+Xương rồng là đồ thị mà mỗi cạnh nằm trong nhiều nhất một chu trình đơn. Trong
+bài viết này, xương rồng được phép có cạnh bội nhưng không được có khuyên.
+
+Hiểu trực quan, xương rồng là nhiều chu trình ghép lại thành hình dạng một cái
+cây. Cây cũng là một loại xương rồng, nên xương rồng thường được xem là mở rộng
+của cây.
+
+Dưới đây giới thiệu ba cách sinh xương rồng ngẫu nhiên.
+
+\paragraph{Cách 1.}
+Xét một đồ thị liên thông và thực hiện biến đổi sau trên nó. Dựng một đồ thị
+mới chứa toàn bộ đỉnh của đồ thị gốc, gọi là đỉnh tròn; với mỗi thành phần song
+liên thông đỉnh của đồ thị gốc, tạo thêm một đỉnh mới, gọi là đỉnh vuông (đặc
+biệt, ta xem một thành phần song liên thông đỉnh có thể chỉ chứa hai đỉnh và
+một cạnh). Nối mỗi đỉnh vuông với các đỉnh mà nó chứa trong đồ thị gốc; đồ thị
+thu được chắc chắn là một cây, gọi là cây tròn-vuông của đồ thị gốc.
+
+Dễ thấy cây tròn-vuông thỏa các tính chất sau:
+
+\begin{itemize}
+  \item Mỗi cạnh chắc chắn nối một đỉnh tròn với một đỉnh vuông. Nói cách khác,
+  đỉnh tròn và đỉnh vuông tạo thành một tô màu đen-trắng của đồ thị này.
+  \item Mọi đỉnh có bậc không quá $1$ đều là đỉnh tròn.
+\end{itemize}
+
+Với xương rồng, cây tròn-vuông của nó tương đương với việc tạo một đỉnh vuông
+cho mỗi chu trình.
+
+Nếu muốn sinh ngẫu nhiên một xương rồng, trước hết ta có thể sinh ngẫu nhiên
+một cây, rồi tô màu đen-trắng cho nó, xem nó là cây tròn-vuông.
+
+Nếu muốn cây tròn-vuông được sinh có $n$ đỉnh, ta có thể sinh trước một cây
+$2n$ đỉnh, sau khi tô màu đen-trắng thì lấy màu có số lượng ít hơn làm đỉnh
+tròn; khi đó số đỉnh tròn chắc chắn không quá $n$.
+
+Vì lá của cây tròn-vuông bắt buộc phải là đỉnh tròn, ta cần xóa mọi đỉnh vuông
+là lá.
+
+\paragraph{Cách 2.}
+Trước hết sinh ngẫu nhiên một cây, rồi thêm một số cạnh vào cây này để nó trở
+thành xương rồng.
+
+DFS trên cây này; khi quay lui, với một xác suất nhất định nối tới một tổ tiên
+ngẫu nhiên, đồng thời đánh dấu các cạnh trên đường đi này, biểu thị rằng chúng
+đã nằm trên một chu trình. Vấn đề là xác định xác suất đó và tổ tiên được nối.
+
+Ta có thể đặt một ngưỡng $P$. Khi quay lui ở đỉnh $u$, có thể xác định cạnh nối
+tới tổ tiên bằng cách sau.\footnote{Tham khảo từ [3].}
+
+\begin{quote}
+\textbf{Thuật toán 5: Nối cạnh}\\
+$v\leftarrow u$\\
+\textbf{while} $v$ không phải gốc và cạnh cha của $v$ chưa bị đánh dấu \textbf{do}\\
+\hspace*{1.5em}$x\leftarrow$ một số thực ngẫu nhiên trong $[0,1]$\\
+\hspace*{1.5em}\textbf{if} $x<P$ \textbf{then}\\
+\hspace*{3em}$v\leftarrow$ cha của $v$\\
+\hspace*{1.5em}\textbf{else}\\
+\hspace*{3em}\textbf{break}\\
+\hspace*{1.5em}\textbf{end if}\\
+\textbf{end while}\\
+\textbf{if} $u\ne v$ \textbf{then}\\
+\hspace*{1.5em}Nối cạnh $(u,v)$\\
+\hspace*{1.5em}Đánh dấu đường đi từ $u$ tới $v$\\
+\textbf{end if}
+\end{quote}
+
+Ví dụ, lấy $P=0.1$ thì các chu trình sinh ra sẽ tương đối nhỏ.
+
+\paragraph{Cách 3.}
+Vẫn xét cách trước hết sinh ngẫu nhiên một cây, rồi thêm cạnh.
+
+Ta lấy một tham số $K$, sau đó chọn ngẫu nhiên $K$ lần; mỗi lần chọn ngẫu nhiên
+hai đỉnh $u,v$ và kiểm tra có thể nối một cạnh giữa $u,v$ hay không; nếu có thì
+nối.
+
+Cách kiểm tra tương tự cách 2: đánh dấu trên mỗi cạnh cây để biểu thị cạnh đó
+đã nằm trên một chu trình hay chưa. Khi kiểm tra, chỉ cần xét đường đi từ $u$
+tới $v$ có cạnh đã đánh dấu hay không.
+
+Nếu muốn bảo đảm độ phức tạp thời gian khi sinh dữ liệu quy mô lớn, cần dùng
+cấu trúc dữ liệu để duy trì đánh dấu. Nhưng trên thực tế, đi dọc đường đi từng
+bước và thoát khi gặp đánh dấu cũng có hiệu suất khá cao.
+
+\paragraph{Đối chiếu.}
+Ta kiểm thử $T$ lần; mỗi lần chọn ngẫu nhiên một xương rồng, sau đó đo các đại
+lượng dưới đây và lấy trung bình qua $T$ lần:
+
+\begin{itemize}
+  \item $N$ biểu thị số nút.
+  \item $C$ biểu thị số chu trình.
+  \item $L$ biểu thị độ dài chu trình trung bình.
+  \item $\sigma$ biểu thị phương sai độ dài chu trình.
+  \item $M$ biểu thị độ dài chu trình lớn nhất.
+\end{itemize}
+
+Lấy $n=10^5,T=10^3$, phương pháp sinh cây là dãy Prufer ngẫu nhiên đều (tức
+cách 3 trong 2.1), kết quả đo như sau (giữ ba chữ số thập phân):
+
+\begin{center}
+\scriptsize
+\begin{tabular}{lrrrrr}
+& $N$ & $C$ & $L$ & $\sigma$ & $M$ \\
+\hline
+Cách 1 & 99909.960 & 44791.272 & 2.819 & 0.735 & 8.761 \\
+Cách 2 ($P=0.1$) & 100000.000 & 9889.691 & 2.110 & 0.122 & 5.728 \\
+Cách 2 ($P=0.2$) & 100000.000 & 19072.550 & 2.243 & 0.301 & 7.814 \\
+Cách 2 ($P=0.4$) & 100000.000 & 32611.841 & 2.567 & 0.853 & 11.825 \\
+Cách 3 ($K=10^5$) & 100000.000 & 221.323 & 35.973 & 2280.336 & 479.667
+\end{tabular}
+\end{center}
+
+Có thể thấy:
+
+\begin{itemize}
+  \item Cách 1: có thể dùng bậc của từng đỉnh để điều khiển phân bố độ dài chu
+  trình, nhưng sẽ làm $N$ giảm nhẹ. Khi dùng dãy Prufer ngẫu nhiên đều, chu
+  trình khá ngắn, số chu trình nhiều, phương sai nhỏ.
+  \item Cách 2: có thể điều chỉnh độ dài chu trình thông qua $P$; khi $P$ tăng,
+  $C,L,\sigma,M$ đều có xu hướng tăng. Nhìn chung chu trình khá ngắn, số chu
+  trình nhiều, phương sai nhỏ.
+  \item Cách 3: đặc điểm là số chu trình ít, độ dài chu trình lớn, phương sai
+  lớn.
+\end{itemize}
+
+\subsection{Xâu ngoặc}
+
+Xâu ngoặc là chuỗi được tạo bởi hai ký tự \texttt{(} và \texttt{)}.
+
+Với một xâu ngoặc $s=s_1s_2\ldots s_n$, định nghĩa dãy đường đi
+$a_0,a_1,a_2,\ldots,a_n$ của nó như sau:
+\[
+a_i=
+\begin{cases}
+0 & i=0,\\
+a_{i-1}+1 & i>0,\ s_i=\texttt{(},\\
+a_{i-1}-1 & i>0,\ s_i=\texttt{)}.
+\end{cases}
+\]
+
+Định nghĩa $s$ là cân bằng khi và chỉ khi $a_n=0$.
+
+Định nghĩa độ khuyết $\operatorname{defect}(s)$ của $s$ là số lượng các $i$
+thỏa $\min(a_i,a_{i+1})<0$ chia cho $2$ (hiển nhiên số lượng đó luôn chẵn).
+
+Định nghĩa $s$ là hợp lệ khi và chỉ khi $s$ cân bằng và độ khuyết bằng $0$.
+
+Định nghĩa $D_{n,k}$ là tập các xâu ngoặc cân bằng độ dài $n$, độ khuyết $k$.
+
+Định nghĩa $s^R$ biểu thị xâu sau khi đảo ngược $s$.
+
+Với $n$ chẵn, $D_{n,0}$ chính là tập các xâu ngoặc hợp lệ độ dài $n$; theo số
+Catalan,
+\[
+|D_{n,0}|=\frac{1}{n/2+1}\binom{n}{n/2}.
+\]
+
+Với một xâu ngoặc cân bằng $s$, định nghĩa phép biến đổi $\Phi(s)$ như
+sau.\footnote{Tham khảo từ [4].}
+
+\begin{itemize}
+  \item Nếu $s$ rỗng, thì $\Phi(s)$ là xâu rỗng.
+  \item Nếu $s$ không rỗng, chắc chắn có thể phân tích nó thành $s=lr$, trong
+  đó $l$ là tiền tố cân bằng không rỗng ngắn nhất của $s$; dễ thấy $r$ cũng là
+  một xâu cân bằng.
+
+  Có thể thấy $|l|$ chính là $i$ nhỏ nhất thỏa $i>0,a_i=0$.
+
+  Sau đó xét tính hợp lệ của $l$:
+  \begin{itemize}
+    \item Nếu $l$ hợp lệ, thì $\Phi(s)=l\Phi(r)$.
+    \item Nếu không, $l$ chắc chắn có thể biểu diễn thành $l=\texttt{)}t\texttt{(}$,
+    và khi đó $\Phi(s)=\texttt{(}\Phi(r)\texttt{)}t^R$.
+  \end{itemize}
+\end{itemize}
+
+Dễ chứng minh $\Phi(s)$ là một xâu ngoặc hợp lệ, tức $\Phi(s)\in D_{n,0}$.
+
+\paragraph{Bổ đề 3.0.1.}
+Với $n$ chẵn và $0\le k\le n/2$, $\Phi$ thiết lập một song ánh từ $D_{n,k}$ tới
+$D_{n,0}$.
+
+\emph{Chứng minh.}
+Trước hết chứng minh đơn ánh.
+
+Xét quy nạp theo $n$; mệnh đề hiển nhiên đúng với $n=0$.
+
+Xét hai xâu $s_1,s_2\in D_{n,k}$ và $s_1\ne s_2$; lần lượt phân tích chúng
+thành $s_1=l_1r_1,s_2=l_2r_2$, rồi phân loại.
+
+\begin{itemize}
+  \item Trường hợp 1: $l_1,l_2$ đều hợp lệ.
+
+  Khi đó $l_1,l_2$ lần lượt là tiền tố cân bằng không rỗng ngắn nhất của
+  $\Phi(s_1),\Phi(s_2)$. Nếu $l_1\ne l_2$ thì mệnh đề đúng; nếu không, chắc chắn
+  $r_1\ne r_2$, theo giả thiết quy nạp có $\Phi(r_1)\ne \Phi(r_2)$, nên mệnh đề
+  đúng.
+  \item Trường hợp 2: $l_1,l_2$ đều không hợp lệ.
+
+  Khi đó $\texttt{(}\Phi(r_1)\texttt{)}$ và $\texttt{(}\Phi(r_2)\texttt{)}$ lần
+  lượt là tiền tố cân bằng không rỗng ngắn nhất của $\Phi(s_1),\Phi(s_2)$; tiếp
+  theo tương tự trường hợp 1, mệnh đề đúng.
+  \item Trường hợp 3: $l_1$ hợp lệ, $l_2$ không hợp lệ. Đặt
+  $l_2=\texttt{)}t_2\texttt{(}$.
+
+  Khi đó $l_1$ và $\texttt{(}\Phi(r_2)\texttt{)}$ lần lượt là tiền tố cân bằng
+  không rỗng ngắn nhất của $\Phi(s_1),\Phi(s_2)$.
+
+  Giả sử $\Phi(s_1)=\Phi(s_2)$, khi đó chắc chắn có $\Phi(r_1)=t_2^R$.
+
+  Vì $l_1$ hợp lệ nên
+  $k=\operatorname{defect}(s_1)=\operatorname{defect}(r_1)$; do đó
+  $2k\le |r_1|=|\Phi(r_1)|=|t_2^R|<|l_2|$, tức $2k<|l_2|$.
+
+  Lại vì $l_2$ là tiền tố cân bằng không rỗng ngắn nhất của $s_2$, chắc chắn có
+  $k=\operatorname{defect}(s_2)\ge \operatorname{defect}(l_2)$, tức
+  $2k\ge |l_2|$, mâu thuẫn.
+
+  Vì vậy $\Phi(s_1)\ne \Phi(s_2)$, mệnh đề đúng.
+  \item Trường hợp 4: $l_1$ không hợp lệ, $l_2$ hợp lệ. Tương tự trường hợp 3.
+\end{itemize}
+
+Sau đó chứng minh toàn ánh.
+
+Vì đã có đơn ánh, nên với mọi $0\le k\le n/2$ có $|D_{n,k}|\le |D_{n,0}|$. Ta
+chỉ cần chứng minh $|D_{n,k}|=|D_{n,0}|$.
+
+Giả sử tồn tại $0\le k\le n/2$ thỏa $|D_{n,k}|<|D_{n,0}|$, khi đó
+\[
+\binom{n}{n/2}
+=\sum_{k=0}^{n/2}|D_{n,k}|
+<(n/2+1)|D_{n,0}|
+=\binom{n}{n/2},
+\]
+mâu thuẫn.
+
+Tổng hợp lại, với mọi $0\le k\le n/2$, $\Phi$ thiết lập một song ánh từ
+$D_{n,k}$ tới $D_{n,0}$. \hfill$\square$
+
+Có bổ đề 3.0.1, ta có thể chọn ngẫu nhiên một xâu ngoặc hợp lệ rất tiện lợi.
+
+Chỉ cần chọn đều ngẫu nhiên một trong tất cả $\binom{n}{n/2}$ xâu cân bằng, rồi
+áp dụng $\Phi$ lên nó.
+
+\subsection{Hash}
+
+Hash là thuật toán rất thường dùng trong thi tin học; nó nén thông tin bằng một
+cách tương đối ngẫu nhiên để tăng tốc việc so sánh thông tin.
+
+Trong tình huống thông thường, muốn làm hash sai thì phải xây dựng dữ liệu nhắm
+vào mã nguồn cụ thể.
+
+Tuy nhiên có một số phương pháp hash không cần nhắm vào mã nguồn; có thể trực
+tiếp xây dựng dữ liệu làm chúng sai, còn dữ liệu ngẫu nhiên dùng khi đối phách
+thường không đủ để phát hiện những vấn đề này.
+
+Dưới đây liệt kê vài thuật toán hash thường gặp, dễ bị xây dựng dữ liệu làm sai.
+
+\subsubsection{Nghịch lý sinh nhật}
+
+Trong một căn phòng có $23$ người. Giả sử một năm luôn có $365$ ngày và sinh
+nhật của mỗi người được chọn độc lập, đều trong $365$ ngày này. Hỏi: xác suất
+tồn tại hai người có cùng sinh nhật là bao nhiêu?
+
+Giả sử một năm có $n$ ngày, trong phòng có $m$ người. Khi đó xác suất sinh nhật
+của $m$ người này đôi một khác nhau là
+\[
+\prod_{i=1}^m \frac{n-i+1}{n}.
+\]
+
+Thay $n=365,m=23$ vào, xác suất trên xấp xỉ $49\%$, tức xác suất tồn tại hai
+người có cùng sinh nhật lớn hơn $50\%$. Điều này rất trái trực giác, nên ta gọi
+hiện tượng này là nghịch lý sinh nhật.
+
+Vậy $m$ cần đạt tới bao nhiêu để xác suất tồn tại hai người cùng sinh nhật không
+nhỏ hơn $50\%$?
+
+Có thể lập phương trình sau:
+\[
+\prod_{i=1}^m \frac{n-i+1}{n}\le \frac12.
+\]
+
+Dùng $1+x\le e^x$ để ước lượng:
+\[
+\prod_{i=1}^m e^{-\frac{i-1}{n}}\le \frac12.
+\]
+Tức là
+\[
+e^{-\frac{m(m-1)}{2n}}\le \frac12.
+\]
+Suy ra $m\approx \sqrt{2n\ln 2}$.
+
+Phương pháp hash thông thường là chọn mô-đun $M$, nén thông tin cần hash thành
+một số nguyên trong $[0,M-1]$.
+
+Quá trình này có thể gần đúng xem là chọn ngẫu nhiên một số nguyên trong
+$[0,M-1]$.
+
+Nếu bài toán cần xử lý có dạng ``phán đoán trong $n$ thông tin có trùng lặp hay
+không'', thì khi $n$ xấp xỉ $\sqrt{2M\ln 2}$, xác suất phán thông tin không
+trùng thành có trùng sẽ đạt tới $\frac12$.
+
+Mô-đun hash đơn thông thường ở cấp $10^9$; khi $n$ đạt xấp xỉ $3\times 10^4$,
+xác suất xuất hiện va chạm khoảng $36\%$, một xác suất rất lớn.
+
+Trong trường hợp này, nên chọn hai mô-đun nguyên tố cùng nhau $M_1,M_2$; khi đó
+miền giá trị ngẫu nhiên có thể xem là $M_1M_2$, làm xác suất va chạm giảm mạnh.
+
+\subsubsection{Tràn tự nhiên}
+
+Khi làm hash xâu, thông thường ta chọn mô-đun $M$ và cơ số $B$. Với xâu
+$s=s_1s_2\ldots s_n$, giá trị hash của nó được tính là
+\[
+\operatorname{hash}(s)=
+\left(\sum_{i=1}^n B^{i-1}\operatorname{ord}(s_i)\right)\bmod M.
+\]
+Ở đây $\operatorname{ord}(c)$ biểu thị vị trí của ký tự $c$ trong bảng mã.
+
+Số nguyên không dấu $64$ bit trong C++ sẽ tự động lấy mô-đun $2^{64}$ khi tính
+toán; nếu chọn $M=2^{64}$, có thể bớt một phép lấy mô-đun để tăng tốc. Phương
+pháp hash này gọi là tràn tự nhiên.
+
+Nhưng phương pháp hash này có thể rất dễ bị xây dựng va chạm.
+
+Nếu $B$ là số chẵn, thì $B^{64}\bmod M=0$, tức trong $s$ nhiều nhất chỉ có
+$64$ vị trí cuối là có hiệu lực, rất dễ xây dựng va chạm. Dưới đây xét trường
+hợp $B$ là số lẻ.
+
+Xét xâu $s=s_1s_2\ldots s_{2^k}$ thỏa
+\[
+s_i=
+\begin{cases}
+A & \operatorname{popcount}(i-1)\text{ là số chẵn},\\
+B & \operatorname{popcount}(i-1)\text{ là số lẻ}.
+\end{cases}
+\]
+Trong đó $\operatorname{popcount}(x)$ biểu thị số bit $1$ trong biểu diễn nhị
+phân của $x$.
+
+Với xâu $t$, đặt $t^F$ là kết quả thay mọi $A$ trong $t$ bằng $B$ và đồng thời
+thay mọi $B$ bằng $A$.
+
+Xét dãy xâu $t_0,t_1,\ldots,t_k$ thỏa $t_0=A$,
+$t_i=t_{i-1}+t_{i-1}^F$, khi đó $s=t_k$.
+
+Đặt $d=\operatorname{ord}(A)-\operatorname{ord}(B)$, dễ thu được
+\[
+\operatorname{hash}(s)-\operatorname{hash}(s^F)
+\equiv
+\sum_{i=1}^{2^k}(-1)^{\operatorname{popcount}(i-1)}B^{i-1}d
+\pmod M.
+\]
+
+Ta cần chứng minh khi $k$ đủ lớn, giá trị này luôn bằng $0$ theo nghĩa
+$\bmod M$.
+
+Đặt
+\[
+f_i=\operatorname{hash}(t_i)-\operatorname{hash}(t_i^F).
+\]
+Dễ thu được
+\[
+f_i=f_{i-1}(1-B^{2^{i-1}}).
+\]
+Mà $f_0=d$, nên
+\[
+f_i=d\prod_{j=0}^{i-1}(1-B^{2^j}).
+\]
+Chú ý rằng
+\[
+1-B^{2^j}=(1-B^{2^{j-1}})(1+B^{2^{j-1}}).
+\]
+Tức $1-B^{2^{j-1}}$ nhân với một số chẵn. Nếu
+$2^p\mid(1-B^{2^{j-1}})$ thì chắc chắn
+$2^{p+1}\mid(1-B^{2^j})$.
+
+Do đó $f_i$ chắc chắn chia hết cho
+$2^1 2^2\cdots 2^i = 2^{\frac{i(i+1)}{2}}$.
+
+Khi $k=11$, có $2^{64}\mid f_k$, tức
+$\operatorname{hash}(t_k)=\operatorname{hash}(t_k^F)$.
+
+\subsubsection{Hash cây}
+
+Hash cây thường được dùng để phán đoán hai cây có gốc có đẳng cấu hay không.
+
+Một phương pháp hash cây tương đối đúng là dùng thứ tự ngoặc và tư tưởng biểu
+diễn nhỏ nhất, để các cây đẳng cấu nhận được cùng một thứ tự ngoặc.
+
+Cụ thể, giá trị hash của một cây con $u$ có thể được tính đệ quy như sau:
+
+\begin{enumerate}
+  \item Tính giá trị hash của mọi con của $u$.
+  \item Sắp xếp chúng theo khóa (giá trị hash, kích thước cây con).
+  \item Theo thứ tự đã sắp xếp, nối thứ tự ngoặc của mọi con của $u$ lại.
+  \item Thêm một cặp ngoặc ở ngoài cùng.
+  \item Dãy thu được chính là thứ tự ngoặc của $u$, và giá trị hash của nó là
+  giá trị hash của $u$.
+\end{enumerate}
+
+Dễ chứng minh các cây đẳng cấu nhận được cùng giá trị hash.
+
+Việc thêm kích thước cây con vào khóa sắp xếp ở bước thứ hai là để ngăn các cây
+con khác kích thước nhưng có giá trị hash bằng nhau do nghịch lý sinh nhật làm
+ảnh hưởng kết quả.
+
+Giả sử số nút của cây là $n$; vì cần sắp xếp, độ phức tạp của thuật toán trên
+là $\Theta(n\log n)$.
+
+Còn có một thuật toán hash độ phức tạp $\Theta(n)$ được biết đến rộng rãi.
+
+Gọi kích thước cây con của đỉnh $u$ là $\operatorname{size}_u$, tập con của nó
+là $\operatorname{son}_u$.
+
+Ta sinh một dãy $W_1,W_2,\ldots,W_n$, thông thường dùng dãy số nguyên tố hoặc
+dãy ngẫu nhiên.
+
+Sau đó giá trị hash của đỉnh $u$ được tính như sau:
+\[
+h_u=W_{\operatorname{size}_u}\left(1+\sum_{v\in \operatorname{son}_u}h_v\right).
+\]
+
+Xét đường đi từ đỉnh $u$ tới gốc; viết lần lượt các giá trị
+$\operatorname{size}$ trên đường đi này, thu được dãy $S_u$.
+
+Chú ý rằng giá trị hash của toàn bộ cây $T$ chỉ liên quan tới đa tập không thứ
+tự
+\[
+H(T)=\{S_1,S_2,\ldots,S_n\};
+\]
+hai cây có tập này bằng nhau chắc chắn nhận được giá trị hash bằng nhau.
+
+Vấn đề của kiểu hash này là đôi khi chỉ dựa vào $H(T)$ thì không thể xác định
+duy nhất hình dạng của cây.
+
+Ví dụ, bất kể chọn $W$ như thế nào, hai cây dưới đây chắc chắn có giá trị hash
+bằng nhau:
+\[
+\begin{array}{ll}
+T_1:\ \{(1,2),(1,8),(2,3),(2,4),(2,5),(5,6),(5,7),
+(8,9),(8,12),(9,10),(10,11),(12,13)\},\\[0.4em]
+T_2:\ \{(1,2),(1,8),(2,3),(2,4),(4,9),(9,10),(10,11),
+(8,5),(8,12),(5,6),(5,7),(12,13)\}.
+\end{array}
+\]
+
+Thực ra, chỉ cần hoán đổi hai cây con có $S$ bằng nhau là có thể giữ $H(T)$
+không đổi. Trong hình gốc, hai cây con của $5$ và $9$ đã được hoán đổi; các tập
+cạnh ở trên mô tả đúng hai cây đó.
+
+Bộ dữ liệu này có thể làm sai mọi thuật toán hash chỉ dựa trên $H(T)$.
+
+\subsection{Tổng kết}
+
+Các kiểu dữ liệu mà bài viết này giới thiệu là những kiểu khá thường gặp trong
+thi tin học.
+
+Các kiểu dữ liệu như dãy, cây tuy sinh đơn giản, nhưng nếu phương pháp không
+phù hợp thì dễ xây dựng ra dữ liệu có cường độ chưa đủ.
+
+Các kiểu dữ liệu như xương rồng, xâu ngoặc lại có độ khó nhất định khi sinh.
+
+Còn nếu phương pháp hash không phù hợp, thí sinh có thể vẫn mất điểm dù đã vượt
+qua dữ liệu ngẫu nhiên.
+
+Trong nhiều trường hợp hơn, thí sinh cần dựa vào tính chất của bài toán để xây
+dựng dữ liệu có tính nhắm mục tiêu hơn. Hy vọng bài viết này có thể gợi mở suy
+nghĩ cho thí sinh, giúp hiểu sâu hơn về phương pháp kiểm thử chương trình và
+xây dựng dữ liệu.
+
+\subsection{Lời cảm ơn}
+
+\begin{itemize}
+  \item Cảm ơn cha mẹ đã nuôi dưỡng, quan tâm và ủng hộ.
+  \item Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+  đổi.
+  \item Cảm ơn hai huấn luyện viên đội tuyển quốc gia Yang Yaoliang và Peng
+  Sijin đã hướng dẫn.
+  \item Cảm ơn thầy Leng Xuenong đã bồi dưỡng và chỉ dạy.
+  \item Cảm ơn các thầy cô và bạn học đã động viên, giúp đỡ.
+\end{itemize}
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}[label={[\arabic*]}]
+  \item Wikipedia, ``Bất đẳng thức Jensen'',
+  \url{https://zh.wikipedia.org/wiki/%E7%B0%A1%E6%A3%AE%E4%B8%8D%E7%AD%89%E5%BC%8F}.
+  \item ``Nhật ký hoạt động 2020.11.21: chiều cao cây kỳ vọng của cây cha ngẫu
+  nhiên'', \url{https://blog.csdn.net/EI_Captain/article/details/109910307}.
+  \item ``Chơi với xương rồng'', \url{https://vfleaking.blog.uoj.ac/blog/89}.
+  \item M.D. Atkinson and J.-R. Sack, ``Generating binary trees at random'',
+  \url{http://www.cs.otago.ac.nz/staffpriv/mike/Papers/RandomGeneration/RandomBinaryTrees.pdf}.
+\end{enumerate}
+
 \end{document}

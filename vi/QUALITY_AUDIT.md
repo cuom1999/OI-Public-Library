@@ -16,15 +16,15 @@ source documents.
 | Priority | Translation | Source pages | Current state | Extraction status | Required work |
 | ---: | --- | ---: | --- | --- | --- |
 | 1 | `sources/ioi/2022-national-training-team-collection.tex` | 246 | ToC plus first article translated | `pdftotext` is essentially blank; Tesseract OCR is readable but noisy | Continue OCR-backed translation from article 2 onward. |
-| 2 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | ToC plus first article translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 2 onward; no OCR needed for first pass. |
+| 2 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | ToC plus first two articles translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 3 onward; no OCR needed for first pass. |
 | 3 | `sources/ioi/2020-national-training-team-collection.tex` | 196 | ToC plus first article translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 2 onward. |
 | 4 | `sources/ioi/2017-national-training-team-collection.tex` | 204 | ToC plus first article translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 2 onward. |
 | 5 | `sources/ioi/2019-national-training-team-collection.tex` | 231 | ToC plus first article translated | `pdftotext` extracts body text but includes watermark noise | Continue from article 2 onward after filtering watermark text. |
 | 6 | `sources/ioi/2013-national-training-team-collection.tex` | 137 | ToC plus first article translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 2 onward. |
 | 7 | `sources/ioi/2014-national-training-team-collection.tex` | 228 | ToC plus first article translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 2 onward. |
-| 8 | `sources/ioi/2016-national-training-team-collection.tex` | 234 | Cover/ToC/topic note only | ToC is readable; body quality needs per-article check/OCR | Translate article by article with OCR fallback where needed. |
-| 9 | `sources/ioi/2015-national-training-team-collection.tex` | 291 | Cover/ToC/topic note only | `pdftotext` is mojibake even near the ToC | OCR and translate article by article. |
-| 10 | `sources/ioi/2023-national-training-team-collection.tex` | 249 | ToC plus first article translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 2 onward. |
+| 8 | `sources/ioi/2016-national-training-team-collection.tex` | 234 | ToC plus first article translated | ToC is readable; body required OCR due mojibake text layer | Continue OCR-backed translation from article 2 onward. |
+| 9 | `sources/ioi/2015-national-training-team-collection.tex` | 291 | ToC plus first article translated | `pdftotext` is mojibake even near the ToC; OCR works with visual checks | Continue OCR-backed translation from article 2 onward. |
+| 10 | `sources/ioi/2023-national-training-team-collection.tex` | 249 | ToC plus first two articles translated | `pdftotext` extracts readable Unicode Chinese | Continue from article 3 onward. |
 | 11 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first article translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue with OCR-backed article translations. |
 | 12 | `sources/ioi/2025-national-training-team-collection.tex` | 168 | ToC plus first article translated | `pdftotext` is readable but two-up layout interleaves pages | Continue from article 2 onward, splitting/cropping pages where needed. |
 
