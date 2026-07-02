@@ -23,17 +23,18 @@
 \begin{abstract}
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2020. Tệp được
 tạo bằng XeTeX và có lớp văn bản Unicode đọc được. Bản LaTeX này chuyển ngữ
-phần nhận diện tập sách, toàn bộ mục lục, và chín bài đầu tiên: bài của Jiang
+phần nhận diện tập sách, toàn bộ mục lục, và mười bài đầu tiên: bài của Jiang
 Mingrun về tối ưu các bài toán chia khối cổ điển bằng fractional cascading, bài
 của Chen Sunli về cây thống trị, báo cáo ra đề \emph{Ghép số} của Jiang
 Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, bài của
 Chen Yu về nguyên lý chuyển vị, và bài của Li Baitian về duy trì động giá trị
 cực trị của hàm số, cùng báo cáo ra đề \emph{Trò chơi trên đồ thị} của Zuo
 Junchi, bài của Zhou Yuyang về một loại DFT không bình thường, và bài của Zhang
-Zheyu về bài toán rừng hướng vào nhỏ nhất. Các hình nhỏ trong báo cáo thứ tư và
-thứ bảy được dựng lại bằng TikZ từ bản render PDF; các hình minh họa trong bài
-thứ chín được ghi lại bằng chú thích khung khi nội dung chính đã nằm trong lời
-văn và công thức.
+Zheyu về bài toán rừng hướng vào nhỏ nhất, và bài của Xu Yixuan về suffix
+automaton nén. Các hình nhỏ trong báo cáo thứ tư và thứ bảy được dựng lại bằng
+TikZ từ bản render PDF; các hình minh họa trong bài thứ chín và thứ mười được
+ghi lại bằng chú thích khung khi nội dung chính đã nằm trong lời văn và công
+thức.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -6139,6 +6140,853 @@ quan trọng.
   \url{https://en.wikipedia.org/wiki/Matroid}.
   \item Wikipedia contributors. \emph{Edmonds' Algorithm}. Wikipedia,
   \url{https://en.wikipedia.org/wiki/Edmonds%27_algorithm}.
+\end{enumerate}
+
+\section{Bàn về suffix automaton nén}
+
+\begin{center}
+Xu Yixuan, Trường Trung học cao cấp Thường Châu, Giang Tô
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết xuất phát từ một loạt cấu trúc dữ liệu hậu tố truyền thống trong thi
+tin học, rồi dẫn ra một cấu trúc dữ liệu hậu tố mới: suffix automaton nén, cùng
+một biến thể của nó là suffix automaton nén đối xứng. Với cả hai cấu trúc, bài
+viết phân tích chi tiết các tính chất, đưa ra một thuật toán xây dựng có độ
+phức tạp thời gian và không gian tuyến tính khi được phép xử lý offline, đồng
+thời giới thiệu các ứng dụng thực tế.
+
+Trong cộng đồng thi tin học hiện nay, sự quan tâm của học sinh đối với suffix
+automaton vẫn rất lớn. Hy vọng suffix automaton nén được giới thiệu trong bài
+viết này, cùng cách suy nghĩ phía sau nó, có thể gợi mở thêm nhiều suy nghĩ và
+tìm tòi về cấu trúc dữ liệu hậu tố, cũng như về các bài toán rộng hơn.
+
+\subsection{Lời nói đầu}
+
+Cấu trúc dữ liệu hậu tố là một hệ thống đang được dùng rộng rãi trong thi thuật
+toán. Nó bao gồm những nội dung quen thuộc như suffix array, trie hậu tố,
+suffix automaton, suffix tree, v.v. Các cấu trúc dữ liệu hậu tố này có thể xử
+lý hiệu quả nhiều bài toán về xâu.
+
+Nếu hiểu quan hệ giữa các cấu trúc dữ liệu hậu tố này từ góc nhìn lý thuyết
+automaton, ta có thể thấy: tối tiểu hóa trie hậu tố sẽ thu được suffix
+automaton, còn co nó lại sẽ thu được suffix tree. Nếu đồng thời tối tiểu hóa và
+co trie hậu tố, ta sẽ thu được suffix automaton nén mà bài viết này giới thiệu.
+
+Từ đó, tác giả bắt đầu nghiên cứu suffix automaton nén và viết bài này.
+
+Cấu trúc bài viết như sau:
+
+\begin{itemize}
+  \item Mục 2 giới thiệu một số định nghĩa cơ bản về xâu và automaton.
+  \item Mục 3 ôn lại các cấu trúc dữ liệu hậu tố truyền thống trong OI, đồng
+  thời giới thiệu quan hệ giữa chúng.
+  \item Mục 4 giới thiệu chi tiết định nghĩa, cách xây dựng và ứng dụng của
+  suffix automaton nén.
+  \item Mục 5 giới thiệu biến thể của nó: định nghĩa, cách xây dựng và ứng dụng
+  của suffix automaton nén đối xứng.
+  \item Mục 6 phân tích và tổng kết các nội dung trong bài.
+\end{itemize}
+
+\subsection{Định nghĩa cơ bản}
+
+\subsubsection{Cơ sở về xâu}
+
+Gọi \(S\) là một xâu. Dùng \(|S|\) để biểu thị số ký tự trong \(S\), tức độ dài
+của \(S\).
+
+Nếu \(|S|=0\), ta gọi \(S\) là xâu rỗng, ký hiệu \(S=\emptyset\).
+
+Ký hiệu \(S[i]\) là ký tự thứ \(i\) trong \(S\), trong đó \(1\le i\le |S|\).
+
+Ký hiệu \(S[l,r]\) là xâu gồm các ký tự từ thứ \(l\) tới thứ \(r\) trong \(S\),
+gọi là một xâu con của \(S\).
+
+Nếu \(1\le l\le r\le |S|\), thì \(S[l,r]\) là một xâu con không rỗng; ngược
+lại, \(S[l,r]=\emptyset\).
+
+Ký hiệu \(\operatorname{Pre}[i]=S[1,i]\), tức phần gồm ký tự thứ \(i\) và các ký
+tự đứng trước nó trong \(S\); đây là một tiền tố của \(S\).
+
+Ký hiệu \(\operatorname{Suf}[i]=S[i,|S|]\), tức phần gồm ký tự thứ \(i\) và các
+ký tự đứng sau nó trong \(S\); đây là một hậu tố của \(S\).
+
+\subsubsection{Ngữ cảnh}
+
+Trong bài viết này, mọi bài toán được xét đều hướng tới một xâu mẹ duy nhất
+\(S\). Vì vậy, các ký hiệu được quy ước dưới đây thường lược bỏ \(S\), và chỉ
+ghi xâu con nào đó của \(S\) trong ký hiệu.
+
+\paragraph{\term{Định nghĩa 2.2.1.}}
+Với xâu con \(S[l,r]\) của \(S\), định nghĩa ngữ cảnh trái
+\(\operatorname{LeftContext}(S[l,r])\) của nó là
+\[
+S\left[
+\min\{x\mid \forall S[l,r]=S[y-(r-l),y],
+S[x,r]=S[y-(r-x),y]\}, r
+\right].
+\]
+Tương tự, định nghĩa ngữ cảnh phải \(\operatorname{RightContext}(S[l,r])\) của
+nó là
+\[
+S\left[
+l,\max\{x\mid \forall S[l,r]=S[y,y+(r-l)],
+S[l,x]=S[y,y+(x-l)]\}
+\right].
+\]
+
+Nói một cách thông tục, ngữ cảnh trái của một xâu con \(S[l,r]\) là xâu dài
+nhất thu được bằng cách ghép phần chắc chắn xuất hiện ngay trước mọi lần xuất
+hiện của \(S[l,r]\) trong \(S\) với \(S[l,r]\). Ngữ cảnh phải của \(S[l,r]\) là
+xâu dài nhất thu được bằng cách ghép \(S[l,r]\) với phần chắc chắn xuất hiện
+ngay sau mọi lần xuất hiện của \(S[l,r]\) trong \(S\).
+
+Theo cách mô tả này, không khó nhận ra
+\[
+\operatorname{LeftContext}(\operatorname{RightContext}(S[l,r]))
+=
+\operatorname{RightContext}(\operatorname{LeftContext}(S[l,r])).
+\]
+
+\paragraph{\term{Định nghĩa 2.2.2.}}
+Với xâu con \(S[l,r]\), định nghĩa ngữ cảnh
+\(\operatorname{Context}(S[l,r])\) của nó là
+\[
+\operatorname{LeftContext}(\operatorname{RightContext}(S[l,r])).
+\]
+Như vậy, ngữ cảnh của một xâu con là xâu dài nhất chắc chắn xuất hiện mỗi khi
+xâu con đó xuất hiện trong \(S\).
+
+\paragraph{\term{Định nghĩa 2.2.3.}}
+Với xâu con \(S[l,r]\) của \(S\), định nghĩa tập trái
+\(\operatorname{Left}(S[l,r])\) của nó là
+\[
+\{x\mid S[x,x+(r-l)]=S[l,r]\}.
+\]
+Tương tự, định nghĩa tập phải \(\operatorname{Right}(S[l,r])\) của nó là
+\[
+\{x\mid S[x-(r-l),x]=S[l,r]\}.
+\]
+
+Có thể thấy tập trái của một xâu con chính là tập các đầu trái của mọi lần xuất
+hiện của nó trong \(S\), còn tập phải là tập các đầu phải của mọi lần xuất hiện
+của nó trong \(S\).
+
+\paragraph{\term{Ví dụ 2.2.}}
+Xét xâu \(S=\texttt{aabaaba}\). Khi đó
+\[
+\begin{aligned}
+\operatorname{LeftContext}(\texttt{a})&=\texttt{a},&
+\operatorname{LeftContext}(\texttt{aa})&=\texttt{aa},&
+\operatorname{LeftContext}(\texttt{b})&=\texttt{aab},\\
+\operatorname{RightContext}(\texttt{a})&=\texttt{a},&
+\operatorname{RightContext}(\texttt{aa})&=\texttt{aaba},&
+\operatorname{RightContext}(\texttt{b})&=\texttt{ba},\\
+\operatorname{Context}(\texttt{a})&=\texttt{a},&
+\operatorname{Context}(\texttt{aa})&=\texttt{aaba},&
+\operatorname{Context}(\texttt{b})&=\texttt{aaba}.
+\end{aligned}
+\]
+Với xâu con \(\texttt{ab}\) của \(S\), các vị trí xuất hiện của nó là
+\(\{[2,3],[5,6]\}\), do đó
+\[
+\operatorname{Left}(\texttt{ab})=\{2,5\},\qquad
+\operatorname{Right}(\texttt{ab})=\{3,6\}.
+\]
+
+\subsubsection{Automaton}
+
+\paragraph{\term{Định nghĩa 2.3.}}
+Một automaton hữu hạn xác định (DFA) \(A\) gồm:
+
+\begin{itemize}
+  \item một tập trạng thái hữu hạn không rỗng \(Q\);
+  \item một bảng chữ cái đầu vào \(\Sigma\), tức một tập ký tự hữu hạn không
+  rỗng;
+  \item một hàm chuyển \(\delta:Q\times\Sigma\to Q\), chẳng hạn
+  \(\delta(q,\sigma)=p\), với \(p,q\in Q,\sigma\in\Sigma\);
+  \item một trạng thái bắt đầu \(s\in Q\);
+  \item một tập trạng thái chấp nhận \(F\subseteq Q\).
+\end{itemize}
+
+Vì vậy, một DFA có thể viết dưới dạng \(A=(Q,\Sigma,\delta,s,F)\).
+
+Nói đơn giản, có thể xem một DFA là một đồ thị có hướng hữu hạn, với tập đỉnh
+là \(Q\), và trên mỗi cạnh ghi một ký tự thuộc \(\Sigma\). Có một đỉnh đặc biệt
+\(s\) gọi là trạng thái bắt đầu, ngoài ra còn có một loạt đỉnh đặc biệt \(F\)
+gọi là trạng thái chấp nhận. Trong bài viết này, ta nghiên cứu các automaton có
+thể chấp nhận mọi xâu con của một xâu \(S\), vì vậy mọi DFA được nhắc tới đều
+thỏa \(F=Q\).
+
+\subsection{Các cấu trúc dữ liệu hậu tố truyền thống trong OI}
+
+\subsubsection{Trie hậu tố}
+
+Để có một DFA có thể chấp nhận mọi xâu con của \(S\), và không chấp nhận xâu
+nào khác, ta dễ nghĩ tới việc xây một trie cho tất cả hậu tố của \(S\). Vì trie
+có thể chấp nhận các tiền tố của một xâu nào đó trong tập, còn các tiền tố của
+mọi hậu tố của \(S\) đúng bằng tập các xâu con của \(S\), trie này chấp nhận
+đúng và đủ mọi xâu con của \(S\).
+
+\paragraph{\term{Định nghĩa 3.1.}}
+Xây trie cho \(\{\operatorname{Suf}[i]\mid i\in\{1,2,\ldots,|S|\}\}\). DFA thu
+được gọi là trie hậu tố.
+
+\paragraph{\term{Ví dụ 3.1.}}
+Trie hậu tố của xâu \(S=\texttt{abaab}\) được minh họa trong bản gốc như sau:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 3.1: trie hậu tố của
+\(S=\texttt{abaab}\); các nút màu xám là những nút ứng với một hậu tố của
+\(S\).}}
+\end{center}
+
+Có thể thấy trie hậu tố chấp nhận đúng và đủ mọi xâu con của \(S\).
+
+\subsubsection{Suffix automaton}
+
+Trong trường hợp xấu nhất, số nút và số cạnh của trie hậu tố đều có thể đạt cấp
+\(O(|S|^2)\), thường khó chấp nhận trong ứng dụng thực tế. Vì vậy, ta cần tìm
+một cấu trúc dữ liệu hậu tố hiệu quả hơn.
+
+Như đã nói ở trên, trie hậu tố là một DFA, còn DFA có khái niệm tối tiểu hóa.
+
+Chẳng hạn trong Ví dụ 3.1, có thể thấy các nút \(\texttt{aab}\),
+\(\texttt{baab}\), \(\texttt{abaab}\) đều không có cạnh đi ra. Vì vậy, có thể
+xem chúng là tương đương và gộp thành cùng một nút. Tương tự, các nút
+\(\texttt{baa}\) và \(\texttt{abaa}\) đều chỉ có một cạnh đi ra, cùng ký tự,
+trỏ tới các nút tương đương. Do đó các chuyển tiếp phía sau ở hai nút này là
+giống nhau; ta cũng có thể xem chúng là tương đương và gộp thành một nút.
+
+\paragraph{\term{Định nghĩa 3.2.}}
+Gộp các nút có cùng tập \(\operatorname{Right}\) trên trie hậu tố. DFA thu được
+gọi là suffix automaton.
+
+\paragraph{\term{Ví dụ 3.2.1.}}
+Suffix automaton của xâu \(S=\texttt{abaab}\) được minh họa trong bản gốc như
+sau:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 3.2.1: suffix automaton
+của \(S=\texttt{abaab}\), các nhãn nút là tập \(\operatorname{Right}\); ngoài
+trạng thái bắt đầu, các nút có bậc ra khác \(1\) được tô xám.}}
+\end{center}
+
+Có thể thấy nếu DFS theo các cạnh của suffix automaton, ta khôi phục được trie
+hậu tố ban đầu.
+
+Trong Định nghĩa 3.2, ta không trực tiếp nhắc tới việc tối tiểu hóa trie hậu
+tố. Nhưng xét ý nghĩa của việc tối tiểu hóa trie hậu tố, ta muốn giảm số nút
+của DFA nhiều nhất có thể mà không ảnh hưởng tới tập xâu mỗi nút có thể chấp
+nhận. Trong bài toán khớp xâu con, quá trình này gần như chính là gộp các nút
+có cùng tập \(\operatorname{Right}\) của xâu tương ứng. Điều này tương tự định
+nghĩa suffix automaton ở Định nghĩa 3.2.
+
+Dù vậy, cần chỉ ra rằng suffix automaton không hoàn toàn đồng nhất với trie hậu
+tố đã tối tiểu hóa.
+
+Để phân biệt hai khái niệm này, hãy xét một ví dụ cụ thể.
+
+\paragraph{\term{Ví dụ 3.2.2.}}
+Bản gốc lần lượt minh họa trie hậu tố, suffix automaton và trie hậu tố tối
+tiểu hóa của xâu \(S=\texttt{baa}\):
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 3.2.2: ba cấu trúc của
+\(S=\texttt{baa}\): trie hậu tố, suffix automaton, và trie hậu tố tối tiểu hóa.}}
+\end{center}
+
+Có thể thấy hai nút có tập \(\operatorname{Right}\) lần lượt là \(\{2,3\}\) và
+\(\{2\}\) được gộp trong trie hậu tố tối tiểu hóa. Thật vậy, vì một lần xuất
+hiện có đầu phải là \(|S|\) không còn ký tự phía sau, nếu hai tập
+\(\operatorname{Right}\) chỉ khác nhau ở phần tử \(|S|\), thì các chuyển tiếp
+phía sau của chúng là như nhau. Ngược lại, nếu hiệu đối xứng của hai tập
+\(\operatorname{Right}\) chứa một phần tử khác \(|S|\), thì các chuyển tiếp
+phía sau chắc chắn khác nhau, nên hai tập này cũng là hai nút khác nhau trong
+trie hậu tố tối tiểu hóa.
+
+Từ đó có thể thấy khác biệt duy nhất giữa suffix automaton và trie hậu tố tối
+tiểu hóa nằm ở việc có gộp các nút mà hiệu đối xứng của hai tập
+\(\operatorname{Right}\) tương ứng bằng \(\{|S|\}\) hay không. Nếu khi tối tiểu
+hóa, ta xem các nút trên trie hậu tố đại diện cho một hậu tố, tức các nút màu
+xám trong hình, là loại nút khác với nút thông thường, thì suffix automaton và
+trie hậu tố tối tiểu hóa có cùng định nghĩa.
+
+Trong phần sau, khi nói ``suffix automaton là kết quả tối tiểu hóa trie hậu
+tố'', chữ ``tối tiểu hóa'' đều mang nghĩa: tối tiểu hóa trong điều kiện xem các
+nút trên trie hậu tố đại diện cho một hậu tố là khác với nút thông thường.
+
+\paragraph{\term{Bổ đề 3.2.}}
+Với hai xâu con bất kỳ \(x,y\) của \(S\), ít nhất một trong hai điều sau đúng:
+\[
+\operatorname{Right}(x)\cap\operatorname{Right}(y)=\emptyset,
+\]
+\[
+\operatorname{Right}(x)\subseteq\operatorname{Right}(y)
+\quad\text{hoặc}\quad
+\operatorname{Right}(y)\subseteq\operatorname{Right}(x).
+\]
+
+\paragraph{\term{Chứng minh.}}
+Nếu \(\operatorname{Right}(x)\cap\operatorname{Right}(y)\ne\emptyset\), chắc
+chắn tồn tại \(s\in\operatorname{Right}(x)\cap\operatorname{Right}(y)\). Từ đó
+suy ra \(x,y\) đều là hậu tố của \(\operatorname{Pre}[s]\), nên ít nhất một
+trong \(x,y\) là hậu tố của xâu còn lại. Không mất tính tổng quát, giả sử \(x\)
+là hậu tố của \(y\), khi đó
+\(\operatorname{Right}(y)\subseteq\operatorname{Right}(x)\). \proofbox
+
+Sự tồn tại của Bổ đề 3.2 đảm bảo số nút của suffix automaton ở cấp \(O(|S|)\).
+Thật vậy, một suffix automaton có nhiều nhất \(2|S|-1\) nút và \(3|S|-4\) cạnh
+chuyển. Chính nhờ độ phức tạp thời gian và không gian tốt này mà suffix
+automaton được dùng rộng rãi trong thi OI.
+
+\subsubsection{Suffix tree}
+
+Muốn giảm độ phức tạp thời gian và không gian của trie hậu tố còn có một cách
+khác. Chú ý rằng trie hậu tố thực chất là hợp của nhiều nhất \(|S|\) đường đi
+bắt đầu từ gốc, nên số lá của nó không vượt quá \(|S|\). Khi đó cây ảo do các
+lá này tạo thành có số nút không quá \(2|S|-1\).
+
+\paragraph{\term{Định nghĩa 3.3.1.}}
+Xây cây ảo trên các lá của trie hậu tố. Kết quả thu được gọi là suffix tree.
+
+\paragraph{\term{Ví dụ 3.3.1.}}
+Suffix tree của xâu \(S=\texttt{abaab}\) được minh họa trong bản gốc:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 3.3.1: suffix tree của
+\(S=\texttt{abaab}\).}}
+\end{center}
+
+Có thể thấy quá trình xây suffix tree thực chất là co tất cả các nút có bậc ra
+bằng \(1\) trên trie hậu tố, từ đó giảm số nút của suffix tree. Ta gọi quá
+trình này là phép co trên trie hậu tố.
+
+Trong Ví dụ 3.3.1, một số nút màu xám vốn đại diện cho một hậu tố của \(S\)
+cũng bị co và giản lược. Nhưng khi xử lý bài toán thực tế, ta thường cần xét
+riêng các nút đại diện cho một hậu tố này. Vì vậy, có thể định nghĩa suffix
+tree theo một cách khác.
+
+\paragraph{\term{Định nghĩa 3.3.2.}}
+Xây cây ảo trên các nút đại diện cho hậu tố của xâu gốc trong trie hậu tố. Kết
+quả thu được gọi là suffix tree đầy đủ.
+
+\paragraph{\term{Ví dụ 3.3.2.}}
+Suffix tree đầy đủ của xâu \(S=\texttt{abaab}\) được minh họa trong bản gốc:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 3.3.2: suffix tree đầy đủ
+của \(S=\texttt{abaab}\), trong đó các nút đại diện cho hậu tố của xâu gốc
+được giữ lại.}}
+\end{center}
+
+So với suffix tree, suffix tree đầy đủ giữ lại toàn bộ các nút đại diện cho hậu
+tố của xâu gốc.
+
+Cần chú ý rằng vì một số đường đi đã được nén lại, một cạnh có thể chứa nhiều
+ký tự, nên suffix tree thực ra không được xem là một DFA. Dù vậy, suffix tree
+vẫn có độ phức tạp thời gian và không gian tuyến tính rất tốt, đồng thời có
+hình thức trực quan hơn suffix automaton. Chính vì thế, suffix tree cũng là một
+công cụ mạnh để xử lý xâu trong thi OI.
+
+\subsection{Suffix automaton nén}
+
+\subsubsection{Định nghĩa}
+
+Thực hiện phép co trên trie hậu tố sẽ thu được suffix tree.
+
+Thực hiện phép tối tiểu hóa trên trie hậu tố sẽ thu được suffix automaton.
+
+Vậy nếu đồng thời thực hiện phép co và phép tối tiểu hóa trên trie hậu tố, ta
+sẽ thu được gì?
+
+\paragraph{\term{Định nghĩa 4.1.1.}}
+Đồng thời thực hiện phép co và phép tối tiểu hóa trên trie hậu tố. Kết quả thu
+được gọi là suffix automaton nén.
+
+\paragraph{\term{Ví dụ 4.1.1.}}
+Suffix automaton nén của xâu \(S=\texttt{abaab}\) được minh họa trong bản gốc:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 4.1.1: suffix automaton
+nén của \(S=\texttt{abaab}\).}}
+\end{center}
+
+So sánh Ví dụ 3.2.1 và Ví dụ 3.3.1, có thể thấy suffix automaton nén của xâu
+\(S\) đúng là kết quả co tất cả các nút có bậc ra bằng \(1\) trên suffix
+automaton. Đồng thời, nếu DFS trên suffix automaton nén, ta có thể khôi phục
+suffix tree của xâu \(S\).
+
+Điều này cũng phù hợp với định nghĩa suffix automaton nén là đồng thời co và
+tối tiểu hóa trie hậu tố.
+
+Ta cũng có thể định nghĩa một suffix automaton nén tương ứng với suffix tree
+đầy đủ.
+
+\paragraph{\term{Định nghĩa 4.1.2.}}
+Tối tiểu hóa suffix tree đầy đủ. Kết quả thu được gọi là suffix automaton nén
+đầy đủ.
+
+\paragraph{\term{Ví dụ 4.1.2.}}
+Suffix automaton nén đầy đủ của xâu \(S=\texttt{abaab}\) được minh họa trong
+bản gốc:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 4.1.2: suffix automaton
+nén đầy đủ của \(S=\texttt{abaab}\).}}
+\end{center}
+
+\subsubsection{Cách xây dựng}
+
+Với một DFA không có tính chất đặc biệt, độ phức tạp thời gian của tối tiểu hóa
+thường khó chấp nhận, nhưng phép co thì rất dễ. Vì vậy, có thể co suffix
+automaton đã biết để thu được suffix automaton nén.
+
+\paragraph{\term{Ví dụ 4.2.1.}}
+Xét cách xây suffix automaton nén của xâu \(S=\texttt{abaab}\).
+
+Như Ví dụ 3.2.1, trước hết xây suffix automaton của \(S\), rồi đánh dấu các nút
+có bậc ra khác \(1\) bằng màu xám.
+
+Xử lý các nút chưa được đánh dấu và có bậc ra bằng \(1\) theo thứ tự topo của
+suffix automaton, tính nút màu xám đầu tiên đạt tới nếu đi theo cạnh đi ra từ
+các nút này. Sau đó, lần lượt xử lý trạng thái bắt đầu và từng cạnh đi ra của
+các nút màu xám, rút gọn cạnh đó thành cạnh nối tới nút màu xám đầu tiên đạt
+tới khi đi theo cạnh ấy.
+
+Kết quả cuối cùng đúng như Ví dụ 4.1.1.
+
+Vì độ phức tạp thời gian và không gian để xây suffix automaton đều là
+\(O(|S|)\), và quá trình co cũng có độ phức tạp thời gian và không gian
+\(O(|S|)\), nên độ phức tạp thời gian và không gian để xây suffix automaton nén
+đều là \(O(|S|)\).
+
+Nhưng trong định nghĩa suffix automaton nén đầy đủ, không có suffix automaton
+tương ứng trực tiếp để đem co. Vậy làm sao xây suffix automaton nén đầy đủ của
+xâu mà tránh thao tác tối tiểu hóa?
+
+\paragraph{\term{Ví dụ 4.2.2.}}
+Xét cách xây suffix automaton nén đầy đủ của xâu \(S=\texttt{abaab}\).
+
+Theo định nghĩa, DFS trên suffix automaton nén đầy đủ phải khôi phục được
+suffix tree đầy đủ. Nghĩa là ngoài các nút có bậc ra khác \(1\) trên suffix
+automaton, ta còn cần đánh dấu thêm một số nút màu xám, sao cho các nút đại
+diện cho hậu tố của xâu gốc trên suffix tree được giữ lại.
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 4.2.2: trên suffix
+automaton, đánh dấu thêm các nút có tập \(\operatorname{Right}\) chứa \(|S|\).}}
+\end{center}
+
+Như hình trên, xét việc đánh dấu thêm các nút trên suffix automaton có tập
+\(\operatorname{Right}\) chứa \(|S|\). Những nút như vậy trên trie hậu tố chắc
+chắn đại diện cho một hậu tố của xâu gốc. Vì vậy, sau khi đánh dấu chúng bằng
+màu xám rồi thực hiện phép co như Ví dụ 4.2.1, ta thu được kết quả tối tiểu hóa
+suffix tree đầy đủ, tức suffix automaton nén đầy đủ. Kết quả cuối cùng đúng như
+Ví dụ 4.1.2.
+
+Có thể thấy độ phức tạp thời gian và không gian để xây suffix automaton nén đầy
+đủ cũng đều là \(O(|S|)\).
+
+\subsubsection{Tính chất và ứng dụng}
+
+Từ định nghĩa và cách xây dựng suffix automaton nén, ta thu được các tính chất
+cơ bản sau:
+
+\paragraph{\term{Tính chất 4.3.1.}}
+Suffix automaton nén là kết quả co suffix automaton.
+
+Mọi xâu trên các cạnh đi vào cùng một nút của suffix automaton nén đều là hậu
+tố của xâu dài nhất trong số đó.
+
+\paragraph{\term{Tính chất 4.3.2.}}
+Suffix automaton nén là kết quả tối tiểu hóa suffix tree.
+
+DFS trên suffix automaton nén có thể khôi phục suffix tree.
+
+Để phát huy tốt hơn ưu thế của suffix automaton nén, ta còn cần chứng minh một
+tính chất quan trọng của nó. Khi dùng suffix automaton nén để giải bài toán,
+tính chất này thường đặc biệt then chốt.
+
+\paragraph{\term{Định lý 4.3.}}
+Gọi \(L_i\) là độ dài cạnh dài nhất trong tất cả các cạnh đi vào nút thứ \(i\)
+của suffix automaton nén. Khi đó
+\[
+\sum_i L_i=O(|S|).
+\]
+
+\paragraph{\term{Chứng minh.}}
+Xét quá trình co suffix automaton.
+
+Với một cạnh vốn có trên suffix automaton, có hai khả năng:
+
+\begin{enumerate}
+  \item Cạnh đó xuất hiện trên cạnh đi vào dài nhất của một nút màu xám. Khi
+  đó, nó đóng góp \(1\) vào \(\sum_i L_i\).
+  \item Cạnh đó không xuất hiện trên cạnh đi vào dài nhất của một nút màu xám.
+  Khi đó, nó đóng góp \(0\) vào \(\sum_i L_i\).
+\end{enumerate}
+
+Vì vậy, một cạnh vốn có trên suffix automaton đóng góp nhiều nhất \(O(1)\) vào
+\(\sum_i L_i\). Theo Bổ đề 3.2, số cạnh của suffix automaton ở cấp \(O(|S|)\),
+do đó \(\sum_i L_i=O(|S|)\). \proofbox
+
+Tiếp theo, hãy xét một bài toán cụ thể.
+
+\paragraph{\term{Ví dụ 4.3. Sasha and Swag Strings.}}
+Cho một xâu \(S\) chỉ gồm chữ cái thường, \(1\le |S|\le 10^5\). Hãy tính tổng,
+trên mọi cạnh của suffix tree, số xâu con phân biệt về bản chất của xâu ghi
+trên cạnh đó.
+
+Xét một cách giải truyền thống cho bài này. Chú ý rằng xâu ghi trên mỗi cạnh
+của suffix tree đều là một xâu con của \(S\), nên bài toán có thể chuyển thành:
+với \(O(|S|)\) xâu con của \(S\), lần lượt tính số xâu con phân biệt về bản chất
+của chúng.
+
+Với bài toán sau chuyển đổi, tài liệu tham khảo [5] giới thiệu một lời giải
+offline dùng Link-Cut Tree để duy trì suffix tree và dùng cây đoạn để duy trì
+đáp án. Độ phức tạp thời gian là \(O(|S|\log^2 |S|)\).
+
+Nhưng lời giải này cần nhiều cấu trúc dữ liệu nâng cao, khiến mã cài đặt thực
+tế khá khó. Đồng thời, độ phức tạp thời gian cũng cao, chỉ vừa đủ qua dữ liệu
+cấp \(10^5\). Tiếp theo, ta giới thiệu một lời giải tốt hơn cho bài này bằng
+suffix automaton nén.
+
+Theo Tính chất 4.3.2, ta biết suffix automaton nén là kết quả tối tiểu hóa
+suffix tree. Vì vậy, chỉ cần tính số xâu con phân biệt về bản chất của xâu ghi
+trên mỗi cạnh của suffix automaton nén, ta sẽ thu được số xâu con phân biệt về
+bản chất của xâu ghi trên mỗi cạnh của suffix tree.
+
+Xét từng nút \(i\), ta lần lượt tính số xâu con phân biệt về bản chất của mọi
+xâu ghi trên cạnh đi vào nút đó. Theo Tính chất 4.3.1, các xâu này đều là hậu
+tố của xâu dài nhất trong số đó.
+
+Cách truyền thống để tính số xâu con phân biệt về bản chất của một xâu thường
+dựa vào suffix tree hoặc suffix automaton, và có thể hỗ trợ thêm ký tự theo một
+hướng của xâu, đồng thời duy trì động số xâu con phân biệt về bản chất. Do đó,
+ta có thể tính số xâu con phân biệt về bản chất của mọi xâu trên các cạnh đi
+vào nút \(i\) trong thời gian \(O(L_i)\).
+
+Với toàn bộ các nút, tổng thời gian để tính số xâu con phân biệt về bản chất
+của các xâu trên cạnh đi vào là
+\[
+O\left(\sum_i L_i\right).
+\]
+Theo Định lý 4.3,
+\[
+O\left(\sum_i L_i\right)=O(|S|).
+\]
+
+Như vậy, ta thu được một lời giải có độ phức tạp thời gian và không gian đều
+là \(O(|S|)\). Đồng thời, so với thuật toán đã nhắc ở trên, thuật toán dùng
+suffix automaton nén dễ cài đặt hơn.
+
+Có thể thấy suffix automaton nén không chỉ dễ cài đặt mà còn rất mạnh.
+
+\subsection{Suffix automaton nén đối xứng}
+
+\subsubsection{Định nghĩa}
+
+Trong Ví dụ 3.2.1, ta dùng tập \(\operatorname{Right}\) của xâu đầu vào \(T\)
+để mô tả các nút trên suffix automaton.
+
+Xét tập các xâu \(T\) có thể được cùng một nút chấp nhận, ký hiệu \(\{T_i\}\).
+Gọi xâu dài nhất trong đó là \(T_{\max}\). Khi đó, với mọi \(T\in\{T_i\}\),
+\(T\) phải là hậu tố của \(T_{\max}\).
+
+Ngoài ra, xét ý nghĩa của tập \(\operatorname{Right}\), ta có thể suy thêm:
+\[
+\forall T\in\{T_i\},\quad \operatorname{LeftContext}(T)=T_{\max}.
+\]
+Điều này nghĩa là ta có thể dùng một xâu cụ thể \(T_{\max}\) để mô tả nút trên
+suffix automaton.
+
+\paragraph{\term{Ví dụ 5.1.1.}}
+Suffix automaton của xâu \(S=\texttt{abaab}\) được minh họa trong bản gốc:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 5.1.1: suffix automaton
+của \(S=\texttt{abaab}\), mô tả nút bằng xâu dài nhất tương ứng.}}
+\end{center}
+
+Từ đây ta cũng thấy, so với trie hậu tố, suffix automaton giữ lại các nút tương
+ứng với những xâu \(T\) thỏa
+\[
+\operatorname{LeftContext}(T)=T.
+\]
+
+Một nút trên suffix automaton có bậc ra bằng \(1\) và tập
+\(\operatorname{Right}\) tương ứng không chứa \(|S|\) có đúng một cạnh đi ra,
+đồng thời không đại diện cho một hậu tố của xâu gốc. Điều này nghĩa là xâu
+\(T\) tương ứng với nó thỏa
+\[
+\operatorname{RightContext}(T)\ne T.
+\]
+Trong quá trình xây suffix automaton nén đầy đủ, các nút này đều bị co.
+
+Điều đó nghĩa là mỗi nút trên suffix automaton nén đầy đủ tương ứng với một xâu
+\(T\) đồng thời thỏa
+\[
+\operatorname{LeftContext}(T)=T,\qquad \operatorname{RightContext}(T)=T,
+\]
+tức
+\[
+\operatorname{Context}(T)=T.
+\]
+Vì vậy, ta cũng có thể dùng các xâu \(T\) thỏa \(\operatorname{Context}(T)=T\)
+để mô tả một nút.
+
+\paragraph{\term{Ví dụ 5.1.2.}}
+Suffix automaton nén đầy đủ của xâu \(S=\texttt{abaab}\) được minh họa trong
+bản gốc:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 5.1.2: suffix automaton
+nén đầy đủ của \(S=\texttt{abaab}\), mô tả nút bằng xâu có
+\(\operatorname{Context}(T)=T\).}}
+\end{center}
+
+Chú ý rằng các xâu \(T\) thỏa \(\operatorname{Context}(T)=T\) trong \(S\) và
+các xâu \(T'\) thỏa \(\operatorname{Context}(T')=T'\) trong xâu đảo \(S'\) có
+tương ứng một-một với nhau. Ta có thể đồng thời xây suffix automaton nén đầy đủ
+cho xâu thuận và xâu đảo của \(S\), rồi gộp các nút tương ứng.
+
+\paragraph{\term{Định nghĩa 5.1.}}
+Đồng thời xây suffix automaton nén đầy đủ cho xâu thuận và xâu đảo, gộp các nút
+tương ứng, và giữ lại cả hai nhóm cạnh chuyển. Kết quả thu được gọi là suffix
+automaton nén đối xứng.
+
+\paragraph{\term{Ví dụ 5.1.3.}}
+Suffix automaton nén đối xứng của xâu \(S=\texttt{abaab}\) được minh họa trong
+bản gốc:
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình ví dụ 5.1.3: suffix automaton
+nén đối xứng của \(S=\texttt{abaab}\); cạnh xanh là chuyển của xâu gốc, cạnh đỏ
+là chuyển của xâu đảo.}}
+\end{center}
+
+Trong hình, các cạnh chuyển màu xanh là cạnh của xâu gốc, biểu thị việc thêm ký
+tự vào phía sau xâu hiện tại; các cạnh chuyển màu đỏ là cạnh của xâu đảo, biểu
+thị việc thêm ký tự vào phía trước xâu hiện tại.
+
+\subsubsection{Cách xây dựng}
+
+Theo Định nghĩa 5.1, ta có thể xây suffix automaton nén đối xứng bằng cách xây
+suffix automaton nén đầy đủ cho xâu thuận và xâu đảo, rồi gộp các nút tương
+ứng.
+
+Khi đó, ta cần một cấu trúc có thể nhanh chóng tìm các xâu con là đảo của nhau.
+
+Có thể dùng hash xâu hoặc suffix array làm cấu trúc truy vấn xâu con cần thiết.
+
+Tùy theo cấu trúc truy vấn xâu con được chọn, độ phức tạp thời gian và không
+gian để xây suffix automaton nén đối xứng là \(O(|S|)\) hoặc
+\(O(|S|\log |S|)\).
+
+\subsubsection{Tính chất và ứng dụng}
+
+Ngoài các tính chất của suffix automaton nén đã nhắc trong Mục 4.3, suffix
+automaton nén đối xứng còn có khả năng rất mạnh: có thể đồng thời thêm ký tự ở
+cả hai phía. Tiếp theo, ta dùng các ví dụ cụ thể để thấy sức mạnh của suffix
+automaton nén đối xứng.
+
+\paragraph{\term{Ví dụ 5.3.1. Tìm xâu con.}}
+Cho một xâu \(S\) độ dài \(N\), \(1\le N\le 10^6\), chỉ gồm chữ cái thường. Xâu
+\(T\) ban đầu rỗng. Cần hỗ trợ online tổng cộng \(Q\), \(1\le Q\le 10^6\), thao
+tác thuộc bốn loại sau:
+
+\begin{enumerate}
+  \item Cho ký tự \(c\), đặt \(T=T+c\).
+  \item Cho ký tự \(c\), đặt \(T=c+T\).
+  \item Cho số nguyên \(i\), gán \(T\) bằng xâu thu được sau thao tác thứ \(i\).
+  \item Kiểm tra \(T\) có phải xâu con của \(S\) hay không; nếu có, tìm một vị
+  trí xuất hiện bất kỳ của nó.
+\end{enumerate}
+
+Nếu bài toán không có thao tác (2), rõ ràng ta có thể dùng suffix automaton
+truyền thống để giải.
+
+Bài này đồng thời có thao tác thêm ký tự vào hai đầu của xâu đầu vào, điều mà
+suffix automaton truyền thống không giải quyết được. Vì vậy, xét xây suffix
+automaton nén đối xứng cho xâu \(S\). Dùng nút tương ứng với
+\(\operatorname{Context}(T)\) để biểu diễn xâu \(T\). Đồng thời, duy trì vị trí
+xuất hiện của \(T\) trong \(\operatorname{Context}(T)\); chú ý rằng do tính chất
+của ngữ cảnh, vị trí xuất hiện của \(T\) trong \(\operatorname{Context}(T)\) là
+duy nhất.
+
+Với thao tác (1):
+
+Nếu \(\operatorname{RightContext}(T)\ne T\), thì mỗi khi \(T\) xuất hiện trong
+\(S\), phía sau nó chắc chắn xuất hiện một ký tự cụ thể. Ta kiểm tra \(c\) có
+phải ký tự đó hay không. Nếu đúng, thì
+\(\operatorname{Context}(T+c)=\operatorname{Context}(T)\); nếu không,
+\(T+c\) không phải xâu con của \(S\).
+
+Nếu \(\operatorname{RightContext}(T)=T\), thì
+\(\operatorname{Context}(T+c)\ne\operatorname{Context}(T)\). Ta tìm cạnh đi ra
+bắt đầu bằng ký tự \(c\) trong suffix automaton nén theo chiều thuận. Nếu tồn
+tại, \(\operatorname{Context}(T+c)\) chính là nút đạt tới; nếu không,
+\(T+c\) không phải xâu con của \(S\).
+
+Tương tự, với thao tác (2):
+
+Nếu \(\operatorname{LeftContext}(T)\ne T\), thì mỗi khi \(T\) xuất hiện trong
+\(S\), phía trước nó chắc chắn xuất hiện một ký tự cụ thể. Ta kiểm tra \(c\) có
+phải ký tự đó hay không. Nếu đúng, thì
+\(\operatorname{Context}(c+T)=\operatorname{Context}(T)\); nếu không,
+\(c+T\) không phải xâu con của \(S\).
+
+Nếu \(\operatorname{LeftContext}(T)=T\), thì
+\(\operatorname{Context}(c+T)\ne\operatorname{Context}(T)\). Ta tìm cạnh đi ra
+bắt đầu bằng ký tự \(c\) trong suffix automaton nén theo chiều đảo. Nếu tồn
+tại, \(\operatorname{Context}(c+T)\) chính là nút đạt tới; nếu không,
+\(c+T\) không phải xâu con của \(S\).
+
+Xét thao tác (3). Với một trạng thái, ta chỉ cần duy trì nút tương ứng với
+\(\operatorname{Context}(T)\), và vị trí xuất hiện của \(T\) trong
+\(\operatorname{Context}(T)\). Vì vậy, chỉ cần dùng mảng ghi lại các thông tin
+này sau mỗi thao tác là có thể hỗ trợ thao tác (3).
+
+Cuối cùng, với thao tác (4), ta đã duy trì được \(\operatorname{Context}(T)\)
+và vị trí xuất hiện của \(T\) trong \(\operatorname{Context}(T)\). Vì vậy, việc
+kiểm tra \(T\) có phải xâu con của \(S\) hay không chính là kiểm tra có tồn tại
+nút tương ứng với \(\operatorname{Context}(T)\) hay không; còn tìm một vị trí
+xuất hiện bất kỳ của \(\operatorname{Context}(T)\) sẽ suy ra được một vị trí
+xuất hiện của \(T\).
+
+Với mỗi nút trên suffix automaton nén đối xứng, khi xây dựng ta có thể xử lý
+trước một vị trí xuất hiện của nó trong \(S\), từ đó hỗ trợ thao tác (4). Lời
+giải này có độ phức tạp thời gian \(O(N+Q)\) và độ phức tạp không gian \(O(N)\).
+
+Điều này cho thấy ưu thế của suffix automaton nén đối xứng khi xử lý các bài
+toán thêm ký tự hai chiều.
+
+\paragraph{\term{Ví dụ 5.3.2. Alice and Bob and A String.}}
+Cho một xâu \(S\) chỉ gồm chữ cái thường, \(1\le |S|\le 10^5\).
+
+Alice và Bob đang chơi một trò chơi. Ban đầu, họ có một xâu con \(T\) của
+\(S\). Alice đi trước, hai người luân phiên thực hiện thao tác sau: thêm một ký
+tự vào trước và một ký tự vào sau \(T\), sao cho kết quả vẫn là một xâu con của
+\(S\). Người không thể thao tác thua.
+
+Giả sử Alice và Bob đều chơi tối ưu để mình thắng. Với toàn bộ xâu con của
+\(S\), hãy giúp Alice tính xâu \(T\) nhỏ thứ \(k\), \(1\le k\le 10^{10}\), theo
+thứ tự từ điển trong số các xâu khiến cô ấy thắng chắc; hoặc kết luận không tồn
+tại đủ \(k\) xâu khiến Alice thắng chắc.
+
+Trước hết xét cách xác định, với một xâu \(T\) cho trước, Alice có thắng được
+hay không.
+
+Cách nghĩ trực quan nhất là xét mọi xâu con \(T\) của \(S\) từ dài tới ngắn.
+Gọi \(dp_T\) cho biết xâu con \(T\) có phải trạng thái thắng của người đi trước
+hay không. Nếu \(T\) có thể chuyển tới một trạng thái thua của người đi trước,
+thì \(dp_T=\mathrm{true}\); ngược lại, tức mọi trạng thái \(T\) có thể chuyển
+tới đều là trạng thái thắng của người đi trước, thì \(dp_T=\mathrm{false}\).
+
+Tuy nhiên, cách này cần xét mọi xâu con của \(S\), không thể chấp nhận khi
+\(|S|\) đạt cấp \(10^5\).
+
+Xét một xâu \(T\) đồng thời thỏa
+\[
+\operatorname{LeftContext}(T)\ne T,\qquad
+\operatorname{RightContext}(T)\ne T.
+\]
+Mỗi khi \(T\) xuất hiện trong \(S\), trước và sau nó chắc chắn xuất hiện các ký
+tự cố định. Vì vậy, với trạng thái có xâu hiện tại là \(T\), người đi trước chỉ
+có đúng một lựa chọn. Khi đó, ta có thể đẩy trò chơi theo lựa chọn duy nhất này
+cho tới khi ít nhất một trong hai điều sau đúng:
+\[
+\operatorname{LeftContext}(T)=T,\qquad
+\operatorname{RightContext}(T)=T.
+\]
+
+Theo Định lý 4.3, số xâu thỏa ít nhất một điều kiện trên ở cấp \(O(|S|)\). Vì
+vậy, sau khi xây suffix automaton nén đối xứng, ta chỉ cần thực hiện DP trên
+những xâu như vậy.
+
+Tiếp theo, xét cách tìm trạng thái thắng nhỏ thứ \(k\) theo thứ tự từ điển.
+
+Theo Tính chất 4.3.2, nếu DFS trên suffix automaton nén, ta có thể khôi phục
+suffix tree của xâu gốc. Mà suffix tree vừa hay sắp xếp toàn bộ xâu con của
+\(S\) theo thứ tự từ điển. Vì vậy, nếu ta có thể nhanh chóng tính tổng số trạng
+thái thắng trên một cạnh, thì chỉ cần DFS trên suffix automaton nén là xác định
+được đáp án nằm trên cạnh nào, từ đó xác định đáp án.
+
+Theo quy tắc chuyển, có thể thấy tổng số trạng thái thắng trên một cạnh có thể
+được tính nhanh bằng cách, với từng nút \(X\), duy trì tổng tiền tố theo từng
+chẵn lẻ độ dài của trạng thái thắng/thua của các xâu \(T\) thỏa
+\[
+\operatorname{Context}(T)=\operatorname{LeftContext}(T)=X
+\]
+hoặc
+\[
+\operatorname{Context}(T)=\operatorname{RightContext}(T)=X.
+\]
+
+Như vậy, ta thu được một lời giải có độ phức tạp thời gian \(O(\sigma |S|)\),
+trong đó \(\sigma=26\).
+
+\subsection{Tổng kết}
+
+Bài viết xuất phát từ một loạt cấu trúc dữ liệu hậu tố truyền thống trong thi
+tin học, rồi dẫn ra một cấu trúc dữ liệu hậu tố mới: suffix automaton nén, cùng
+một biến thể của nó là suffix automaton nén đối xứng. Với cả hai cấu trúc, bài
+viết phân tích chi tiết các tính chất, đưa ra một thuật toán xây dựng có độ
+phức tạp thời gian và không gian tuyến tính khi được phép xử lý offline, đồng
+thời giới thiệu các ứng dụng thực tế.
+
+Trong bài viết này, tác giả dùng nhiều hình vẽ để hỗ trợ giải thích, ngôn ngữ
+cũng dễ hiểu. Tác giả cho rằng ngay cả các thí sinh có nền tảng xâu còn yếu,
+sau khi đọc bài viết này cũng có thể thu được điều gì đó.
+
+Đáng nói là suffix automaton nén được giới thiệu trong bài thực ra là kết quả
+tự nhiên sau khi tiếp tục suy xét về suffix tree và suffix automaton quen thuộc
+với mọi người. Điều này cho thấy nhiều khi cách giải quyết bài toán mới được
+ẩn trong các công cụ đã có; chỉ cần dám đổi mới và tích cực suy nghĩ, ta có thể
+phát hiện ra chúng.
+
+Tác giả chú ý rằng trong cộng đồng thi tin học hiện nay, sự quan tâm của học
+sinh đối với suffix automaton vẫn rất lớn. Hy vọng suffix automaton nén được
+giới thiệu trong bài viết này, cùng cách suy nghĩ phía sau nó, có thể gợi mở
+thêm nhiều suy nghĩ và tìm tòi về cấu trúc dữ liệu hậu tố, cũng như về các bài
+toán rộng hơn.
+
+\subsection*{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+Cảm ơn thầy Cao Wen của Trường Trung học cao cấp Thường Châu, Giang Tô, và
+thầy Wu Tao đã quan tâm, chỉ dẫn tôi trong nhiều năm.
+
+Cảm ơn anh Guo Xiaoxu đã giúp đỡ và hướng dẫn cho bài viết này.
+
+Cảm ơn huấn luyện viên đội tuyển Gao Wenyuan đã giúp đỡ và hướng dẫn tôi.
+
+Cảm ơn bạn Wang Xiuhan, bạn Yang Junzhao và bạn Du Weihua cùng trường đã đọc
+duyệt bài viết này.
+
+Cảm ơn gia đình và bạn bè đã ủng hộ, động viên tôi.
+
+Cảm ơn các thầy cô và các bạn đã từng giúp đỡ tôi.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Wikipedia contributors. \emph{Deterministic finite automaton}.
+  \item Wikipedia contributors. \emph{DFA minimization}.
+  \item Chen Lijie, \emph{Suffix automaton}. Slide bài giảng NOI WC 2012.
+  \item Liu Yanyi, \emph{Mở rộng suffix automaton trên trie}. Tập luận văn đội
+  tuyển quốc gia Trung Quốc, 2015.
+  \item Chen Jianglun, \emph{Báo cáo ra đề Số nút của suffix tree và tối ưu một
+  lớp bài toán đoạn}. Tập luận văn đội tuyển quốc gia Trung Quốc, 2018.
+  \item Luo Suiqian, \emph{Suffix array: công cụ mạnh để xử lý xâu}. Tập luận
+  văn đội tuyển quốc gia Trung Quốc, 2009.
+  \item Southeast University Press, \emph{Cấu trúc dữ liệu nâng cao}.
+  \item Li Yudong, \emph{Hướng dẫn nâng cao thi thuật toán}.
+  \item OI Wiki, \emph{Virtual tree}, \url{https://oi-wiki.org/graph/virtual-tree/}.
+  \item OI Wiki, \emph{String hashing}, \url{https://oi-wiki.org/string/hash/}.
 \end{enumerate}
 
 \end{document}

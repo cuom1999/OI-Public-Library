@@ -18,7 +18,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2022. Tệp này
 là bản quét ảnh: \texttt{pdftotext} chỉ trả về các dấu sang trang và không khôi
 phục được văn bản thân bài. Vì vậy bản LaTeX này chuyển ngữ phần nhận diện tập
-sách, mục lục và chín bài đầu tiên bằng cách đọc trực tiếp các trang đã render
+sách, mục lục và mười bài đầu tiên bằng cách đọc trực tiếp các trang đã render
 từ PDF, kết hợp OCR bằng \texttt{tesseract}.
 \end{abstract}
 
@@ -5447,6 +5447,351 @@ mỗi bước là á đơn vị đơn giản và tích của chúng cũng nằm 
 đó các truy vấn LCS dạng tiền tố--xâu con có thể xử lý bằng cách duy trì/nhân
 các ma trận khoảng cách thay vì dựng toàn bộ bảng quy hoạch động.
 
+\subsubsection{Quy hoạch động một chiều--một chiều}
+
+Một số bài toán quy hoạch động một chiều--một chiều có ma trận chi phí là ma
+trận Monge á đơn vị đơn giản. Nhờ đó các bài toán truy vấn trên nhiều lớp chuyển
+tiếp có thể đạt độ phức tạp tốt hơn các kỹ thuật tối ưu DP thông dụng.
+
+\paragraph{Ví dụ 3.}
+Cho một dãy độ dài $n$ và $q$ truy vấn. Mỗi truy vấn cho đoạn $[l,r)$ và số
+$k$, hỏi nếu chia đoạn này thành nhiều nhất $k$ đoạn con thì tổng số màu khác
+nhau trong các đoạn con lớn nhất là bao nhiêu. Ràng buộc trong bài gốc ở cỡ
+$n,q\le 10^5$.
+
+Đánh số chỉ số từ $0$. Xét ma trận $A$ trên $[0:n]\times[0:n]$; với $r>l$, đặt
+$r-l-A_{l,r}$ bằng số màu khác nhau trong đoạn $[l,r)$, còn với $r\le l$ đặt
+$A_{l,r}=0$. Số màu khác nhau thỏa bất đẳng thức tứ giác theo chiều ngược, nên
+$A$ là ma trận Monge trong miền hợp lệ; các trường hợp biên cũng thỏa điều kiện
+Monge. Hơn nữa các hiệu kề nhau bị chặn bởi $1$, vì vậy $A$ là ma trận Monge á
+đơn vị đơn giản.
+
+Khi cần chia thành nhiều đoạn, ta cần các lũy thừa theo phép nhân khoảng cách
+của $A$. Các chuyển tiếp với $r\le l$ không tối ưu, nên phép nhân khoảng cách mô
+tả đúng bài toán. Mật độ $A^{\Delta}$ có thể tính trong $O(n)$: với mỗi vị trí
+$l$, điểm làm thay đổi sai phân tương ứng chính là vị trí xuất hiện kế tiếp của
+màu tại $l$, cộng thêm một. Sau đó dùng phép nhân nhanh giữa các ma trận Monge á
+đơn vị đơn giản để tính các lũy thừa, rồi trả lời truy vấn offline bằng đếm điểm
+hai chiều. OCR của dòng độ phức tạp cuối bị nhiễu, nhưng cấu trúc thuật toán là
+tiền xử lý các lũy thừa ma trận và trả lời từng truy vấn bằng một truy vấn hình
+học trên mật độ.
+
+Các bài toán tương tự có thể xử lý cùng một khuôn mẫu: nếu ma trận chi phí là
+Monge á đơn vị đơn giản, ta biểu diễn nó bằng mật độ thưa, dùng phép nhân nhanh
+và đọc đáp án từ mật độ hoặc phân bố của ma trận kết quả.
+
+\subsubsection{Kiểm tra thứ tự Bruhat}
+
+Cấu trúc của phép nhân ma trận Monge đơn vị đơn giản còn liên quan tới thứ tự
+Bruhat trên hoán vị. Với hai hoán vị $a,b$, viết $a<b$ nếu có thể biến $a$ thành
+$b$ bằng một số lần đổi chỗ hai phần tử đang tạo thành một cặp đúng thứ tự.
+
+\paragraph{Bổ đề.}
+Với hai hoán vị $a,b$ của $[1:n]$, ta có $a<b$ khi và chỉ khi mọi phần tử của
+ma trận phân bố $\operatorname{Mat}(a)^\Sigma$ không vượt quá phần tử tương ứng
+của $\operatorname{Mat}(b)^\Sigma$.
+
+\paragraph{Chứng minh.}
+Chiều cần thiết xuất phát từ việc đổi một cặp đúng thứ tự chỉ làm các phần tử
+trong ma trận phân bố tăng hoặc giữ nguyên. Với chiều đủ, xét tổng chênh lệch
+giữa hai ma trận phân bố và quy nạp theo tổng này. Nếu tổng bằng $0$ thì hai
+hoán vị bằng nhau. Nếu không, chọn từ dưới lên hàng đầu tiên mà hai ma trận mật
+độ khác nhau; trong hàng đó vị trí của $1$ ở $a$ phải nằm bên trái vị trí của
+$1$ ở $b$. Tiếp tục đi lên để tìm một hàng tạo được cặp có thể đổi chỗ sao cho
+mọi hiệu phân bố vẫn không âm nhưng tổng chênh lệch giảm. Đưa phép đổi này vào
+đầu hoặc cuối dãy thao tác quy nạp sẽ hoàn thành chứng minh. Các chỉ số chi tiết
+trong bản OCR khá nhiễu, nhưng lập luận chính là quy nạp bằng hiệu hai ma trận
+phân bố.
+
+\paragraph{Định lý.}
+Gọi $z$ là hoán vị đảo $n,n-1,\ldots,1$. Với hai hoán vị $a,b$ của $[1:n]$,
+ta có $a<b$ khi và chỉ khi $a^\circ\circ b=z$, trong đó $a^\circ$ là hoán vị quay
+tương ứng với phép quay mật độ của $a$ và $\circ$ là phép nhân hoán vị sinh bởi
+ma trận Monge đơn vị đơn giản.
+
+\paragraph{Chứng minh.}
+Đặt $A=\operatorname{Mat}(a)$, $B=\operatorname{Mat}(b)$, và để $C$ là ma trận
+mật độ ứng với $a^\circ$. Khi $a<b$, bổ đề trên cho
+$A^\Sigma\le B^\Sigma$ theo từng phần tử. Nhân khoảng cách bên trái bởi
+$C^\Sigma$ bảo toàn thứ tự này. Mặt khác $C^\Sigma A^\Sigma$ chính là ma trận
+của hoán vị đảo; kết hợp với cận biên của ma trận Monge đơn vị suy ra
+$a^\circ\circ b=z$. Chiều ngược dùng cùng bất đẳng thức min-plus: từ
+$a^\circ\circ b=z$ suy ra các phần tử của $B^\Sigma$ không nhỏ hơn
+$A^\Sigma$, rồi áp dụng bổ đề.
+
+Nhờ định lý trên, bài toán kiểm tra $a<b$ có thể giải trong $O(n\log n)$ bằng
+thuật toán nhân hoán vị của ma trận Monge đơn vị. Cũng có thể dùng trực tiếp bổ
+đề: quét từng cột của hiệu hai ma trận phân bố bằng cây đoạn hỗ trợ cộng đoạn và
+hỏi giá trị nhỏ nhất, cũng đạt $O(n\log n)$.
+
+Phần này không tạo ra độ phức tạp tốt hơn cho bài toán kiểm tra thứ tự Bruhat,
+nhưng cho thấy phép toán $\circ$ có nhiều cấu trúc đáng nghiên cứu. Do phạm vi
+bài viết, tác giả chỉ nêu mối liên hệ này và khuyến nghị độc giả tham khảo bài
+báo gốc để xem các chứng minh đầy đủ hơn.
+
+\subsection{Tổng kết}
+
+Bài viết giới thiệu ma trận Monge đơn vị đơn giản như một cấu trúc mạnh: nó biểu
+diễn được một ma trận khoảng cách $n\times n$ đặc biệt chỉ bằng $O(n)$ không
+gian, hỗ trợ nhân hai ma trận và nhân với vector trong $O(n\log n)$. Cấu trúc
+này xuất hiện trong nhiều bài toán OI như LIS, LCS, số lượng phần tử khác nhau
+trên đoạn và các biến thể quy hoạch động.
+
+Các thuật toán liên quan tương đối dễ cài đặt, hằng số hợp lý và có thể phân
+biệt rõ với lời giải vét cạn. Tuy vậy bài viết mới chỉ giới thiệu tầng cơ bản;
+các tính chất sâu hơn, cũng như cách đưa chúng tự nhiên vào đề thi chất lượng,
+vẫn còn nhiều không gian nghiên cứu.
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+đổi; cảm ơn thầy Xiao Ran của Trường Trung học trực thuộc Đại học Bắc Kinh đã
+quan tâm và hướng dẫn; cảm ơn gia đình, bạn bè đã ủng hộ; cảm ơn anh Li Baitian
+đã thảo luận và gợi ý.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item \emph{Static Range LIS Query}. Library Checker,
+  \url{https://judge.yosupo.jp/problem/static_range_lis_query}.
+  \item \emph{Prefix-substring LCS}. Library Checker:
+  \texttt{judge.yosupo.jp/problem/prefix\_substring\_lcs}.
+  \item Tiskin, A. \emph{Fast Distance Multiplication of Unit-Monge Matrices}.
+  Algorithmica, 71(4):859--888, 2015.
+  \item Aggarwal, A.; Klawe, M. M.; Moran, S.; Shor, P.; Wilber, R.
+  \emph{Geometric applications of a matrix-searching algorithm}. Algorithmica,
+  2(1):195--208, 1987.
+  \item \emph{The Bakery}. Codeforces 834D,
+  \url{https://codeforces.com/problemset/problem/834/D}.
+\end{enumerate}
+
+\section{Bàn về phân tích độ phức tạp của một lớp bảng băm}
+
+\begin{center}
+\textbf{Chen Yusi, Trường Trung học trực thuộc Đại học Nhân dân Trung Quốc}
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết giới thiệu ngắn gọn về bảng băm, một số cách xử lý xung đột băm, đồng
+thời phân tích độ phức tạp của chúng dưới các giả thiết khác nhau về hàm băm.
+
+\subsection{Mở đầu}
+
+Bảng băm là một cấu trúc dữ liệu từ điển quen thuộc. So với cây cân bằng và
+nhiều cấu trúc từ điển khác, bảng băm thường dễ cài đặt hơn và chạy nhanh hơn,
+nên được dùng rộng rãi trong thi tin học lẫn hệ thống thực tế. Tuy nhiên, trong
+tài liệu OI tiếng Trung, việc phân tích chặt độ phức tạp của bảng băm không phổ
+biến. Bài viết này trình bày vài cách cài đặt thông dụng và phân tích thời gian,
+bộ nhớ của chúng.
+
+\subsection{Bảng băm}
+
+Ký hiệu $[s]=\{0,1,\ldots,s-1\}$. Bảng băm là cấu trúc lưu các cặp khóa--giá trị
+và hỗ trợ:
+\begin{enumerate}
+  \item \texttt{Insert(x,v)}: chèn khóa $x$ với giá trị $v$;
+  \item \texttt{Modify(x,v)}: sửa giá trị ứng với khóa $x$ thành $v$;
+  \item \texttt{Delete(x)}: xóa khóa $x$ và giá trị tương ứng;
+  \item \texttt{Query(x)}: hỏi giá trị ứng với khóa $x$.
+\end{enumerate}
+Các tên thao tác được giữ nguyên như mẫu trong bài gốc.
+
+Gọi $n$ là số phần tử trong bảng băm; $n$ không vượt quá tổng số thao tác. Giả
+sử tập khóa là $U$ và bảng có $m$ vị trí, thường chọn $m=O(n)$ và $m<|U|$. Với
+một thao tác trên khóa $x$, bảng băm dùng hàm $h:U\to[m]$ để tính vị trí
+$y=h(x)$ rồi thao tác trên vị trí đó.
+
+Nếu hai khóa khác nhau $x_1,x_2$ có $h(x_1)=h(x_2)$ thì xảy ra xung đột băm.
+Phần sau giới thiệu vài mức giả thiết về hàm băm và hai cách xử lý xung đột.
+
+\subsection{Hàm băm}
+
+\paragraph{Định nghĩa.}
+Một ánh xạ ngẫu nhiên từ tập khóa $U$ tới $[m]$ được gọi là một hàm băm.
+
+\paragraph{Định nghĩa.}
+Hàm băm \emph{hoàn toàn ngẫu nhiên} là hàm được chọn đều từ mọi ánh xạ
+$U\to[m]$.
+
+\paragraph{Định nghĩa.}
+Một nhóm biến ngẫu nhiên $X_0,X_1,\ldots,X_{n-1}$ nhận giá trị trong $S$ được
+gọi là $k$-độc lập nếu với mọi $k$ chỉ số phân biệt và mọi bộ giá trị tương ứng,
+xác suất đồng thời bằng tích xác suất đều, tức là $1/|S|^k$ trong trường hợp đều.
+
+\paragraph{Định nghĩa.}
+Một họ hàm băm $h:U\to[m]$ là $k$-độc lập nếu với mọi $k$ khóa phân biệt
+$x_0,\ldots,x_{k-1}$, các biến $h(x_0),\ldots,h(x_{k-1})$ là $k$-độc lập.
+
+Trực giác là: hàm băm càng độc lập thì các giá trị băm của những khóa khác nhau
+càng giống các biến ngẫu nhiên độc lập, và xung đột càng khó bị cấu trúc xấu
+chi phối. Nếu một họ hàm là $(k+1)$-độc lập thì nó cũng là $k$-độc lập; hơn nữa
+một họ $k$-độc lập cũng là $k'$-độc lập với mọi $k'\le k$.
+
+Một cách xây dựng chuẩn là dùng đa thức trên trường hữu hạn. Chọn số nguyên tố
+$p>|U|$, chọn ngẫu nhiên $a_0,a_1,\ldots,a_{k-1}\in[p]$ và đặt
+\[
+  H(x)=a_{k-1}x^{k-1}+\cdots+a_1x+a_0 \pmod p,\qquad
+  h(x)=H(x)\bmod m.
+\]
+Với $k$ khóa phân biệt, hệ phương trình tuyến tính theo các hệ số $a_i$ có ma
+trận Vandermonde không suy biến, nên các giá trị $H(x)$ là độc lập; do đó
+$h(x)$ cho một họ băm $k$-độc lập sau phép lấy modulo.
+
+\paragraph{Định nghĩa.}
+Một họ hàm băm $h:U\to[m]$ là \emph{toàn vực} nếu với mọi $x_1\ne x_2$,
+\[
+  \Pr[h(x_1)=h(x_2)]\le \frac1m.
+\]
+Mọi họ 2-độc lập đều là toàn vực. Các quan hệ này cho một thang mạnh--yếu giữa
+hàm băm hoàn toàn ngẫu nhiên, $k$-độc lập và toàn vực.
+
+\subsection{Phương pháp nối chuỗi riêng}
+
+Phương pháp nối chuỗi riêng (\emph{separate chaining}) tạo một danh sách liên
+kết ban đầu rỗng cho mỗi giá trị băm. Khi chèn $(x,v)$, tính $y=h(x)$ rồi chèn
+cặp này vào đầu danh sách của $y$. Các thao tác sửa, xóa và hỏi tìm khóa trong
+danh sách tương ứng rồi xử lý. Nếu danh sách của $y$ có độ dài $c_y$, một thao
+tác đi qua không quá $c_y$ phần tử. Vì vậy cần xét
+\[
+  L=\max_{y\in[m]} c_y,
+\]
+độ dài danh sách lớn nhất.
+
+Với hàm băm hoàn toàn ngẫu nhiên, khi $n=\alpha m$ và $\alpha$ là hằng số nhỏ
+hơn $1$, kỳ vọng và trung vị của $L$ đều có bậc
+\[
+  \Theta\!\left(\frac{\log n}{\log\log n}\right).
+\]
+Ý tưởng chứng minh là ước lượng xác suất một danh sách có đúng $k$ phần tử:
+\[
+  \Pr[c_y=k]=\binom{n}{k}\left(\frac1m\right)^k
+  \left(1-\frac1m\right)^{n-k}.
+\]
+Từ đó tính xác suất mọi danh sách đều ngắn hơn $k$, rồi chọn ngưỡng $j$ sao cho
+xác suất này chuyển từ nhỏ sang lớn. Công thức Stirling cho thấy
+$j=\Theta(\log n/\log\log n)$.
+
+Kết quả này nói rằng độ phức tạp tệ nhất trong một dãy thao tác của nối chuỗi
+riêng không phải $O(1)$ như cách nói trực giác thường gặp, mà có kỳ vọng
+$\Theta(\log n/\log\log n)$. Để đạt cận trên cùng bậc không cần hàm băm hoàn
+toàn ngẫu nhiên; với họ toàn vực, xác suất va chạm cặp vẫn đủ để có cận
+$O(\log n/\log\log n)$ với xác suất cao.
+
+\paragraph{Định lý.}
+Với họ hàm băm toàn vực và nối chuỗi riêng, nếu $\alpha=n/m$ là hằng số thì với
+mọi $c>0$ tồn tại hằng số $a$ sao cho
+\[
+  \Pr\!\left[L>a\frac{\log n}{\log\log n}\right]<n^{-c}.
+\]
+
+\paragraph{Chứng minh.}
+Xét một danh sách cố định có kỳ vọng $\mu=\alpha$. Dùng cận Chernoff cho đuôi
+của độ dài danh sách rồi hợp trên $m$ danh sách. Chọn hằng số $a$ đủ lớn để xác
+suất mỗi danh sách vượt ngưỡng nhỏ hơn $n^{-c-1}$, khi đó xác suất tồn tại danh
+sách vượt ngưỡng nhỏ hơn $n^{-c}$.
+
+Dù cận tệ nhất không phải $O(1)$, nối chuỗi riêng chỉ cần giả thiết băm yếu,
+hằng số nhỏ và trong thực tế các truy vấn thường không đạt được số lượng cực hạn
+của phân tích, nên phương pháp này vẫn rất hiệu quả. C++ \texttt{unordered\_map}
+cũng dùng một biến thể dựa trên nối chuỗi riêng.
+
+\subsection{Phương pháp dò tuyến tính}
+
+Phương pháp dò tuyến tính (\emph{linear probing}) dùng một mảng $T$ độ dài $m$,
+mỗi vị trí lưu một cặp khóa--giá trị. Khi chèn $(x,v)$, tính $y=h(x)$. Nếu
+$T_y$ rỗng thì đặt cặp vào đó; nếu không, lần lượt kiểm tra
+$T_y,T_{y+1},\ldots,T_{m-1},T_0,T_1,\ldots$ cho đến vị trí rỗng đầu tiên. Các
+thao tác sửa, xóa và hỏi cũng bắt đầu từ $h(x)$ và quét về sau đến khi gặp khóa
+cần tìm.
+
+Một khóa $x$ sẽ được lưu ở vị trí rỗng đầu tiên không trước $h(x)$ theo vòng
+tròn. Thời gian của thao tác trên $x$ không vượt quá khoảng cách từ $h(x)$ tới
+vị trí rỗng kế tiếp.
+
+Giả sử $m>3n$ và dùng họ hàm băm $k$-độc lập. Bài viết quan tâm tới kỳ vọng độ
+phức tạp tệ nhất của một thao tác, và riêng với dò tuyến tính chứng minh rằng
+5-độc lập là đủ để kỳ vọng này là $O(1)$.
+
+\paragraph{Định nghĩa.}
+Một đoạn $R=[L,r]$ được gọi là đoạn liên tục cực đại nếu mọi vị trí trong $R$
+đều đã bị chiếm, còn hai vị trí ngay trước và ngay sau đoạn đều rỗng.
+
+Đoạn liên tục cực đại chứa $h(q)$ là duy nhất, và thao tác \texttt{Query(q)}
+không quét quá $|R|+1$ vị trí.
+
+\paragraph{Định nghĩa.}
+Một đoạn dạng $[i2^\ell,(i+1)2^\ell)$ được gọi là một $\ell$-đoạn. Một
+$\ell$-đoạn là \emph{nguy hiểm} nếu có ít nhất $3\cdot 2^\ell$ khóa có giá trị
+băm rơi vào đoạn đó.
+
+Nếu một đoạn liên tục cực đại $R$ có độ dài lớn hơn $2^{\ell+2}$, thì trong bốn
+$\ell$-đoạn đầu tiên giao với $R$ phải có một đoạn nguy hiểm: các ô trong phần
+giao đều bị chiếm, nên số khóa băm vào hợp các đoạn này vượt quá tổng dung lượng
+an toàn. Do đó, nếu đoạn chứa $h(q)$ có độ dài nằm giữa $2^{\ell+2}$ và
+$2^{\ell+3}$, thì trong một tập hằng số gồm các $\ell$-đoạn gần $h(q)$ phải có
+một đoạn nguy hiểm.
+
+Gọi $p_\ell$ là xác suất một $\ell$-đoạn cố định nguy hiểm. Từ lập luận trên,
+kỳ vọng độ dài đoạn quét được chặn bởi
+\[
+  O\!\left(1+\sum_{\ell=0}^{\log_2 m} 2^\ell p_\ell\right).
+\]
+
+Cần ước lượng $p_\ell$. Với một $\ell$-đoạn $I$, đặt $X_x=1$ nếu
+$h(x)\in I$ và $0$ nếu ngược lại, rồi $X=\sum_{x\in S}X_x$. Ta có
+$\mu=E[X]\le n2^\ell/m < 2^\ell/3$ do $m>3n$. Nếu $I$ nguy hiểm thì
+$X>3\cdot2^\ell$, tức là $X-\mu$ lớn hơn hằng số nhân với $2^\ell$.
+
+Với các biến 4-độc lập $X_x$, bài viết dùng ước lượng moment bậc bốn:
+\[
+  E[(X-\mu)^4]\le 4\mu^2,
+\]
+và bất đẳng thức Markov để suy ra
+\[
+  p_\ell = O(2^{-2\ell}).
+\]
+Khi xét thao tác trên khóa $q$, điều kiện theo $h(q)$ vẫn để các giá trị băm của
+các khóa khác là 4-độc lập nếu họ ban đầu là 5-độc lập. Vì thế
+\[
+  \sum_{\ell\ge 0} 2^\ell p_\ell
+  = \sum_{\ell\ge 0} O(2^{-\ell})
+  = O(1).
+\]
+
+\paragraph{Định lý.}
+Nếu $m>3n$ và chọn một họ hàm băm 5-độc lập $h:U\to[m]$, thì kỳ vọng độ phức
+tạp tệ nhất của một thao tác trong dò tuyến tính là $O(1)$.
+
+Thực ra với $m=(1+\varepsilon)n$ và hàm băm 5-độc lập, có thể chứng minh kỳ vọng
+độ phức tạp tệ nhất là $O(\varepsilon^{-13/6})$; bài viết chỉ cần trường hợp
+tải nhỏ hơn để minh họa.
+
+\subsection{Tổng kết}
+
+Bài viết giới thiệu hai cách xử lý xung đột băm: nối chuỗi riêng và dò tuyến
+tính. Với nối chuỗi riêng, dưới họ hàm băm toàn vực, kỳ vọng độ phức tạp tệ nhất
+của một thao tác là $\Theta(\log n/\log\log n)$ trong chế độ tải hằng. Với dò
+tuyến tính, dưới họ hàm băm 5-độc lập và $m>3n$, kỳ vọng độ phức tạp tệ nhất là
+$O(1)$.
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+đổi; cảm ơn cha mẹ đã nhiều năm nuôi dưỡng và dạy dỗ; cảm ơn thầy Ye Jinyi và
+thầy Gu Duoyu đã hướng dẫn; cảm ơn anh Deng Mingyang, bạn Xu Tingqiang và bạn
+Xiang Zhaofan đã đọc kiểm tra bài viết.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Mikkel Thorup. \emph{Linear Probing with 5-Independent Hashing}. 2017.
+  \item Mihai Patrascu and Mikkel Thorup. \emph{The power of simple
+  tabulation-based hashing}. Journal of the ACM, 2012.
+  \item G. H. Gonnet. \emph{Expected length of the longest probe sequence in
+  hash code searching}. Journal of the ACM, 1981.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục đã đọc được trên ảnh render, tập năm 2022 bao phủ các nhóm chủ đề
@@ -5502,12 +5847,16 @@ lục 118--128. Bài này có một hình so sánh trie thường và trie nén;
 Một số công thức độ phức tạp và ký hiệu chỉ số trong các ví dụ DP bị nhiễu,
 nên bản dịch giữ các chặn tiệm cận và chuyển tiếp đọc chắc được, đồng thời
 diễn giải phần còn lại bằng văn bản.
-Bài thứ chín được OCR từ các trang vật lý 133--148 của PDF, tương ứng trang mục
-lục 129--144. Bài này có nhiều công thức chỉ số dày đặc và ba hình minh họa
-phép nhân trên hoán vị; bản dịch giữ các định nghĩa, định lý và ý chứng minh
-chính, đồng thời mô tả hình bằng lời thay vì dựng lại khi OCR không đủ nhãn
-chính xác. Phần cuối về ứng dụng LCS có một số chỉ số bị nhiễu nặng, nên bản
-dịch giữ mô hình và cách dùng ma trận Monge á đơn vị đơn giản, không tự suy
-diễn các dòng biến đổi không đọc chắc được.
+Bài thứ chín được OCR từ các trang vật lý 133--152 của PDF, tương ứng trang in
+129--148. Bài này có nhiều công thức chỉ số dày đặc và ba hình minh họa phép
+nhân trên hoán vị; bản dịch giữ các định nghĩa, định lý và ý chứng minh chính,
+đồng thời mô tả hình bằng lời thay vì dựng lại khi OCR không đủ nhãn chính xác.
+Phần cuối về ứng dụng LCS, quy hoạch động một chiều--một chiều và thứ tự Bruhat
+có một số chỉ số bị nhiễu nặng, nên bản dịch giữ mô hình và các bất đẳng thức
+đọc chắc được, không tự suy diễn các dòng biến đổi không rõ.
+Bài thứ mười được OCR từ các trang vật lý 153--162 của PDF, tương ứng trang in
+149--158. Bài này chủ yếu là văn bản và công thức xác suất; các tên thao tác
+trên bảng băm được giữ nguyên theo bài gốc, còn các phép biến đổi moment bậc
+bốn được tóm lược khi OCR làm nhiễu chỉ số tổng.
 
 \end{document}
