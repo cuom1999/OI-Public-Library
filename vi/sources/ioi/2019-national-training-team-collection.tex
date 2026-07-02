@@ -31,16 +31,16 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2019. Tệp được
 tạo bằng XeTeX và có lớp văn bản đọc được; tuy nhiên các trang có watermark
 chéo, nên kết quả trích xuất xen thêm chữ từ watermark vào nội dung chính. Bản
-LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và tám bài viết đầu
+LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và chín bài viết đầu
 tiên: ``Tính chất và ứng dụng của hai loại dãy truy hồi'' của Zhong Ziqian,
 ``Bàn về bài toán bước đi ngẫu nhiên trên mô hình đồ thị'' của Wang Xiuhan,
 ``Báo cáo ra đề \emph{Bài toán nhỏ dễ}'' của Yang Junzhao, ``Bàn về bài toán
 tô màu đỉnh của đồ thị'' của Gao Jiaxuan, ``Bàn về các bài toán liên quan tới
 đếm đường đi trên lưới'' của Dai Yan, ``Mở rộng một số bài toán số học trong
 thi thuật toán và bước đầu về số nguyên Gauss'' của Li Jiaheng, ``Báo cáo ra
-đề \emph{Bài luyện cơ bản về cây tròn-vuông}'' của Fan Zhiyuan, và ``Báo cáo
+đề \emph{Bài luyện cơ bản về cây tròn-vuông}'' của Fan Zhiyuan, ``Báo cáo
 ra đề \emph{Đếm điểm nguyên} và một số nghiên cứu về số nguyên Gauss'' của Xu
-Yixuan.
+Yixuan, và ``Bàn về thuật toán chia để trị trên cây'' của Zhang Zheyu.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -7126,5 +7126,344 @@ Xin cảm ơn các thầy cô và bạn học từng giúp đỡ tôi.
         \url{https://www.patreon.com/posts/new-video-pi-in-11267915}
 \end{enumerate}
 \endgroup
+
+\clearpage
+\section*{Bàn về thuật toán chia để trị trên cây}
+
+\begin{center}
+Zhang Zheyu, Trường Trung học Xuejun Hàng Châu
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết này tóm lược các thuật toán chia để trị quen thuộc trên cây: chia để
+trị theo cạnh, chia để trị theo điểm và cây nhị phân cân bằng toàn cục.
+
+\section*{Lời nói đầu}
+
+Tư tưởng cơ bản của thuật toán chia để trị là phân tách một bài toán có quy mô
+rất lớn thành vài bài toán con có quy mô nhỏ hơn. Các bài toán con ấy độc lập
+với nhau và có cùng tính chất với bài toán ban đầu. Sau khi tìm được nghiệm
+của các bài toán con, ta có thể gián tiếp thu được nghiệm của bài toán ban
+đầu.
+
+Chia để trị thông thường hay dùng trên chuỗi (dãy). Khi vận dụng trên cây, ta
+cần thêm một số kỹ xảo và khuôn mẫu.
+
+\section*{1. Chia để trị theo cạnh}
+
+\subsection*{1.1. Giới thiệu thuật toán}
+
+Với một lớp bài toán hỏi về đường đi trên cây, ta có thể chọn một cạnh, xử lý
+mọi đường đi đi qua cạnh này, rồi xóa cạnh ấy và đệ quy trên hai cây nhỏ còn
+lại.
+
+Để bảo đảm hiệu quả của thuật toán, sau mỗi lần xóa cạnh, cây lớn hơn trong
+hai cây còn lại cần càng nhỏ càng tốt. Không khó nghĩ tới việc khi mọi bậc đều
+là hằng số, độ phức tạp của thuật toán này là \(O(n\log n)\).
+
+\begin{center}
+\begin{tikzpicture}[scale=.82,
+  every node/.style={circle,draw,minimum size=17pt,inner sep=1pt,font=\small}]
+  \node (x) at (0,1.4) {};
+  \node[draw=none] at (.42,1.45) {\(x\)};
+  \node (a) at (-.8,0) {};
+  \node (b) at (.8,0) {};
+  \draw (x)--(a) (x)--(b);
+
+  \node[draw=none] at (2.15,.7) {\Large \(\Longrightarrow\)};
+
+  \node (x2) at (3.6,1.7) {};
+  \node[draw=none] at (4.02,1.75) {\(x\)};
+  \node[dashed] (e) at (3.6,.65) {};
+  \node (c) at (2.8,-.3) {};
+  \node (d) at (4.4,-.3) {};
+  \draw[dashed] (x2)--(e);
+  \draw (e)--(c) (e)--(d);
+\end{tikzpicture}
+\end{center}
+
+Khi bậc của đỉnh \(x\) đặc biệt lớn, ta có thể thêm một đỉnh rỗng và một cạnh
+rỗng để bậc của \(x\) giảm đi một. Vì vậy, theo cách trong hình trên, luôn có
+thể thêm \(O(n)\) đỉnh rỗng và cạnh rỗng để mọi đỉnh đều có bậc là hằng số.
+
+\subsection*{1.2. Ví dụ}
+
+\subsubsection*{1.2.1. Mô tả đề bài}
+
+Cho hai cây đều có \(n\) đỉnh. Hãy tìm hai đỉnh sao cho tổng khoảng cách của
+chúng trên hai cây là lớn nhất.
+\[
+  n\le10^5,
+\]
+trọng số cạnh có thể âm.
+
+\subsubsection*{1.2.2. Lời giải}
+
+Chia để trị theo cạnh trên cây thứ nhất. Sau đó, bài toán tương đương với:
+cho hai tập hợp, cần lấy mỗi tập một đỉnh sao cho khoảng cách trên cây của
+chúng là lớn nhất. Dựng cây ảo rồi quy hoạch động là được.
+
+\subsection*{1.3. Tổng kết}
+
+Vì mỗi lần chỉ cần xét chuyện giữa hai cây con, cách nghĩ thường khá đơn giản.
+
+Nhưng do phải thêm đỉnh rỗng và cạnh rỗng, một số bài không phù hợp với cách
+này.
+
+\section*{2. Chia để trị theo điểm}
+
+\subsection*{2.1. Giới thiệu thuật toán}
+
+Với một lớp bài toán hỏi về đường đi hoặc khối liên thông trên cây, ta có thể
+chọn một đỉnh, xử lý mọi đường đi hoặc khối liên thông chứa đỉnh này, rồi xóa
+đỉnh ấy và đệ quy trên vài cây nhỏ còn lại.
+
+Vì kích thước của các cây nhỏ ít nhất bị chia đôi, nên tối đa chỉ đệ quy
+\(O(\log n)\) tầng.
+
+\subsection*{2.2. Ví dụ}
+
+\subsubsection*{2.2.1. Mô tả đề bài}
+
+Cho một cây \(n\) đỉnh, mỗi đỉnh có trọng số không âm. Trọng số của một khối
+liên thông là tổng trọng số đỉnh. Hãy tìm khối liên thông có trọng số lớn thứ
+\(k\).
+\[
+  n\le10^5,\qquad k\le10^5.
+\]
+
+\subsubsection*{2.2.2. Lời giải}
+
+Sau khi chia để trị theo điểm, bài toán con có thêm ràng buộc rằng khối liên
+thông bắt buộc phải chứa gốc; khi đó bài toán trở nên rất dễ giải.
+
+Đánh số lại theo thứ tự dfs. Tại đỉnh số \(i\), có hai quyết định: hoặc chọn
+đỉnh này rồi đi tới \(i+1\), hoặc cắt bỏ cây con gốc \(i\) rồi đi tới thời
+điểm ra dfs của \(i\) cộng \(1\). Theo cách gọi thường dùng, thời điểm vào dfs
+là \emph{tiền mốc}, còn thời điểm ra dfs là \emph{hậu mốc}.
+
+Như vậy, một khối liên thông có thể tương ứng một-một với một đường đi.
+
+Bây giờ bài toán trở thành bài toán kinh điển: trên một DAG có
+\(O(n\log n)\) đỉnh và \(O(n\log n)\) cạnh, tìm đường đi ngắn thứ \(k\).
+
+Độ phức tạp thời gian:
+\[
+  O(n\log n+k\log(n\log n)+k\log k).
+\]
+
+\subsection*{2.3. Ví dụ: xét lại 1.2}
+
+\subsubsection*{2.3.1. Muốn thử dùng chia để trị theo điểm}
+
+Rõ ràng chia để trị theo điểm và chia để trị theo cạnh cực kỳ giống nhau; ta
+có thể thử dùng chia để trị theo điểm để làm bài của chia để trị theo cạnh.
+
+\subsubsection*{2.3.2. Gặp một số vấn đề}
+
+Vì trọng số cạnh có thể âm, ngoài dựng cây ảo ra không có cách hay nào để tìm
+đỉnh xa nhất.
+
+Hiện tại, sau khi xóa một đỉnh, ta có thể tách ra \(O(n)\) tập hợp. Số tập
+hợp không còn là hằng số, trực tiếp ảnh hưởng tới độ phức tạp của thuật toán.
+
+\subsubsection*{2.3.3. Cách giải quyết}
+
+Mỗi lần xét hai tập hợp nhỏ nhất, tính đáp án chỉ gồm hai tập hợp ấy, rồi hợp
+nhất hai tập hợp đó. Như vậy mỗi tập hợp chỉ bị tính lặp lại \(O(\log n)\)
+lần. Thoạt nhìn, độ phức tạp thời gian rất lớn.
+
+\subsubsection*{2.3.4. Phân tích kỹ hơn}
+
+Vì sao chia để trị theo điểm lại vô cớ nhiều hơn chia để trị theo cạnh một
+thừa số \(\log\)?
+
+Bạn có thể cầm bút, vẽ vời trên giấy nháp, viết ra một đống biểu thức dạng
+``\(\log n-\log s\)'', rồi đập bàn đứng dậy: ``Độ phức tạp của cách làm này
+là \(O(n\log n)\)!''
+
+Bạn cũng có thể bình tâm suy nghĩ rồi đột nhiên nhận ra: khi chia theo điểm,
+mỗi lần chọn hai tập hợp nhỏ nhất để hợp nhất, bản chất chính là chia để trị
+theo cạnh.
+
+\subsection*{2.4. Ví dụ}
+
+\subsubsection*{2.4.1. Mô tả đề bài}
+
+Cho một cây có gốc gồm \(n\) đỉnh, trên mỗi đỉnh có một đa thức bậc nhất. Hãy
+tính tổng tích các đa thức trên đường đi từ mỗi đỉnh tới gốc.
+\[
+  n\le10^5.
+\]
+
+\subsubsection*{2.4.2. Lời giải}
+
+Chia để trị theo điểm. Trong mỗi bài toán con, giả sử ta đã tính được tích các
+đa thức trên đường đi từ tâm chia điểm tới gốc, thì bài toán ban đầu có thể
+biến thành vài bài toán con có quy mô ít nhất bị chia đôi.
+
+\begin{center}
+\begin{tikzpicture}[scale=.72,
+  every node/.style={circle,draw,minimum size=17pt,inner sep=1pt,font=\small}]
+  \node (c) at (0,3) {};
+  \node[draw=none,anchor=west] at (.35,3.05) {tâm chia điểm};
+  \node (a) at (-1.3,2) {};
+  \node[fill=yellow!80!white] (r) at (-1.35,.95) {};
+  \node[draw=none,anchor=west] at (-1.05,.7) {gốc};
+  \node (b1) at (-2.1,-.2) {};
+  \node (b2) at (-.45,-.2) {};
+  \node (m) at (1.1,1.9) {};
+  \node[draw=none,anchor=west,font=\scriptsize] at (1.35,1.9) {gốc bài con};
+  \node (m1) at (.55,-.2) {};
+  \node (m2) at (1.65,-.2) {};
+  \node (q) at (2.7,1.9) {};
+  \node[draw=none,anchor=west,font=\scriptsize] at (2.95,1.9) {gốc bài con};
+  \node (q1) at (2.15,-.2) {};
+  \node (q2) at (3.25,-.2) {};
+
+  \draw[red,very thick] (c)--(a)--(r);
+  \draw (a)--(b1) (a)--(b2);
+  \draw (c)--(m) (m)--(m1) (m)--(m2);
+  \draw (c)--(q) (q)--(q1) (q)--(q2);
+\end{tikzpicture}
+\end{center}
+
+Vấn đề là làm sao nhanh chóng tính được tích đa thức trên đường màu đỏ.
+
+Xét việc sử dụng thông tin đã biết. Khi cần tính đường đi trong bài toán hiện
+tại, ta tìm tâm chia điểm tiếp theo trên đường đi ấy, rồi có thể trực tiếp
+nhận được tích trên đường đi từ tâm chia điểm tiếp theo tới gốc. Lặp lại như
+vậy, ta thu được \(O(\log n)\) đa thức, trong đó cấp độ độ dài của đa thức thứ
+\(i\) không vượt quá \(n/2^i\). Rõ ràng thời gian để cuộn chúng lại là
+\(O(n\log n)\).
+
+Vì vậy, độ phức tạp thời gian của bài toán ban đầu là \(O(n\log^2 n)\).
+
+\subsection*{2.5. Tổng kết}
+
+Những bài mà phần bắt buộc chứa gốc trên cây rất dễ xử lý sẽ rất phù hợp với
+cách này.
+
+Bản thân hằng số không nhỏ, nhưng khi bên trong lồng thuật toán có độ phức tạp
+cao thì hằng số lại rất nhỏ.
+
+\section*{3. Cây nhị phân cân bằng toàn cục}
+
+\subsection*{3.1. Giới thiệu thuật toán}
+
+Với mỗi đỉnh trên cây có gốc, chọn người con có kích thước cây con lớn nhất
+làm con nặng; cạnh nối tới nó gọi là cạnh nặng. Nếu chỉ quan tâm tới các cạnh
+nặng, cây được tách thành vài chuỗi.
+
+Dùng một cây nhị phân để duy trì mỗi chuỗi. Cần chú ý rằng \(mid\) của cây
+nhị phân này không phải là \(mid\) trên chuỗi, mà là \(mid\) của cả cây con;
+khi đó độ sâu của toàn bộ cây là \(O(\log n)\).
+
+Đôi khi, khi số con ảo nhiều, dựng một cây nhị phân cân bằng theo kích thước
+cho các con ảo sẽ tiện cho việc duy trì rất nhiều thông tin.
+
+Để thuận tiện cho phần trình bày sau, ta định nghĩa một số khái niệm.
+
+Trong một cây con của cây nhị phân cân bằng toàn cục, tập các đỉnh mà đường đi
+tới gốc chỉ qua cạnh thực được gọi là \emph{phần thực} của cây con; phần còn
+lại gọi là \emph{phần ảo} của cây con.
+
+Phần thực của cây con tương ứng với một đường đi trên cây; những đường đi như
+vậy được gọi là một \emph{đoạn}. Hiển nhiên, một đường đi bất kỳ trên cây có
+thể chia thành \(O(\log n)\) đoạn.
+
+\subsection*{3.2. Ví dụ: xét lại 2.4}
+
+\subsubsection*{3.2.1. Tối ưu phân rã chuỗi nặng}
+
+Bài này có cách làm đơn giản bằng phân rã chuỗi nặng, độ phức tạp thời gian
+\(O(n\log^3 n)\).
+
+Với chuỗi nặng cao nhất trong bài toán hiện tại, tiến hành chia để trị, nhân
+đáp án của nửa dưới với tích của nửa trên rồi cộng đáp án của nửa trên.
+
+Thay phần trên chuỗi của phân rã chuỗi nặng bằng phương pháp chia để trị của
+cây nhị phân cân bằng toàn cục là có thể dễ dàng đạt \(O(n\log^2 n)\).
+
+\subsubsection*{3.2.2. So sánh với cách chia để trị theo điểm}
+
+Không khó nhận ra rằng thứ tự chia để trị như vậy thực chất yêu cầu tâm chia
+điểm nhất định phải nằm trên chuỗi nặng nông nhất.
+
+Khác với chia để trị theo điểm thô sơ, nó cần chia để trị hai lần mới có thể
+nghiêm ngặt quy bài toán về một nửa ban đầu. Tuy nhiên, lợi ích thu được về
+thông tin trên chuỗi là rất lớn.
+
+\subsection*{3.3. Ví dụ}
+
+\subsubsection*{3.3.1. Mô tả đề bài}
+
+Cho một cây có gốc gồm \(n\) đỉnh. Có \(q\) truy vấn, mỗi truy vấn hỏi giá trị
+lớn nhất của trọng số đỉnh trong các đỉnh cách \(p\) không quá \(d\) và không
+nằm trên đường đi \(u-v\).
+\[
+  n\le10^5,\qquad q\le10^5,
+\]
+độ dài mọi cạnh của cây đều bằng \(1\).
+
+\subsubsection*{3.3.2. Lời giải}
+
+Tiền xử lý thông tin của phần ảo trong mỗi cây con.
+
+Xét \(p,u,v\), đáy chuỗi nặng và gốc của chuỗi nặng chứa chúng. Tìm ra
+\(O(\log n)\) đoạn giữa các đỉnh này, rồi \(O(1)\) truy vấn đáp án của phần ảo
+trong mỗi cây con.
+
+Đáp án của phần thực trong cây con và một vài đỉnh đặc biệt được xử lý riêng.
+
+Một vài đỉnh đơn lẻ sẽ liên quan tới thông tin của tất cả cây con ảo của một
+đỉnh sau khi bỏ đi \(O(1)\) cây con ảo. Vì phép \(max\) không thể loại trừ
+ngược, việc này rất khó với đỉnh có bậc lớn. Sức mạnh của việc dựng cây nhị
+phân cho cả các con ảo được thể hiện ở đây.
+
+Tổng độ phức tạp thời gian là \(O((n+q)\log n)\).
+
+\subsection*{3.4. Tổng kết}
+
+Tuy chức năng rất mạnh, hằng số hơi lớn, cần chú ý.
+
+Cây nhị phân cân bằng toàn cục không chỉ có thể xem là một cấu trúc chia để
+trị, mà cũng có thể xem là một cấu trúc dữ liệu; nhưng đây không phải trọng
+tâm của bài viết này.
+
+\section*{Lời bạt}
+
+Nếu bạn chưa phải một tuyển thủ OI thành thạo cũng không sao; Baidu có mọi
+kiến thức nền mà bài viết này cần.
+
+Bài viết này không có phân tích độ phức tạp, vì có rất nhiều cách phân tích.
+Dù bạn là tuyển thủ thích đẩy công thức \(\log n-\log s\), hay là bậc thầy
+ước lượng thô kiểu mỗi lần số phép tính tăng thêm một thì quy mô giảm một
+nửa, bạn đều có thể dễ dàng thu được độ phức tạp đúng.
+
+Nhưng điều đó cũng không có mấy tác dụng, vì độ phức tạp lý thuyết và hiệu
+suất chạy thực tế không có quan hệ trực tiếp. Cây nhị phân cân bằng toàn cục
+cùng lắm chỉ có thể dùng để ra bài tương tác nhằm siết số lần tương tác. Phân
+rã chuỗi nặng vẫn phải học, chia để trị theo điểm cũng vẫn phải học.
+
+Người ra đề nói chung khá lười, thường chỉ tạo hoa cúc, chuỗi và cây nhị phân.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Dong Yongjian, Song Xinbo, Xu Xianyou và các tác giả khác.
+        \emph{Một cuốn sách thông suốt về Olympic Tin học (bản C++)}. Nhà xuất
+        bản Văn hiến Khoa học Kỹ thuật.
+\end{enumerate}
+
+\section*{Lời cảm ơn}
+
+\begin{enumerate}
+  \item Cảm ơn Wang Yisong, Ru Yizhong và Fan Zhiyuan đã giúp đỡ cho bài viết
+        này.
+  \item Cảm ơn CCF đã trao cơ hội viết luận văn lần này.
+  \item Cảm ơn huấn luyện viên Xu Xianyou đã đọc duyệt và giúp đỡ.
+\end{enumerate}
 
 \end{document}

@@ -23,14 +23,17 @@
 \begin{abstract}
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2020. Tệp được
 tạo bằng XeTeX và có lớp văn bản Unicode đọc được. Bản LaTeX này chuyển ngữ
-phần nhận diện tập sách, toàn bộ mục lục, và tám bài đầu tiên: bài của Jiang
+phần nhận diện tập sách, toàn bộ mục lục, và chín bài đầu tiên: bài của Jiang
 Mingrun về tối ưu các bài toán chia khối cổ điển bằng fractional cascading, bài
 của Chen Sunli về cây thống trị, báo cáo ra đề \emph{Ghép số} của Jiang
 Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, bài của
 Chen Yu về nguyên lý chuyển vị, và bài của Li Baitian về duy trì động giá trị
 cực trị của hàm số, cùng báo cáo ra đề \emph{Trò chơi trên đồ thị} của Zuo
-Junchi, và bài của Zhou Yuyang về một loại DFT không bình thường. Các hình nhỏ
-trong báo cáo thứ tư và thứ bảy được dựng lại bằng TikZ từ bản render PDF.
+Junchi, bài của Zhou Yuyang về một loại DFT không bình thường, và bài của Zhang
+Zheyu về bài toán rừng hướng vào nhỏ nhất. Các hình nhỏ trong báo cáo thứ tư và
+thứ bảy được dựng lại bằng TikZ từ bản render PDF; các hình minh họa trong bài
+thứ chín được ghi lại bằng chú thích khung khi nội dung chính đã nằm trong lời
+văn và công thức.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -5256,6 +5259,886 @@ Cảm ơn cha mẹ vì sự quan tâm, ủng hộ và chăm sóc chu đáo.
   quốc gia năm 2016.
   \item Bluestein, L. (1970). ``A linear filtering approach to the computation
   of discrete Fourier transform''.
+\end{enumerate}
+
+\section{Bài toán rừng hướng vào nhỏ nhất}
+
+\begin{center}
+Zhang Zheyu, Trường Trung học Học Quân Hàng Châu, tỉnh Chiết Giang
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài toán rừng hướng vào nhỏ nhất là: với một đồ thị có hướng có trọng số, tìm
+rừng hướng vào nhỏ nhất với số cạnh cố định. Bài viết này xoay quanh bài toán
+rừng hướng vào nhỏ nhất và đưa ra một thuật toán có độ phức tạp thời gian
+\(O(E\log E)\).
+
+\subsection{Dẫn nhập}
+
+Với một đồ thị có hướng có trọng số và một số tự nhiên \(k\), ta cần tìm đồ thị
+con nhỏ nhất gồm đúng \(k\) cạnh, sao cho mỗi thành phần liên thông yếu của đồ
+thị con này đều là một cây hướng vào. Đây chính là bài toán rừng hướng vào nhỏ
+nhất. Bài toán này chỉ mới xuất hiện trong thi thuật toán vài năm gần đây, nên
+còn khá mới.
+
+Từ hơn mười năm trước, các hệ thống chấm bài trong nước đã có bài toán cây phân
+nhánh nhỏ nhất. Tuy vậy cho tới hiện nay, các bài toán liên quan tới cây phân
+nhánh vẫn là một mảng tương đối ít phổ biến. Bài toán rừng hướng vào nhỏ nhất
+có tiềm năng nhất định, có thể trở thành một mô hình đồ thị được dùng rộng rãi,
+vì vậy đáng được nghiên cứu.
+
+Hiện nay, cách giải bài toán rừng hướng vào nhỏ nhất thường dựa trên tối ưu lồi
+và thuật toán cây phân nhánh nhỏ nhất. Thuật toán đó kém hiệu quả, chức năng yếu
+và khó mở rộng. Bài viết này đề xuất một thuật toán thời gian \(O(E\log E)\);
+thuật toán này hiệu quả hơn, mạnh hơn và dễ mở rộng hơn.
+
+Bài viết gồm bảy mục, nội dung đại khái như sau.
+
+Mục 2 định nghĩa chính xác bài toán rừng hướng vào nhỏ nhất.
+
+Mục 3 giới thiệu ngắn gọn về matroid. Matroid là một nhánh của toán tổ hợp, hiện
+thường được dùng để giải nhiều bài toán tối ưu trong đồ thị. Mục này sẽ dùng
+matroid để mô tả bài toán rừng hướng vào nhỏ nhất và dựa vào matroid để phát
+hiện các tính chất.
+
+Mục 4 đưa ra thuật toán dựa trên tối ưu lồi và cây phân nhánh nhỏ nhất. Bài toán
+cây phân nhánh nhỏ nhất đã được giải từ thập niên 1960; thuật toán giải nó được
+gọi là ``thuật toán Chu--Liu'' hoặc ``Edmonds' algorithm''. Bài toán cây phân
+nhánh nhỏ nhất và bài toán rừng hướng vào nhỏ nhất đều liên quan tới cây phân
+nhánh, nên có một số điểm giống nhau. Mục này sẽ giới thiệu chi tiết cách dùng
+tối ưu lồi để chuyển bài toán rừng hướng vào nhỏ nhất thành bài toán cây phân
+nhánh nhỏ nhất. Thuật toán này cần tìm kiếm nhị phân; số lần nhị phân quyết định
+độ chính xác, và khi số lần nhị phân là \(\log\frac{1}{2\varepsilon}\), độ phức
+tạp thời gian là
+\[
+O\left(E\log E\log\frac{1}{2\varepsilon}\right).
+\]
+
+Mục 5 phân tích các mục trước và thu được thuật toán mở rộng cây hướng vào theo
+ưu tiên. Thuật toán dựa trên tối ưu lồi và cây phân nhánh nhỏ nhất có nhiều thao
+tác thừa; phân tích ý nghĩa của các thao tác đó giúp thuật toán gọn hơn. Mục
+này sẽ trình bày chi tiết cách thu được thuật toán mở rộng cây hướng vào theo
+ưu tiên, sau đó mô tả hình thức thuật toán, và cuối cùng giải thích ngắn gọn
+cách đạt độ phức tạp \(O(E\log E)\).
+
+Mục 6 nêu một ứng dụng của bài toán rừng hướng vào nhỏ nhất.
+
+Mục 7 tổng kết nội dung bài viết.
+
+\subsection{Định nghĩa}
+
+Cho một đồ thị có hướng \(G=(V,E)\), trong đó \(V\) là tập đỉnh và \(E\) là tập
+cạnh. Có hàm trọng số cạnh \(w:E\to\mathbb{R}\).
+
+Định nghĩa \term{cây hướng vào} là một thành phần liên thông yếu, không có chu
+trình, trong đó có một đỉnh gốc và mọi đỉnh không phải gốc có đúng một cạnh đi
+ra.
+
+Định nghĩa \term{rừng hướng vào} là một đồ thị mà mỗi thành phần liên thông yếu
+đều là một cây hướng vào.
+
+Định nghĩa \term{tập con cạnh} là một tập con của tập cạnh \(E\).
+
+Định nghĩa \term{đồ thị con sinh bởi cạnh} của một tập con cạnh \(E^*\) là đồ
+thị có mọi đỉnh của đồ thị gốc và mọi cạnh trong \(E^*\).
+
+Quy ước trọng số của một tập con cạnh \(E^*\) bằng tổng trọng số của các cạnh
+trong đó, tức
+\[
+w(E^*)=\sum_{e\in E^*}w(e).
+\]
+
+Khi đó, bài toán rừng hướng vào nhỏ nhất có thể được mô tả như sau: cho một đồ
+thị có hướng và một số nguyên \(k\), tìm tập con cạnh kích thước \(k\) có trọng
+số nhỏ nhất, sao cho đồ thị con sinh bởi cạnh của nó là một rừng hướng vào.
+
+Với cùng một đồ thị có hướng, ký hiệu đáp án của bài toán rừng hướng vào nhỏ
+nhất theo \(k\) là hàm \(\operatorname{MDF}(k)\).
+
+\subsection{Matroid}
+
+\subsubsection{Định nghĩa}
+
+Có một hệ tập con \(M=(S,\mathcal{I})\). Nếu \(M\) thỏa ba tiên đề sau, thì
+\(M\) là một matroid.
+
+\paragraph{\term{Tiên đề 1.}}
+\(\varnothing\in\mathcal{I}\).
+
+\paragraph{\term{Tiên đề 2.}}
+Với mọi \(A\subset B\), nếu \(B\in\mathcal{I}\), thì
+\(A\in\mathcal{I}\).
+
+\paragraph{\term{Tiên đề 3.}}
+Với mọi \(|A|<|B|\), nếu \(A\in\mathcal{I}\) và
+\(B\in\mathcal{I}\), thì tồn tại \(x\in B-A\) sao cho
+\(A\cup\{x\}\in\mathcal{I}\).
+
+Với matroid \(M=(S,\mathcal{I})\), các phần tử của \(\mathcal{I}\) được gọi là
+các tập độc lập.
+
+\subsubsection{Tính chất cắt cụt}
+
+\paragraph{\term{Bổ đề 3.1.}}
+Cho matroid \(M=(E,\mathcal{I})\) và một số tự nhiên bất kỳ \(s\). Sau khi chỉ
+giữ các tập độc lập có kích thước không vượt quá \(s\), ta vẫn thu được một
+matroid, tức \(M^*=(E,\mathcal{I}^*)\) là matroid, trong đó
+\[
+\mathcal{I}^*=\{S\in\mathcal{I}: |S|\le s\}.
+\]
+
+\paragraph{\term{Chứng minh.}}
+Vì \(s\ge 0\), tập rỗng là tập độc lập, tức
+\(\varnothing\in\mathcal{I}^*\).
+
+Với mọi \(A\subset B\), nếu \(B\in\mathcal{I}^*\), thì
+\(B\in\mathcal{I}\), nên \(A\in\mathcal{I}\). Lại vì
+\(|A|\le |B|\le s\), nên \(A\in\mathcal{I}^*\).
+
+Với mọi \(|A|<|B|\), nếu \(A\in\mathcal{I}^*\) và
+\(B\in\mathcal{I}^*\), thì \(A\in\mathcal{I}\) và
+\(B\in\mathcal{I}\). Do đó tồn tại \(x\in B-A\) sao cho
+\(A\cup\{x\}\in\mathcal{I}\). Vì \(|A|<|B|\le s\), ta có
+\(|A|+1\le s\), nên \(A\cup\{x\}\in\mathcal{I}^*\). \proofbox
+
+\subsubsection{Matroid và bài toán rừng hướng vào nhỏ nhất}
+
+Tiếp theo ta dùng matroid để biểu diễn bài toán rừng hướng vào nhỏ nhất.
+
+Đặt \(M_1=(E,\mathcal{I}_1)\), trong đó \(E\) là tập cạnh, còn
+\(\mathcal{I}_1\) là tập các tập con cạnh sao cho trong đồ thị con sinh bởi
+cạnh, nếu xem các cạnh là vô hướng thì không có chu trình.
+
+Đặt \(M_2=(E,\mathcal{I}_2)\), trong đó \(E\) là tập cạnh, còn
+\(\mathcal{I}_2\) là tập các tập con cạnh sao cho trong đồ thị con sinh bởi
+cạnh, bậc ra của mỗi đỉnh không vượt quá \(1\).
+
+Ta lần lượt giải thích rằng \(M_1\) và \(M_2\) là matroid, tức cả hai đều thỏa
+ba tiên đề.
+
+Với \(M_1\), rõ ràng Tiên đề 1 và Tiên đề 2 được thỏa. Xét Tiên đề 3: với mọi
+\(|A|<|B|\), nếu \(A\in\mathcal{I}_1\) và \(B\in\mathcal{I}_1\), thì số thành
+phần liên thông của \(A\) lớn hơn số thành phần liên thông của \(B\). Vì vậy
+chắc chắn tồn tại một cạnh \(e\in B\) nối hai thành phần liên thông trong
+\(A\); đây chính là phần tử thuộc \(B-A\) có thể thêm vào \(A\). Do đó Tiên đề
+3 cũng được thỏa, và \(M_1\) là một matroid.
+
+Với \(M_2\), rõ ràng Tiên đề 1 và Tiên đề 2 được thỏa. Xét Tiên đề 3: với mọi
+\(|A|<|B|\), nếu \(A\in\mathcal{I}_2\) và \(B\in\mathcal{I}_2\), gọi \(U(A)\)
+là tập các đỉnh có cạnh đi ra trong \(A\), và \(U(B)\) là tập các đỉnh có cạnh
+đi ra trong \(B\). Khi đó \(|U(A)|\le |U(B)|\); chỉ cần chọn một cạnh đi ra
+trong \(B\) có đỉnh đầu thuộc \(U(B)-U(A)\), rồi thêm cạnh đó vào \(A\). Do đó
+Tiên đề 3 cũng được thỏa, và \(M_2\) là một matroid.
+
+\paragraph{\term{Bổ đề 3.2.}}
+Với một tập cạnh bất kỳ \(E^*\), ta có
+\(E^*\in\mathcal{I}_1\cap\mathcal{I}_2\) khi và chỉ khi đồ thị con sinh bởi
+cạnh của \(E^*\) là một rừng hướng vào.
+
+\paragraph{\term{Chứng minh.}}
+Trước hết chứng minh nếu \(E^*\in\mathcal{I}_1\cap\mathcal{I}_2\), thì đồ thị
+con sinh bởi cạnh của \(E^*\) là rừng hướng vào. Xét một thành phần liên thông
+yếu trong đồ thị con sinh bởi cạnh của \(E^*\). Theo định nghĩa của
+\(\mathcal{I}_1\), trong thành phần liên thông yếu này, số cạnh ít hơn số đỉnh
+một đơn vị. Theo định nghĩa của \(\mathcal{I}_2\), mỗi đỉnh có số cạnh đi ra
+không vượt quá \(1\), nên trong đó đúng một đỉnh không có cạnh đi ra; gọi đỉnh
+đó là \(t\). Khi đó mọi cạnh kề với \(t\) đều hướng tới \(t\); tiếp tục suy
+luận như vậy ta thu được một cây hướng vào gốc \(t\). Vì mỗi thành phần liên
+thông yếu trong đồ thị con sinh bởi cạnh của \(E^*\) đều là cây hướng vào, đồ
+thị con sinh bởi cạnh của \(E^*\) là rừng hướng vào.
+
+Chiều ngược lại suy trực tiếp từ định nghĩa của rừng hướng vào. \proofbox
+
+Tóm lại, ta đã mô tả bài toán rừng hướng vào nhỏ nhất bằng matroid, tức cần tìm
+\[
+\min_{S\in\mathcal{I}_1\cap\mathcal{I}_2,\ |S|=k} w(S).
+\]
+
+Vì bài toán rừng hướng vào nhỏ nhất cố định số cạnh, ta có thể đồng thời cộng
+hoặc trừ cùng một lượng vào trọng số mọi cạnh. Để thuận tiện cho thảo luận bên
+dưới, giả sử
+\[
+\max_{e\in E}w(e)\le 0.
+\]
+Do đó ta có thể chuyển bài toán thành
+\[
+\min_{S\in\mathcal{I}_1\cap\mathcal{I}_2,\ |S|\le k} w(S).
+\]
+
+\subsubsection{Giao matroid và quy hoạch tuyến tính}
+
+\paragraph{\term{Bài toán giao matroid.}}
+Định nghĩa bài toán giao matroid: cho hai matroid \(M_1=(E,\mathcal{I}_1)\) và
+\(M_2=(E,\mathcal{I}_2)\) định nghĩa trên cùng một tập nền, tìm
+\[
+\min_{S\in\mathcal{I}_1\cap\mathcal{I}_2}w(S).
+\]
+
+Bài toán rừng hướng vào nhỏ nhất có thể được mô tả thành một bài toán giao
+matroid chuẩn. Đặt \(M_2^*=(E,\mathcal{I}_2^*)\), trong đó
+\[
+\mathcal{I}_2^*=\{S\in\mathcal{I}_2: |S|\le k\}.
+\]
+\(M_2^*\) là một matroid. Khi đó
+\[
+\min_{S\in\mathcal{I}_1\cap\mathcal{I}_2,\ |S|\le k}w(S)
+=\min_{S\in\mathcal{I}_1\cap\mathcal{I}_2^*}w(S).
+\]
+
+\paragraph{\term{Quy hoạch tuyến tính.}}
+Bài toán quy hoạch tuyến tính có thể được mô tả như sau: cho một ma trận \(A\)
+và hai vector \(b,c\),
+\[
+\begin{aligned}
+\min\quad &c^Tx,\\
+\text{s.t.}\quad &Ax\le b,\\
+&x\ge 0.
+\end{aligned}
+\]
+Trong đó \(x\) là biến; dòng đầu là mục tiêu tối ưu, các dòng còn lại là ràng
+buộc đối với \(x\).
+
+Nếu chỉ quan tâm tới ràng buộc, ta thấy miền khả thi của \(x\) là một đa diện
+lồi \(|c|\) chiều. Vai trò của vector \(c\) chỉ là quy định cuối cùng cần cực
+điểm theo hướng nào, tức điểm xa nhất theo một hướng nào đó.
+
+Nếu với mọi \(c\), trong nghiệm tối ưu \(x\) đều là điểm nguyên, tức mọi cực
+điểm trên đa diện lồi đều là điểm nguyên, thì quy hoạch tuyến tính như vậy được
+gọi là unimodular. Khi quy hoạch tuyến tính là unimodular, thông thường có thể
+bỏ qua ràng buộc nguyên trong bài toán cụ thể.
+
+\paragraph{\term{Định lý 3.1.}}
+Với một quy hoạch tuyến tính và một vector \(d\), gọi \(F(k)\) là giá trị của
+quy hoạch tuyến tính sau khi thêm một ràng buộc bất kỳ \(d^Tx\le k\). Khi đó
+đạo hàm \(F'(k)\) đơn điệu.
+
+\begin{center}
+\fbox{\parbox{0.48\linewidth}{\centering Hình 2.1: miền khả thi sau khi chiếu
+lên mặt phẳng sinh bởi \(c\) và \(d\).}}
+\end{center}
+
+\paragraph{\term{Chứng minh.}}
+Xét trước khi thêm ràng buộc, miền khả thi của \(x\) là một đa diện lồi. Sau khi
+chiếu nó lên mặt phẳng chứa \(c\) và \(d\), ta chắc chắn thu được một bao lồi
+hai chiều, như Hình 2.1. Trên mặt phẳng này, nếu lấy \(-c\) làm chuẩn, thì độ
+dốc tại tiếp điểm của \(d\) với bao lồi là đơn điệu, nên \(F'(k)\) đơn điệu.
+\proofbox
+
+\paragraph{\term{Liên hệ giữa hai khái niệm.}}
+Ký hiệu \(X(S)\) là điểm trong không gian \(|E|\) chiều mà mỗi tọa độ đều bằng
+\(0\) hoặc \(1\), trong đó tọa độ thứ \(i\) bằng \(1\) khi và chỉ khi phần tử
+thứ \(i\) thuộc \(S\).
+
+Đặt
+\[
+X(M_1,M_2)=\{X(S): S\in\mathcal{I}_1\cap\mathcal{I}_2\}.
+\]
+Gọi \(\operatorname{conv}(X(M_1,M_2))\) là đa diện lồi nhỏ nhất chứa tập điểm
+\(X(M_1,M_2)\).
+
+Đặt
+\[
+\begin{aligned}
+P(M_1,M_2)=\{x\in\mathbb{R}^{|E|}:&
+x(S)\le \max_{T\in\mathcal{I}_1,\ T\subset S}|T|\quad \forall S\subset E,\\
+&x(S)\le \max_{T\in\mathcal{I}_2,\ T\subset S}|T|\quad \forall S\subset E,\\
+&x_e\ge 0\quad \forall e\in E\}.
+\end{aligned}
+\]
+
+\paragraph{\term{Định lý 3.2.}}
+\[
+\operatorname{conv}(X(M_1,M_2))=P(M_1,M_2).
+\]
+
+Chứng minh của định lý này xem trong [2].
+
+Định nghĩa điểm \(X(w)\) trong không gian \(|E|\) chiều thỏa
+\(\forall e\in E, X(w)_e=w(e)\). Khi đó bài toán giao matroid có thể được xem
+là cực điểm của \(X(M_1,M_2)\) theo hướng \(-X(w)\), đồng thời cũng bằng cực
+điểm của \(\operatorname{conv}(X(M_1,M_2))\) theo hướng \(-X(w)\).
+
+Nếu xem các ràng buộc của \(P(M_1,M_2)\) là ràng buộc của quy hoạch tuyến tính,
+và xem hàm trọng số \(w\) là hàm mục tiêu của quy hoạch tuyến tính, thì ta có
+thể chuyển bài toán giao matroid thành bài toán quy hoạch tuyến tính.
+
+\paragraph{\term{Tính chất lồi.}}
+Quay lại bài toán này. Gọi đáp án của bài toán rừng hướng vào nhỏ nhất với tập
+cạnh kích thước \(k\) là \(\operatorname{MDF}(k)\). Ta có hai matroid trên tập
+cạnh, và
+\[
+\operatorname{MDF}(k)=
+\min_{S\in\mathcal{I}_1\cap\mathcal{I}_2,\ |S|\le k}w(S).
+\]
+
+Thêm vào \(P(M_1,M_2)\) ràng buộc theo \(k\), ta được \(P(M_1,M_2,k)\). Đặt
+\[
+\begin{aligned}
+P(M_1,M_2,k)=\{x\in\mathbb{R}^{|E|}:&
+x(S)\le \max_{T\in\mathcal{I}_1,\ T\subset S}|T|\quad \forall S\subset E,\\
+&x(S)\le \max_{T\in\mathcal{I}_2,\ T\subset S}|T|\quad \forall S\subset E,\\
+&x_e\ge 0\quad \forall e\in E,\\
+&\sum_{e\in E}x_e\le k\}.
+\end{aligned}
+\]
+
+\paragraph{\term{Bổ đề 3.3.}}
+Mọi cực điểm của \(P(M_1,M_2,k)\) đều là điểm nguyên.
+
+\paragraph{\term{Chứng minh.}}
+Xây dựng \(M_2^*=(E,\mathcal{I}_2^*)\), trong đó
+\(\mathcal{I}_2^*=\{S\in\mathcal{I}_2: |S|\le k\}\). \(M_2^*\) là matroid, nên
+\(\operatorname{conv}(X(M_1,M_2^*))=P(M_1,M_2^*)\). Lại vì
+\(P(M_1,M_2,k)=P(M_1,M_2^*)\), ta có
+\[
+\operatorname{conv}(X(M_1,M_2^*))=P(M_1,M_2,k).
+\]
+\proofbox
+
+Vì vậy, sau khi thêm ràng buộc kích thước không vượt quá \(k\), ta vẫn có thể
+bỏ qua ràng buộc nguyên và chuyển bài toán thành quy hoạch tuyến tính. Gọi
+\(\operatorname{MDF}^*(i)\) là giá trị của quy hoạch tuyến tính lấy
+\(P(M_1,M_2,i)\) làm ràng buộc và lấy \(w\) làm hàm tối ưu. Khi đó
+\[
+\forall i\in\mathbb{Z},\qquad \operatorname{MDF}^*(i)=\operatorname{MDF}(i).
+\]
+
+Đặt \(\sum_{e\in E}x_e\le k\) ra ngoài quy hoạch tuyến tính, ta có
+\(\operatorname{MDF}^{*\prime}(i)\) là hàm không giảm, nên
+\(\operatorname{MDF}^*(i)\) là hàm lồi. Do đó \(\operatorname{MDF}(i)\) cũng là
+hàm lồi, tức
+\[
+\forall i\in\mathbb{Z},\quad
+\operatorname{MDF}(i+1)-\operatorname{MDF}(i)
+\le
+\operatorname{MDF}(i+2)-\operatorname{MDF}(i+1).
+\]
+
+\subsubsection{Tiểu kết}
+
+Mục nhỏ này giới thiệu một số kiến thức về matroid và mô tả bài toán rừng hướng
+vào nhỏ nhất dưới dạng giao matroid. Cuối cùng, thông qua kiến thức quy hoạch
+tuyến tính, ta thu được một kết luận rất quan trọng: hàm của bài toán rừng hướng
+vào nhỏ nhất theo số cạnh là hàm lồi. Kết luận này sẽ giúp ích nhiều cho phần
+sau.
+
+Thật ra, chỉ với nội dung của mục này, ta đã có thể giải bài toán rừng hướng
+vào nhỏ nhất trong thời gian đa thức. Vì ta có thể biểu diễn bài toán rừng hướng
+vào nhỏ nhất thành bài toán giao matroid, đồng thời có thể kiểm tra tập độc lập
+trong thời gian đa thức, nên có thể áp dụng trực tiếp thuật toán giao matroid có
+trọng số. Tuy nhiên độ phức tạp quá cao, nên không khuyến nghị cách này.
+
+\subsection{Thuật toán dựa trên tối ưu lồi và cây phân nhánh nhỏ nhất}
+
+\subsubsection{Bài toán cây phân nhánh nhỏ nhất}
+
+Bài toán cây phân nhánh nhỏ nhất có thể được mô tả như sau.
+
+Cho một đồ thị có hướng \(G=(V,E)\), có trọng số cạnh \(w:E\to\mathbb{R}\). Với
+gốc \(t\) cho trước, tìm tập con cạnh có trọng số nhỏ nhất sao cho đồ thị con
+sinh bởi cạnh của nó là một cây hướng vào gốc \(t\).
+
+\subsubsection{Thuật toán Chu--Liu}
+
+Tư tưởng cốt lõi của ``thuật toán Chu--Liu'' là hai bổ đề sau.
+
+\paragraph{\term{Bổ đề 4.1.}}
+Trong bài toán cây phân nhánh nhỏ nhất, việc đồng thời cộng hoặc trừ cùng một
+lượng vào trọng số mọi cạnh đi ra từ một đỉnh không ảnh hưởng tới hình dạng cây
+của nghiệm tối ưu.
+
+\paragraph{\term{Chứng minh.}}
+Trong mọi cây sinh hướng vào, mỗi đỉnh không phải gốc đều có bậc ra bằng \(1\),
+nên yếu tố ảnh hưởng tới hình dạng cây tối ưu chỉ là tương quan trọng số giữa
+các cạnh đi ra từ cùng một đỉnh. \proofbox
+
+\paragraph{\term{Bổ đề 4.2.}}
+Trong bài toán cây phân nhánh nhỏ nhất, nếu tồn tại một chu trình toàn cạnh
+trọng số \(0\), và mọi cạnh đi ra từ các đỉnh trên chu trình đều không âm, thì
+có thể xem chu trình này là một đỉnh.
+
+\paragraph{\term{Chứng minh.}}
+Bổ đề này khá trừu tượng. Cụ thể, ý nghĩa của nó là: với một chu trình toàn cạnh
+trọng số \(0\), chắc chắn tồn tại một nghiệm tối ưu sao cho đúng một cạnh trên
+chu trình không được chọn.
+
+Vì cây hướng vào không có chu trình, ít nhất một cạnh trên chu trình này không
+được chọn.
+
+Nếu tồn tại một nghiệm tối ưu \(H\) sao cho có ít nhất hai cạnh trên chu trình
+này không được chọn, gọi \(S\) là tập các đỉnh đầu của những cạnh đó. Khi đó
+trong đồ thị \(H\), tồn tại ít nhất một đỉnh trong \(S\) mà đường đi từ nó tới
+gốc không chứa đỉnh nào trên chu trình; gọi đỉnh đó là \(S_1\). Với \(H\), đổi
+cạnh đi ra của mỗi đỉnh trong \(S-\{S_1\}\) thành cạnh trên chu trình, ta được
+\(H^*\). Khi đó \(H^*\) chắc chắn là một cây sinh hướng vào và không tệ hơn
+\(H\). Hình 3.1 bên trái là \(H\), bên phải là \(H^*\). \proofbox
+
+\begin{center}
+\fbox{\parbox{0.58\linewidth}{\centering Hình 3.1: đổi các cạnh đi ra để trên
+chu trình trọng số \(0\) chỉ còn một cạnh không được chọn.}}
+\end{center}
+
+Dùng hai bổ đề trên, ta thu được thuật toán Chu--Liu. Sau đây là mô tả hình
+thức của thuật toán.
+
+\begin{enumerate}
+  \item Chọn tùy ý một đỉnh \(u\) chưa xác định cạnh đi ra.
+  \item Dùng phép cộng trừ đồng thời trọng số các cạnh đi ra từ \(u\) để biến
+  cạnh đi ra nhỏ nhất của \(u\) thành trọng số \(0\), rồi chọn cạnh đó làm cạnh
+  đi ra của đỉnh này. Nếu các cạnh đi ra tạo thành chu trình, co chu trình này
+  thành một đỉnh.
+  \item Nếu vẫn còn đỉnh chưa xác định cạnh đi ra thì quay lại bước 1.
+\end{enumerate}
+
+Khi cài đặt, cần xây dựng heap gộp được cho mỗi đỉnh, hỗ trợ cộng trừ toàn cục
+và duy trì cạnh đi ra nhỏ nhất. Khi nhiều đỉnh được co thành một đỉnh, ta gộp
+các heap của chúng. Độ phức tạp thời gian là \(O(E\log E)\).
+
+\subsubsection{Trường hợp đặc biệt của bài toán rừng hướng vào nhỏ nhất}
+
+Khi \(k=|V|-1\), bài toán rừng hướng vào nhỏ nhất có thể chuyển rất thuận tiện
+thành bài toán cây phân nhánh nhỏ nhất.
+
+Khi \(k=|V|-1\), bài toán rừng hướng vào nhỏ nhất tương đương với việc yêu cầu
+một cây phân nhánh nhỏ nhất có gốc chưa xác định. Ta thêm một đỉnh mới \(t\)
+làm gốc của cây hướng vào, rồi nối từ mỗi đỉnh trong \(V\) tới nó một cạnh có
+cùng trọng số và đủ lớn. Khi đó trong mọi cây hướng vào nhỏ nhất gốc \(t\), bậc
+vào của \(t\) đều đúng bằng \(1\); cuối cùng chỉ cần trừ đi trọng số của cạnh
+đó.
+
+\subsubsection{Tối ưu lồi}
+
+\paragraph{\term{Giới thiệu.}}
+Tối ưu lồi là một kỹ thuật thường dùng trong thi thuật toán để tìm một hạng tử
+nào đó của một hàm lồi.
+
+Điều kiện để dùng tối ưu lồi là: với mọi hệ số góc, ta có thể tìm tiếp điểm của
+hệ số góc đó trên hàm lồi. Trong thi thuật toán, cách tìm tiếp điểm thường là
+thêm một hàm bậc nhất vào hàm lồi rồi tìm cực trị toàn cục.
+
+Bằng cách nhị phân hệ số góc, ta có thể tìm khá chính xác một điểm trên hàm
+lồi.
+
+Cần chú ý rằng chỉ trong một số trường hợp đặc biệt, tối ưu lồi mới tìm được
+giá trị chính xác của một điểm trên hàm lồi. Khi tối ưu lồi chỉ tìm được giá trị
+xấp xỉ, độ chính xác có thể đạt mức nhỏ theo hàm mũ.
+
+\paragraph{\term{Ứng dụng vào bài toán rừng hướng vào nhỏ nhất.}}
+Từ trường hợp đặc biệt trên, định nghĩa \(T(\alpha)\) là đáp án của bài toán
+cây phân nhánh nhỏ nhất sau khi thêm một đỉnh mới \(t\) làm gốc cây hướng vào
+và nối từ mỗi đỉnh trong \(V\) tới \(t\) một cạnh có trọng số \(\alpha\).
+
+Xét cách tính \(T(\alpha)\). Trước hết liệt kê số cạnh ngoài các cạnh đi vào
+đỉnh \(t\), gọi số này là \(x\). Chi phí nhỏ nhất của phần này là
+\(\operatorname{MDF}(x)\). Ngoài ra, \(x\) cạnh này tạo thành \(|V|-x\) cây
+hướng vào không liên thông với nhau; gốc của chúng trỏ tới \(t\) bằng các cạnh
+trọng số \(\alpha\), nên chi phí của phần này là \((|V|-x)\alpha\). Do đó
+\(T(\alpha)\) bằng giá trị nhỏ nhất của tổng hai phần chi phí:
+\[
+T(\alpha)=\min_{x\in[0,|V|)}\operatorname{MDF}(x)+(|V|-x)\alpha.
+\]
+
+Từ mục trước, ta biết \(\operatorname{MDF}\) là một hàm lồi, mở lên trên. Quan
+sát công thức này và khai triển ngoặc, ta có thể xem \(T(\alpha)\) là giá trị
+nhỏ nhất sau khi thêm một hàm bậc nhất có hệ số góc \(-\alpha\), tức có thể tìm
+giá trị nhỏ nhất của \(\operatorname{MDF}\) sau khi thêm một hàm bậc nhất có hệ
+số góc tùy ý.
+
+Giá trị nhỏ nhất sau khi thêm một hàm bậc nhất có hệ số góc \(-\alpha\) tương
+đương với tiếp điểm trên hàm lồi có hệ số góc \(\alpha\). Đến đây ta có thể
+dùng tối ưu lồi để tìm một hạng tử của \(\operatorname{MDF}\).
+
+\subsubsection{Mô tả thuật toán}
+
+Ta thu được thuật toán dựa trên tối ưu lồi và cây phân nhánh nhỏ nhất. Sau đây
+là mô tả hình thức.
+
+\begin{enumerate}
+  \item Nhị phân hệ số góc \(\alpha\).
+  \item Thêm đỉnh mới \(t\), nối mọi đỉnh tới nó bằng cạnh trọng số \(\alpha\).
+  \item Từ đây trở đi, trong bước 4 và bước 5, dùng phép cộng trừ đồng thời
+  trọng số cạnh đi ra của một đỉnh để cạnh đi ra nhỏ nhất của mỗi đỉnh luôn có
+  trọng số \(0\).
+  \item Chọn tùy ý một đỉnh \(u\) chưa xác định cạnh đi ra.
+  \item Chọn cạnh đi ra nhỏ nhất của \(u\) làm cạnh đi ra của đỉnh này. Nếu các
+  cạnh đi ra tạo thành chu trình, co chu trình đó thành một đỉnh.
+  \item Nếu vẫn còn đỉnh chưa xác định cạnh đi ra thì quay lại bước 4.
+  \item So sánh bậc vào của gốc với \(k\), rồi quay lại bước 1 để nhị phân lần
+  tiếp theo; hoặc nếu đã đạt độ chính xác mục tiêu thì dừng.
+\end{enumerate}
+
+\subsubsection{Tiểu kết}
+
+Thuật toán cây phân nhánh nhỏ nhất có độ phức tạp thời gian \(O(E\log E)\), còn
+thuật toán tối ưu lồi có độ phức tạp thời gian bằng logarit của độ chính xác.
+Vì vậy, cách chuyển bằng tối ưu lồi thành bài toán cây phân nhánh nhỏ nhất có
+độ phức tạp
+\[
+O\left(E\log E\log\frac{1}{2\varepsilon}\right),
+\]
+trong đó \(\varepsilon\) là sai số tuyệt đối chia cho tổng giá trị tuyệt đối của
+trọng số cạnh, tức số lần nhị phân trong tối ưu lồi là
+\(\log\frac{1}{2\varepsilon}\).
+
+\subsection{Thuật toán mở rộng cây hướng vào theo ưu tiên}
+
+\subsubsection{Tránh thêm đỉnh mới}
+
+Việc thêm đỉnh mới làm mất nhiều tính chất trực quan, nên ta xét cách không thêm
+đỉnh mới.
+
+Trong thuật toán ở mục 4.5, ở bước 5, nếu sau khi \(u\) chọn cạnh đi ra thì tạo
+chu trình và phải co chu trình, ta gọi thao tác này là \term{co vào}; ngược lại
+gọi là \term{mở rộng}. Gọi một cặp bước 4 và bước 5 là một vòng thao tác co-mở
+cơ bản.
+
+Quan sát thấy rằng sau khi một đỉnh \(u\) thực hiện thao tác co vào, đỉnh thu
+được sau khi co vẫn là một đỉnh đang chờ chọn cạnh đi ra. Nếu với một cây hướng
+vào hiện tại chưa từng chọn gốc, ta liên tục chọn gốc của cây hướng vào này cho
+tới khi nó mở rộng, thì ta sẽ thu được chi phí nhỏ nhất để dẫn một cạnh đi ra
+từ cây hướng vào đó; gọi chi phí này là \term{chi phí mở rộng} của cây hướng
+vào. Cụ thể, chi phí mở rộng là mọi chi phí từ khi gốc của một cây hướng vào
+chưa từng thực hiện thao tác co-mở cơ bản cho tới khi cây hướng vào dẫn được
+cạnh ra ngoài, bao gồm cả chi phí ban đầu để biến cạnh đi ra nhỏ nhất của gốc
+thành \(0\).
+
+Đỉnh mới \(t\) có các cạnh từ mọi đỉnh tới nó với cùng trọng số \(\alpha\).
+Nhưng ý nghĩa của đỉnh mới không chỉ là: khi chi phí mở rộng của một cây hướng
+vào không nhỏ hơn \(\alpha\), cây hướng vào đó trỏ thẳng tới \(t\).
+
+Sau đây là một ví dụ để giải thích rõ hơn điểm này.
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình 4.1.1--4.1.4: ví dụ bốn đỉnh cho
+thấy một cây có chi phí mở rộng nhỏ hơn \(\alpha\) vẫn có thể trỏ tới đỉnh mới
+\(t\) sau các thao tác co-mở.}}
+\end{center}
+
+Như Hình 4.1.1, đây là một đồ thị bốn đỉnh. Hiện đã thêm đỉnh \(t\), và
+\(\alpha=4\), tức mọi đỉnh đều có một cạnh trọng số \(4\) tới \(t\) (không vẽ
+trong hình).
+
+Trước hết thực hiện thao tác co-mở cơ bản với đỉnh \(3\), như Hình 4.1.2. Sau
+đó thực hiện thao tác co-mở cơ bản với đỉnh \(2\), như Hình 4.1.3. Lúc này,
+chi phí mở rộng của cây hướng vào có gốc là đỉnh \(1\) bằng \(3\), nhỏ hơn
+\(\alpha\), nhưng kết quả sau khi thực hiện thao tác co-mở cơ bản với nó lại
+là trỏ tới \(t\). Nguyên nhân là trong cây hướng vào này tồn tại một đỉnh có
+cạnh đi ra trên cây hướng vào rất lớn, dẫn tới khả năng trước hết co nó vào gốc
+rồi để đỉnh đó trỏ tới \(t\).
+
+Điều này buộc ta đưa vào một khái niệm: \term{giá trị trừ trước} của đỉnh, ký
+hiệu là \(\operatorname{dec}\).
+
+Chú ý rằng bất kể trọng số cạnh trên đồ thị thay đổi thế nào, lượng thay đổi
+của các cạnh đi ra từ cùng một đỉnh ban đầu đều giống nhau. Những đỉnh ban đầu
+bị co không biến mất vô cớ; sau khi đồng thời thay đổi mọi cạnh đi ra, ta gộp
+các cạnh đi ra của chúng với các đỉnh bị co khác. Do đó, định nghĩa giá trị trừ
+trước của một đỉnh là lượng giảm của các cạnh đi ra từ mỗi đỉnh ban đầu, trong
+trạng thái hiện tại, sau khi biến cạnh đi ra nhỏ nhất thành \(0\).
+
+Quan sát biểu hiện thực tế của giá trị trừ trước trong thao tác co-mở cơ bản:
+ta gộp vài tập hợp, rồi đồng thời tăng mọi giá trị trừ trước trong tập hợp sau
+khi gộp. Với đỉnh mới sau khi co, ta định nghĩa giá trị trừ trước của đỉnh mới
+là giá trị trừ trước lớn nhất trong các đỉnh của nó. Khi đó tại mọi thời điểm,
+một đỉnh \(u\) đều có một cạnh tới \(t\) với trọng số
+\(\alpha-\operatorname{dec}(u)\).
+
+\paragraph{\term{Bổ đề 5.1.}}
+Trong bài toán rừng hướng vào nhỏ nhất, cho một đồ thị có hướng có trọng số
+\(G=(V,E,w)\). Nếu chỉ thực hiện các thao tác co-mở cơ bản và tạo thành một cây
+hướng vào \(H\), đồng thời giá trị trừ trước của gốc \(H\) là lớn nhất trong
+cây hướng vào đó, thì \(H\) là cây sinh hướng vào có gốc chưa xác định nhỏ nhất
+của đồ thị con sinh bởi các đỉnh của nó.
+
+\paragraph{\term{Chứng minh.}}
+Chỉ cần chứng minh rằng nếu thêm đỉnh mới \(t\) và nối mọi đỉnh tới \(t\) bằng
+một cạnh trọng số đủ lớn \(\alpha\), rồi liên tục thực hiện thao tác co-mở cơ
+bản với gốc của \(H\), thì cuối cùng ta sẽ chọn để gốc trỏ thẳng tới \(t\). Giả
+sử gốc là \(r\), và tập đỉnh của gốc sau khi co là \(R\). Bản chất của thao tác
+co vào chỉ là: liên tục thêm vào \(R\) các phần tử có giá trị trừ trước nhỏ hơn
+rồi cộng toàn cục. Lặp như vậy, phần tử có giá trị trừ trước lớn nhất trong
+\(R\) luôn là \(r\). \proofbox
+
+\paragraph{\term{Bổ đề 5.2.}}
+Trong bài toán cây phân nhánh nhỏ nhất, nếu gốc \(t\) chỉ có các cạnh từ đỉnh
+khác trỏ tới nó, và các cạnh đó đều có trọng số \(\alpha\). Nếu chỉ thực hiện
+các thao tác co-mở cơ bản, thì với một cây hướng vào \(H\) mà gốc của nó là
+đỉnh có \(\operatorname{dec}\) lớn nhất trên cây, thao tác co-mở cơ bản với nó
+sẽ trỏ thẳng tới \(t\) khi và chỉ khi, sau khi bỏ qua \(t\), chi phí mở rộng
+của nó lớn hơn \(\alpha\).
+
+\paragraph{\term{Chứng minh.}}
+Vì \(H\) là cây sinh hướng vào có gốc chưa xác định nhỏ nhất trong đồ thị con
+sinh bởi các đỉnh của nó, nên \(H\) hoặc mở rộng tới một đỉnh không phải \(t\),
+hoặc gốc của \(H\) trỏ thẳng tới \(t\). \proofbox
+
+Vậy nếu cưỡng ép giá trị trừ trước của gốc là lớn nhất, ý nghĩa của \(t\) chính
+là một ràng buộc đối với chi phí mở rộng.
+
+Sau khi hiểu vai trò của \(t\), nếu ta có thể bảo đảm tại mọi thời điểm, gốc của
+mỗi cây hướng vào đều là đỉnh có giá trị trừ trước lớn nhất, thì có thể biểu
+diễn tường minh ràng buộc của \(t\). Để làm được điều đó, trước hết thao tác co
+vào không ảnh hưởng tới vị thế lớn nhất của gốc, nên chỉ cần thay đổi hợp lý
+thứ tự các thao tác mở rộng. Với hai cây hướng vào \(A,B\), có gốc lần lượt là
+\(t_A,t_B\), và \(\operatorname{dec}(t_A)\le \operatorname{dec}(t_B)\), việc cho
+\(A\) trỏ tới \(B\) có thể giữ cho giá trị trừ trước của gốc vẫn là lớn nhất.
+
+Sửa nhẹ thao tác co-mở cơ bản bằng cách thêm ưu tiên theo \(\operatorname{dec}\):
+ưu tiên chọn đỉnh có \(\operatorname{dec}\) nhỏ nhất. Gọi thao tác như vậy là
+\term{thao tác co-mở theo ưu tiên}.
+
+\paragraph{\term{Bổ đề 5.3.}}
+Trong bài toán cây phân nhánh nhỏ nhất, nếu gốc \(t\) chỉ có các cạnh từ đỉnh
+khác trỏ tới nó, và các cạnh đó đều có trọng số \(\alpha\). Nếu chỉ thực hiện
+thao tác co-mở theo ưu tiên, thì một cây hướng vào sẽ trỏ thẳng tới \(t\) trong
+nghiệm tối ưu khi và chỉ khi, sau khi bỏ qua \(t\), chi phí mở rộng của nó lớn
+hơn \(\alpha\).
+
+\paragraph{\term{Chứng minh.}}
+Với điều kiện chỉ thực hiện thao tác co-mở theo ưu tiên, gốc của mỗi cây hướng
+vào đều có \(\operatorname{dec}\) lớn nhất trong cây. \proofbox
+
+Bây giờ có thể mô tả hình thức thuật toán không thêm đỉnh \(t\).
+
+\begin{enumerate}
+  \item Nhị phân hệ số góc \(\alpha\).
+  \item Từ đây trở đi, trong bước 3 và bước 4, dùng phép cộng trừ đồng thời
+  trọng số các cạnh đi ra từ một đỉnh để cạnh đi ra nhỏ nhất của mỗi đỉnh luôn
+  giữ trọng số \(0\), đồng thời duy trì giá trị trừ trước.
+  \item Chọn đỉnh \(u\) chưa chọn cạnh đi ra và có giá trị trừ trước nhỏ nhất.
+  Nếu chi phí mở rộng của nó lớn hơn \(\alpha\), thì trực tiếp cộng
+  \(\alpha-\operatorname{dec}(u)\) vào đáp án, xóa cây hướng vào này và bỏ qua
+  bước 4.
+  \item Chọn cạnh đi ra nhỏ nhất của \(u\) làm cạnh đi ra của đỉnh này. Nếu các
+  cạnh đi ra tạo thành chu trình, co chu trình thành một đỉnh.
+  \item Nếu vẫn còn đỉnh chưa xác định cạnh đi ra thì quay lại bước 3.
+\end{enumerate}
+
+\subsubsection{Tránh tối ưu lồi}
+
+Xét quan hệ giữa chi phí mở rộng và giá trị trừ trước. Ta thấy chi phí mở rộng
+chính là giá trị trừ trước của gốc tại thời điểm mở rộng. Một kết luận khác dễ
+thấy là: nếu nối cây hướng vào \(A\) vào cây hướng vào \(B\), thì các thao tác
+co vào của cây hướng vào \(B\) không đổi. Vì vậy với cây hướng vào có chi phí
+mở rộng nhỏ nhất hiện tại, ta có thể thực hiện trước các thao tác của cây đó
+cho tới khi nó mở rộng. Do đó, rừng hướng vào thu được bằng cách chọn co-mở theo
+ưu tiên tương đương với cách chọn sau:
+
+\begin{itemize}
+  \item Chọn cây hướng vào có chi phí mở rộng nhỏ nhất, rồi chọn gốc \(u\) của
+  nó.
+\end{itemize}
+
+Cũng vì nối cây hướng vào \(A\) vào cây hướng vào \(B\) không làm thay đổi các
+thao tác co vào của cây hướng vào \(B\), nên chi phí mở rộng của cây hướng vào
+\(B\) không giảm. Khi đó trong một dãy các thao tác co-mở theo ưu tiên, chi phí
+mở rộng của các cây hướng vào được chọn chỉ tăng không giảm. Với một dãy thao
+tác tăng như vậy, việc nhị phân \(\alpha\) mất ý nghĩa.
+
+Đồng thời khi bỏ nhị phân, cũng không khó nhận ra: vì vị trí nhị phân trước đó
+là nghiệm tối ưu với kích thước tập cạnh hiện tại, nên tại mọi thời điểm trong
+quá trình này, ta đều đang có nghiệm tối ưu với kích thước tập cạnh hiện tại.
+Đã như vậy, tốt hơn là tiện thể tính đáp án cho mọi kích thước tập cạnh.
+
+\subsubsection{Thuật toán cụ thể và phân tích độ phức tạp}
+
+Trước khi mô tả hình thức, hãy xem một ví dụ để nhớ lại cách thuật toán vận
+hành.
+
+\begin{center}
+\fbox{\parbox{0.72\linewidth}{\centering Hình 4.2.1--4.2.5: ví dụ năm đỉnh và
+năm cạnh minh họa quá trình lần lượt mở rộng các cây hướng vào có chi phí mở
+rộng nhỏ nhất.}}
+\end{center}
+
+Ví dụ này như Hình 4.2.1, có \(5\) đỉnh và \(5\) cạnh. Ban đầu mỗi đỉnh là một
+cây hướng vào độc lập; trong đó đỉnh \(1\) có chi phí mở rộng nhỏ nhất, sau khi
+mở rộng thu được Hình 4.2.2. Tương tự, sau khi đỉnh \(2\) mở rộng, ta thu được
+Hình 4.2.3.
+
+Lúc này có các cây hướng vào \(\{1,2,3\}\), \(\{4\}\) và \(\{5\}\), chi phí mở
+rộng của chúng lần lượt là \(6\), \(+\infty\) và \(5\), nên chọn đỉnh \(5\) để
+mở rộng, thu được Hình 4.2.4. Cuối cùng, chọn cây hướng vào \(\{1,2,3\}\) để mở
+rộng, thu được Hình 4.2.5.
+
+\paragraph{\term{Mô tả thuật toán.}}
+\begin{enumerate}
+  \item Ban đầu có \(|V|\) cây hướng vào, mỗi cây hướng vào là một đỉnh.
+  \item Gọi tập cạnh hiện tại là \(E_{\mathrm{now}}\), ghi nhận
+  \(\operatorname{MDF}(|E_{\mathrm{now}}|)=w(E_{\mathrm{now}})\).
+  \item Tính chi phí mở rộng hiện tại của mỗi cây hướng vào.
+  \item Nếu không còn cây hướng vào nào có thể dẫn một cạnh ra ngoài thì dừng.
+  \item Chọn cây hướng vào có chi phí mở rộng nhỏ nhất, thực hiện một số thao
+  tác co-mở cho tới khi nó mở rộng, rồi quay lại bước 2.
+\end{enumerate}
+
+\paragraph{\term{Phân tích độ phức tạp.}}
+Nút thắt của cách cài đặt trực tiếp nằm ở việc tính chi phí mở rộng của mỗi cây
+hướng vào. Vì nối cây hướng vào \(A\) vào cây hướng vào \(B\) không làm thay đổi
+các thao tác co vào của cây hướng vào \(B\), ta có thể xử lý trước mọi thao tác
+co vào của mỗi cây hướng vào. Như vậy với một cây hướng vào, ta tính được chi
+phí mở rộng của nó trong \(O(1)\).
+
+Có thể dùng heap gộp được để thực hiện thao tác co vào và duy trì cạnh đi ra;
+phần này có độ phức tạp thời gian \(O(E\log E)\). Để tiện tìm cây hướng vào có
+chi phí mở rộng nhỏ nhất, cần thêm một heap duy trì chi phí mở rộng của các cây
+hướng vào; phần này có độ phức tạp thời gian \(O(V\log V)\).
+
+Vì vậy tổng độ phức tạp thời gian là \(O(E\log E)\).
+
+\subsubsection{Một chứng minh đúng đắn khác}
+
+Ở mục 2, ta có thể mô tả bài toán rừng hướng vào nhỏ nhất thành bài toán giao
+matroid có trọng số.
+
+\paragraph{\term{Định lý 5.1.}}
+Với một bài toán giao matroid có trọng số bất kỳ, nếu bài toán có nghiệm ở kích
+thước \(k\), thì với mọi nghiệm tối ưu \(B\) kích thước \(k-1\), tồn tại ít nhất
+một nghiệm tối ưu \(A\) kích thước \(k\) sao cho:
+
+\begin{enumerate}
+  \item Nếu với mọi \((u,v)\) thỏa \(u\in B-A\), \(v\in A-B\),
+  \(B-\{u\}+\{v\}\in\mathcal{I}_1\) nhưng \(B+\{v\}\notin\mathcal{I}_1\), ta
+  nối một cạnh giữa \(u\) và \(v\), thì tồn tại \(x\in A-B\) thỏa
+  \(B+\{x\}\in\mathcal{I}_1\), sao cho \(A-B-\{x\}\) có ghép hoàn hảo tới
+  \(B-A\).
+  \item Nếu với mọi \((u,v)\) thỏa \(u\in B-A\), \(v\in A-B\),
+  \(B-\{u\}+\{v\}\in\mathcal{I}_2\) nhưng \(B+\{v\}\notin\mathcal{I}_2\), ta
+  nối một cạnh giữa \(u\) và \(v\), thì tồn tại \(y\in A-B\) thỏa
+  \(B+\{y\}\in\mathcal{I}_2\), sao cho \(A-B-\{y\}\) có ghép hoàn hảo tới
+  \(B-A\).
+\end{enumerate}
+
+Định lý trên là một phần của thuật toán giao matroid có trọng số, nên ở đây
+không chứng minh.
+
+Hãy nhớ lại hai matroid dùng để mô tả bài toán rừng hướng vào nhỏ nhất:
+\(\mathcal{I}_1\) là các đồ thị không có chu trình nếu xem cạnh là vô hướng,
+còn \(\mathcal{I}_2\) là các đồ thị mà mỗi đỉnh có bậc ra \(0\) hoặc \(1\).
+
+Quan sát matroid thứ hai. Nếu hiện đã biết một nghiệm tối ưu \(B\) kích thước
+\(k-1\), theo định lý ta biết tồn tại một nghiệm tối ưu \(A\) kích thước \(k\).
+Với một cạnh từ \(u\) tới \(v\), từ \(B+v\notin\mathcal{I}_2\) suy ra đỉnh đầu
+của \(v\) là đỉnh đầu của một cạnh trong \(B\). Tương tự, đỉnh đầu của mọi cạnh
+trong \(A-B-y\) đều là đỉnh đầu của một cạnh nào đó trong \(B\). Vì vậy so với
+\(B\), trong \(A\), xét về số cạnh đi ra, đúng một đỉnh chuyển từ \(0\) thành
+\(1\).
+
+\paragraph{\term{Bổ đề 5.4.}}
+Trong bài toán rừng hướng vào nhỏ nhất, nếu biết trong nghiệm tối ưu, tập các
+đỉnh có cạnh đi ra là \(S\), thì lần lượt thực hiện thao tác co-mở cơ bản với
+mỗi phần tử của \(S\) cho tới khi mở rộng sẽ thu được nghiệm tối ưu.
+
+\paragraph{\term{Chứng minh.}}
+Vì mỗi đỉnh trong \(V-S\) đều không có cạnh đi ra, ta có thể gộp tập này thành
+một đỉnh \(t\). Khi đó bài toán gốc chuyển thành bài toán cây phân nhánh nhỏ
+nhất. \proofbox
+
+Vậy nếu đã biết \(B\) và muốn tìm \(A\), ta có thể liệt kê đỉnh nào có bậc ra
+chuyển từ \(0\) thành \(1\), tính chi phí để thực hiện thao tác co-mở cơ bản với
+nó cho tới khi mở rộng, rồi cuối cùng lấy đỉnh có chi phí nhỏ nhất. Chi phí này
+tương đương với chi phí mở rộng của một cây hướng vào. Do đó quá trình này
+tương đương với thuật toán mở rộng cây hướng vào theo ưu tiên.
+
+\subsubsection{Tiểu kết}
+
+Tới đây, ta đã giải quyết khá trọn vẹn bài toán rừng hướng vào nhỏ nhất. Hơn
+nữa, thuật toán này có thể đồng thời tính đáp án cho mọi \(k\).
+
+Ngoài ra, thuật toán này có thể vẫn còn không gian tối ưu tiếp, chẳng hạn dùng
+các cấu trúc dữ liệu ít gặp trong thi thuật toán như soft heap.
+
+\subsection{Ứng dụng}
+
+Bài J của 2020 Multi-University Training Contest 4 là một ứng dụng rất tốt của
+thuật toán này. Là người ra bài, tôi hy vọng thông qua bài này có thể phổ biến
+cách giải bài toán rừng hướng vào nhỏ nhất.
+
+\subsubsection{Ý chính bài toán}
+
+Cho \(n\) câu đố, đánh số từ \(1\) tới \(n\). Cần chia các câu đố này thành
+\(k\) dãy không rỗng. Mỗi câu đố có một trọng số \(A\), ban đầu
+\(\forall i, A_i=0\).
+
+Tiếp theo có \(m\) lần phán định, mỗi lần có dạng \((x,l,r,c)\), nghĩa là nếu
+trong dãy chứa \(x\), tồn tại \(y\in[l,r]\) xuất hiện trước \(x\), thì
+\[
+A_x=\max(A_x,c).
+\]
+
+Cần lập phương án chia thành \(k\) dãy không rỗng và sắp thứ tự trong mỗi dãy,
+sao cho tối đa hóa
+\[
+\sum_{i\in[1,n]}A_i.
+\]
+
+\subsubsection{Dựng đồ thị}
+
+Dựng đồ thị: với mỗi câu đố tạo một đỉnh, và nối một cạnh trọng số \(0\) giữa
+hai đỉnh bất kỳ. Với mỗi lần phán định, từ \(x\) nối một cạnh có hướng trọng số
+\(c\) tới mọi đỉnh trong \([l,r]\). Đáp án chính là rừng hướng vào lớn nhất có
+số thành phần liên thông yếu bằng \(k\).
+
+Tiếp theo chứng minh tính đúng đắn của cách dựng đồ thị, gồm hai phần.
+
+Phần thứ nhất: với một rừng hướng vào bất kỳ có số thành phần liên thông yếu
+bằng \(k\), ta đều tìm được phương án chia thành \(k\) dãy tương ứng. Thật ra
+chỉ cần với mỗi thành phần liên thông yếu, lấy một thứ tự topo ngược tùy ý làm
+dãy.
+
+Phần thứ hai: với một phương án chia thành \(k\) dãy bất kỳ, ta đều tìm được
+rừng hướng vào tương ứng có số thành phần liên thông yếu bằng \(k\). Chỉ cần
+với mỗi câu đố \(i\), giữ lại một cạnh bất kỳ làm cho \(A_i\) lớn nhất.
+
+Sau khi đổi dấu trọng số cạnh, ta đã chuyển bài toán gốc thành bài toán rừng
+hướng vào nhỏ nhất.
+
+\subsubsection{Phân tích}
+
+Quan sát thuật toán mở rộng cây hướng vào theo ưu tiên: nếu không duyệt qua mọi
+vòng tự khép, thì sau khi duyệt nhiều nhất \(O(V)\) cạnh, thuật toán chắc chắn
+dừng. Vì với mỗi cạnh không phải vòng tự khép, nếu co vào thì số đỉnh giảm; nếu
+không thì mở rộng, số thành phần liên thông yếu giảm. Vì vậy hướng tối ưu của
+ta là tránh liệt kê quá nhiều vòng tự khép trong thời gian hữu hạn.
+
+Chú ý rằng trên đồ thị này, tuy số cạnh rất lớn, nhưng nếu dùng \((x,l,r,c)\)
+để mô tả một nhóm cạnh thì số nhóm cạnh trên đồ thị rất nhỏ. Do đó với mỗi đỉnh
+đã co, dùng cấu trúc dữ liệu duy trì tập đỉnh ban đầu của nó. Khi truy vấn cạnh
+đi ra của đỉnh này, ta có thể tìm rất nhanh đỉnh nhỏ nhất trong \([l,r]\) không
+thuộc tập đỉnh đó, nhằm tránh liệt kê vòng tự khép. Khi đó, ngoài việc mỗi nhóm
+cạnh ít nhất bị liệt kê một lần để kiểm tra liệu toàn bộ có phải vòng tự khép
+hay không, thuật toán chỉ duyệt \(O(V)\) cạnh.
+
+Độ phức tạp thời gian của thuật toán là
+\[
+O((n+m)\log(n+m)).
+\]
+
+\subsection{Tổng kết}
+
+Bài viết xoay quanh bài toán rừng hướng vào nhỏ nhất, lần lượt giới thiệu
+matroid, bài toán cây phân nhánh nhỏ nhất và kiến thức liên quan tới tối ưu
+lồi, đồng thời đề xuất thuật toán mở rộng cây hướng vào theo ưu tiên, giải
+quyết khá tốt bài toán rừng hướng vào nhỏ nhất. Thuật toán này có mã nguồn ngắn
+gọn, ít chi tiết cài đặt, có thể dùng để giải loại bài này trong thi thuật
+toán. Trong lĩnh vực lý thuyết đồ thị, bài toán rừng hướng vào nhỏ nhất, với tư
+cách một mở rộng của bài toán cây phân nhánh nhỏ nhất, cũng có giá trị lý thuyết
+quan trọng.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Yang Qianlan, \emph{Bàn về một số mở rộng của matroid và ứng dụng của
+  chúng}. Tập luận văn đội tuyển quốc gia Trung Quốc IOI2018, 2018.
+  \item Michel X. Goemans. Massachusetts Institute of Technology 18.433,
+  \emph{Combinatorial Optimization: Lecture notes on matroid intersection}. MIT
+  Mathematics,
+  \url{http://math.mit.edu/~goemans/18433S11/matroid-intersect-notes.pdf}, p. 7.
+  \item Wikipedia contributors. \emph{Matroid}. Wikipedia,
+  \url{https://en.wikipedia.org/wiki/Matroid}.
+  \item Wikipedia contributors. \emph{Edmonds' Algorithm}. Wikipedia,
+  \url{https://en.wikipedia.org/wiki/Edmonds%27_algorithm}.
 \end{enumerate}
 
 \end{document}

@@ -18,7 +18,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2022. Tệp này
 là bản quét ảnh: \texttt{pdftotext} chỉ trả về các dấu sang trang và không khôi
 phục được văn bản thân bài. Vì vậy bản LaTeX này chuyển ngữ phần nhận diện tập
-sách, mục lục và tám bài đầu tiên bằng cách đọc trực tiếp các trang đã render
+sách, mục lục và chín bài đầu tiên bằng cách đọc trực tiếp các trang đã render
 từ PDF, kết hợp OCR bằng \texttt{tesseract}.
 \end{abstract}
 
@@ -5163,6 +5163,290 @@ kiểm tra bản thảo; cảm ơn các thầy cô và bạn bè từng giúp đ
   \item Kurt Maly. \emph{Compressed Tries}. 1976.
 \end{enumerate}
 
+\section{Bàn về một lớp ma trận Monge}
+
+\begin{center}
+\textbf{Zhang Jingxing, Trường Trung học trực thuộc Đại học Bắc Kinh}
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết giới thiệu một lớp ma trận Monge đặc biệt, các thuật toán liên quan
+và ứng dụng của chúng trong thi tin học.
+
+\subsection{Mở đầu}
+
+Ma trận Monge, hay mảng Monge, là ma trận có các phần tử thỏa bất đẳng thức tứ
+giác. Đây là một cấu trúc thường gặp trong thi tin học và có nhiều ứng dụng,
+đặc biệt trong tối ưu quy hoạch động. Trong số đó, ma trận Monge đơn vị đơn
+giản có thêm nhiều tính chất mạnh.
+
+Với ma trận tổng quát kích thước $n\times n$, hiện chưa có thuật toán
+$O(n^{3-\varepsilon})$ cho phép nhân min-plus trong trường hợp chung. Tuy
+nhiên với ma trận Monge và với ma trận Monge đơn vị đơn giản, lần lượt tồn tại
+thuật toán $O(n^2)$ và $O(n\log n)$. Bài viết tập trung vào thuật toán nhân
+nhanh cho ma trận Monge đơn vị đơn giản, cách thuật toán này cải thiện độ phức
+tạp của một số bài cổ điển, và các ứng dụng của nó trong OI.
+
+Tác giả biết tới thuật toán này từ hai bài trên Library Checker và một bài báo
+giới thiệu thuật toán. Các thuật toán liên quan tới ma trận Monge đơn vị trong
+bài đều xuất phát từ bài báo đó. Ở thời điểm bài viết được soạn, theo hiểu biết
+của tác giả, ma trận Monge đơn vị chưa được dùng rộng rãi trong thi tin học.
+Hy vọng phần giới thiệu này giúp độc giả thấy được cấu trúc gọn nhưng mạnh của
+nó, từ đó áp dụng vào nhiều bài toán hơn và gợi ý cho việc ra đề mới.
+
+\subsection{Khái niệm cơ bản}
+
+Phần này định nghĩa các ký hiệu sẽ dùng, giải thích một số khái niệm và nêu các
+tính chất nền tảng của đối tượng nghiên cứu.
+
+\subsubsection{Định nghĩa cơ bản}
+
+Với khoảng chỉ số, bài viết dùng ký hiệu nửa nguyên để biểu diễn biên giữa hai
+chỉ số: $\hat{i}$ chỉ $i+\frac12$, còn $\check{i}$ chỉ $i-\frac12$. Ký hiệu
+$[i:j)$ biểu thị tập các số nguyên $i,i+1,\ldots,j-1$.
+
+Một ma trận $A$ trên hai tập chỉ số $X,Y$ có phần tử $A_{i,j}$ với
+$i\in X$, $j\in Y$. Nếu không nói thêm, chỉ số hàng tăng từ trên xuống, chỉ số
+cột tăng từ trái sang phải, và các phần tử là số thực. Khi $|Y|=1$, ma trận
+trên $X\times Y$ được xem như một vector cột và ký hiệu là $a_i$.
+
+\subsubsection{Mật độ và phân bố}
+
+Với ma trận $A$ trên các hàng $[i_1:i_2]$ và cột $[j_1:j_2]$, định nghĩa ma
+trận mật độ $A^{\Delta}$ trên các ô giữa các hàng/cột bởi công thức sai phân hai
+chiều
+\[
+  A^{\Delta}_{i,j}
+  = A_{i,j}-A_{i,j-1}-A_{i+1,j}+A_{i+1,j-1}.
+\]
+Ngược lại, với một ma trận mật độ $D$, ma trận phân bố $D^\Sigma$ là tổng tiền
+tố hai chiều tương ứng. Có thể xem hai phép này như sai phân hai chiều và tiền
+tố hai chiều.
+
+Một ma trận $A$ được gọi là ma trận Monge khi mọi phần tử của $A^{\Delta}$ đều
+không âm. Định nghĩa tương đương quen thuộc trong quy hoạch động là bất đẳng
+thức tứ giác: với $i_1<i_2$ và $j_1<j_2$,
+\[
+  A_{i_1,j_1}+A_{i_2,j_2}
+  \le A_{i_1,j_2}+A_{i_2,j_1}.
+\]
+Chiều thuận lấy đúng một ô sai phân; chiều ngược thu được bằng cách cộng các ô
+sai phân trong hình chữ nhật.
+
+\subsubsection{Ma trận Monge đơn giản, đơn vị và á đơn vị}
+
+Một ma trận Monge là \emph{đơn giản} nếu cột đầu tiên và hàng cuối cùng đều
+bằng $0$. Với ma trận đơn giản, phép lấy mật độ rồi lấy phân bố trả lại ma trận
+ban đầu; ngược lại, ma trận thu được từ phân bố của mật độ luôn có cột đầu và
+hàng cuối bằng $0$.
+
+Một ma trận vuông là ma trận hoán vị nếu mỗi hàng và mỗi cột có đúng một phần
+tử bằng $1$, các phần tử còn lại bằng $0$. Một ma trận là á hoán vị nếu nó
+bằng $0$, hoặc sau khi xóa mọi hàng/cột toàn $0$ thì trở thành ma trận hoán vị.
+
+Một ma trận Monge là \emph{đơn vị} nếu mật độ của nó là ma trận hoán vị; là
+\emph{á đơn vị} nếu mật độ của nó là ma trận á hoán vị. Ma trận Monge đơn vị
+đơn giản và ma trận Monge á đơn vị đơn giản thường được biểu diễn bằng hoán vị
+hoặc tập điểm ứng với mật độ, không cần lưu toàn bộ ma trận.
+
+Nếu $A$ là ma trận Monge đơn vị đơn giản kích thước phù hợp, thì hàng đầu tiên
+tăng từ trái sang phải như $0,1,2,\ldots$, còn cột cuối cùng tăng từ dưới lên
+như $0,1,2,\ldots$. Ngược lại, các điều kiện biên này cùng tính Monge và tính
+nguyên buộc mật độ có đúng một $1$ trên mỗi hàng/cột. Với trường hợp á đơn vị,
+các phần tử nguyên không âm và hiệu giữa hai ô kề nhau không vượt quá $1$ là
+dấu hiệu quan trọng; khi đó mọi phần tử đều nằm trong khoảng
+\[
+  0\le A_{i,j}\le \min(j-j_0,\ i_1-i).
+\]
+
+\subsubsection{Nhân khoảng cách}
+
+Với ma trận $A$ trên $X\times Y$ và $B$ trên $Y\times Z$, định nghĩa tích
+khoảng cách, tức tích min-plus,
+\[
+  C=A B,\qquad
+  C_{i,j}=\min_{k\in Y}\{A_{i,k}+B_{k,j}\}.
+\]
+Trong bài này, nếu không nói thêm, mọi phép nhân ma trận đều là phép nhân
+khoảng cách.
+
+Các lớp ma trận đang xét đóng dưới phép nhân này. Nếu $A,B$ là ma trận Monge
+thì $AB$ cũng là ma trận Monge. Chứng minh xét hai hàng và hai cột, lấy các vị
+trí đạt min tương ứng; tùy thứ tự của hai vị trí trung gian, dùng bất đẳng thức
+tứ giác của $A$ hoặc của $B$ để suy ra bất đẳng thức tứ giác cho $C$.
+
+Nếu $A,B$ là ma trận Monge đơn vị đơn giản thì $AB$ vẫn là ma trận Monge đơn vị
+đơn giản. Điều này suy ra từ tính đóng Monge và các điều kiện biên: cột đầu
+và hàng cuối của tích bằng $0$, còn hàng đầu/cột cuối có dạng tuyến tính chuẩn
+nhờ hiệu kề nhau bị chặn bởi $1$. Tương tự, ma trận Monge á đơn vị đơn giản
+cũng đóng dưới phép nhân khoảng cách.
+
+\subsection{Nhân khoảng cách nhanh}
+
+Với ma trận tổng quát, phép nhân khoảng cách chưa có thuật toán dưới bậc ba
+trong trường hợp chung. Với ma trận Monge, có thuật toán $O(n^2)$; với ma trận
+Monge đơn vị hoặc á đơn vị đơn giản, có thuật toán $O(n\log n)$. Phần này tập
+trung vào thuật toán cho trường hợp sau.
+
+\subsubsection{Nhân ma trận Monge tổng quát với vector}
+
+Một ma trận được gọi là \emph{hoàn toàn đơn điệu} nếu với mọi hai hàng
+$i_1<i_2$ và hai cột $j_1<j_2$, quan hệ so sánh giữa hai hiệu
+$A_{i_1,j_1}-A_{i_2,j_1}$ và $A_{i_1,j_2}-A_{i_2,j_2}$ không vi phạm mẫu đơn
+điệu. Nói cách khác, vị trí đạt min trên các hàng có tính đơn điệu. Ma trận
+Monge luôn hoàn toàn đơn điệu, vì nếu vi phạm thì trái với bất đẳng thức tứ
+giác.
+
+Hệ quả quan trọng là \emph{đơn điệu quyết định}: trong một ma trận hoàn toàn
+đơn điệu, vị trí cột của min trái nhất trên từng hàng không giảm khi đi từ trên
+xuống dưới. Tương tự với min phải nhất. Mọi ma trận con lấy từ một ma trận hoàn
+toàn đơn điệu cũng hoàn toàn đơn điệu.
+
+Thuật toán SMAWK dùng các tính chất trên để nhân một ma trận Monge với một
+vector cột trong thời gian tuyến tính, nếu chỉ cần truy cập $O(n)$ phần tử ma
+trận. Ý tưởng là trước hết xét các hàng lẻ, dùng cấu trúc giống ngăn xếp đơn
+điệu để loại bỏ những cột không thể chứa min trái nhất, rồi đệ quy trên bài
+toán có số hàng và số cột đều giảm. Sau khi có kết quả cho các hàng lẻ, min
+của mỗi hàng chẵn chỉ cần tìm trong khoảng giữa hai quyết định lân cận. Tổng
+số phần tử cần hỏi thỏa truy hồi $T(n)=T(n/2)+O(n)=O(n)$.
+
+\subsubsection{Nhân hai ma trận Monge tổng quát}
+
+Với hai ma trận Monge $A,B$ kích thước lớn nhất là $n$, có thể tính
+$C=AB$ trong $O(n^2)$. Cách trực tiếp là áp dụng SMAWK cho từng cột của $B$.
+Bài viết cũng nêu một cách nhìn khác: ký hiệu $p_{i,j}$ là vị trí nhỏ nhất đạt
+min trong công thức của $C_{i,j}$. Với mỗi cột, các $p_{i,j}$ đơn điệu theo
+hàng; nhờ đối xứng qua đường chéo phụ, chúng cũng đơn điệu theo cột. Vì vậy
+khi quét các ô theo đường chéo phụ, chỉ cần liệt kê các vị trí trung gian giữa
+hai quyết định biên. Tổng số vị trí phải xét trên mỗi đường chéo là $O(n)$,
+và có $O(n)$ đường chéo, nên tổng thời gian là $O(n^2)$.
+
+\subsubsection{Ma trận Monge á đơn vị đơn giản với vector}
+
+Nếu áp dụng trực tiếp SMAWK cho ma trận á đơn vị đơn giản, việc hỏi một phần tử
+có thể trở thành bài toán đếm điểm hai chiều trên mật độ. Có thể dùng cấu trúc
+dữ liệu phức tạp, nhưng bài báo gốc có thuật toán tuyến tính. Bài viết này
+trình bày một thuật toán gọn hơn, $O(n\log n)$.
+
+Cho ma trận Monge á đơn vị đơn giản $A$ và vector $b$. Đặt
+$C_{i,j}=A_{i,j}+b_j$. Khi cần tính một giá trị $A_{i,j}$, ta xem mật độ
+$A^{\Delta}$ như tập điểm của một ma trận á hoán vị; từ một vị trí hiện tại
+$(x,y)$ cùng giá trị đã biết, di chuyển sang ô cần hỏi bằng các bước kề nhau,
+mỗi bước cập nhật giá trị trong $O(1)$.
+
+Thuật toán chia để trị theo hàng: ở ma trận con hiện tại, lấy hàng giữa, quét
+từ trái sang phải để tìm cột đạt min, rồi nhờ đơn điệu quyết định chia bài toán
+thành phần trên chỉ xét các cột không lớn hơn quyết định này và phần dưới chỉ
+xét các cột không nhỏ hơn nó. Nếu ma trận con có $a$ hàng và $b$ cột, việc
+quét hàng giữa và di chuyển vị trí truy cập tốn $O(a+b)$. Mỗi tầng đệ quy có
+tổng $a+b$ là $O(n)$, số tầng $O(\log n)$, nên thời gian là $O(n\log n)$.
+
+\subsubsection{Nhân ma trận Monge đơn vị đơn giản}
+
+Vì ma trận Monge đơn vị đơn giản được biểu diễn bằng hoán vị, ta định nghĩa
+phép nhân trực tiếp trên hoán vị. Với hoán vị $a$ của $[1:n]$, đặt
+$\operatorname{Mat}(a)$ là ma trận mật độ có $1$ tại các vị trí tương ứng của
+hoán vị. Với hai hoán vị $a,b$, định nghĩa
+\[
+  a\circ b
+  =
+  \operatorname{Mat}^{-1}\!\left(
+    \left(\operatorname{Mat}(a)^\Sigma
+    \operatorname{Mat}(b)^\Sigma\right)^{\Delta}
+  \right).
+\]
+Tính đóng của ma trận Monge đơn vị đơn giản bảo đảm định nghĩa này hợp lệ.
+
+Thuật toán $O(n\log n)$ dùng chia để trị. Chia miền trung gian thành hai nửa:
+phần trái và phần phải tạo hai bài toán con. Sau khi xóa các hàng/cột toàn
+$0$, mỗi nửa lại tương ứng với một hoán vị nhỏ hơn. Giải hai bài toán con thu
+được hai ma trận mật độ $D^L,D^R$. Hợp của chúng là một ma trận hoán vị, nhưng
+chưa hẳn là đáp án. Cần xét hiệu giữa hai giá trị ứng viên trái/phải; hiệu này
+đơn điệu theo cả hàng và cột, và hai ô kề nhau chỉ thay đổi nhiều nhất $1$.
+Do đó có thể dùng hai con trỏ để tìm đường biên vùng hiệu bằng $0$, thêm các
+điểm cần thiết, còn các vùng còn lại lấy trực tiếp từ $D^L$ hoặc $D^R$. Mỗi
+tầng tốn $O(n)$, nên tổng thời gian là $O(n\log n)$.
+
+Bài viết còn mô tả ý nghĩa của phép toán $\circ$. Hoán vị đơn vị
+$1,2,\ldots,n$ là đơn vị của phép toán. Một hoán vị chỉ có đúng một cặp nghịch
+thế kề nhau đóng vai trò như một phép đổi chỗ kề. Mọi hoán vị có thể tách
+thành tích của các phép đổi chỗ kề như vậy. Khi nhân $a\circ b$, có thể hiểu
+rằng ta quét các phép đổi chỗ kề của $b$: nếu hai đường tương ứng trong biểu
+diễn dây của $a$ đã cắt nhau thì không đổi; nếu chưa cắt thì đổi chúng. Hình
+trong bản gốc minh họa quá trình này bằng hai hàng điểm và các đường nối.
+
+Hoán vị đảo $n,n-1,\ldots,1$ là phần tử hấp thụ: nhân nó với bất kỳ hoán vị nào
+ở bên trái hoặc bên phải đều trả lại chính nó. Ngoài ra, với mỗi hoán vị $a$
+có thể định nghĩa hoán vị quay $a^\circ$ sao cho $a^\circ\circ a$ là hoán vị
+đảo; về mặt ma trận, đây là phép quay ma trận mật độ đi một phần tư vòng.
+
+\subsubsection{Nhân ma trận Monge á đơn vị đơn giản}
+
+Với ma trận á hoán vị được biểu diễn bằng tập các điểm $1$, cũng có thể tính
+tích của hai ma trận á đơn vị đơn giản trong $O(n\log n)$. Trước hết dùng bổ
+đề: khi nhân khoảng cách, nếu một hàng của mật độ bên trái toàn $0$ hoặc một
+cột của mật độ bên phải toàn $0$, có thể xóa chúng trước, tính tích trên phần
+còn lại rồi chèn lại sau. Sau khi xóa, hai ma trận vẫn có thể chưa phải hoán
+vị; ta bù thêm các hàng/cột và các điểm $1$ thích hợp để biến chúng thành hoán
+vị. Việc bù ở phía trên hoặc bên phải không làm thay đổi các giá trị phân bố
+trên vùng gốc, nên có thể áp dụng thuật toán hoán vị ở trên rồi cắt kết quả
+trở lại.
+
+Cách nhìn hình học cũng tương tự phép toán trên hoán vị: coi hàng toàn $0$ của
+ma trận bên trái như một điểm ở cột $-\infty$, và hàng toàn $0$ của ma trận bên
+phải như một điểm ở cột $+\infty$, rồi thực hiện cùng quá trình đổi chỗ các
+đường như trong phép $\circ$.
+
+\subsection{Ứng dụng}
+
+\subsubsection{Duy trì ma trận khoảng cách của đồ thị lưới đặc biệt}
+
+Một lớp bài toán có bản chất là hỏi thông tin khoảng cách trên đồ thị lưới đặc
+biệt. Các ma trận khoảng cách của những đồ thị này thường là ma trận Monge á
+đơn vị đơn giản, nên có thể dùng phép nhân nhanh.
+
+\paragraph{Ví dụ 1: LIS trên đoạn tĩnh.}
+Cho một hoán vị độ dài $n$ và $q$ truy vấn $[l,r)$, hỏi độ dài dãy con tăng dài
+nhất của hoán vị trong đoạn đó. Ràng buộc trong bản gốc là cỡ $n,q\le 10^5$.
+
+Xét đồ thị lưới có $n+1$ hàng và $n+1$ cột. Từ mỗi ô có cạnh sang phải trọng số
+$1$ và cạnh xuống dưới trọng số $0$; với mỗi phần tử hoán vị $a_x=y$, thêm cạnh
+chéo trọng số $0$ từ $(y,x)$ tới $(y+1,x+1)$. Gọi $A_{l,r}$ là độ dài đường đi
+ngắn nhất từ $(0,l)$ tới $(n,r)$. Khi đó độ dài LIS trong đoạn $[l,r)$ là
+$r-l-A_{l,r}$. Bằng lập luận hoán đổi hai đường đi ngắn nhất cắt nhau, ta có
+bất đẳng thức Monge cho $A$; hiệu kề nhau không vượt quá $1$, nên $A$ là ma
+trận Monge á đơn vị đơn giản.
+
+Nếu tính nhanh được mật độ $A^{\Delta}$, vì nó chỉ có $O(n)$ điểm, mỗi truy vấn
+đoạn có thể trả lời bằng đếm điểm hai chiều. Để tính $A^{\Delta}$, chia đồ thị lưới
+theo hàng thành hai nửa. Ma trận khoảng cách toàn cục bằng tích khoảng cách của
+hai ma trận con. Khi xóa các khoảng cột rỗng trong mỗi nửa, ta nhận được hai
+ma trận nhỏ hơn; sau khi giải đệ quy, chèn lại các khoảng rỗng tương ứng bằng
+thao tác tuyến tính trên biểu diễn hoán vị/tập điểm. Do phép nhân ma trận á
+đơn vị đơn giản tốn $O(n\log n)$ trên mỗi mức, chọn điểm chia cân bằng cho tổng
+độ phức tạp xây dựng $O(n\log^2 n)$ theo mô tả OCR đọc được. Sau đó offline
+truy vấn bằng đếm điểm hai chiều.
+
+\paragraph{Ví dụ 2: LCS giữa tiền tố và xâu con.}
+Cho hai xâu $a,b$ độ dài lần lượt $n,m$. Mỗi truy vấn gồm $x,y,z$, yêu cầu độ
+dài LCS giữa tiền tố độ dài $x$ của $a$ và xâu con $b[y:z)$. Bài gốc nêu
+$n,m,q\le 10^4$.
+
+Dựng đồ thị lưới tương tự: nếu $a_i=b_j$, thêm cạnh chéo trọng số $0$ từ
+$(i,j)$ tới $(i+1,j+1)$. Ma trận khoảng cách từ gốc tới các ô vẫn là ma trận
+Monge á đơn vị đơn giản, và câu trả lời truy vấn có thể đọc từ một phần tử của
+ma trận mật độ/phân bố thích hợp. Khi chuyển từ tiền tố $i$ sang $i+1$, ma trận
+tương ứng thay đổi theo một ma trận Monge á đơn vị đơn giản rất thưa, vì chỉ
+các vị trí $j$ với $b_j=a_i$ mới tạo cạnh chéo mới. Bài viết dùng điều kiện
+hiệu kề nhau của các hàng để xác định vị trí đầu tiên làm thay đổi quyết định,
+rồi duy trì tích các ma trận biến đổi bằng thuật toán nhân nhanh ở trên.
+
+Bản quét của phần cuối có nhiều chỉ số bị nhiễu, nhưng ý chính là ma trận của
+mỗi bước là á đơn vị đơn giản và tích của chúng cũng nằm trong cùng lớp; nhờ
+đó các truy vấn LCS dạng tiền tố--xâu con có thể xử lý bằng cách duy trì/nhân
+các ma trận khoảng cách thay vì dựng toàn bộ bảng quy hoạch động.
+
 \section{Chủ đề chính}
 
 Từ mục lục đã đọc được trên ảnh render, tập năm 2022 bao phủ các nhóm chủ đề
@@ -5218,5 +5502,12 @@ lục 118--128. Bài này có một hình so sánh trie thường và trie nén;
 Một số công thức độ phức tạp và ký hiệu chỉ số trong các ví dụ DP bị nhiễu,
 nên bản dịch giữ các chặn tiệm cận và chuyển tiếp đọc chắc được, đồng thời
 diễn giải phần còn lại bằng văn bản.
+Bài thứ chín được OCR từ các trang vật lý 133--148 của PDF, tương ứng trang mục
+lục 129--144. Bài này có nhiều công thức chỉ số dày đặc và ba hình minh họa
+phép nhân trên hoán vị; bản dịch giữ các định nghĩa, định lý và ý chứng minh
+chính, đồng thời mô tả hình bằng lời thay vì dựng lại khi OCR không đủ nhãn
+chính xác. Phần cuối về ứng dụng LCS có một số chỉ số bị nhiễu nặng, nên bản
+dịch giữ mô hình và cách dùng ma trận Monge á đơn vị đơn giản, không tự suy
+diễn các dòng biến đổi không đọc chắc được.
 
 \end{document}
