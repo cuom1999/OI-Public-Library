@@ -1,0 +1,385 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 动态规划 DYNAMIC PROGRAMMING/1D1D动态规划优化初步.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Nhập môn tối ưu quy hoạch động 1D/1D}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Introduction to 1D/1D Dynamic Programming Optimization}
+\sourcepath{Dynamic Programming / 1D1D DP Optimization Primer.pdf}
+
+\section*{Mở đầu}
+
+Quy hoạch động 1D/1D là những phương trình có số trạng thái $O(n)$, và mỗi
+trạng thái có $O(n)$ quyết định. Cách tính trực tiếp thường mất $O(n^2)$,
+nhưng phần lớn các phương trình dạng này, nếu tổ chức hợp lý, có thể tối ưu
+xuống $O(n\log n)$ hoặc thậm chí $O(n)$.
+
+Bài viết này chỉ bàn về các mô hình và cách chuyển hóa kinh điển ở mức nhập
+môn. Ta sẽ dùng hai ký hiệu cho hàm: $f(x)$ và $f[x]$. Giá trị viết bằng ngoặc
+vuông được xem như có thể tính trước trước khi quy hoạch động bắt đầu, còn
+giá trị viết bằng ngoặc tròn là biến phải tính trong quá trình quy hoạch động.
+Một khi một giá trị đã được xác định, về sau nó không thay đổi nữa.
+
+\section{Mô hình kinh điển thứ nhất}
+
+Xét phương trình
+\[
+  f(x)=\min_{1\le i<x}\{f(i)+w[i,x]\}.
+\]
+Đây là mô hình rất quen thuộc. Một tính chất thường gặp là \term{đơn điệu
+quyết định}: nếu $k(x)$ là quyết định tối ưu của trạng thái $x$, thì
+\[
+  i\le j \Longrightarrow k(i)\le k(j).
+\]
+Một điều kiện đủ kinh điển là bất đẳng thức tứ giác
+\[
+  w[i,j]+w[i+1,j+1]\le w[i+1,j]+w[i,j+1].
+\]
+Chứng minh tính chất này có thể tìm trong nhiều tài liệu về bất đẳng thức tứ
+giác. Trong thực chiến, đôi khi cách đáng tin cậy hơn là viết thuật toán thô,
+in bảng quyết định và quan sát; dù sao ta cũng cần đối chiếu với thuật toán
+thô để kiểm thử.
+
+Khi đã có đơn điệu quyết định, cách cài đặt thế nào cho hiệu quả? Ý tưởng
+``từ trạng thái $x$ tìm quyết định tối ưu của nó'' không đủ mạnh: nếu chỉ
+duyệt từ $k(x-1)$ trở đi thì chỉ giảm hằng số, còn nếu dừng ngay khi một quyết
+định kém quyết định kế tiếp thì không đúng, vì đơn điệu quyết định không nói
+rằng hàm $f(j)+w[j,x]$ đơn điệu theo $j$.
+
+Ta đổi góc nhìn: với một trạng thái $f(j)$ đã tính, hãy xét nó có thể cập
+nhật những trạng thái nào. Trong quá trình chạy, quyết định tạm thời của một
+số trạng thái có thể chưa tối ưu, nhưng đến khi thuật toán kết thúc thì mọi
+quyết định đều đúng.
+
+Ban đầu chỉ có $f(1)$, nên mọi trạng thái chưa tính đều tạm lấy quyết định
+$1$. Khi $f(2)$ được xác định, ta dùng quyết định $2$ cập nhật bảng quyết
+định. Do tính đơn điệu, bảng chỉ có thể có dạng một đoạn quyết định $1$ rồi
+đến một đoạn quyết định $2$. Vì vậy có thể dùng nhị phân để tìm điểm chuyển:
+nếu tại một vị trí $x$, quyết định $2$ tốt hơn, thì mọi vị trí lớn hơn cũng
+do quyết định $2$ thắng; nếu quyết định $1$ tốt hơn, thì mọi vị trí nhỏ hơn
+cũng do quyết định $1$ thắng.
+
+Tổng quát, dùng một ngăn xếp lưu các đoạn quyết định. Mỗi phần tử lưu một
+quyết định và khoảng trạng thái $[b,e]$ mà quyết định này đang chiếm ưu thế.
+Khi chèn một quyết định mới, quét từ cuối ngăn xếp:
+\begin{enumerate}
+  \item Nếu ở đầu đoạn $b$, quyết định mới đã tốt hơn quyết định cũ, thì bỏ
+  toàn bộ đoạn cũ và gộp nó vào miền của quyết định mới.
+  \item Nếu ở $b$ quyết định cũ vẫn tốt hơn, thì điểm chuyển nằm trong đoạn
+  này; dùng nhị phân tìm điểm chuyển, đẩy quyết định mới vào ngăn xếp, rồi
+  dừng.
+\end{enumerate}
+Mỗi quyết định bị loại tối đa một lần, nên phần quét ngăn xếp là khấu hao
+$O(1)$; do còn nhị phân, độ phức tạp tổng là $O(n\log n)$.
+
+\subsection{Ví dụ 1: Đóng gói đồ chơi}
+
+Bài toán có $n$ đồ chơi, độ dài đồ chơi thứ $i$ là $c[i]$. Đồ chơi phải được
+đóng theo thứ tự đã cho, và trong cùng một hộp, giữa hai đồ chơi kề nhau có
+đúng một đơn vị khoảng cách. Nếu đóng các đồ chơi $i,\ldots,j$ vào cùng một
+hộp, độ dài hộp là
+\[
+  \ell=j-i+\sum_{k=i}^{j}c[k].
+\]
+Chi phí của hộp độ dài $\ell$ là $(\ell-L)^2$, với $L$ cho trước. Cần đóng
+tất cả đồ chơi với tổng chi phí nhỏ nhất.
+
+Ta có phương trình 1D/1D tự nhiên
+\[
+  f(x)=\min_{1\le i<x}\{f(i)+w[i+1,x]\},
+  \qquad
+  w[i,j]=\left(j-i+\sum_{k=i}^{j}c[k]-L\right)^2.
+\]
+Hàm $w$ thỏa tính đơn điệu quyết định, nên có thể dùng phương pháp trên để
+giải trong $O(n\log n)$.
+
+\subsection{Ví dụ 2: Mua đất}
+
+Bài USACO Gold tháng 3 năm 2008 cho $N$ mảnh đất hình chữ nhật. Một lần mua
+một nhóm đất có giá bằng chiều dài lớn nhất nhân với chiều rộng lớn nhất
+trong nhóm. Cần chia nhóm để tổng giá nhỏ nhất.
+
+Sắp các mảnh theo chiều dài giảm dần. Khi quét theo thứ tự này, chiều dài
+của mảnh hiện tại luôn không lớn hơn các mảnh trước đó, nên chỉ cần quan tâm
+đến chiều rộng. Nếu một điểm $(x,y)$ bị một điểm khác $(x',y')$ chi phối, tức
+$x'\ge x$ và $y'\ge y$, thì điểm đó có thể bỏ qua vì nó luôn được một nhóm
+khác bao phủ. Sau một lần quét tuyến tính, các điểm còn lại có chiều dài và
+chiều rộng biến thiên ngược chiều nhau.
+
+Với dãy đã rút gọn, phương trình trở thành
+\[
+  f(n)=\min_{0\le k<n}\{f(k)+x[n]\cdot y[k+1]\}.
+\]
+Đây là dạng có đơn điệu quyết định, nên cũng giải được bằng phương pháp
+ngăn xếp ở trên trong $O(n\log n)$.
+
+Hai ví dụ này đều là ứng dụng trực tiếp của đơn điệu quyết định. Ví dụ mua
+đất nhắc ta rằng trước khi cố tối ưu phương trình, đôi khi cần loại những
+quyết định chắc chắn vô dụng và sắp xếp lại dữ liệu; nếu giữ nguyên dữ liệu
+ban đầu thì phương trình có thể không còn đơn điệu.
+
+\section{Mô hình kinh điển thứ hai}
+
+Xét một lớp đặc biệt của $w$:
+\[
+  \forall i\le j<k,\qquad w[i,j]+w[j,k]=w[i,k].
+\]
+Khi đó tồn tại một hàm một biến $w'$ sao cho
+\[
+  w[i,j]=w'[j]-w'[i].
+\]
+Nếu quyết định của trạng thái $x$ là $k$, thì
+\[
+\begin{aligned}
+  f(x)
+    &=f(k)+w[k,x] \\
+    &=f(k)+w'[x]-w'[k] \\
+    &=g(k)+w'[x]-w'[1],
+\end{aligned}
+\]
+trong đó $g(k)=f(k)-w[1,k]$. Phần phụ thuộc vào $x$ là hằng số đối với mọi
+quyết định $k$, nên nếu không có ràng buộc gì thêm, ta chỉ cần duy trì
+$\min g(k)$ bằng một biến.
+
+Khi có cận dưới đơn điệu cho quyết định, ta nhận được mô hình thứ hai:
+\[
+  f(x)=\min_{b[x]\le k<x}\{g(k)\}+w[x],
+  \qquad b[x]\ \text{không giảm theo }x.
+\]
+Nếu có hai quyết định $j\le k$ và $g(k)\le g(j)$, thì $j$ vô dụng: mỗi khi
+$j$ hợp lệ, $k$ cũng hợp lệ, và $k$ tốt không kém $j$. Vì vậy nếu xếp quyết
+định theo chỉ số, các giá trị $g$ trong hàng đợi phải tăng. Ta dùng hàng đợi
+đơn điệu:
+\begin{enumerate}
+  \item Loại các phần tử đầu hàng đợi cho đến khi phần tử đầu nằm trong phạm
+  vi quyết định hợp lệ.
+  \item Phần tử đầu là quyết định tối ưu của trạng thái hiện tại.
+  \item Tính $g(x)$ và chèn vào cuối hàng đợi; trong lúc chèn, loại các phần
+  tử cuối có giá trị $g$ không tốt hơn phần tử mới.
+\end{enumerate}
+Mỗi phần tử vào và ra hàng đợi tối đa một lần, nên thời gian khấu hao là
+$O(1)$ cho mỗi trạng thái.
+
+\subsection{Ví dụ 3: The Sound of Silence}
+
+Bài Baltic OI 2007 cho một dãy $N$ số. Một đoạn liên tiếp độ dài $M$ là hợp
+lệ nếu hiệu giữa giá trị lớn nhất và nhỏ nhất trong đoạn không vượt quá hằng
+số $C$. Cần in mọi vị trí bắt đầu của đoạn hợp lệ.
+
+Bài toán tách thành hai phần giống nhau: tìm cực đại trượt và cực tiểu trượt
+trên mọi cửa sổ độ dài $M$. Chẳng hạn, nếu $g[x]$ là giá trị phần tử thứ
+$x$, còn $f(x)$ là giá trị nhỏ nhất trong cửa sổ kết thúc tại $x$, thì
+\[
+  f(x)=\min_{x-M+1\le i\le x} g[i].
+\]
+Đây chính là mô hình thứ hai, nên hàng đợi đơn điệu cho lời giải $O(n)$.
+
+\subsection{Ví dụ 4: Islands}
+
+Bài IOI 2008 yêu cầu, với một đồ thị vô hướng có trọng số gồm $N$ đỉnh và
+đúng $N$ cạnh, tìm đường đi đơn dài nhất trong mỗi thành phần liên thông. Mỗi
+thành phần có cấu trúc một chu trình cơ sở kèm các cây mọc ra từ các đỉnh
+trên chu trình.
+
+Đường đi dài nhất hoặc nằm hoàn toàn trong một cây mọc ra, hoặc đi qua một
+đoạn trên chu trình và nối hai cây mọc ra. Trường hợp thứ nhất xử lý bằng DP
+trên cây. Với trường hợp thứ hai, phá chu trình thành dây rồi nhân đôi dây
+để mọi đoạn trên chu trình đều tương ứng với một đoạn liên tiếp. Gọi $g[x]$
+là đường đi đi xuống dài nhất trong cây mọc ra tại đỉnh $x$. Khi lấy $x$ làm
+đầu phải của đoạn, ta có
+\[
+  f(x)=\max_{x-n+1\le i<x}\{g[i]+g[x]+\operatorname{dis}(i,x)\}.
+\]
+Khoảng cách trên dây thỏa tính cộng được như $w[i,j]+w[j,k]=w[i,k]$, nên sau
+biến đổi, bài toán rơi vào mô hình hàng đợi đơn điệu và xử lý tổng cộng trong
+$O(n)$.
+
+\subsection{Ví dụ 5: Balo hữu hạn}
+
+Trong balo hữu hạn, vật thứ $k$ có giá trị $p[k]$, trọng lượng $w[k]$, và
+được chọn tối đa $m[k]$ lần. Nếu dùng $f(x)$ là trọng lượng nhỏ nhất để đạt
+được tổng giá trị $x$, khi xét vật $k$ ta có
+\[
+  f(x)=\min_{1\le i\le m[k]}
+       \{f(x-i\,p[k])+i\,w[k]\}.
+\]
+Quyết định trong phương trình này không liên tiếp theo $x$, vì các trạng thái
+hợp lệ cách nhau $p[k]$. Chia các trạng thái theo lớp đồng dư modulo $p[k]$,
+trong mỗi lớp quyết định trở thành một đoạn liên tiếp. Nếu gọi hàm mới là
+$h$, phương trình có dạng
+\[
+  h(x)=\min_{x-m[k]\le i<x}
+       \{h(i)+w[k](x-i)\},
+\]
+trong đó phần $w[k](x-i)$ là một hàm cộng được. Vì vậy nó chuyển được về mô
+hình thứ hai. Đây chính là cách hàng đợi đơn điệu trong bài balo hữu hạn.
+
+Nếu $m[k]=1$, mỗi trạng thái chỉ có $O(1)$ quyết định. Nếu $m[k]=+\infty$,
+cận dưới biến mất và chỉ cần duy trì một giá trị tốt nhất. Nhìn từ mô hình
+thứ hai, balo 0--1, balo hữu hạn và balo vô hạn được đặt trong cùng một khung
+nhìn.
+
+\section{Mô hình kinh điển thứ ba}
+
+Quay lại phương trình mua đất đã rút gọn:
+\[
+  f(n)=\min_{0\le k<n}\{f(k)+x[n]\,y[k+1]\}.
+\]
+Ở đây $f(k)$ là biến, $y[k+1]$ là giá trị đã biết sau khi trạng thái $k$ được
+xác định, còn $x[n]$ là hệ số chỉ phụ thuộc vào trạng thái đang tính. Nếu ta
+xem mỗi quyết định $k$ là một điểm $(X,Y)=(y[k+1],f(k))$ trên mặt phẳng, thì
+việc tính $f(n)$ là tối thiểu hóa một biểu thức tuyến tính
+\[
+  P=aX+bY.
+\]
+Đường thẳng mức có dạng
+\[
+  Y=-\frac{a}{b}X+\frac{P}{b}.
+\]
+Vì vậy bài toán trở thành chọn điểm trên mặt phẳng sao cho một đường thẳng có
+hệ số góc xác định đạt tung độ cắt nhỏ nhất. Các điểm tối ưu luôn nằm trên
+bao lồi của tập điểm quyết định.
+
+Mô hình tổng quát là
+\[
+  f(n)=\min_{1\le i<n}\{a[n]\,x(i)+b[n]\,y(i)\},
+\]
+trong đó cặp $(x(i),y(i))$ được xác định duy nhất trong $O(1)$ từ trạng thái
+$f(i)$. Ta có hai tình huống chính.
+
+\paragraph{Trường hợp 1: hệ số góc và hoành độ điểm quyết định có tính đơn
+điệu.}
+Khi hệ số góc thay đổi đơn điệu, điểm quyết định tối ưu cũng di chuyển đơn
+điệu trên bao lồi. Ta duy trì bao lồi bằng hàng đợi đơn điệu:
+\begin{enumerate}
+  \item Dời con trỏ quyết định ở đầu hàng đợi cho đến điểm tốt nhất hiện tại.
+  \item Dùng điểm đó để tính trạng thái.
+  \item Chèn điểm mới vào cuối hàng đợi, dùng thao tác kiểu Graham scan để
+  loại các điểm làm mất tính lồi.
+\end{enumerate}
+Mỗi điểm bị loại tối đa một lần, nên độ phức tạp là $O(n)$.
+
+\paragraph{Trường hợp 2: không có ràng buộc đơn điệu.}
+Điểm tối ưu vẫn nằm trên bao lồi, nhưng cần tìm bằng nhị phân theo hệ số góc.
+Việc chèn điểm mới cũng khó hơn: cần tìm vị trí theo hoành độ, rồi duy trì
+tính lồi ở hai phía. Một cách hoàn chỉnh là dùng cây cân bằng theo hoành độ;
+sau khi chèn, đưa điểm mới lên gốc và cắt bỏ những đoạn không còn thuộc bao
+lồi. Độ phức tạp lý thuyết là $O(n\log n)$, nhưng cài đặt phức tạp.
+
+\subsection{Ví dụ 6: Thuật toán tuyến tính cho đóng gói đồ chơi}
+
+Với bài đóng gói đồ chơi, đặt
+\[
+  \operatorname{sum}[x]=\sum_{i=1}^{x}c[i].
+\]
+Phương trình có thể viết lại:
+\[
+  f(x)=
+  \min_{1\le i<x}
+  \left\{
+    f(i)+
+    \bigl(x-i-1-L+\operatorname{sum}[x]-\operatorname{sum}[i]\bigr)^2
+  \right\}.
+\]
+Đặt
+\[
+  a[x]=\operatorname{sum}[x]+x-L-1,
+  \qquad
+  b[i]=\operatorname{sum}[i]+i.
+\]
+Khi đó
+\[
+\begin{aligned}
+  f(x)
+  &=\min_i \{f(i)+(a[x]-b[i])^2\}\\
+  &=a[x]^2+\min_i\{f(i)+b[i]^2-2a[x]b[i]\}.
+\end{aligned}
+\]
+Xem mỗi quyết định $i$ là điểm
+\[
+  X(i)=b[i],\qquad Y(i)=f(i)+b[i]^2.
+\]
+Ta cần tối thiểu hóa $Y-2a[x]X$. Vì $a[x]$ tăng theo $x$ và $X(i)$ tăng theo
+$i$, hệ số góc và hoành độ đều đơn điệu; dùng hàng đợi bao lồi sẽ cho thuật
+toán $O(n)$.
+
+\subsection{Ví dụ 7: Đổi tiền}
+
+Bài NOI 2007 có ba loại tiền: nhân dân tệ, chứng khoán A và chứng khoán B.
+Mỗi ngày giá của A và B thay đổi. Trong ngày $D$, ta có thể bán toàn bộ A và
+B lấy nhân dân tệ, mua A và B theo một tỉ lệ cố định bằng toàn bộ số nhân
+dân tệ đang có, hoặc không làm gì. Ban đầu có một lượng nhân dân tệ, cần tối
+đa hóa số nhân dân tệ ở cuối ngày cuối cùng.
+
+Gọi $f(n)$ là số nhân dân tệ nhiều nhất có thể có đến ngày $n$, và $(x(i),y(i))$
+là lượng A và B nhận được nếu dùng số tiền tối ưu của ngày $i$ để mua theo tỉ
+lệ đã cho. Nếu $a[n]$ và $b[n]$ là giá A và B ở ngày $n$, ta có
+\[
+  f(n)=\max_{1\le i<n}\{a[n]\,x(i)+b[n]\,y(i)\}.
+\]
+Đây là mô hình bao lồi trong trường hợp không có ràng buộc đơn điệu rõ ràng,
+nên cách chuẩn là dùng cây cân bằng để duy trì bao lồi động, đạt
+$O(n\log n)$. Với dữ liệu yếu, một số cài đặt dùng con trỏ di chuyển cũng có
+thể qua, nhưng đó không phải phân tích tổng quát.
+
+\section{Tổng kết}
+
+Bài viết đã tập trung vào ba mô hình 1D/1D:
+\[
+  f(x)=\min_{1\le i<x}\{f(i)+w[i,x]\},
+\]
+trong đó $w$ thỏa đơn điệu quyết định;
+\[
+  f(x)=\min_{b[x]\le i<x}\{g(i)\}+w[x],
+\]
+trong đó $b[x]$ đơn điệu tăng; và
+\[
+  f(n)=\min_{1\le i<n}\{a[n]\,x(i)+b[n]\,y(i)\},
+\]
+trong đó $(x(i),y(i))$ được xác định từ $f(i)$ trong thời gian hằng số.
+Ba mô hình này đều có thể giải ít nhất trong $O(n\log n)$, và trong nhiều
+trường hợp đạt $O(n)$. Chúng cũng không tách rời nhau: nhiều ví dụ trong bài
+có thể được nhìn dưới nhiều mô hình khác nhau sau khi biến đổi đại số.
+
+Đây mới chỉ là thảo luận nhập môn. Một số hướng còn đáng nghiên cứu:
+\begin{enumerate}
+  \item Trong mô hình thứ nhất, liệu có thuật toán $O(n)$ tổng quát cho mọi
+  hàm $w$ thỏa đơn điệu quyết định hay không? Bài viết chỉ nêu thuật toán
+  $O(n\log n)$ tổng quát và một số trường hợp đặc biệt $O(n)$.
+  \item Trong hai mô hình đầu, ta có thể thêm cận dưới đơn điệu $b[x]$ mà
+  không ảnh hưởng đến độ phức tạp. Với mô hình bao lồi, do thứ tự chọn quyết
+  định phụ thuộc vào mặt phẳng các điểm $(x(i),y(i))$ chứ không phụ thuộc đơn
+  thuần vào thứ tự trạng thái, việc thêm $b[x]$ có còn tối ưu được hay không
+  là một câu hỏi.
+  \item Các phương trình đã xét đều có tập quyết định liên tiếp. Nhiều bài
+  1D/1D kinh điển, chẳng hạn LIS, chỉ cho phép những quyết định có khóa nhỏ
+  hơn khóa hiện tại, nên không trực tiếp dùng được các kỹ thuật trên. Tối ưu
+  các phương trình 1D/1D tổng quát hơn vẫn là vấn đề đáng khảo sát.
+  \item 1D/1D cũng có giới hạn của nó: số trạng thái vẫn là một chiều. Trong
+  thực tế còn nhiều phương trình 2D/0D như LCS, đua ngựa Tian Ji, sửa chữa
+  công trình hay các bài tương tự. Hệ phương pháp tối ưu cho những dạng này
+  chưa phong phú bằng 1D/1D.
+\end{enumerate}
+
+\section*{Bài tập}
+
+\begin{enumerate}
+  \item Cài đặt hai cách giải cho bài đóng gói đồ chơi và bài mua đất.
+  \item Bài \emph{Vũ điệu lộng lẫy} của NOI 2005: cho một bàn cờ $N\times M$
+  có ô trống và vật cản. Từ một điểm đầu, trong từng khoảng thời gian liên
+  tiếp, hướng trượt được cố định; mỗi thời điểm có thể đứng yên hoặc trượt
+  một bước theo hướng đó, miễn là không đâm vào vật cản. Hãy cho thuật toán
+  $O(NMK)$. Gợi ý: bài này có thể đối ứng trực tiếp với balo hữu hạn.
+  \item \emph{Cactus Reloaded}: trong đồ thị xương rồng liên thông, mỗi cạnh
+  thuộc nhiều nhất một chu trình. Cần tìm khoảng cách ngắn nhất lớn nhất giữa
+  hai đỉnh bất kỳ. Hãy cho thuật toán $O(N+M)$.
+  \item Cài đặt bài đổi tiền bằng cây cân bằng để duy trì bao lồi.
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,473 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2002/许智磊.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+
+\title{Chia đôi, rồi lại chia đôi!}
+\author{Xu Zhilei}
+\date{2002}
+
+\begin{document}
+\maketitle
+
+\origtitle{Nhìn đa trọng chia đôi từ bài Mobiles (IOI 2001)}
+\sourcepath{IOI China candidate team papers / 2002 / Xu Zhilei.pdf}
+
+\section{Mở đầu}
+
+Chia đôi, với tư cách là một tư tưởng và phương pháp rất quan trọng, có vai
+trò khó thay thế trong nhiều phương diện. Tin học phát triển từng ngày, khiến
+tư tưởng ``chia đôi'' cũng nảy sinh những cách nhìn mới. Bài viết này muốn
+trình bày một vài nhận xét sơ lược của tác giả về một tư tưởng chia đôi khá
+mới: \term{đa trọng chia đôi}.
+
+\section{Bài toán}
+
+Giả sử khu vực Tampere được chia thành \(N\times N\) ô, tạo thành một bảng
+\(N\times N\). Tọa độ hàng và cột đều chạy từ \(0\) đến \(N-1\). Trong mỗi ô
+có một trạm phát tín hiệu điện thoại di động; các trạm này thỉnh thoảng báo
+cáo sự thay đổi của số điện thoại di động trong ô của mình. Hãy viết một
+chương trình nhận các báo cáo ấy và trả lời một số truy vấn: tổng số điện
+thoại di động hiện có trong một vùng hình chữ nhật nào đó.
+
+Dữ liệu vào gồm nhiều dòng. Mỗi dòng chứa một số nguyên biểu thị loại thao tác,
+sau đó là một số nguyên làm tham số cho thao tác ấy, cụ thể như bảng sau.
+
+\begin{center}
+\begin{tabular}{c|c|p{0.58\textwidth}}
+\hline
+Thao tác & Tham số & Ý nghĩa \\
+\hline
+\(0\) & \(N\) &
+Khởi tạo bảng kích thước \(N\times N\), mọi ô đều có giá trị \(0\).
+Thao tác này chỉ xuất hiện một lần và chắc chắn là thao tác đầu tiên. \\
+\(1\) & \(X,Y,A\) &
+Tăng số điện thoại di động trong ô \((X,Y)\) thêm \(A\). Giá trị \(A\) có thể
+dương hoặc âm. \\
+\(2\) & \(L,T,R,B\) &
+Hỏi tổng số điện thoại di động trong hình chữ nhật từ góc trái trên \((L,T)\)
+đến góc phải dưới \((R,B)\). \\
+\(3\) & không có &
+Kết thúc chương trình. Thao tác này chỉ xuất hiện một lần và chắc chắn là thao
+tác cuối cùng. \\
+\hline
+\end{tabular}
+\end{center}
+
+Với mỗi thao tác loại \(2\), cần in ra một dòng chứa một số nguyên duy nhất,
+là đáp án của truy vấn tại thời điểm đó.
+
+Các ràng buộc:
+\[
+\begin{array}{lll}
+\text{Kích thước bảng} & N\times N &
+  1\times 1\le N\times N\le 1024\times 1024,\\
+\text{Giá trị của một ô tại mọi thời điểm} & V &
+  0\le V\le 2^{15}-1\ (=32767),\\
+\text{Lượng tăng mỗi lần} & A &
+  -2^{15}\le A\le 2^{15}-1\ (=32767),\\
+\text{Tổng số thao tác trong dữ liệu vào} & M &
+  3\le M\le 60002,\\
+\text{Tổng giá trị của mọi ô} & S &
+  S\le 2^{30}.
+\end{array}
+\]
+
+\section{Phân tích ban đầu}
+
+Gặp bài này, trước hết ta dễ nghĩ đến thuật toán đơn giản nhất: mở một mảng
+\(1024\times 1024\), ghi số điện thoại di động trong từng ô, ban đầu đặt tất
+cả bằng \(0\). Sau đó đọc lần lượt các lệnh và thực hiện. Thao tác ``sửa đổi''
+chỉ cần thay đổi trực tiếp ô tương ứng trong mảng; thao tác ``truy vấn'' thì
+phải xét mọi ô từ góc trái trên đến góc phải dưới, cộng số điện thoại di động
+trong các ô ấy rồi in ra.
+
+Ưu điểm của thuật toán này là đơn giản, tự nhiên và dễ cài đặt. Nhược điểm là
+độ phức tạp thời gian quá cao. Mỗi thao tác ``sửa đổi'' mất thời gian hằng số,
+nhưng mỗi thao tác ``truy vấn'' có thể lên tới cấp \(\Oh(n^2)\). Trong trường
+hợp xấu nhất, độ phức tạp là
+\[
+  \Oh(mn^2)=60000\cdot 1024\cdot 1024,
+\]
+rõ ràng không thể cho kết quả trong thời gian quy định.
+
+\section{Phương pháp chia đôi}
+
+Để tiện phân tích, ta đơn giản hóa bài toán bằng cách hạ xuống một chiều: chỉ
+xét một hàng trong bảng. Thao tác ``sửa đổi'' thay đổi số điện thoại di động
+trong một ô của hàng này, còn thao tác ``truy vấn'' hỏi từ ô \(L\) đến ô \(R\)
+có tổng cộng bao nhiêu điện thoại di động.
+
+Nếu dùng thuật toán đơn giản nói trên, thao tác ``sửa đổi'' có độ phức tạp
+\(\Oh(1)\), thao tác ``truy vấn'' có độ phức tạp \(\Oh(n)\), và tổng thể là
+\(\Oh(mn)\), rất kém.
+
+Để cải tiến, ta tự nhiên thu được một tư tưởng chia đôi: chia \(n\) ô từ
+\(1\) đến \(n\) thành hai đoạn, rồi tiếp tục chia đôi từng đoạn, đồng thời ghi
+lại tổng số điện thoại di động của mỗi đoạn. Cách làm này tạo thành một cấu
+trúc dạng cây.
+
+Ví dụ, với một hàng gồm tám ô như sau:
+\[
+\begin{array}{c|cccccccc}
+\text{Tọa độ} & 0&1&2&3&4&5&6&7\\
+\hline
+\text{Số điện thoại} & 3&5&2&1&4&6&1&3
+\end{array}
+\]
+tổng theo các đoạn của cây chia đôi là:
+\[
+\begin{array}{c|l}
+\text{Mức} & \text{Các đoạn và tổng tương ứng}\\
+\hline
+0 & [0,7](25)\\
+1 & [0,3](11),\quad [4,7](14)\\
+2 & [0,1](8),\quad [2,3](3),\quad [4,5](10),\quad [6,7](4)\\
+3 & [0,0](3),\quad [1,1](5),\quad [2,2](2),\quad [3,3](1),\\
+  & [4,4](4),\quad [5,5](6),\quad [6,6](1),\quad [7,7](3)
+\end{array}
+\]
+Đây là bản dựng lại bằng bảng của hình cây trong bản gốc; số trong ngoặc là
+tổng số điện thoại trên đoạn.
+
+Sau khi chia đôi, thao tác ``sửa đổi'' cần sửa các đoạn nằm trên đường đi từ
+``gốc'' tới ``lá'', nên độ phức tạp là \(\Oh(\log_2 n)\). Vậy thao tác
+``truy vấn'' thực hiện thế nào?
+
+Chú ý rằng tổng số điện thoại trong đoạn \([L,R]\) bằng tổng của đoạn
+\([0,R]\) trừ đi tổng của đoạn \([0,L-1]\). Tổng của đoạn \([0,X]\) có thể
+tính như sau. Ban đầu đặt \(\mathit{Total}=0\). Từ ``gốc'' đi xuống để tìm
+\(X\). Nếu ở một bước nào đó ta đi sang cây con phải, thì cộng toàn bộ số
+điện thoại của cây con trái vào \(\mathit{Total}\). Cuối cùng khi tìm tới
+\(X\), cộng thêm số ghi tại nút ``lá''. Khi đó \(\mathit{Total}\) chính là
+tổng số điện thoại trong đoạn \([0,X]\).
+
+Như vậy thao tác ``truy vấn'' cũng có độ phức tạp \(\Oh(\log_2 n)\), và toàn
+bộ thuật toán chỉ còn \(\Oh(m\log_2 n)\), rất tốt.
+
+\section{Đa trọng chia đôi}
+
+Phần trên phân tích trường hợp một chiều và, dựa trên tư tưởng chia đôi, thu
+được một thuật toán khá tốt. Thuật toán ấy có thể mở rộng sang trường hợp hai
+chiều hay không? Câu trả lời là có.
+
+Hãy suy nghĩ một chút: trong trường hợp một chiều, đối tượng của ``chia đôi''
+là ``đoạn'', hoặc có thể xem là ``đường'', và tiêu chuẩn để chia là tọa độ
+\(X\). Khi mở rộng lên hai chiều, đối tượng của ``chia đôi'' tất nhiên phải là
+``mặt'', tức bảng; tiêu chuẩn để chia cần xét đồng thời tọa độ \(X\) và
+\(Y\). Lúc này ``chia đôi'' liên quan tới hai tiêu chuẩn khác nhau, nên ta gọi
+nó là \term{đa trọng chia đôi}.
+
+Chia như thế nào? Trước hết, theo tọa độ \(X\), ta chia toàn bộ bảng thành các
+phần, rồi tiếp tục chia đôi từng phần theo tọa độ \(X\). Đồng thời, mỗi phần
+thu được lại được chia đôi theo tọa độ \(Y\), và ta ghi lại tổng số điện thoại
+di động của từng phần cuối cùng.
+
+Ví dụ, bảng \(2\times 2\) sau:
+\[
+\begin{array}{c|cc}
+Y\backslash X & 0 & 1\\
+\hline
+0 & 3 & 2\\
+1 & 1 & 0
+\end{array}
+\]
+được biểu diễn bằng cây hai tầng như sau. Ở tầng ngoài, ta chia theo \(X\);
+tại mỗi nút của tầng ngoài lại có một cây chia theo \(Y\):
+\[
+\begin{array}{c|l}
+\text{Nút theo }X & \text{Các nút theo }Y\text{ và tổng}\\
+\hline
+X:[0,1] & Y:[0,1](6),\quad Y:[0,0](5),\quad Y:[1,1](1)\\
+X:[0,0] & Y:[0,1](4),\quad Y:[0,0](3),\quad Y:[1,1](1)\\
+X:[1,1] & Y:[0,1](2),\quad Y:[0,0](2),\quad Y:[1,1](0)
+\end{array}
+\]
+
+Kết quả của ``đa trọng chia đôi'' thực ra tương tự kết quả chia đôi trong
+trường hợp một chiều: nó cũng tạo thành một cấu trúc dạng ``cây''. Điểm khác
+là do đây là chia đôi nhiều tầng, mỗi nút của ``cây'' này lại vẫn là một
+``cây''.
+
+Trên ``cây chia đôi'' ấy, để thực hiện thao tác ``sửa đổi'', ta chỉ cần theo
+tọa độ \(X\) đi từ ``gốc'' tới ``lá'' và xử lý mọi nút trên đường đi. Vì mỗi
+nút này lại là một cây, trong từng nút ta tiếp tục theo tọa độ \(Y\) đi từ
+``gốc'' tới ``lá'', lần lượt sửa dữ liệu trên đường đi. Như vậy, xử lý mỗi
+nút mất \(\Oh(\log_2 n)\), số nút cần xử lý trong một lần sửa là
+\(\log_2 n\), nên mỗi thao tác ``sửa đổi'' có độ phức tạp
+\[
+  \Oh(\log_2 n\cdot \log_2 n).
+\]
+
+Thao tác ``truy vấn'' có thể bắt chước thuật toán một chiều. Trước hết, tổng
+số điện thoại trong hình chữ nhật từ góc trái trên \((L,T)\) tới góc phải dưới
+\((R,B)\) bằng tổng trong hình chữ nhật từ \((0,0)\) tới \((R,B)\), trừ tổng
+từ \((0,0)\) tới \((L-1,B)\), trừ tổng từ \((0,0)\) tới \((R,T-1)\), rồi cộng
+lại tổng từ \((0,0)\) tới \((L-1,T-1)\):
+\[
+\begin{aligned}
+  \operatorname{sum}(L,T,R,B)
+    &= F(R,B)-F(L-1,B)-F(R,T-1)+F(L-1,T-1),
+\end{aligned}
+\]
+trong đó \(F(X,Y)\) là tổng trên hình chữ nhật từ \((0,0)\) đến \((X,Y)\).
+Hình minh họa trong bản gốc chính là cách tách bốn vùng theo công thức bao
+hàm--loại trừ này.
+
+Tổng số điện thoại trong hình chữ nhật từ \((0,0)\) đến \((X,Y)\) cũng có thể
+tính theo cách tương tự trường hợp một chiều. Ban đầu đặt
+\(\mathit{Total}=0\). Trên ``cây chia đôi'', từ ``gốc'' đi tới ``lá'' để tìm
+\(X\). Nếu ở một bước nào đó đi sang cây con phải, ta cần xử lý nút gốc của
+cây con trái tương ứng; sau cùng khi tìm tới \(X\), xử lý cả nút lá ấy.
+
+Mỗi nút trên ``cây chia đôi'' theo tọa độ \(X\) đồng thời là một ``cây chia
+đôi'' theo tọa độ \(Y\). Cách xử lý nó là: từ ``gốc'' đi tới ``lá'' để tìm
+\(Y\). Nếu ở một bước nào đó đi sang cây con phải, thì cộng tổng số điện
+thoại của toàn bộ phần thuộc cây con trái tương ứng vào \(\mathit{Total}\).
+Cuối cùng khi tìm tới \(Y\), cộng giá trị tại nút lá.
+
+Sau quá trình này, giá trị \(\mathit{Total}\) thu được chính là tổng số điện
+thoại trong hình chữ nhật từ \((0,0)\) đến \((X,Y)\). Trên ``cây chia đôi''
+theo tọa độ \(X\), xử lý mỗi nút mất \(\Oh(\log_2 n)\); mỗi lần thống kê như
+vậy cần xử lý \(\log_2 n\) nút loại này; mỗi thao tác ``truy vấn'' lại cần
+thực hiện bốn lần thống kê. Vì thế độ phức tạp của một thao tác ``truy vấn''
+là
+\[
+  \Oh(\log_2 n\cdot \log_2 n).
+\]
+
+Do đó độ phức tạp của toàn bộ thuật toán là
+\[
+  \Oh(m\log_2 n\log_2 n),
+\]
+rất nhanh và đủ để giải trong giới hạn thời gian.
+
+\section{Tổng kết}
+
+Qua việc thảo luận lời giải bài Mobiles, ta có nhận thức sâu hơn về tư tưởng
+và phương pháp ``chia đôi''. Nói chung, phương pháp ``chia đôi'' thường tạo ra
+một ``cây chia đôi''. Nếu tiêu chuẩn để ``chia'' chỉ có một, thì nút của cây
+chia đôi là dữ liệu liên quan trực tiếp tới đối tượng cần xử lý. Khi đối tượng
+cần xử lý liên quan tới nhiều tiêu chuẩn khác nhau, ta thường có thể dùng
+``đa trọng chia đôi''; khi ấy, nút của cây chia đôi nên là một cây chia đôi
+cấp dưới. Có thể hình dung rằng nếu đối tượng liên quan tới \(Z\) tiêu chuẩn
+chia đôi khác nhau, thì sẽ có \(Z\) cấp cây chia đôi, và độ phức tạp khi thao
+tác trên đối tượng là
+\[
+  \Oh\!\left((\log_2 n)^Z\right).
+\]
+Thuật toán rút ra từ tư tưởng ``đa trọng chia đôi'' vì vậy thường là thuật
+toán rất tốt.
+
+Có thể thấy, khi bài toán trước mắt thích hợp để giải bằng chia đôi, mà tiêu
+chuẩn ``chia'' lại có nhiều hơn một, ta nên nghĩ tới đa trọng chia đôi. Nó là
+sản phẩm kết hợp của hai tư tưởng quan trọng: tư tưởng ``chia đôi'' và tư
+tưởng ``hạ chiều'', có thể giảm độ phức tạp thời gian một cách hiệu quả. Đừng
+do dự nữa: chia đôi, rồi lại chia đôi!
+
+\appendix
+\section{Phụ lục: đề gốc Mobiles}
+
+Đề gốc Mobiles như sau. Trong bài viết, để tiện thảo luận, phần dịch ở trên
+có một vài thay đổi nhỏ.
+
+\subsection*{Mobile phones}
+
+\paragraph{Bài toán.}
+Giả sử các trạm gốc điện thoại di động thế hệ thứ tư trong khu vực Tampere
+hoạt động như sau. Khu vực được chia thành các ô vuông, tạo thành một ma trận
+\(S\times S\), với hàng và cột được đánh số từ \(0\) đến \(S-1\). Mỗi ô chứa
+một trạm gốc. Số điện thoại di động đang hoạt động trong một ô có thể thay
+đổi vì điện thoại được di chuyển từ ô này sang ô khác, hoặc được bật hay tắt.
+Thỉnh thoảng, mỗi trạm gốc báo cáo sự thay đổi số điện thoại đang hoạt động
+cho trạm chính, kèm theo hàng và cột của ô trong ma trận.
+
+Hãy viết một chương trình nhận các báo cáo này và trả lời truy vấn về tổng số
+điện thoại di động đang hoạt động trong bất kỳ vùng hình chữ nhật nào.
+
+\paragraph{Vào và ra.}
+Dữ liệu vào được đọc từ chuẩn vào dưới dạng các số nguyên; đáp án cho các
+truy vấn được ghi ra chuẩn ra dưới dạng các số nguyên. Dữ liệu vào được mã hóa
+như sau. Mỗi dòng là một lệnh riêng, gồm một số nguyên chỉ lệnh và một số số
+nguyên tham số theo bảng sau.
+
+\begin{center}
+\begin{tabular}{c|c|p{0.58\textwidth}}
+\hline
+Lệnh & Tham số & Ý nghĩa \\
+\hline
+\(0\) & \(S\) &
+Khởi tạo ma trận kích thước \(S\times S\), mọi ô đều bằng \(0\). Lệnh này chỉ
+được cho một lần và là lệnh đầu tiên. \\
+\(1\) & \(X,Y,A\) &
+Cộng \(A\) vào số điện thoại đang hoạt động trong ô \((X,Y)\). \(A\) có thể
+dương hoặc âm. \\
+\(2\) & \(L,B,R,T\) &
+Hỏi tổng hiện tại của số điện thoại di động đang hoạt động trong các ô
+\((X,Y)\) thỏa \(L\le X\le R\) và \(B\le Y\le T\). \\
+\(3\) & không có &
+Kết thúc chương trình. Lệnh này chỉ được cho một lần và là lệnh cuối cùng. \\
+\hline
+\end{tabular}
+\end{center}
+
+Các giá trị luôn nằm trong phạm vi hợp lệ, nên không cần kiểm tra. Đặc biệt,
+nếu \(A\) âm, có thể giả sử rằng nó không làm giá trị của ô giảm xuống dưới
+không. Chỉ số bắt đầu từ \(0\); chẳng hạn với bảng kích thước \(4\times 4\),
+ta có \(0\le X\le 3\) và \(0\le Y\le 3\).
+
+Chương trình không được in gì đối với các dòng có lệnh khác \(2\). Nếu lệnh
+là \(2\), chương trình cần trả lời truy vấn bằng cách ghi đáp án trên một dòng
+duy nhất, chứa một số nguyên duy nhất, ra chuẩn ra.
+
+\paragraph{Hướng dẫn lập trình.}
+Trong các ví dụ dưới đây, số nguyên \texttt{last} là số cuối cùng được đọc từ
+một dòng, còn \texttt{answer} là biến số nguyên chứa đáp án.
+
+Nếu lập trình bằng C++ và dùng \texttt{iostream}, nên dùng cách đọc chuẩn vào
+và ghi chuẩn ra sau:
+\begin{verbatim}
+cin>>last;
+cout<<answer<<endl<<flush;
+\end{verbatim}
+
+Nếu lập trình bằng C hoặc C++ và dùng \texttt{scanf}/\texttt{printf}, nên dùng:
+\begin{verbatim}
+scanf ("%d", &last);
+printf("%d\n",answer); fflush (stdout);
+\end{verbatim}
+
+Nếu lập trình bằng Pascal, nên dùng cách đọc chuẩn vào và ghi chuẩn ra sau:
+\begin{verbatim}
+Read(last); ... Readln;
+Writeln(answer);
+\end{verbatim}
+
+\paragraph{Ví dụ.}
+\[
+\begin{array}{r@{\quad}l}
+\text{stdin} & \text{giải thích}\\
+\hline
+\texttt{0 4} & \text{Khởi tạo bảng kích thước }4\times 4.\\
+\texttt{1 1 2 3} & \text{Cập nhật ô }(1,2)\text{ thêm }3.\\
+\texttt{2 0 0 2 2} & \text{Hỏi tổng trong }0\le X\le 2,\ 0\le Y\le 2.\\
+\texttt{1 1 1 2} & \text{Cập nhật ô }(1,1)\text{ thêm }2.\\
+\texttt{1 1 2 -1} & \text{Cập nhật ô }(1,2)\text{ bớt }1.\\
+\texttt{2 1 1 2 3} & \text{Hỏi tổng trong }1\le X\le 2,\ 1\le Y\le 3.\\
+\texttt{3} & \text{Kết thúc chương trình.}
+\end{array}
+\]
+Các dòng đáp án tương ứng trên chuẩn ra là:
+\begin{verbatim}
+3
+4
+\end{verbatim}
+
+\paragraph{Ràng buộc.}
+\[
+\begin{array}{lll}
+\text{Kích thước bảng} & S\times S &
+  1\times 1\le S\times S\le 1024\times 1024,\\
+\text{Giá trị ô tại mọi thời điểm} & V &
+  0\le V\le 2^{15}-1\ (=32767),\\
+\text{Lượng cập nhật} & A &
+  -2^{15}\le A\le 2^{15}-1\ (=32767),\\
+\text{Số lệnh trong dữ liệu vào} & U &
+  3\le U\le 60002,\\
+\text{Số điện thoại tối đa trong toàn bảng} & M &
+  M=2^{30}.
+\end{array}
+\]
+
+Trong 20 bộ dữ liệu, có 16 bộ có kích thước bảng không quá \(512\times 512\).
+Ghi chú: hệ thống kiểm tra trên web đưa tệp dữ liệu vào tới chuẩn vào của
+chương trình.
+
+\section{Phụ lục: chương trình Mobiles.pas}
+
+Chương trình Pascal trong bản gốc:
+
+\begin{verbatim}
+var
+ index        :array[0..1023,0..15] of integer;
+ s            :array[0..1023,0..1023] of longint;
+ n,cmd        :integer;
+
+procedure init;
+var
+ m,low,up,mid :integer;
+begin
+   read(m);
+   n:=1;
+   while n<m do n:=n shl 1;
+   dec(n);
+   fillchar(index,sizeof(index),0);
+   for m:=0 to n do
+   begin
+         low:=0;up:=n;
+         while low<up do
+         begin
+            if up=m then break;
+            mid:=(low+up) shr 1;
+            if mid<m then begin inc(index[m,0]);
+                             index[m,index[m,0]]:=mid;low:=mid+1;
+                       end
+              else begin inc(index[m,0]);
+                         index[m,index[m,0]]:=up;up:=mid;
+                  end;
+         end;
+         inc(index[m,0]);
+         index[m,index[m,0]]:=m;
+   end;
+end;
+
+procedure update;
+var
+  x,y,d,i,j      :integer;
+begin
+   read(x,y,d);
+   for i:=1 to index[x,0] do
+    if index[x,i]>=x then
+        for j:=1 to index[y,0] do
+         if index[y,j]>=y then inc(s[index[x,i],index[y,j]],d);
+end;
+
+function rect(x,y:integer):longint;
+var
+  i,j            :integer;
+  total          :longint;
+begin
+   if (x<0) or (y<0) then begin rect:=0;exit;
+                         end;
+   total:=0;
+   for i:=1 to index[x,0] do
+        if index[x,i]<=x then
+         for j:=1 to index[y,0] do
+          if index[y,j]<=y then inc(total,s[index[x,i],index[y,j]]);
+   rect:=total;
+end;
+
+procedure query;
+var
+ left,bottom,right,top:integer;
+begin
+  read(left,top,right,bottom);
+  writeln(rect(right,bottom)-rect(left-1,bottom)
+          -rect(right,top-1)+rect(left-1,top-1));
+end;
+
+BEGIN
+  repeat
+      read(cmd);
+      case cmd of
+        0:init;
+        1:update;
+        2:query;
+      end;
+  until cmd=3;
+END.
+\end{verbatim}
+
+\end{document}

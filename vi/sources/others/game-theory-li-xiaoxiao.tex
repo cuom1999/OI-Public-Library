@@ -1,0 +1,303 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 其他 OTHERS/博弈论相关 - 李晓潇.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\mex}{\operatorname{mex}}
+\newcommand{\SG}{\operatorname{SG}}
+
+\title{Một số chủ đề về lý thuyết trò chơi}
+\author{Li Xiaoxiao}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Một số chủ đề về lý thuyết trò chơi}
+\sourcepath{Others / Game theory related - Li Xiaoxiao}
+
+\begin{abstract}
+Tài liệu gốc là một bộ slide giới thiệu lý thuyết trò chơi trong lập trình thi
+đấu. Nội dung chính gồm trò chơi tổ hợp công bằng, vị thế thắng--thua, hàm
+Sprague--Grundy, tổng xor của các trò chơi con, một số ví dụ như Nim,
+WordCraft và POJ 3710, cùng một phần thảo luận về cách mô hình hóa chiến lược
+cho một trò chơi máy bay thời gian thực bằng rời rạc hóa và quy hoạch động.
+Bản dịch chuyển slide thành ghi chú ngắn, giữ lại các định nghĩa, công thức và
+ý tưởng thuật toán chính.
+\end{abstract}
+
+\tableofcontents
+
+\section{Khởi động}
+
+Lý thuyết trò chơi xuất hiện trong nhiều bối cảnh: kinh tế, quân sự, thi đấu,
+và cả những mô hình ra quyết định trong đời sống. Trong lập trình thi đấu, ta
+thường gặp các trò chơi hữu hạn giữa hai người, trong đó mọi nước đi đều biết
+rõ và không có yếu tố ngẫu nhiên.
+
+Một ví dụ nhỏ để khởi động là trò chơi đếm số. Hai người A và B luân phiên
+nói một số nguyên dương, mỗi lần ít nhất \(1\) và nhiều nhất \(m\). Nếu tổng
+các số đã nói đạt đúng \(n\) thì người vừa nói thắng. Biến thể khác quy định
+người làm tổng lớn hơn hoặc bằng \(n\) sẽ thua. Các bài này cho thấy tư tưởng
+cơ bản: phân loại những trạng thái mà người sắp đi có thể ép thắng và những
+trạng thái mà người sắp đi không thể tránh thua.
+
+\section{Trò chơi tổ hợp công bằng}
+
+Một \term{trò chơi tổ hợp công bằng} có các đặc điểm sau:
+\begin{itemize}
+  \item hai người chơi luân phiên quyết định;
+  \item từ mỗi trạng thái, tập nước đi kế tiếp là hữu hạn;
+  \item các nước đi hợp lệ chỉ phụ thuộc vào trạng thái hiện tại, không phụ
+        thuộc người chơi hay lịch sử ngoài trạng thái;
+  \item nếu đến lượt một người mà không có nước đi hợp lệ, người đó thua;
+  \item trò chơi kết thúc sau hữu hạn bước.
+\end{itemize}
+Điều kiện cuối cùng thường tương đương với việc đồ thị trạng thái không có
+chu trình theo hướng nước đi.
+
+\subsection{Vị thế N và P}
+
+Ta gọi một trạng thái là \term{vị thế N} nếu người sắp đi, tức người
+\emph{next}, có chiến lược thắng. Ta gọi một trạng thái là \term{vị thế P}
+nếu người vừa đi trước đó, tức người \emph{previous}, có chiến lược thắng;
+nói cách khác người sắp đi sẽ thua nếu cả hai chơi tối ưu.
+
+Cách gán nhãn chuẩn là:
+\begin{enumerate}
+  \item mọi trạng thái kết thúc, nơi không còn nước đi, là vị thế P;
+  \item nếu một trạng thái có thể đi một bước tới vị thế P, nó là vị thế N;
+  \item nếu mọi nước đi từ một trạng thái đều tới vị thế N, nó là vị thế P.
+\end{enumerate}
+Vì trò chơi hữu hạn nên lặp lại quá trình này theo thứ tự topo sẽ gán nhãn
+được mọi trạng thái.
+
+Với trò chơi đếm số mà mỗi lần được tăng tổng thêm \(1,\ldots,m\) và ai đạt
+đúng \(n\) thì thắng, các vị thế P theo khoảng cách đến \(n\) chính là các bội
+của \(m+1\). Ví dụ \(m=3\), bảng đầu tiên là
+\[
+\begin{array}{c|ccccccccc}
+n&1&2&3&4&5&6&7&8&9\\
+\hline
+\text{loại}&N&N&N&P&N&N&N&P&N
+\end{array}
+\]
+
+\section{Nim và mô hình đồ thị}
+
+Trong trò chơi Nim có \(n\) đống đá. Mỗi lượt, người chơi chọn một đống và
+lấy đi một số đá dương tùy ý. Ai không thể đi thì thua. Với hai đống, có thể
+ký hiệu trạng thái là \(f(i,j)\); với nhiều đống, điều cần phân tích là sự
+khác biệt bản chất giữa các lớp trạng thái.
+
+Một mô hình tổng quát là trò chơi trên đồ thị có hướng không chu trình. Có
+một quân cờ đặt tại một đỉnh. Hai người lần lượt di chuyển quân theo một cung
+có hướng; người không còn cung đi ra để di chuyển thì thua. Khi đó mỗi đỉnh là
+một trạng thái của trò chơi tổ hợp công bằng.
+
+\section{Hàm Sprague--Grundy}
+
+Với một đồ thị có hướng không chu trình, định nghĩa hàm SG trên mỗi đỉnh
+\(x\) bởi
+\[
+  \SG(x)=\mex\{\SG(y)\mid y \text{ là hậu duệ trực tiếp của }x\}.
+\]
+Ở đây \(\mex S\) là số nguyên không âm nhỏ nhất không thuộc tập \(S\).
+Tương tự, với một trò chơi tổ hợp công bằng, \(\SG(x)\) của một trạng thái
+\(x\) được định nghĩa bằng mex của các giá trị SG của mọi trạng thái có thể
+đi tới sau một nước.
+
+Giá trị SG biến mọi trò chơi tổ hợp công bằng hữu hạn thành một đống Nim
+tương đương. Trạng thái có \(\SG(x)=0\) là vị thế P; trạng thái có
+\(\SG(x)>0\) là vị thế N.
+
+\subsection{Định lý Sprague--Grundy}
+
+Giả sử một trò chơi tổng hợp là tổng độc lập của các trò chơi con
+\[
+  X=X_1+X_2+\cdots+X_n,
+\]
+nghĩa là mỗi lượt người chơi chọn đúng một trò chơi con và đi trong trò chơi
+đó. Khi đó
+\[
+  \SG(X)=\SG(X_1)\oplus \SG(X_2)\oplus\cdots\oplus \SG(X_n),
+\]
+trong đó \(\oplus\) là xor theo bit. Vì thế hai trạng thái có cùng giá trị SG
+có thể xem là tương đương về mặt trò chơi.
+
+\section{Một số ví dụ}
+
+\subsection{Tô màu đoạn: ZOJ 2083}
+
+Có \(N\) đoạn thẳng với độ dài khác nhau. Hai người A và B luân phiên tô màu;
+mỗi lần phải tô đúng một đoạn con dài \(2\) đơn vị và mỗi đơn vị độ dài không
+được tô lại. Người không thể đi thì thua.
+
+Khi chỉ có một đoạn, ta tính giá trị SG theo độ dài. Với nhiều đoạn, mỗi đoạn
+là một trò chơi con độc lập, nên kết quả toàn cục là xor của các giá trị SG
+của từng đoạn.
+
+\subsection{RIMS}
+
+Trên mặt phẳng có hữu hạn điểm và một số đường cong không giao nhau. Hai người
+luân phiên vẽ một đường cong kín, không được cắt các đường cong đã có, và mỗi
+đường cong mới phải đi qua ít nhất một điểm. Ai không thể vẽ thì thua.
+
+Điểm đáng chú ý là kết quả chỉ phụ thuộc vào số điểm, không phụ thuộc vị trí
+cụ thể. Vẽ một đường cong kín tương đương với chia tập điểm thành hai phần,
+vì thế có thể tính SG theo số điểm của từng miền con.
+
+\subsection{POJ 3710}
+
+Bài toán cho một cây có gốc; một số nút có thể gắn với các chu trình, và các
+chu trình đôi một không giao nhau. Hai người luân phiên xóa một cạnh, sau đó
+bỏ toàn bộ phần không còn liên thông với gốc. Người không thể đi thì thua.
+
+Với một dây đơn, giá trị trò chơi bằng độ dài dây:
+\[
+  G(X)=\text{độ dài của dây}.
+\]
+Với một cây, ta tách thành các cây con và lấy xor các giá trị. Với một chu
+trình, xét việc xóa một cạnh trên chu trình: chu trình lẻ tương đương một dây
+độ dài \(1\), còn chu trình chẵn tương đương giá trị \(0\). Do đó có thể thay
+mỗi chu trình bằng một dây \(1\) hoặc \(0\), rồi tính SG của cây thu được.
+
+\subsection{WordCraft}
+
+Trò chơi diễn ra trên một tập xâu \(D\). Hai người luân phiên chọn một xâu
+\(s\in D\), rồi xóa khỏi \(D\) mọi xâu là tiền tố của \(s\), bao gồm cả
+\(s\). Người không thể đi thì thua.
+
+Cách dựng cây là mấu chốt. Mỗi xâu là một nút, và cha của nó là tiền tố dài
+nhất của nó trong \(D\), khác chính nó. Khi chọn một nút, thao tác tương ứng
+với xóa toàn bộ đường đi từ nút đó về gốc. Một trạng thái vì thế có thể xem
+như một rừng gồm nhiều cây độc lập, và dùng định lý Sprague--Grundy để tính
+kết quả.
+
+Thuật toán dựng cây cơ bản, với \(D[0]\) là xâu rỗng và các xâu đã sắp theo
+thứ tự từ điển, có dạng:
+\[
+\begin{array}{l}
+\textbf{FindFather}(i):\\
+\quad j\gets i-1;\\
+\quad \text{while }D[j]\text{ không phải tiền tố của }D[i]\text{ do}\\
+\quad\quad j\gets \operatorname{father}[j];\\
+\quad \operatorname{father}[i]\gets j.
+\end{array}
+\]
+Nếu kiểm tra tiền tố trực tiếp, mỗi lần có thể mất \(O(\text{maxLen})\), và
+tổng thời gian là \(O(N\text{maxLen}^2)\). Tối ưu bằng cách tính trước độ dài
+tiền tố chung của \(D[i]\) và \(D[i-1]\): khi đó \(D[j]\) là tiền tố của
+\(D[i]\) nếu và chỉ nếu \(|D[j]|\le \text{comLen}\). Độ phức tạp dựng cây
+giảm còn \(O(N\text{maxLen})\).
+
+Để tính SG, xử lý từ lá lên gốc. Khi xét một nút, có thể liệt kê các thao tác
+bằng một lần DFS và đồng thời tính giá trị SG sau thao tác. Nếu làm thô sẽ
+dẫn tới \(O(N^2)\), nhưng dùng nhận xét rằng giá trị SG của một cây con không
+thể vượt quá số nút trong cây con, ta có thể giới hạn miền mex và đạt mức
+hiệu quả gần \(O(N\text{maxLen})\) cho phần cốt lõi.
+
+\section{Trường hợp trò chơi máy bay}
+
+Phần cuối của slide chuyển sang một trò chơi thời gian thực: một bên đóng vai
+\term{Boss}, bên kia đóng vai \term{Plane}. Hai vai được chơi luân phiên và
+so điểm.
+
+Ta có thể xem trò chơi thời gian thực như trò chơi theo lượt với khoảng cách
+giữa hai lượt rất nhỏ. Ví dụ mỗi \(0.1\) giây là một lượt nhỏ, tối đa
+\(3000\) lượt, tương đương \(5\) phút.
+
+\subsection{Cơ chế chính}
+
+Boss đứng yên và bắn năm loại đạn tròn từ các điểm cố định. Sức ép tăng theo
+thời gian, được mô hình hóa bởi
+\[
+  f(t)=e^{0.00053648t},
+\]
+với các mốc xấp xỉ:
+\[
+\begin{array}{c|ccccc}
+t&0&1292&2048&2585&3000\\
+\hline
+f(t)&1&2&3&4&5
+\end{array}
+\]
+Mỗi lượt, số đạn mới của mỗi loại bị giới hạn bởi
+\[
+  \max(0.4\cdot\text{số đạn còn có thể bắn},\,6).
+\]
+Ví dụ nếu trên màn hình hiện có \(5\) viên loại \(1\), giới hạn hiện tại của
+loại này là \(20\), thì lượt này có thể bắn tối đa
+\[
+  \max(0.4(20-5),6)=6
+\]
+viên.
+
+Plane di chuyển thẳng đều, có vận tốc tối đa \(40\). Khi đứng yên, mỗi lượt
+nó bắn một viên đạn về phía Boss. Plane nhận một điểm kỹ năng sau mỗi
+\(100\) lượt. Kỹ năng tăng tốc tiêu tốn \(2\) điểm, nâng vận tốc tối đa lên
+\(80\) trong \(30\) lượt; kỹ năng dọn màn hình tiêu tốn \(5\) điểm và xóa
+ngay mọi viên đạn trên màn hình.
+
+\subsection{Ý tưởng chiến lược}
+
+Với Plane, chiến lược tham lam đơn giản là đứng yên để ghi điểm khi còn an
+toàn; nếu nguy hiểm thì thử nhiều hướng ngẫu nhiên và chạy theo hướng thoát
+được; nếu không còn đường thì dùng kỹ năng dọn màn hình hoặc chấp nhận thua.
+
+Với Boss, hai mục tiêu tự nhiên là chặn chết Plane hoặc ép Plane phải di
+chuyển liên tục để giảm điểm. Các mẫu đạn được nhắc tới gồm hình quạt dựa vào
+chênh lệch vận tốc đạn, dải đạn khai thác bất đối xứng bản đồ, và các mẫu
+đạn đánh lừa khiến Plane đi vào vùng dày đặc.
+
+\subsection{Quy hoạch động cho Plane}
+
+Một cách hệ thống hơn là rời rạc hóa mặt phẳng thành lưới \(n\times m\). Gọi
+\[
+  F[i][j][k]
+\]
+là số điểm tối đa có thể chờ thêm trong \(T\) lượt sắp tới nếu ở lượt thứ
+\(k\), Plane đang tại ô \((i,j)\). Thường lấy \(T<27\) để dự báo ngắn hạn.
+Giá trị cần quyết định ở trạng thái hiện tại là \(F[\text{now}_i][\text{now}_j][0]\).
+
+Chuyển trạng thái:
+\[
+F[i][j][k]=
+\max\begin{cases}
+F[i][j][k+1]+1, & \text{nếu đứng yên tại }(i,j)\text{ an toàn},\\
+F[i'][j'][k+1], & \text{nếu di chuyển tới }(i',j')\text{ hợp lệ và an toàn}.
+\end{cases}
+\]
+Điều kiện biên là
+\[
+  F[i][j][T]=0.
+\]
+
+Độ phức tạp thô là
+\[
+  O(nmT\cdot\text{số ô trong bán kính di chuyển}\cdot\text{số đạn}).
+\]
+Với \(n=50\), \(m=50\), \(T=20\), số phép kiểm tra mỗi lượt có thể lên tới
+hàng trăm triệu. Vì vậy cần tối ưu:
+\begin{itemize}
+  \item giới hạn số hướng di chuyển;
+  \item dùng tìm kiếm có nhớ để loại bỏ trạng thái vô dụng;
+  \item cắt tỉa bằng hàm đánh giá, cân bằng giữa tốc độ và khả năng ghi điểm;
+  \item tối ưu kiểm tra va chạm với đạn, tránh kiểm tra lặp và kiểm tra không
+        có ý nghĩa;
+  \item đặt quy tắc hạn chế khi dùng kỹ năng.
+\end{itemize}
+Một vài mẹo thực tế là sau mỗi lần tránh đạn nên cố quay về vùng giữa bản đồ,
+và ưu tiên ở vùng phía trên màn hình nếu điều đó giúp giảm mật độ đạn nguy
+hiểm.
+
+\section*{Tổng kết}
+
+Với trò chơi tổ hợp công bằng, lối giải chuẩn là dựng đồ thị trạng thái,
+phân loại vị thế N/P hoặc tính hàm Sprague--Grundy. Khi trò chơi tách thành
+nhiều phần độc lập, xor các giá trị SG cho ta kết quả toàn cục. Với trò chơi
+thời gian thực, cùng một tư duy mô hình hóa vẫn hữu ích: rời rạc hóa thời gian
+và không gian, định nghĩa trạng thái, viết chuyển trạng thái, rồi tối ưu những
+phép kiểm tra đắt nhất.
+
+\end{document}

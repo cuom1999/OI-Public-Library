@@ -1,0 +1,1007 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2002/孙方成.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Thuật toán và ứng dụng của đồ thị hai phía}
+\author{Sun Fangcheng}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Algorithms and applications of bipartite graphs}
+\sourcepath{IOI China candidate team papers / 2002 / Sun Fangcheng.pdf}
+
+\section*{Tổng quan}
+
+Bài viết này trước hết giới thiệu khái niệm ghép cặp, một quan hệ đặc biệt
+trong đồ thị vô hướng, và định nghĩa đồ thị hai phía, một loại đồ thị đặc
+biệt. Sau đó bài viết kết hợp hai khái niệm ấy để trình bày các thuật toán
+hiệu quả cho ghép cặp cực đại theo số cạnh và ghép cặp tốt nhất trong đồ thị
+hai phía. Đồng thời, thông qua quan hệ về số lượng giữa số ghép cặp cực đại
+và số phủ nhỏ nhất của đồ thị hai phía, bài viết nêu rõ ưu thế riêng của đồ
+thị hai phía so với đồ thị tổng quát.
+
+\paragraph{Từ khóa.}
+Đồ thị hai phía; ghép cặp; đường tăng; tập phủ; độ phức tạp thuật toán.
+
+\tableofcontents
+
+\section{Lời nói đầu}
+
+Đồ thị hai phía là một loại đồ thị đặc biệt. Các đỉnh của nó luôn được chia
+thành hai phần bù nhau; hai phần này thường được dùng để biểu diễn hai loại
+sự vật khác nhau. Quan hệ cơ bản nhất giữa hai loại sự vật ấy chính là quan
+hệ ghép cặp. Nếu biết kết hợp đồ thị hai phía và ghép cặp theo tình huống cụ
+thể, ta có thể mở rộng đáng kể hướng suy nghĩ và tối ưu thuật toán. Nói tóm
+lại, đồ thị hai phía, với tư cách một loại đồ thị đặc biệt, có ứng dụng rộng
+rãi trong lập trình. Tính hiệu quả của nó giúp ta đưa ra lời giải hoàn chỉnh
+cho một số trường hợp đặc biệt của các bài toán phức tạp.
+
+\section{Khái niệm ghép cặp}
+
+\paragraph{Định nghĩa 1.}
+Cho đồ thị \(G=(V(G),E(G))\), và \(M\) là một tập con của \(E(G)\). Nếu hai
+cạnh bất kỳ trong \(M\) đều không kề nhau, thì \(M\) được gọi là một
+\term{ghép cặp} của \(G\). Hai đầu mút của một cạnh thuộc \(M\) được gọi là
+được ghép đôi dưới \(M\).
+
+Nếu một cạnh nào đó của ghép cặp \(M\) liên thuộc với đỉnh \(v\), ta nói
+\(M\) bão hòa đỉnh \(v\), và \(v\) là đỉnh bão hòa đối với \(M\).
+
+Giả sử \(M\) là một ghép cặp của đồ thị \(G\). Nếu trong \(G\) tồn tại một
+đường đi đơn \(R\) mà các cạnh trên đường đi luân phiên là cạnh ghép thuộc
+\(M\) và cạnh không ghép không thuộc \(M\), thì \(R\) được gọi là
+\term{đường luân phiên}. Nếu hai đầu mút của \(R\) đều là đỉnh chưa bão hòa
+đối với \(M\), thì đường luân phiên này được gọi là \term{đường tăng}.
+
+Cho đồ thị \(G=(V(G),E(G))\), trong đó \(V(G)\) được chia thành hai tập đỉnh
+con không rỗng và bù nhau \(X\) và \(Y\). Nếu một ghép cặp
+\(M\subseteq E(G)\) của \(G\) bão hòa mọi đỉnh trong \(X\), nói cách khác
+nếu toàn bộ đỉnh của \(X\) và một tập con đỉnh của \(Y\) xác định một quan
+hệ một-một, thì \(M\) được gọi là một \term{ghép cặp hoàn bị} của \(G\).
+
+Trong đa số trường hợp, nếu trực tiếp tìm ghép cặp cực đại hoặc ghép cặp tốt
+nhất của một đồ thị từ góc nhìn đường tăng, hiệu quả thuật toán sẽ thấp. Vì
+thế thuật toán ghép cặp cho đồ thị tổng quát còn phải liên quan đến định
+nghĩa và xử lý ``nụ hoa''.\footnote{Trong ngữ cảnh này, ta gọi một chu trình
+lẻ xuất hiện khi số cạnh ghép đạt cực đại là một nụ hoa.} Tuy nhiên, bài
+viết này chủ yếu xét bài toán ghép cặp trên đồ thị hai phía, nên không khai
+triển các nội dung ấy.
+
+\section{Định nghĩa và nhận biết đồ thị hai phía}
+
+\paragraph{Định nghĩa 2.}
+Cho đồ thị \(G=(V,E)\). Nếu có thể chia \(V\) thành hai tập \(V_1\) và
+\(V_2\), sao cho mỗi cạnh trong \(E\) có một đầu mút thuộc \(V_1\) và đầu
+mút kia thuộc \(V_2\), thì đồ thị đó được gọi là \term{đồ thị hai phía},
+cũng gọi là đồ thị hai phần hay đồ thị lưỡng phân.
+
+Theo định nghĩa này, không có hai đỉnh nào trong cùng \(V_1\) hoặc cùng
+\(V_2\) kề nhau. Đồ thị hai phía cũng có thể viết là
+\(G=(V_1,V_2;E)\). Với tập đỉnh \(V\subseteq V_1\), ký hiệu \(P(V)\) là tập
+các đỉnh trong \(V_2\) kề với ít nhất một đỉnh của \(V\).
+
+\paragraph{Định nghĩa 3.}
+Nếu trong đồ thị hai phía \(G\), mỗi đỉnh của tập con đỉnh bù \(V_1\) đều kề
+với mọi đỉnh của \(V_2\), thì \(G\) được gọi là \term{đồ thị hai phía đầy
+đủ}.
+
+Với các đồ thị đơn giản, ta có thể nhận biết bằng mắt thường xem chúng có
+phải đồ thị hai phía hay không. Nhưng với đồ thị phức tạp hơn, việc phán
+đoán theo định nghĩa hoặc bằng cách vẽ lại trực quan rất bất tiện; vì vậy cần
+một định lý nhận biết có hiệu quả.
+
+\paragraph{Định lý 1.}
+Một đồ thị vô hướng \(G\) là đồ thị hai phía khi và chỉ khi mọi chu trình của
+\(G\) đều có độ dài chẵn. Nếu không có chu trình, có thể xem độ dài của mọi
+chu trình là \(0\), và \(0\) được coi là số chẵn.
+
+\paragraph{Chứng minh.}
+Điều kiện cần: nếu \(G\) là đồ thị hai phía, thì mọi chu trình của \(G\) có
+độ dài chẵn.
+
+Lấy một chu trình tùy ý độ dài \(m\) trong \(G\):
+\[
+  C=v_{i_0},v_{i_1},v_{i_2},\ldots,v_{i_{m-1}},v_{i_0}.
+\]
+Vì \(G\) là đồ thị hai phía, ta có thể chia \(V\) thành hai tập bù nhau
+\(V_1\) và \(V_2\). Do \(v_{i_0}\) và \(v_{i_1}\) kề nhau, giả sử
+\[
+  v_{i_0}\in V_1,\qquad v_{i_1}\in V_2.
+\]
+Tương tự suy ra
+\[
+  v_{i_2},v_{i_4},\ldots,v_{i_{m-2}}\in V_1,\qquad
+  v_{i_3},v_{i_5},\ldots,v_{i_{m-1}}\in V_2.
+\]
+Nhìn vào chỉ số của các đỉnh, các đỉnh có chỉ số chẵn thuộc \(V_1\), còn các
+đỉnh có chỉ số lẻ thuộc \(V_2\). Nay \(v_{i_{m-1}}\in V_2\), nên \(m-1\) là
+số lẻ, tức \(m\) là số chẵn.
+
+Điều kiện đủ: nếu mọi chu trình của \(G\) đều có độ dài chẵn, thì \(G\) phải
+là đồ thị hai phía. Ta xét hai trường hợp.
+
+\paragraph{Trường hợp 1: \(G\) liên thông.}
+Chia tập đỉnh \(V\) của đồ thị thành hai tập con như sau:
+\[
+  V_1=\{v_i\mid \text{khoảng cách từ }v_i\text{ đến một đỉnh cố định }v_0
+  \text{ là chẵn}\},\qquad
+  V_2=V-V_1.
+\]
+Ta chứng minh \(V_1\) và \(V_2\) chính là hai tập đỉnh con bù nhau của \(V\).
+
+Lấy tùy ý một cạnh \(e=(v_i,v_j)\) của \(G\). Nếu hai đầu mút \(v_i\) và
+\(v_j\) của \(e\) đều nằm trong \(V_1\), thì cùng với các đường đi từ hai
+đỉnh này đến \(v_0\), cạnh \(e\) tạo thành một chu trình
+\[
+  C=v_i,\ldots,v_0,\ldots,v_j,v_i.
+\]
+Do \(v_i,v_j\in V_1\), theo định nghĩa, khoảng cách từ \(v_i\) và \(v_j\) đến
+\(v_0\) đều chẵn. Cộng thêm cạnh \(e\), độ dài chu trình \(C\) là lẻ, mâu
+thuẫn với giả thiết. Vì thế \(v_i\) và \(v_j\) không thể cùng thuộc \(V_1\).
+
+Nếu hai đầu mút của cạnh tùy ý \(e\) đều nằm trong \(V_2\), thì theo định
+nghĩa, khoảng cách từ \(v_i\) và \(v_j\) đến \(v_0\) đều lẻ. Cộng thêm cạnh
+\(e\), độ dài chu trình \(C\) vẫn là lẻ, cũng mâu thuẫn với giả thiết. Do đó
+\(v_i\) và \(v_j\) cũng không thể cùng thuộc \(V_2\).
+
+Vì vậy chỉ còn một khả năng duy nhất: hai đầu mút của \(e\), một đỉnh thuộc
+\(V_1\) và đỉnh kia thuộc \(V_2\). Do \(e\) là cạnh tùy ý, theo định nghĩa
+đồ thị hai phía, \(G\) là đồ thị hai phía.
+
+\paragraph{Trường hợp 2: \(G\) không liên thông.}
+Khi đó ta xét từng thành phần liên thông. Áp dụng chứng minh ở trên cho mỗi
+thành phần liên thông của \(G\), rồi hợp các kết quả lại, ta được điều phải
+chứng minh.
+
+\section{Ghép cặp cực đại của đồ thị hai phía}
+
+Theo định nghĩa, đồ thị hai phía vừa kế thừa các tính chất của đồ thị tổng
+quát, vừa có thêm các tính chất riêng. Vì vậy thuật toán tìm ghép cặp cực đại
+trên đồ thị hai phía đơn giản hơn thuật toán tương ứng trên đồ thị tổng quát,
+và có phạm vi áp dụng rộng hơn. Có thể nói thuật toán ghép cặp cực đại của
+đồ thị hai phía là nền tảng của mọi thuật toán trên đồ thị hai phía. Năm
+1965, Edmonds đưa ra thuật toán Hungary để giải bài toán ghép cặp cực đại
+trên đồ thị hai phía.
+
+\begin{enumerate}
+  \item Lấy một ghép cặp ban đầu \(M\) trong \(G\).
+  \item Nếu mọi đỉnh trong \(X\) đều là đầu mút của cạnh thuộc \(M\), dừng:
+  \(M\) là ghép cặp hoàn bị. Ngược lại, lấy một đỉnh \(u\in X\) không liên
+  thuộc với cạnh nào trong \(M\), đặt \(S=\{u\}, T=\varnothing\).
+  \item Nếu \(P(S)=T\), dừng: không có ghép cặp hoàn bị. Ngược lại, lấy
+  \(y\in P(S)-T\).
+  \item Nếu \(y\) là đầu mút của một cạnh thuộc \(M\), giả sử \(yz\in M\),
+  đặt \(S\leftarrow S\cup\{z\}\), \(T\leftarrow T\cup\{y\}\), rồi quay lại
+  bước 3. Ngược lại, lấy đường tăng \(R(u,y)\), đặt
+  \(M\leftarrow M\oplus E(R)\), rồi quay lại bước 2.
+\end{enumerate}
+
+Phân tích thuật toán trên cho thấy độ phức tạp thời gian của thuật toán tìm
+ghép cặp cực đại trong đồ thị hai phía là \(O(|E(G)|)\) cho mỗi quá trình
+mở rộng theo cách mô tả này.
+
+Trong đời sống thực tế, nhiều bài toán có thể chuyển thành bài toán ghép cặp
+cực đại trên đồ thị hai phía, chẳng hạn bài toán phân công công việc. Ở đây
+ta nêu một ví dụ tương đối mới: bài \textit{Chó con đi dạo}, lấy từ vòng
+tuyển chọn Thượng Hải NOI 2001.
+
+\begin{quote}
+Grant thích dắt chú chó con Pandog đi dạo. Grant đi theo một tuyến đường cố
+định với vận tốc không đổi; tuyến đường này có thể tự cắt. Pandog thích tham
+quan các điểm cảnh vật dọc đường, nhưng sẽ gặp chủ tại \(N\) điểm đã cho.
+Chó con và chủ xuất phát đồng thời từ điểm \((X_1,Y_1)\), và đồng thời hội
+ngộ tại điểm \((X_n,Y_n)\). Vận tốc tối đa của chó con bằng hai lần vận tốc
+của Grant. Khi chủ đi thẳng từ một điểm đến điểm kế tiếp, Pandog chạy đến
+một điểm cảnh vật mà nó quan tâm. Trước mỗi lần gặp lại chủ, Pandog nhiều
+nhất chỉ đi qua một điểm cảnh vật.
+
+Nhiệm vụ là tìm cho Pandog một lộ trình, có thể trùng một phần với lộ trình
+của chủ, sao cho nó tham quan được nhiều điểm cảnh vật nhất và vẫn kịp gặp
+hoặc hội ngộ với chủ tại các vị trí đã cho.
+\end{quote}
+
+Nếu trực tiếp xét lộ trình của chó con, mỗi khi đến một điểm hội ngộ mới ta
+đều phải xét phương án di chuyển của chó. Tổng lượng tính toán là
+\(P_m^n\); thuật toán có độ phức tạp mũ như vậy rõ ràng kém hiệu quả và
+không thực tế. Đồng thời, mô hình của đề bài có liên hệ với mô hình hoán vị,
+và tính hậu hiệu quá cao về căn bản phủ định khả năng dùng quy hoạch động.
+Ngay cả khi dùng mô hình luồng mạng, nếu chỉ trực tiếp xây dựng từ góc nhìn
+của chó thì cũng rất khó cài đặt. Nhưng nếu nắm được một số mô tả then chốt
+của đề và trừu tượng hóa chúng thành mô hình đồ thị hai phía, ta sẽ có hiệu
+quả tốt hơn.
+
+Vì ``khi chủ đi thẳng từ một điểm đến điểm kế tiếp, Pandog chạy đến một điểm
+cảnh vật mà nó quan tâm'', và lộ trình di chuyển của chủ đã cố định, việc tìm
+một lộ trình có thể xem là quyết định lựa chọn của chó trên từng đoạn đường:
+chạy đến điểm cảnh vật nào, hoặc đi trùng với lộ trình của chủ. Rõ ràng, nếu
+trừu tượng hóa mỗi đoạn trong lộ trình của chủ thành một đỉnh, thì tính chất
+của các đỉnh này khác với tính chất của các điểm cảnh vật mà chó muốn đến.
+Vì vậy các đỉnh trong đồ thị tự nhiên được chia thành hai loại, và điều đề
+bài yêu cầu chính là quan hệ giữa hai loại đỉnh ấy.
+
+Trên một đoạn thẳng, chó chỉ có thể chạy đến một điểm cảnh vật, nên việc một
+điểm cảnh vật có đến được hay không chỉ liên quan đến khoảng cách từ điểm ấy
+đến hai đầu mút của đoạn thẳng. Một đoạn thẳng chỉ có thể liên hệ với một
+điểm cảnh vật, và một điểm cảnh vật chỉ có ý nghĩa ở lần đầu tiên được thăm,
+nên bất kỳ hai quan hệ liên hệ nào cũng không giao nhau về đối tượng sử dụng.
+Điều này rõ ràng thỏa định nghĩa ghép cặp. Vì thế, điều cần tìm của đề chính
+là ghép cặp cực đại giữa hai tập đỉnh trong một đồ thị gồm hai loại đỉnh.
+
+Quá trình xây dựng đồ thị hai phía như sau. Giả sử có \(n\) điểm định vị và
+\(m\) điểm cảnh vật:
+\[
+  V_1=\{\overrightarrow{P_iP_{i+1}}\mid 1\le i<n\},\qquad
+  V_2=\{Q_i\mid 1\le i\le m\},\qquad
+  V(G)=V_1\cup V_2.
+\]
+Với đoạn có hướng \(\overrightarrow{P_iP_{i+1}}\) và điểm cảnh vật \(Q_k\),
+khi và chỉ khi
+\[
+  D(P_i,Q_k)+D(Q_k,P_{i+1})\le 2D(P_i,P_{i+1}),
+\]
+thì cạnh \((\overrightarrow{P_iP_{i+1}},Q_k)\) thuộc \(E(G)\). Ở đây
+\[
+  D(A,B)=\sqrt{(X_A-X_B)^2+(Y_A-Y_B)^2}.
+\]
+Đối chiếu với định nghĩa đồ thị hai phía, đây là một đồ thị hai phía điển
+hình. Sau đó ta dùng thuật toán Hungary tìm ghép cặp cực đại trên đồ thị hai
+phía để thu được số ghép cặp cực đại và phương án ghép cặp, cuối cùng sinh
+dữ liệu ra theo yêu cầu đề bài.
+
+\section{Bài toán tập phủ nhỏ nhất của đồ thị hai phía}
+
+Thuật toán ghép cặp cực đại của đồ thị hai phía có ứng dụng rộng rãi trong
+giải bài toán thực tế. Trường hợp điển hình nhất là dùng nó để giải bài toán
+tập phủ nhỏ nhất của đồ thị hai phía. Chẳng hạn bài \textit{Knights} của BOI
+2001 có mô tả như sau:
+
+\begin{quote}
+Cho một bàn cờ quốc tế kích thước \(n\times n\), trong đó một số ô đã bị lấy
+đi. Nhiệm vụ của bạn là xác định cách đặt nhiều quân mã nhất trên bàn cờ sao
+cho chúng không tấn công nhau. Kích thước bàn cờ thỏa \(n\le 200\).
+\end{quote}
+
+Một quân mã đặt tại ô \(S\) tấn công tám ô có độ lệch tọa độ
+\((\pm 1,\pm 2)\) và \((\pm 2,\pm 1)\), nếu các ô ấy còn nằm trên bàn cờ.
+
+Đề yêu cầu đặt nhiều quân mã nhất và không để chúng tấn công nhau. Các bài
+toán có mô tả tương tự rất phổ biến; quen thuộc nhất là bài toán tám hậu.
+Bài tám hậu là ví dụ kinh điển của thuật toán quay lui. Vì ở mỗi hàng gần
+như mọi ô đều phải được thử một lần, độ phức tạp thời gian là \(O(n!)\), và
+đây còn là một bài toán NP kinh điển. Nếu giải bài này theo tư tưởng của tám
+hậu, thách thức sẽ rất nghiêm trọng.
+
+Trước hết, cách mở rộng trạng thái của tám hậu đơn giản hơn bài này rất
+nhiều. Vì phạm vi tấn công của hậu là cả một hàng, một cột hoặc một đường
+chéo, khi mở rộng ta có thể tránh rất nhiều trạng thái vô hiệu. Trong bài
+này, phạm vi tấn công tương đối phức tạp, nên việc trực tiếp tránh trạng thái
+vô hiệu trong quá trình tìm kiếm khó hơn, và hiệu quả thuật toán tự nhiên
+không lý tưởng. Thứ hai, quy mô bài toán đạt tới \(200\), đã vượt rất xa
+phạm vi có thể giải của tám hậu. Đồng thời, do phạm vi khống chế của quân mã
+nhỏ, số phương án khả thi chắc chắn tăng lên; còn quay lui hay các thuật toán
+tìm kiếm khác đều dựa trên việc tìm phương án để thu được lời giải. Tư tưởng
+cơ bản vẫn là vét cạn, nên số lời giải tăng sẽ làm hiệu quả giảm mạnh. Trong
+khi đó mục tiêu của bài này lại là số quân mã đặt được nhiều nhất; thuật toán
+tìm kiếm rõ ràng không đủ đúng trọng tâm.
+
+Tiếp theo xét bài \textit{Pháo binh trận địa} của NOI 2001. Trong bài ấy,
+người ta dùng cách tách trạng thái và cuối cùng thực hiện được quy hoạch
+động. Nhưng trong quá trình quy hoạch động, nếu xét theo chiều rộng, độ phức
+tạp vẫn là mũ. So với \textit{Pháo binh trận địa}, sự không đều của phạm vi
+tấn công cũng là bất lợi của bài này, khiến quá trình chuyển trạng thái khó
+hơn nhiều. Quan trọng hơn, mấu chốt để quy hoạch động giải được
+\textit{Pháo binh trận địa} nằm ở sự bất đối xứng rất mạnh giữa chiều dài và
+chiều rộng. Trong bài này, bàn cờ là hình vuông đúng nghĩa, nên tư tưởng
+tách trạng thái rất khó thực hiện, cả về thời gian lẫn không gian. Do đó quy
+hoạch động cũng không phù hợp với bài này. Nói cách khác, khi suy luận bằng
+những hướng thông thường, ta không thu được phương pháp khả thi cho bài toán.
+
+Bây giờ phân tích mô hình của bài từ góc độ xây dựng đồ thị. Xem mỗi ô của
+bàn cờ là một đỉnh, và xem quan hệ hai ô có thể đi trực tiếp tới nhau, tức
+có thể tấn công nhau, là một cạnh. Điều đề bài yêu cầu là tập độc lập lớn
+nhất trong đồ thị ấy. Vì với bất kỳ đồ thị nào, tập độc lập lớn nhất và tập
+phủ nhỏ nhất là hai tập bù nhau, bài này cũng là một bài toán đồ thị tìm tập
+phủ nhỏ nhất. Như đã biết, bài toán tập phủ nhỏ nhất trên đồ thị tổng quát là
+một bài toán NPC. Vậy bài này có thoát được tình thế ấy không? Điều đó chỉ
+có thể phân tích từ tính đặc thù của bài.
+
+Kiến thức thông thường cho ta biết trên bàn cờ quốc tế, ô trắng và ô đen xen
+kẽ nhau; một quân mã chỉ có thể nhảy từ ô trắng sang ô đen, hoặc từ ô đen
+sang ô trắng. Vì tính đặc biệt này, phạm vi tấn công không đều của quân mã
+lại đem đến thuận lợi cho việc giải bài. Một quân mã ở một vị trí chỉ có thể
+tấn công các ô khác màu với vị trí của nó; đây là điều kiện cần. Nói cách
+khác, giữa hai ô bất kỳ cùng màu không tồn tại cạnh. Vì vậy bàn cờ có thể
+được chia thành hai phần theo màu, và trong cùng một phần, hai đỉnh bất kỳ
+đều không thể tấn công nhau. Điều đó có nghĩa bàn cờ mà đề mô tả, khi định
+nghĩa trên quan hệ tấn công, là một đồ thị hai phía.
+
+Đồng thời, nhờ tính chất riêng của đồ thị hai phía, bài toán tìm số phủ nhỏ
+nhất của nó có thuật toán đa thức. Giữa số ghép cặp cực đại và số phủ nhỏ
+nhất của đồ thị hai phía tồn tại một quan hệ xác định. Năm 1931, König đưa
+ra định lý về quan hệ giữa ghép cặp cực đại và phủ nhỏ nhất như sau.
+
+\paragraph{Định lý 2.}
+Giả sử \(r\) là số ghép cặp cực đại của đồ thị hai phía \(G\), và \(s\) là
+số phủ nhỏ nhất của ma trận kề của nó. Khi đó \(r=s\).
+
+Để chứng minh định lý này, ta dùng định lý hôn nhân Hall: giả sử \(G\) là
+một đồ thị hai phía có hai tập đỉnh lần lượt là \(V\) và \(W\). Khi đó tồn
+tại một ghép cặp hoàn bị của \(G\) khi và chỉ khi
+\[
+  |S|\le |P(S)|\qquad\text{với mọi }S\subseteq V.
+\]
+Chứng minh định lý Hall được cho trong phụ lục. Sau đây là chứng minh định
+lý ghép cặp cực đại bằng phủ nhỏ nhất.
+
+Vì mỗi phần tử khác \(0\) không cùng hàng, không cùng cột với nhau cần một
+hàng hoặc một cột để phủ, nên \(r\) phần tử khác \(0\) đôi một không cùng
+hàng, không cùng cột cần \(r\) hàng hoặc cột để phủ. Trong khi đó \(s\) hàng
+và cột khác nhau đã phủ toàn bộ phần tử khác \(0\) của ma trận \(A\), nên
+tự nhiên cũng phủ \(r\) phần tử khác \(0\) nói trên. Do đó \(s\ge r\). Ta
+tiếp tục chứng minh \(r\ge s\).
+
+Không mất tính tổng quát, giả sử phủ nhỏ nhất phủ \(c\) hàng và \(d\) cột
+của \(A\), tức \(s=c+d\). Gọi tập đỉnh tương ứng với \(c\) hàng ấy là
+\(X_c\), phần còn lại là \(X-X_c\); gọi tập đỉnh tương ứng với \(d\) cột ấy
+là \(Y_d\), phần còn lại là \(Y-Y_d\). Sắp xếp lại các hàng và cột của ma
+trận \(A\) như sơ đồ sau:
+\[
+\begin{array}{c|cc}
+ & Y-Y_d & Y_d\\ \hline
+X_c & A_{11} & A_{12}\\
+X-X_c & A_{21} & A_{22}
+\end{array}
+\]
+Rõ ràng mọi hàng của \(A_{11}\) đều được phủ, mọi cột của \(A_{22}\) đều
+được phủ, mọi phần tử của \(A_{12}\) được phủ bởi cả hàng lẫn cột, còn
+\(A_{21}=0\).
+
+Ta chứng minh tồn tại ghép cặp hoàn bị từ \(X_c\) đến \(Y-Y_d\). Trong
+\(A_{11}\), lấy tùy ý \(V'\) hàng; các phần tử khác \(0\) trong những hàng
+này ít nhất phải phân bố trên \(|V'|\) cột khác nhau. Nếu không, ta có thể
+không phủ \(|V'|\) hàng này mà phủ số cột ít hơn ấy, và toàn bộ phần tử khác
+\(0\) trong \(A\) vẫn được phủ. Khi đó số phần dùng để phủ nhỏ hơn ban đầu,
+mâu thuẫn với giả thiết phủ ban đầu là nhỏ nhất. Nói cách khác, với mọi tập
+con \(V'\) của \(X_c\), luôn có \(|P(V')|\ge |V'|\). Theo định lý hôn nhân
+Hall, tồn tại ghép cặp hoàn bị \(M_1\) từ \(X_c\) đến \(Y-Y_d\), và
+\(|M_1|=c\). Tương tự, cũng tồn tại ghép cặp hoàn bị \(M_2\) từ \(Y_d\) đến
+\(X-X_c\), và \(|M_2|=d\). Hợp \(M_1\cup M_2\) vẫn là một ghép cặp của
+\(G\), đồng thời
+\[
+  |M_1\cup M_2|=c+d=s.
+\]
+Vì vậy số ghép cặp cực đại \(r\ge s\). Chứng minh hoàn tất.
+
+Nhờ định lý này, các thuật toán liên quan đến tập phủ nhỏ nhất, tập độc lập
+lớn nhất, v.v. của đồ thị hai phía đều có thể thu được gián tiếp thông qua
+việc tìm số ghép cặp cực đại của đồ thị hai phía.
+
+\section{Bài toán ghép cặp tốt nhất của đồ thị hai phía}
+
+Phần trước đã đưa ra thuật toán tìm ghép cặp cực đại của đồ thị hai phía.
+Nhưng trong công việc thực tế, hiệu suất thường là yếu tố không thể thiếu
+khi xét bài toán. Chẳng hạn bài toán phân công công việc với hiệu suất làm
+việc khác nhau, hoặc bài \textit{Chó con đi dạo} sau khi thêm trọng số cho
+các điểm cảnh vật, không thể chỉ dùng ghép cặp cực đại để giải. Dưới đây là
+một bài toán phân công công việc có trọng số.
+
+\begin{quote}
+Một công ty có các nhân viên \(x_1,x_2,\ldots,x_n\), họ cần làm các công
+việc \(y_1,y_2,\ldots,y_n\). Mỗi người có thể làm một vài công việc trong số
+đó, và với mỗi công việc có một hiệu suất cố định. Hỏi có thể tìm một phương
+án phân công thích hợp sao cho tổng hiệu suất là cao nhất hay không. Yêu cầu
+mỗi người chỉ tham gia một công việc, đồng thời mỗi công việc cũng phải do
+một người độc lập hoàn thành. Không yêu cầu mọi người đều có công việc.
+\end{quote}
+
+Với dữ liệu trong bảng sau, nếu một nhân viên hoàn toàn không thể hoàn thành
+một công việc thì hiệu suất được ghi là \(0\):
+\[
+\begin{array}{c|cccc}
+ & \text{A} & \text{B} & \text{C} & \text{D}\\ \hline
+\text{Giáp} & 1 & 10 & 0 & 0\\
+\text{Ất} & 0 & 1 & 0 & 0\\
+\text{Bính} & 0 & 0 & 1 & 0\\
+\text{Đinh} & 0 & 0 & 0 & 1
+\end{array}
+\]
+Nếu dùng thuật toán ghép cặp có số cạnh lớn nhất, ta có thể nhận được lời
+giải: Giáp--A, Ất--B, Bính--C, Đinh--D, với tổng giá trị cuối cùng là \(4\).
+Nhưng nếu không ghép dự án A với Giáp mà dùng Ất--A, Bính--C, Đinh--D, tuy
+số cạnh ghép ít hơn nhưng tổng giá trị cuối cùng đạt \(12\). Thực tế chứng
+tỏ thuật toán ghép cặp cực đại không có tác dụng thực chất với các bài toán
+đặt hiệu ích lên hàng đầu như vậy.
+
+Vậy có con đường hữu hiệu nào khác để giải loại bài toán này không? Vì mỗi
+người chỉ có thể làm một công việc, và mỗi công việc cũng chỉ có thể do một
+người làm, tính hậu hiệu trong quyết định phương án là rất rõ. Nếu muốn thoát
+khỏi rắc rối hậu hiệu bằng cách thay đổi mô tả trạng thái, ta sẽ gặp vấn đề
+chí mạng của quy hoạch động là thảm họa số chiều. Do đó quy hoạch động không
+thể dùng để giải loại bài toán này.
+
+Một phương pháp khả thi là nhánh cận. Tức là thông qua lựa chọn hợp lý hàm
+đánh giá, trên cơ sở tìm kiếm theo chiều sâu, liên tục cập nhật kết quả tối
+ưu để giảm tìm kiếm vô hiệu và nâng cao hiệu quả. Tuy nhiên, mặc dù nhánh
+cận có hiệu quả khá tốt trong ứng dụng quy mô vừa và nhỏ, bản thân nó vẫn có
+độ phức tạp mũ, khiến hiệu quả giảm nhanh khi quy mô tăng.
+
+Thực ra, loại bài toán này chính là bài toán ghép cặp tốt nhất trong lý
+thuyết đồ thị. Mô tả như sau:
+\[
+  G=(V_1,V_2;E)
+\]
+là đồ thị hai phía đầy đủ có trọng số,
+\[
+  V_1=\{x_1,x_2,\ldots,x_n\},\qquad
+  V_2=\{y_1,y_2,\ldots,y_n\},
+\]
+với trọng số \(w(x_iy_j)\ge 0\). Cần tìm ghép cặp hoàn bị có tổng trọng số
+lớn nhất; ghép cặp như vậy được gọi là \term{ghép cặp tốt nhất}. Vì định
+nghĩa yêu cầu đồ thị hai phía đầy đủ có trọng số, xét từ góc độ thuật toán,
+mục đích chính là bảo đảm chắc chắn tồn tại ghép cặp hoàn bị. Vì vậy, khi
+một số cạnh trong đồ thị ban đầu không tồn tại, ta thường gán cho chúng trọng
+số \(0\), \(1\), hoặc một giá trị khác không ảnh hưởng đến kết quả cuối cùng,
+để làm cho đồ thị trở thành đầy đủ. Sau khi chuẩn bị như vậy, trước khi giải
+cụ thể loại bài toán này, ta cần biết một số khái niệm liên quan.
+
+\paragraph{Định nghĩa 4.}
+Một ánh xạ \(l:V(G)\to R\) thỏa mãn
+\[
+  \forall x\in V_1,\quad \forall y\in V_2,\quad
+  l(x)+l(y)\ge w(xy)
+\]
+được gọi là \term{nhãn đỉnh khả thi} của đồ thị hai phía \(G\). Đặt
+\[
+  E_l=\{xy\mid xy\in E(G),\ l(x)+l(y)=w(xy)\}.
+\]
+Đồ thị con sinh của \(G\) lấy \(E_l\) làm tập cạnh được gọi là
+\term{đồ thị bằng nhau}, ký hiệu \(G_l\).
+
+Nhãn đỉnh khả thi luôn tồn tại, chẳng hạn
+\[
+l(v)=
+\begin{cases}
+\max_{y\in V_2} w(xy), & v=x\in V_1,\\
+0, & v=y\in V_2.
+\end{cases}
+\]
+
+\paragraph{Định lý 3.}
+Ghép cặp hoàn bị của \(G_l\) chính là ghép cặp tốt nhất của \(G\).
+
+\paragraph{Chứng minh.}
+Giả sử \(M^*\) là một ghép cặp hoàn bị của \(G_l\). Vì \(G_l\) là đồ thị con
+sinh của \(G\), nên \(M^*\) cũng là ghép cặp hoàn bị của \(G\). Tập các đầu
+mút của các cạnh trong \(M^*\) chứa mỗi đỉnh của \(G\) đúng một lần, do đó
+\[
+  W(M^*)=\sum_{e\in M^*}w(e)=\sum_{v\in V(G)}l(v).
+\]
+Mặt khác, nếu \(M\) là một ghép cặp hoàn bị bất kỳ trong \(G\), thì
+\[
+  W(M)=\sum_{e\in M}w(e)\le \sum_{v\in V(G)}l(v).
+\]
+Vì vậy \(W(M^*)\ge W(M)\), tức \(M^*\) là ghép cặp tốt nhất.
+
+Theo định lý 3, Kuhn năm 1955 và Munkres năm 1957 đưa ra phương pháp sửa
+nhãn đỉnh, sao cho ghép cặp cực đại của đồ thị bằng nhau mới dần mở rộng, và
+cuối cùng xuất hiện ghép cặp hoàn bị của đồ thị bằng nhau.
+
+\paragraph{Thuật toán Kuhn--Munkres, hay thuật toán KM.}
+\begin{enumerate}
+  \item Chọn nhãn đỉnh khả thi ban đầu \(l\), và chọn một ghép cặp \(M\)
+  trong \(G_l\).
+  \item Nếu mọi đỉnh trong \(V_1\) đều liên thuộc với cạnh thuộc \(M\), dừng:
+  \(M\) là ghép cặp tốt nhất. Ngược lại, lấy một đỉnh \(u\) của \(G_l\)
+  không liên thuộc với cạnh nào trong \(M\), đặt \(S=\{u\}, T=\varnothing\).
+  \item Nếu \(P_{G_l}(S)\supset T\), chuyển sang bước 4. Nếu
+  \(P_{G_l}(S)=T\), lấy
+  \[
+    a_l=\min_{x\in S,\ y\notin T}\{l(x)+l(y)-w(xy)\},
+  \]
+  rồi đặt
+  \[
+  l'(v)=
+  \begin{cases}
+  l(v)-a_l, & v\in S,\\
+  l(v)+a_l, & v\in T,\\
+  l(v), & \text{trường hợp khác}.
+  \end{cases}
+  \]
+  Gán \(l\leftarrow l'\), \(G_l\leftarrow G_{l'}\).
+  \item Chọn một đỉnh \(y\in P_{G_l}(S)-T\). Nếu \(y\) liên thuộc với một
+  cạnh thuộc \(M\), và \(yz\in M\), đặt
+  \(S\leftarrow S\cup\{z\}\), \(T\leftarrow T\cup\{y\}\), rồi quay lại bước
+  3. Ngược lại, lấy một đường tăng \(R(u,y)\) của \(M\) trong \(G_l\), đặt
+  \(M\leftarrow M\oplus E(R)\), rồi quay lại bước 2.
+\end{enumerate}
+
+Dưới đây dùng một ví dụ để hiểu thêm cách thực hiện cụ thể và hiệu quả của
+thuật toán. Giả sử hiệu suất của năm nhân viên khi tham gia năm dự án như
+sau:
+\[
+\begin{array}{c|ccccc}
+ & Y_1 & Y_2 & Y_3 & Y_4 & Y_5\\ \hline
+X_1 & 3 & 5 & 5 & 4 & 1\\
+X_2 & 2 & 2 & 0 & 2 & 2\\
+X_3 & 2 & 4 & 4 & 1 & 0\\
+X_4 & 0 & 1 & 1 & 0 & 0\\
+X_5 & 1 & 2 & 1 & 3 & 3
+\end{array}
+\]
+Trước hết, chọn nhãn đỉnh khả thi \(l(v)\) như sau:
+\[
+\begin{aligned}
+l(y_i)&=0,\quad i=1,2,3,4,5,\\
+l(x_1)&=\max\{3,5,5,4,1\}=5,\\
+l(x_2)&=\max\{2,2,0,2,2\}=2,\\
+l(x_3)&=\max\{2,4,4,1,0\}=4,\\
+l(x_4)&=\max\{0,1,1,0,0\}=1,\\
+l(x_5)&=\max\{1,2,1,3,3\}=3.
+\end{aligned}
+\]
+Lưu ý dòng cuối trong bản in gốc ghi nhầm \(l(x_1)\); theo dữ liệu phải là
+\(l(x_5)\).
+
+Xây dựng \(G_l\) và tìm ghép cặp cực đại trên đó. Quá trình như sau:
+\[
+\begin{array}{c|c|c|l}
+\text{Bước} & S & T & M\\ \hline
+\text{Chọn ghép cặp đầu} & - & - & \varnothing\\
+u=x_1 & \{x_1\} & \varnothing & \varnothing\\
+y=y_2 & - & - & \{e(x_1y_2)\}\\
+u=x_2 & \{x_2\} & \varnothing & \{e(x_1y_2)\}\\
+y=y_1 & - & - & \{e(x_1y_2),e(x_2y_1)\}\\
+u=x_3 & \{x_3\} & \varnothing & \{e(x_1y_2),e(x_2y_1)\}\\
+y=y_3 & - & - & \{e(x_1y_2),e(x_2y_1),e(x_3y_3)\}\\
+u=x_5 & \{x_5\} & \varnothing &
+\{e(x_1y_2),e(x_2y_1),e(x_3y_3)\}\\
+y=y_5 & - & - &
+\{e(x_1y_2),e(x_2y_1),e(x_3y_3),e(x_5y_5)\}\\
+u=x_4 & \{x_4\} & \varnothing &
+\{e(x_1y_2),e(x_2y_1),e(x_3y_3),e(x_5y_5)\}\\
+y=y_3 & \{x_4,x_3\} & \{y_3\} &
+\{e(x_1y_2),e(x_2y_1),e(x_3y_3),e(x_5y_5)\}\\
+y=y_2 & \{x_4,x_3,x_1\} & \{y_3,y_2\} &
+\{e(x_1y_2),e(x_2y_1),e(x_3y_3),e(x_5y_5)\}\\
+P_{G_l}(S)=T & - & - & \text{không có ghép cặp hoàn bị}
+\end{array}
+\]
+
+Ghép cặp cực đại cuối cùng có thể biểu diễn bằng các cạnh
+\[
+  x_1-y_2,\qquad x_2-y_1,\qquad x_3-y_3,\qquad x_5-y_5.
+\]
+Các cạnh này là các cạnh được tô đậm trong hình của bản gốc. Trong \(G_l\)
+không có ghép cặp hoàn bị, vì vậy ta sửa nhãn đỉnh.
+
+Do \(u=x_4\), \(S=\{x_4,x_3,x_1\}\), \(T=\{y_3,y_2\}\), nên
+\[
+  a_l=\min_{x\in S,\ y\notin T}\{l(x)+l(y)-w(xy)\}=1.
+\]
+Nhãn đỉnh sau khi sửa là:
+\[
+\begin{gathered}
+x_1=4,\quad x_2=2,\quad x_3=3,\quad x_4=0,\quad x_5=3,\\
+y_1=0,\quad y_2=1,\quad y_3=1,\quad y_4=0,\quad y_5=0.
+\end{gathered}
+\]
+Theo nhãn đỉnh mới, xây dựng \(G_l\) và tìm được một ghép cặp hoàn bị:
+\[
+  x_1-y_4,\qquad x_2-y_1,\qquad x_3-y_3,\qquad x_4-y_2,\qquad x_5-y_5.
+\]
+Đây là ghép cặp tốt nhất; trọng số lớn nhất của nó là
+\[
+  4+2+4+1+3=14.
+\]
+Bài toán được giải xong.
+
+Qua quá trình giải và so sánh mô tả thuật toán KM với thuật toán Hungary, có
+thể thấy ngoài phần sửa nhãn đỉnh ở bước thứ ba của KM, phần lớn hai thuật
+toán là giống nhau. Có thể nói thuật toán KM chính là thuật toán Hungary
+được bổ sung bước sửa nhãn đỉnh. Vì \(M\) được mở rộng dần, thông tin sinh
+ra trong mỗi quá trình tăng trên \(G_l\) đều được kế thừa và sử dụng hợp lý.
+Do đó, mặc dù thuật toán KM đưa trọng số vào xét và có phạm vi áp dụng rộng
+hơn, về bậc độ phức tạp thời gian, nó về bản chất giống thuật toán Hungary,
+cũng là \(O(|E(G)|)\) cho mỗi quá trình mở rộng trong cách trình bày này.
+
+\section{Kết luận}
+
+Đồ thị hai phía là một loại đồ thị đặc biệt. Với một đồ thị hai phía \(G\),
+tập đỉnh \(V(G)\) của nó có thể chia thành hai tập con bù nhau \(V_1,V_2\);
+với hai đỉnh \(x,y\) thuộc cùng một tập con, luôn có
+\[
+  e(x,y)\notin E(G).
+\]
+Nhờ tính đặc biệt này, đồ thị hai phía được ứng dụng rộng rãi như một mô hình
+hữu hiệu để mô tả quan hệ giữa hai loại sự vật khác nhau trong thế giới thực.
+
+Cấu trúc đồ thị thường phản ánh thuộc tính bản chất của bài toán nhờ lượng
+thông tin đa dạng mà nó chứa, từ đó nắm được điểm then chốt của bài toán. Đặc
+biệt khi giải quyết các vấn đề như tính hậu hiệu và thảm họa số chiều trong
+quy hoạch động, mô hình đồ thị thường phát huy hiệu quả tốt. Lại vì các thuật
+toán xây dựng trên đồ thị hai phía có nhiều ưu thế so với thuật toán trên đồ
+thị tổng quát, việc chuyển một đồ thị tổng quát thành dạng đồ thị hai phía có
+tác dụng rất lớn trong lập trình. Mấu chốt của việc chuyển đổi thường là
+xuất phát từ chính điều kiện của đề bài, khai thác thông tin sâu hơn trong
+đề, rồi phân loại các đỉnh của đồ thị có quan hệ phức tạp. Chẳng hạn trên
+bàn cờ, tô màu thường là một cách phân loại rất tốt.
+
+Sau khi xây dựng được mô hình đồ thị hai phía, việc giải cũng rất quan
+trọng. Bài viết này đã đưa ra một số thuật toán cơ bản và định lý liên quan
+của đồ thị hai phía. Sử dụng hợp lý các thông tin ấy về cơ bản có thể giải
+quyết phần lớn bài toán đồ thị hai phía gặp trong lập trình. Nếu có thêm
+nhiều hạn chế và yêu cầu hơn, ta có thể dùng các mô hình phức tạp hơn như
+luồng cực đại để giải. Nhưng xét về hiệu quả thuật toán và độ phức tạp lập
+trình, thuật toán dựa trên đồ thị hai phía thường đơn giản và hiệu quả hơn
+thuật toán dựa trên luồng cực đại.
+
+Đối với thuật toán ghép cặp, ngoài ghép cặp của đồ thị hai phía, ghép cặp
+trên đồ thị tổng quát cũng có định nghĩa, nhưng thuật toán giải tương đối
+phức tạp. Đồng thời, theo quan điểm cá nhân của tôi, vì ghép cặp là quan hệ
+một-một giữa hai vật, nên việc xây dựng quan hệ ghép cặp giữa hai loại sự
+vật, tức ghép cặp trên đồ thị hai phía, có giá trị thực dụng cao hơn ghép cặp
+trên đồ thị tổng quát.
+
+Tóm lại, tôi cho rằng đồ thị hai phía là một mô hình hiệu quả và có giá trị
+sử dụng rộng rãi. Sử dụng mô hình đồ thị hai phía một cách hợp lý và hiệu quả
+sẽ nâng cao đáng kể năng lực lập trình cũng như năng lực giải quyết các vấn
+đề thực tế trong đời sống.
+
+\appendix
+\section{Chứng minh định lý hôn nhân Hall}
+
+Chứng minh định lý hôn nhân Hall như sau.
+
+Rõ ràng, với mọi tập con \(A\) của \(X\), điều kiện \(|A|\le |P(A)|\) là
+điều kiện cần để tồn tại ghép cặp hoàn bị từ \(X\) vào \(Y\). Vì nếu có một
+tập con \(A_0\) của \(X\) sao cho \(|A_0|>|P(A_0)|\), thì không thể xác định
+một quan hệ một-một giữa các đỉnh của \(A_0\) và các đỉnh trong một tập con
+của \(Y\). Sau đây dùng hai cách để chứng minh điều kiện này là đủ.
+
+\subsection{Chứng minh bằng quy nạp}
+
+Với mọi đồ thị hai phía mà \(X\) chỉ có một đỉnh, điều kiện hiển nhiên là
+đủ, vì đỉnh ấy nhất định kề với ít nhất một đỉnh trong \(Y\). Bây giờ giả sử
+đối với mọi đồ thị hai phía có không quá \(m-1\) đỉnh trong \(X\), điều kiện
+này là đủ. Xét một đồ thị hai phía \(G\), trong đó \(X\) có \(m\) đỉnh và
+mọi tập con \(A\) của \(X\) đều thỏa \(|A|\le |P(A)|\). Ta xét hai trường
+hợp sau để chứng minh tồn tại ghép cặp hoàn bị từ \(X\) vào \(Y\).
+
+\paragraph{Trường hợp 1.}
+Với mọi tập con thực sự không rỗng \(A\) của \(X\), đều có
+\(|A|<|P(A)|\). Ta có thể lấy một đỉnh bất kỳ \(x_0\in X\) và ghép nó với
+một đỉnh \(y_0\in Y\). Xóa khỏi \(G\) hai đỉnh \(x_0,y_0\) cùng mọi cạnh
+liên thuộc với chúng, thu được đồ thị \(G'\). Trong đồ thị hai phía \(G'\),
+mỗi tập con \(A\) của \(X-\{x_0\}\) vẫn kề với ít nhất \(|A|\) đỉnh trong
+\(Y-\{y_0\}\). Do đó, theo giả thiết quy nạp, tồn tại một ghép cặp hoàn bị
+từ \(X-\{x_0\}\) vào \(Y-\{y_0\}\). Vì vậy trong đồ thị \(G\) tồn tại ghép
+cặp hoàn bị từ \(X\) vào \(Y\).
+
+\paragraph{Trường hợp 2.}
+Tồn tại một tập con thực sự không rỗng \(A_0\) của \(X\) sao cho
+\(|A_0|=|P(A_0)|\). Gọi \(G'\) là đồ thị con của \(G\) chứa tập đỉnh
+\(A_0\), tập đỉnh \(P(A_0)\) kề với các đỉnh trong \(A_0\), và toàn bộ các
+cạnh nối hai tập đỉnh này. Vì mọi tập con \(A\) của \(A_0\) kề với ít nhất
+\(|A|\) đỉnh trong \(P(A_0)\), theo giả thiết quy nạp, trong \(G'\) tồn tại
+một ghép cặp hoàn bị từ \(A_0\) vào \(P(A_0)\).
+
+Gọi \(G''\) là đồ thị con chứa các tập đỉnh \(X-A_0\) và \(Y-P(A_0)\), cùng
+các cạnh nối hai tập này. Ta khẳng định trong \(G''\) có ghép cặp hoàn bị từ
+\(X-A_0\) vào \(Y-P(A_0)\). Nếu không, theo giả thiết quy nạp, sẽ tồn tại một
+tập con \(A_1\) của \(X-A_0\) sao cho trong \(G''\), các đỉnh của \(A_1\) kề
+với ít hơn \(|A_1|\) đỉnh trong \(Y-P(A_0)\). Điều đó có nghĩa trong đồ thị
+\(G\), các đỉnh của tập con \(A_0\cup A_1\) kề với ít hơn
+\(|A_0\cup A_1|\) đỉnh, mâu thuẫn với giả thiết ``với mọi tập con \(A\) của
+\(X\), đều có \(|A|\le |P(A)|\)''. Vì thế trong \(G''\) tồn tại ghép cặp
+hoàn bị từ \(X-A_0\) vào \(Y-P(A_0)\). Từ đây suy ra trong đồ thị \(G\) có
+ghép cặp hoàn bị từ \(X\) vào \(Y\). Chứng minh hoàn tất.
+
+\subsection{Chứng minh bằng phản chứng}
+
+Giả sử \(G\) không tồn tại ghép cặp hoàn bị. Khi đó \(n=|V_1|\) đỉnh của
+\(V_1\) không thể ghép đôi với \(n\) đỉnh khác nhau của \(V_2\). Bây giờ
+giả sử đã tìm được một ghép cặp có số cạnh lớn nhất \(M^*\) của \(G\). Khi
+đó trong \(V_1\) ít nhất có một đỉnh không được \(M^*\) bão hòa, nếu không
+\(M^*\) đã là ghép cặp hoàn bị. Gọi đỉnh đó là \(v_0\). Từ \(v_0\), ta tìm
+tất cả các đường luân phiên đối với \(M^*\), và gọi tập đỉnh trên các đường
+luân phiên ấy là \(S\). Ký hiệu tập đỉnh thuộc \(V_1\) trong \(S\) là \(A\),
+tập đỉnh thuộc \(V_2\) trong \(S\) là \(B\), tức
+\[
+  S=A\cup B,\qquad A=S\cap V_1,\qquad B=S\cap V_2.
+\]
+
+Theo tính chất của đường luân phiên, mọi đỉnh kề với đỉnh trong \(A\) đều
+phải là đỉnh được \(M^*\) bão hòa; các đỉnh ấy chắc chắn nằm trên một đường
+luân phiên đối với \(M^*\) bắt đầu từ \(v_0\). Vì vậy
+\[
+  P(A)=B. \tag{1}
+\]
+Ngoài ra, trong \(A\), trừ \(v_0\), mỗi đỉnh đều ghép đôi một-một với một
+đỉnh trong \(B\), nên
+\[
+  |B|=|A|-1. \tag{2}
+\]
+Từ (1) và (2) suy ra
+\[
+  |P(A)|=|A|-1<|A|,
+\]
+mâu thuẫn với điều kiện giả thiết. Định lý được chứng minh.
+
+\section{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item \textit{Tổ hợp học và thuật toán}, Nhà xuất bản Đại học Khoa học và
+  Công nghệ Trung Quốc, Yang Zhensheng biên soạn.
+  \item \textit{Lý thuyết đồ thị và thuật toán}, Nhà xuất bản Công nghiệp
+  Hàng không, Xiao Weishu chủ biên.
+  \item Tạp chí quý \textit{Olympic Tin học}, do Ủy ban tổ chức vòng liên
+  tỉnh Olympic Tin học thiếu niên toàn quốc chủ trì.
+  \item \textit{Giáo trình thi mô hình hóa toán học}, Nhà xuất bản Giáo dục
+  Giang Tô, Li Shangzhi chủ biên.
+\end{enumerate}
+
+Ngoài ra, bài viết còn tham khảo các đề và lời giải liên quan của BOI, USACO
+và ACM, đồng thời tổng hợp kết quả thảo luận với các học sinh khác ở tỉnh
+Giang Tô.
+
+\section{Phần trình chiếu kèm trong PDF}
+
+Sau bài viết chính, bản PDF còn chứa một bản trình chiếu ngắn. Nội dung dưới
+đây chuyển toàn bộ phần chữ trích được từ các trang đó sang tiếng Việt.
+
+\subsection*{Trang bìa}
+
+\begin{center}
+\Large Thuật toán và ứng dụng của đồ thị hai phía
+
+\normalsize Trường Trung học trực thuộc Đại học Sư phạm Nam Kinh
+
+Sun Fangcheng
+\end{center}
+
+\subsection*{Mục lục}
+
+\begin{enumerate}
+  \item Khái niệm ghép cặp.
+  \item Định nghĩa và nhận biết đồ thị hai phía.
+  \item Ghép cặp cực đại của đồ thị hai phía.
+  \item Bài toán tập phủ nhỏ nhất của đồ thị hai phía.
+  \item Bài toán ghép cặp tốt nhất của đồ thị hai phía.
+  \item Kết luận.
+\end{enumerate}
+
+\subsection*{Khái niệm ghép cặp}
+
+Cho đồ thị \(G=(V(G),E(G))\), và \(M\) là một tập con của \(E(G)\). Nếu hai
+cạnh bất kỳ trong \(M\) đều không kề nhau, thì \(M\) được gọi là một ghép
+cặp của \(G\). Hai đầu mút của một cạnh trong \(M\) được gọi là được ghép đôi
+dưới \(M\).
+
+Nếu một cạnh nào đó của ghép cặp \(M\) liên thuộc với đỉnh \(v\), thì \(M\)
+bão hòa đỉnh \(v\), và \(v\) là đỉnh bão hòa đối với \(M\).
+
+Giả sử \(M\) là một ghép cặp của đồ thị \(G\). Nếu trong \(G\) tồn tại một
+đường đi đơn \(R\) mà các cạnh trên đường đi luân phiên là cạnh ghép thuộc
+\(M\) và cạnh không ghép không thuộc \(M\), thì \(R\) là đường luân phiên.
+Nếu hai đầu mút của \(R\) đều là đỉnh chưa bão hòa đối với \(M\), thì \(R\)
+là đường tăng.
+
+Cho đồ thị \(G=(V(G),E(G))\), trong đó \(V(G)\) được chia thành hai tập đỉnh
+con không rỗng và bù nhau \(X\) và \(Y\). Nếu một ghép cặp
+\(M\subseteq E(G)\) của \(G\) bão hòa mọi đỉnh trong \(X\), thì \(M\) là
+ghép cặp hoàn bị của \(G\).
+
+\subsection*{Định nghĩa và nhận biết đồ thị hai phía}
+
+Cho đồ thị \(G=(V,E)\). Nếu có thể chia \(V\) thành hai tập \(V_1,V_2\), sao
+cho mỗi cạnh trong \(E\) có một đầu mút ở \(V_1\) và đầu mút kia ở \(V_2\),
+thì đồ thị ấy là đồ thị hai phía. Đồ thị hai phía cũng có thể viết là
+\(G=(V_1,V_2;E)\). Với \(V\subseteq V_1\), dùng \(P(V)\) để chỉ tập các đỉnh
+trong \(V_2\) kề với \(V\).
+
+Nếu trong đồ thị hai phía \(G\), mỗi đỉnh của \(V_1\) đều kề với mọi đỉnh
+của \(V_2\), thì \(G\) là đồ thị hai phía đầy đủ.
+
+Định lý nhận biết: một đồ thị vô hướng \(G\) là đồ thị hai phía khi và chỉ
+khi mọi chu trình của \(G\) đều có độ dài chẵn. Nếu không có chu trình, xem
+độ dài chu trình là \(0\), và \(0\) là số chẵn.
+
+\subsection*{Ghép cặp cực đại của đồ thị hai phía}
+
+Edmonds năm 1965 đưa ra thuật toán Hungary để giải ghép cặp cực đại của đồ
+thị hai phía:
+\begin{enumerate}
+  \item Lấy một ghép cặp ban đầu \(M\) trong \(G\).
+  \item Nếu mọi đỉnh trong \(X\) đều là đầu mút của cạnh thuộc \(M\), dừng:
+  \(M\) là ghép cặp hoàn bị. Ngược lại, lấy một đỉnh \(u\) trong \(X\) không
+  liên thuộc với cạnh nào trong \(M\), đặt \(S=\{u\},T=\varnothing\).
+  \item Nếu \(P(S)=T\), dừng: không có ghép cặp hoàn bị. Ngược lại, lấy
+  \(y\in P(S)-T\).
+  \item Nếu \(y\) là đầu mút của cạnh thuộc \(M\), giả sử \(yz\in M\), đặt
+  \(S\leftarrow S\cup\{z\}\), \(T\leftarrow T\cup\{y\}\), rồi quay lại bước
+  3. Ngược lại, lấy đường tăng \(R(u,y)\), đặt
+  \(M\leftarrow M\oplus E(R)\), rồi quay lại bước 2.
+\end{enumerate}
+
+\subsection*{Tập phủ nhỏ nhất và ghép cặp cực đại}
+
+Bài toán tập phủ nhỏ nhất của đồ thị tổng quát là một bài toán NPC đã được
+chứng minh. Nói cách khác, bài toán tập phủ nhỏ nhất của đồ thị tổng quát
+không có thuật toán hiệu quả đã biết. Vì vậy, nếu một bài toán thực tế chỉ
+được trừu tượng hóa thành tập phủ nhỏ nhất của đồ thị tổng quát, mô hình đó
+khó đem lại giá trị thuật toán.
+
+Nhưng nếu bài toán có thể được trừu tượng hóa thành tập phủ nhỏ nhất của đồ
+thị hai phía, kết cục sẽ khác. Do tính đặc thù của đồ thị hai phía, bài toán
+tập phủ nhỏ nhất của đồ thị hai phía có thuật toán đa thức.
+
+Trong chứng minh quan hệ này cần dùng định lý hôn nhân Hall: cho đồ thị hai
+phía \(G\), tập đỉnh chia thành \(V_1\) và \(V_2\). Trong \(G\) tồn tại ghép
+cặp hoàn bị đối với \(V_1\) khi và chỉ khi với mọi \(S\subseteq V_1\), đều
+có \(|S|\le |P(S)|\).
+
+Năm 1931, König đưa ra định lý về quan hệ giữa ghép cặp cực đại và phủ nhỏ
+nhất: trong đồ thị hai phía \(G\), nếu \(M^*\) là ghép cặp cực đại và \(K^*\)
+là tập phủ nhỏ nhất, thì
+\[
+  |M^*|=|K^*|.
+\]
+
+\subsection*{Bài toán ghép cặp tốt nhất}
+
+Cho đồ thị hai phía đầy đủ có trọng số
+\[
+G=(V_1,V_2;E),\qquad
+V_1=\{x_1,x_2,\ldots,x_n\},\qquad
+V_2=\{y_1,y_2,\ldots,y_n\},
+\]
+với trọng số \(w(x_iy_j)\ge 0\). Nếu một ghép cặp hoàn bị \(M\) thỏa
+\(W(M)\ge W(M')\) với mọi ghép cặp hoàn bị \(M'\), thì \(M\) là ghép cặp tốt
+nhất của \(G\).
+
+Vì có trọng số, ghép cặp tốt nhất không thể trực tiếp dùng thuật toán ghép
+cặp cực đại để giải. Đồng thời, định nghĩa ghép cặp tốt nhất được xây dựng
+trên đồ thị hai phía đầy đủ có trọng số; với đồ thị không đầy đủ, có thể
+thêm các cạnh trọng số \(0\), hoặc giá trị khác không ảnh hưởng đến kết quả,
+để biến đồ thị hai phía thành đồ thị hai phía đầy đủ rồi dùng thuật toán
+ghép cặp tốt nhất.
+
+Trước khi giới thiệu thuật toán KM, cần nêu khái niệm sau. Ánh xạ
+\(l:V(G)\to R\) thỏa
+\[
+  \forall x\in V_1,\quad \forall y\in V_2,\quad
+  l(x)+l(y)\ge w(xy)
+\]
+được gọi là nhãn đỉnh khả thi của đồ thị hai phía \(G\). Đặt
+\[
+  E_l=\{xy\mid xy\in E(G),\ l(x)+l(y)=w(xy)\}.
+\]
+Đồ thị con sinh lấy \(E_l\) làm tập cạnh được gọi là đồ thị bằng nhau, ký
+hiệu \(G_l\). Có thể chứng minh rằng ghép cặp hoàn bị của \(G_l\) chính là
+ghép cặp tốt nhất của \(G\).
+
+Trên cơ sở đó, Kuhn năm 1955 và Munkres năm 1957 đưa ra phương pháp sửa nhãn
+đỉnh, khiến ghép cặp cực đại của đồ thị bằng nhau mới dần mở rộng, cuối cùng
+xuất hiện ghép cặp hoàn bị của đồ thị bằng nhau. Đó là thuật toán KM.
+
+\subsection*{Thuật toán KM}
+
+\begin{enumerate}
+  \item Chọn nhãn đỉnh khả thi ban đầu \(l\), và chọn một ghép cặp ban đầu
+  \(M\) trên \(G_l\).
+  \item Nếu mọi đỉnh trong \(V_1\) đều là đầu mút của cạnh thuộc \(M\), dừng:
+  \(M\) là ghép cặp tốt nhất. Ngược lại, lấy một đỉnh \(u\) trong \(G_l\)
+  không liên thuộc với cạnh nào trong \(M\), đặt \(S=\{u\},T=\varnothing\).
+  \item Nếu \(P(S)\supset T\), chuyển sang bước 4. Nếu \(P(S)=T\), lấy
+  \[
+  a_l=\min_{x\in S,\ y\notin T}\{l(x)+l(y)-w(xy)\},
+  \]
+  rồi sửa nhãn theo
+  \[
+  l'(v)=
+  \begin{cases}
+  l(v)-a_l, & v\in S,\\
+  l(v)+a_l, & v\in T,\\
+  l(v), & \text{trường hợp khác}.
+  \end{cases}
+  \]
+  Sau đó đặt \(l\leftarrow l'\), \(G_l\leftarrow G_{l'}\).
+  \item Chọn một đỉnh \(y\in P(S)-T\). Nếu \(y\) là đầu mút của cạnh thuộc
+  \(M\), và \(yz\in M\), đặt \(S\leftarrow S\cup\{z\}\),
+  \(T\leftarrow T\cup\{y\}\), rồi quay lại bước 3. Ngược lại, lấy đường tăng
+  \(R(u,y)\) của \(M\) trong \(G_l\), đặt \(M\leftarrow M\oplus E(R)\), rồi
+  quay lại bước 2.
+\end{enumerate}
+
+\subsection*{Ví dụ trên trang trình chiếu}
+
+Một công ty có các nhân viên \(x_1,x_2,\ldots,x_n\), họ cần làm các công
+việc \(y_1,y_2,\ldots,y_n\). Mỗi người có thể làm một vài công việc và có
+hiệu suất cố định đối với từng công việc. Cần tìm phương án phân công sao
+cho tổng hiệu suất cao nhất; một người chỉ làm một công việc, và một công
+việc phải do một người độc lập hoàn thành. Không yêu cầu mọi người đều có
+việc.
+
+Ví dụ dữ liệu:
+\[
+\begin{array}{c|ccccc}
+ & Y_1 & Y_2 & Y_3 & Y_4 & Y_5\\ \hline
+X_1 & 3 & 5 & 5 & 4 & 1\\
+X_2 & 2 & 2 & 0 & 2 & 2\\
+X_3 & 2 & 4 & 4 & 1 & 0\\
+X_4 & 0 & 1 & 1 & 0 & 0\\
+X_5 & 1 & 2 & 1 & 3 & 3
+\end{array}
+\]
+Nếu công nhân \(x\) hoàn toàn không thể tham gia công việc \(y\), đặt
+\(w(x,y)=0\).
+
+Chọn nhãn đỉnh khả thi:
+\[
+\begin{aligned}
+l(y_i)&=0,\quad i=1,2,3,4,5,\\
+l(x_1)&=\max\{3,5,5,4,1\}=5,\\
+l(x_2)&=\max\{2,2,0,2,2\}=2,\\
+l(x_3)&=\max\{2,4,4,1,0\}=4,\\
+l(x_4)&=\max\{0,1,1,0,0\}=1,\\
+l(x_5)&=\max\{1,2,1,3,3\}=3.
+\end{aligned}
+\]
+Xây dựng \(G_l\), tìm ghép cặp cực đại; quá trình chi tiết đã nằm trong bài
+viết chính.
+
+Ghép cặp cực đại ban đầu có thể biểu diễn bởi
+\[
+  x_1-y_2,\qquad x_2-y_1,\qquad x_3-y_3,\qquad x_5-y_5.
+\]
+Trong \(G_l\) chưa có ghép cặp hoàn bị, nên sửa nhãn đỉnh. Do
+\[
+  u=x_4,\qquad S=\{x_4,x_3,x_1\},\qquad T=\{y_3,y_2\},
+\]
+nên
+\[
+  a_l=\min_{x\in S,\ y\notin T}\{l(x)+l(y)-w(xy)\}=1.
+\]
+Nhãn đỉnh sau khi sửa:
+\[
+\begin{gathered}
+x_1=4,\quad x_2=2,\quad x_3=3,\quad x_4=0,\quad x_5=3,\\
+y_1=0,\quad y_2=1,\quad y_3=1,\quad y_4=0,\quad y_5=0.
+\end{gathered}
+\]
+Theo nhãn mới, \(G_l\) có một ghép cặp hoàn bị, cho ghép cặp tốt nhất với
+trọng số lớn nhất
+\[
+  4+2+4+1+3=14.
+\]
+
+\subsection*{Kết luận của trang trình chiếu}
+
+Đồ thị hai phía là một loại đồ thị đặc biệt. Nó không chỉ có ưu điểm chung
+của mô hình đồ thị là chứa lượng thông tin phong phú, mà còn có nhiều nội hàm
+và ưu thế thuật toán mà đồ thị tổng quát không có.
+
+Các đỉnh của đồ thị hai phía được chia thành hai phần; điều này có liên hệ
+sâu sắc với quan hệ tương ứng, hay quan hệ ghép cặp, trong tự nhiên và trong
+toán học. Vì vậy, thuật toán ghép cặp là lõi của mọi thuật toán trên đồ thị
+hai phía.
+
+Nếu có thể trừu tượng hóa một bài toán thực tế thành mâu thuẫn giữa hai loại
+sự vật, thì bài toán ấy có thể được mô hình hóa bằng đồ thị hai phía. Do đó
+mô hình đồ thị hai phía có ứng dụng rộng rãi. Đồng thời, thuật toán trên đồ
+thị hai phía có đặc điểm hiệu quả và thực dụng, khiến việc giải bài bằng mô
+hình đồ thị hai phía trở nên khả thi.
+
+Tóm lại, tôi cho rằng đồ thị hai phía là một mô hình hiệu quả và có giá trị
+sử dụng rộng rãi. Sử dụng mô hình đồ thị hai phía một cách hợp lý và hiệu quả
+sẽ nâng cao đáng kể năng lực lập trình cũng như năng lực giải quyết các vấn
+đề thực tế trong đời sống.
+
+\begin{center}
+Cảm ơn!
+\end{center}
+
+\end{document}

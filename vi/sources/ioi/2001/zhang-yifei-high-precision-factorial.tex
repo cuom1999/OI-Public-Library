@@ -1,0 +1,410 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2001/张一飞.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Thuật toán độ chính xác cao để tính \(N!\)}
+\author{Zhang Yifei}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{High-precision algorithms for computing \(N!\)}
+\sourcepath{IOI China candidate team papers / 2001 / Zhang Yifei.pdf}
+
+\tableofcontents
+
+\section{Dẫn nhập}
+
+Các thuật toán trong bài này chủ yếu nhắm tới ngôn ngữ Pascal. Bài viết đặt
+ra ba câu hỏi: ta hiểu gì về số học độ chính xác cao, ta đã từng dùng những
+cấu trúc dữ liệu nào cho số nguyên lớn, và ta đã suy nghĩ kỹ về cách tối ưu
+thuật toán hay chưa. Với bài toán tính \(N!\), ta sẽ thấy một số cách cải
+thiện có thể làm chương trình nhanh hơn nhiều lần.
+
+\section{Về độ chính xác cao}
+
+\subsection{Các kiểu số nguyên chuẩn trong Pascal}
+
+Pascal cung cấp một số kiểu số nguyên chuẩn với miền giá trị cố định:
+\[
+\begin{array}{lll}
+\text{Kiểu dữ liệu} & \text{Miền giá trị} \\
+\hline
+\texttt{Shortint} & -128 & \text{đến }127 \\
+\texttt{Byte}     & 0    & \text{đến }255 \\
+\texttt{Integer}  & -32768 & \text{đến }32767 \\
+\texttt{Word}     & 0 & \text{đến }65535 \\
+\texttt{Longint}  & -2147483648 & \text{đến }2147483647 \\
+\texttt{Comp}     & -9.2\cdot 10^{18} & \text{đến }9.2\cdot 10^{18}.
+\end{array}
+\]
+Tuy \texttt{Comp} thuộc nhóm kiểu thực, trên thực tế nó biểu diễn một số
+nguyên 64 bit.
+
+\subsection{Tư tưởng cơ bản của thuật toán độ chính xác cao}
+
+Các kiểu số nguyên chuẩn trong Pascal nhiều nhất chỉ xử lý trực tiếp được
+những số nguyên nằm trong khoảng xấp xỉ từ \(-2^{63}\) đến \(2^{63}\). Khi
+cần tính với số nguyên lớn hơn, ta phải dùng thuật toán độ chính xác cao.
+
+Tư tưởng cơ bản là chia số nguyên lớn, vốn không thể xử lý trực tiếp, thành
+nhiều đoạn số nguyên nhỏ có thể xử lý trực tiếp. Khi đó phép toán trên số lớn
+được chuyển thành các phép toán trên những đoạn nhỏ ấy.
+
+\section{Lựa chọn cấu trúc dữ liệu}
+
+\subsection{Giữ càng nhiều chữ số trong mỗi đoạn càng tốt}
+
+Xét ví dụ tính tổng của hai số có 15 chữ số. Có ba cách chia số:
+\begin{itemize}
+  \item Cách thứ nhất: chia thành 15 đoạn nhỏ, mỗi đoạn có 1 chữ số. Ta cần
+  15 phép cộng một chữ số.
+  \item Cách thứ hai: chia thành 5 đoạn nhỏ, mỗi đoạn có 3 chữ số. Ta cần 5
+  phép cộng ba chữ số.
+  \item Cách thứ ba: kiểu \texttt{Comp} có thể xử lý trực tiếp số nguyên 15
+  chữ số, nên chỉ cần 1 phép cộng.
+\end{itemize}
+
+Khi dùng \texttt{Integer}, cộng hai số một chữ số và cộng hai số ba chữ số có
+tốc độ như nhau, vì vậy cách thứ hai hiệu quả hơn cách thứ nhất. Dù thao tác
+trên \texttt{Comp} chậm hơn thao tác trên \texttt{Integer}, số lần cộng giảm
+rất mạnh; thực nghiệm cho thấy cách thứ ba vẫn nhanh hơn cách thứ hai.
+
+\subsection{Dùng kiểu \texttt{Comp}}
+
+Trong tính toán độ chính xác cao, mỗi đoạn nhỏ có thể được biểu diễn bằng
+kiểu \texttt{Comp}. Kiểu này có khoảng 19 đến 20 chữ số có nghĩa. Tùy phép
+toán, ta chọn số chữ số lưu trong mỗi đoạn như sau:
+\begin{itemize}
+  \item Khi cộng hai số độ chính xác cao, mỗi đoạn có thể giữ 17 chữ số.
+  \item Khi nhân một số độ chính xác cao với một số nguyên không quá \(m\)
+  chữ số, mỗi đoạn có thể giữ \(18-m\) chữ số.
+  \item Khi nhân hai số độ chính xác cao, mỗi đoạn có thể giữ 9 chữ số.
+\end{itemize}
+
+Nếu mỗi đoạn nhỏ giữ \(k\) chữ số thập phân, ta có thể xem đoạn đó là một chữ
+số trong hệ cơ số \(10^k\). Trong bài này, ta gọi cách biểu diễn ấy là
+\term{số cơ số cao}, và gọi một chữ số cơ số cao là một \term{số đơn chính
+xác}.
+
+\subsection{Biểu diễn nhị phân}
+
+Dùng biểu diễn nhị phân có thể cải thiện hiệu quả thời gian và không gian
+trong quá trình tính toán. Tuy nhiên, đề bài thường yêu cầu in kết quả ở hệ
+thập phân, nên cần thêm một bước đổi cơ số rất tốn thời gian. Vì thế phương
+pháp này thường không được dùng trong thi đấu, và bài viết không đi sâu vào
+cách làm đó.
+
+\section{Tối ưu hóa thuật toán}
+
+Các phần sau phân tích độ phức tạp của phép nhân độ chính xác cao, phép nhân
+liên tiếp, kỹ thuật đặt bộ đệm, cách tính giai thừa bằng phân tích thừa số
+nguyên tố, phương pháp lũy thừa nhị phân, và bước điều chỉnh sau khi phân
+tích thừa số nguyên tố.
+
+\subsection{Độ phức tạp của phép nhân độ chính xác cao}
+
+Khi nhân một số có \(n\) chữ số cơ số cao với một số có \(m\) chữ số cơ số
+cao, thuật toán nhân thông thường cần \(n m\) phép nhân giữa các chữ số cơ số
+cao. Kết quả có thể có \(n+m-1\) hoặc \(n+m\) chữ số cơ số cao.
+
+\subsection{Độ phức tạp của phép nhân liên tiếp}
+
+Xét ví dụ tính
+\[
+  5\cdot 6\cdot 7\cdot 8.
+\]
+Nếu nhân theo thứ tự từ trái sang phải, ta có
+\[
+\begin{array}{rcll}
+5\cdot 6 &=& 30,   & 1\cdot 1=1 \text{ phép nhân},\\
+30\cdot 7 &=& 210, & 2\cdot 1=2 \text{ phép nhân},\\
+210\cdot 8 &=& 1680, & 3\cdot 1=3 \text{ phép nhân}.
+\end{array}
+\]
+Tổng cộng có 6 phép nhân. Nếu nhóm khác đi,
+\[
+\begin{array}{rcll}
+5\cdot 6 &=& 30, & 1\cdot 1=1 \text{ phép nhân},\\
+7\cdot 8 &=& 56, & 1\cdot 1=1 \text{ phép nhân},\\
+30\cdot 56 &=& 1680, & 2\cdot 2=4 \text{ phép nhân},
+\end{array}
+\]
+tổng số phép nhân vẫn là 6.
+
+Đặc điểm của ví dụ này là khi một số \(n\) chữ số nhân với một số \(m\) chữ
+số, kết quả có đúng \(n+m\) chữ số. Nếu giả thiết ấy luôn đúng, thì với \(n\)
+số đơn chính xác, bất kể chọn thứ tự nhân như thế nào, số phép nhân luôn là
+\[
+  \frac{n(n-1)}{2}.
+\]
+
+Chứng minh bằng quy nạp như sau. Gọi \(F(n)\) là số phép nhân cần dùng. Ta có
+\(F(1)=0\). Giả sử với mọi \(k<n\), \(F(k)=k(k-1)/2\). Ở lần nhân cuối, ta
+nhân một số \(k\) chữ số với một số \(n-k\) chữ số, nên
+\[
+\begin{aligned}
+F(n)
+&=F(k)+F(n-k)+k(n-k)\\
+&=\frac{k(k-1)}{2}
+  +\frac{(n-k)(n-k-1)}{2}
+  +k(n-k)\\
+&=\frac{n(n-1)}{2}.
+\end{aligned}
+\]
+Giá trị này không phụ thuộc vào cách chọn \(k\).
+
+\subsection{Đặt bộ đệm}
+
+Trường hợp kết quả của phép nhân có thể chỉ có \(n+m-1\) chữ số cho thấy thứ
+tự nhân bắt đầu có ảnh hưởng. Ví dụ tính
+\[
+  9\cdot 8\cdot 3\cdot 2.
+\]
+Nếu nhân theo thứ tự từ trái sang phải:
+\[
+\begin{array}{rcll}
+9\cdot 8 &=& 72, & 1\cdot 1=1 \text{ phép nhân},\\
+72\cdot 3 &=& 216, & 2\cdot 1=2 \text{ phép nhân},\\
+216\cdot 2 &=& 432, & 3\cdot 1=3 \text{ phép nhân}.
+\end{array}
+\]
+Tổng cộng có 6 phép nhân. Nếu trước hết tính \(9\cdot 8\) và \(3\cdot 2\),
+rồi mới nhân hai kết quả:
+\[
+\begin{array}{rcll}
+9\cdot 8 &=& 72, & 1\cdot 1=1 \text{ phép nhân},\\
+3\cdot 2 &=& 6, & 1\cdot 1=1 \text{ phép nhân},\\
+72\cdot 6 &=& 432, & 2\cdot 1=2 \text{ phép nhân},
+\end{array}
+\]
+tổng cộng chỉ còn 4 phép nhân.
+
+Ta xét tích của \(k+t\) số đơn chính xác
+\[
+  a_1a_2\cdots a_k a_{k+1}\cdots a_{k+t}.
+\]
+Giả sử \(a_1a_2\cdots a_k\) đã được tính và kết quả là một số có \(m\) chữ số
+cơ số cao; đồng thời \(a_{k+1}\cdots a_{k+t}\) vẫn là một số đơn chính xác.
+Nếu tiếp tục nhân tuần tự, ta cần \(t\) phép nhân kiểu ``số \(m\) chữ số nhân
+với số 1 chữ số'', tức khoảng \(mt\) phép nhân giữa chữ số cơ số cao. Nếu
+trước hết tính \(a_{k+1}\cdots a_{k+t}\), rồi nhân một lần với kết quả trước,
+ta chỉ cần khoảng \(m+t\) phép nhân.
+
+Trong cách cài đặt có bộ đệm, ta gom nhiều số đơn chính xác lại cho đến khi
+tích của chúng sắp vượt quá khả năng chứa của kiểu chuẩn, rồi mới nhân tích
+đó vào số độ chính xác cao. Khi tính tích của \(m\) số đơn chính xác và kết
+quả cuối cùng có \(n\) chữ số cơ số cao, số phép nhân xấp xỉ
+\[
+  \frac{n(n-1)}{2},
+\]
+gần như không phụ thuộc trực tiếp vào \(m\). Có thể hình dung ta chia \(m\)
+thừa số thành \(n\) nhóm, mỗi nhóm có tích vẫn là một số đơn chính xác; phần
+tốn thời gian chính là nhân \(n\) số thu được. Lúc đó mô hình
+``\(n\) chữ số nhân \(m\) chữ số cho \(n+m\) chữ số'' gần đúng, nên công thức
+trên áp dụng được.
+
+\subsection{Kích thước bộ đệm}
+
+Giả sử kiểu dữ liệu chuẩn được chọn có thể xử lý trực tiếp tối đa \(t\) chữ
+số thập phân. Đặt kích thước bộ đệm là \(k\) chữ số thập phân; khi đó mỗi
+đoạn nhỏ của số độ chính xác cao giữ \(t-k\) chữ số thập phân. Nếu kết quả
+cuối cùng có \(n\) chữ số thập phân, thì số phép nhân xấp xỉ
+\[
+  \frac{k}{n-k}\sum_{i=1}^{n/k} i
+  =\frac{(n+k)n}{2k(t-k)},
+\]
+trong đó \(k\) nhỏ hơn \(n\) rất nhiều.
+
+Để số phép nhân nhỏ nhất, ta cần làm cho \(k(t-k)\) lớn nhất. Giá trị tối ưu
+đạt được khi \(k=t/2\). Vì vậy, hiệu quả cao nhất xuất hiện khi kích thước bộ
+đệm bằng kích thước mỗi đoạn nhỏ. Trong phép nhân liên tiếp thông thường, có
+thể dùng \texttt{Comp} làm kiểu cơ sở, mỗi đoạn nhỏ giữ 9 chữ số thập phân,
+và bộ đệm cũng giữ 9 chữ số thập phân.
+
+\section{Tính giai thừa bằng phân tích thừa số nguyên tố}
+
+Ví dụ:
+\[
+  10! = 2^8\cdot 3^4\cdot 5^2\cdot 7.
+\]
+Độ phức tạp của việc phân tích \(n!\) thành thừa số nguyên tố nhỏ hơn rất
+nhiều so với \(n\log n\), nên có thể xem là không đáng kể so với phần nhân độ
+chính xác cao.
+
+So với thuật toán thông thường, sau khi phân tích thừa số nguyên tố, số lượng
+thừa số \(m\) có thể tăng, nhưng số chữ số \(n\) của kết quả không đổi. Miễn
+là dùng bộ đệm, số phép nhân vẫn xấp xỉ \(n(n-1)/2\). Vì vậy, riêng bước
+phân tích thừa số nguyên tố không làm thuật toán chậm đi; điều này cũng phù
+hợp với thực nghiệm.
+
+Lợi ích của việc phân tích thừa số nguyên tố nằm ở chỗ sau đó xuất hiện rất
+nhiều phép tính lũy thừa. Ta có thể tối ưu phần tính lũy thừa, và nhờ vậy
+phương pháp phân tích thừa số nguyên tố mới phát huy hiệu quả.
+
+Một quy trình tính \(N!\) theo hướng này là:
+\begin{enumerate}
+  \item Liệt kê các số nguyên tố \(p\le N\).
+  \item Với mỗi \(p\), tính số mũ
+  \[
+    e_p=\sum_{i\ge 1}\left\lfloor\frac{N}{p^i}\right\rfloor.
+  \]
+  \item Tính các lũy thừa \(p^{e_p}\) bằng phương pháp lũy thừa nhị phân,
+  dùng phép bình phương đã cải tiến.
+  \item Điều chỉnh và ghép các lũy thừa khi có lợi, rồi nhân các khối kết
+  quả bằng phép nhân độ chính xác cao có bộ đệm.
+\end{enumerate}
+
+\section{Lũy thừa nhị phân}
+
+Lũy thừa nhị phân dùng các công thức
+\[
+  a^{2n+1}=a^{2n}\cdot a,\qquad
+  a^{2n}=(a^n)^2,
+\]
+trong đó \(a\) là một số đơn chính xác.
+
+Giả sử tích của một số \(n\) chữ số với một số \(m\) chữ số luôn có \(n+m\)
+chữ số. Gọi \(F(n)\) là số phép nhân giữa chữ số cơ số cao cần dùng để tính
+\(a^n\) bằng lũy thừa nhị phân. Khi đó
+\[
+  F(2n)=F(n)+n^2,\qquad F(1)=0.
+\]
+Nếu \(n=2^k\), ta có
+\[
+  F(n)=F(2^k)=\sum_{i=0}^{k-1}4^i
+  =\frac{4^k-1}{3}
+  =\frac{n^2-1}{3}.
+\]
+
+Trong khi đó, nhân liên tiếp cần \(n(n-1)/2\) phép nhân. Như vậy nhân liên
+tiếp chỉ nhiều hơn lũy thừa nhị phân khoảng 50\%. Việc dùng lũy thừa nhị phân
+không làm độ phức tạp giảm từ \(n^2\) xuống \(n\log n\), vì chi phí của các
+phép bình phương số lớn vẫn chi phối.
+
+\subsection{Cải tiến phép bình phương}
+
+Ta khai thác đẳng thức
+\[
+  (a+b)^2=a^2+2ab+b^2.
+\]
+Chẳng hạn,
+\[
+  12345^2=123^2\cdot 10000+45^2+2\cdot 123\cdot 45\cdot 100.
+\]
+Ý tưởng là tách một số \(n\) chữ số thành một phần \(t\) chữ số và một phần
+\(n-t\) chữ số, rồi tính bình phương bằng công thức trên.
+
+Gọi \(F(n)\) là số phép nhân cần dùng để bình phương một số \(n\) chữ số. Ta
+có
+\[
+  F(n)=F(t)+F(n-t)+t(n-t),\qquad F(1)=1.
+\]
+Bằng quy nạp toán học, suy ra
+\[
+  F(n)=\frac{n(n+1)}{2}.
+\]
+Vì thế, bất kể chia ở vị trí nào, hiệu quả về số phép nhân là như nhau. Trong
+cài đặt, tách thành một phần 1 chữ số và một phần \(n-1\) chữ số là thuận
+tiện hơn.
+
+Cũng có thể nhìn phép bình phương theo công thức
+\[
+  S^2=
+  \left(\sum_{0\le i<n} a_i10^i\right)^2
+  =
+  \sum_{0\le i<n}a_i^2 10^{2i}
+  +2\sum_{0\le i<j<n}a_i a_j 10^{i+j}.
+\]
+Tổng cộng có \(n+\binom{n}{2}=n(n+1)/2\) phép nhân. Thuật toán bình thường
+cần \(n^2\) phép nhân, tức chậm hơn khoảng một lần so với phép bình phương
+đã cải tiến.
+
+Nếu trong lũy thừa nhị phân ta dùng phép bình phương cải tiến, số phép nhân
+cần dùng trở thành
+\[
+  \frac{(n+4)(n-1)}{6},
+\]
+xấp xỉ một phần ba so với thuật toán nhân liên tiếp với \(n(n-1)/2\) phép
+nhân.
+
+\section{Điều chỉnh sau khi phân tích thừa số nguyên tố}
+
+\subsection{Vì sao cần điều chỉnh}
+
+Khi tính
+\[
+  S=2^{11}3^{10},
+\]
+ta có thể tính riêng \(2^{11}\), tính riêng \(3^{10}\), rồi nhân hai kết quả.
+Nhưng cũng có thể dùng
+\[
+  S=2^{11}3^{10}=6^{10}\cdot 2,
+\]
+tức tính \(6^{10}\) rồi nhân thêm \(2\). Hai cách này có hiệu quả khác nhau.
+
+\subsection{Khi nào nên điều chỉnh}
+
+Xét
+\[
+  S=a^{x+k}b^x=(ab)^x a^k.
+\]
+Khi
+\[
+  k < x\log_a b,
+\]
+dùng dạng \((ab)^x a^k\) tốt hơn; ngược lại, dùng dạng \(a^{x+k}b^x\) nhanh
+hơn.
+
+Có hai cách hiểu kết luận này. Cách trực tiếp là tính số phép nhân của hai
+phương án rồi giải bất đẳng thức. Một cách nhìn khác là: khác biệt chính của
+hai phương án nằm ở phép nhân cuối cùng. Vì tích cuối cùng của hai cách có
+cùng số chữ số, hai thừa số càng chênh lệch thì số phép nhân cuối cùng càng
+ít.
+
+Cụ thể, ta chọn \((ab)^x a^k\) khi
+\[
+  a^x b^x-a^k > a^{x+k}-b^x.
+\]
+Bất đẳng thức này tương đương với
+\[
+  (b^x-a^k)(a^x+1)>0,
+\]
+nên tương đương với
+\[
+  b^x>a^k.
+\]
+Do đó điều kiện là
+\[
+  k < x\log_a b.
+\]
+
+\section{Kết luận}
+
+Những điểm chính của bài viết là:
+\begin{itemize}
+  \item dùng \texttt{Comp} làm kiểu cơ sở cho mỗi đoạn nhỏ;
+  \item cân nhắc biểu diễn nhị phân, dù trong thi đấu thường phải trả giá ở
+  bước đổi sang hệ thập phân;
+  \item dùng bộ đệm khi nhân liên tiếp độ chính xác cao, và chọn kích thước
+  bộ đệm bằng kích thước mỗi đoạn nhỏ;
+  \item dùng phép bình phương cải tiến;
+  \item dùng lũy thừa nhị phân;
+  \item tính giai thừa bằng phân tích thừa số nguyên tố, kèm điều chỉnh sau
+  khi phân tích.
+\end{itemize}
+
+Các kỹ thuật này có thể dùng cho tính lũy thừa độ chính xác cao, tính tích
+liên tiếp như giai thừa, và tính số chỉnh hợp hoặc tổ hợp độ chính xác cao.
+
+Tự thân bài toán tính \(N!\) bằng độ chính xác cao không khó, nhưng vẫn có
+thể được tối ưu từ nhiều góc độ. Thật ra, nhiều thuật toán kinh điển cũng còn
+không gian cải thiện, và những chương trình do ta tự viết cũng vậy. Chỉ cần
+chịu khó phân tích, rất có thể ta sẽ tìm ra một thuật toán tốt hơn. Trong thi
+đấu, yêu cầu về độ chính xác cao thường không quá nặng, nên các tối ưu này có
+thể không bắt buộc; mục tiêu chính của ví dụ này là nhấn mạnh một ý: thuật
+toán luôn có thể được tối ưu.
+
+\end{document}

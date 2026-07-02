@@ -1,0 +1,480 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2002/骆骥.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\Win}{\mathsf{W}}
+\newcommand{\Lose}{\mathsf{L}}
+
+\title{Hai hướng tư duy khi giải bài toán đối sách\\
+\large Từ bài toán lấy sỏi}
+\author{Luo Ji}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Two approaches to solving game-strategy problems: starting from the stone-taking problem}
+\sourcepath{IOI China candidate team papers / 2002 / Luo Ji.pdf}
+
+\begin{abstract}
+Vận trù học là một ngành còn trẻ, bao gồm quy hoạch, lý thuyết đồ thị,
+lý thuyết đối sách, lý thuyết hàng đợi, lý thuyết lưu trữ, v.v. Trong các
+kỳ thi tin học, dạng đối sách thường gặp nhất là trò chơi hai người, trong đó
+khi đối thủ luôn chọn chiến lược tối ưu thì bên ta hoặc có chiến lược thắng
+chắc, hoặc buộc thua. Bài viết bắt đầu từ một bài lấy sỏi cổ điển, qua đó
+trình bày hai hướng tư duy cơ bản: phương pháp tổng quát dựa trên đồ thị
+chuyển trạng thái, và phương pháp đặc thù dựa trên việc tìm trạng thái cân
+bằng cùng quy luật ra quyết định.
+\end{abstract}
+
+\tableofcontents
+
+\section{Bài toán lấy sỏi}
+
+Có \(N\) viên sỏi. Hai người chơi Giáp và Ất luân phiên lấy sỏi. Mỗi lần phải
+lấy ít nhất một viên, và được lấy nhiều nhất bằng hai lần số sỏi mà đối thủ
+vừa lấy ở lượt trước. Giáp đi trước; ở lượt đầu, Giáp có thể lấy tùy ý số
+lượng sỏi, nhưng không được lấy hết. Người đầu tiên không còn sỏi để lấy là
+người thua.
+
+Câu hỏi là: Giáp có thể thắng hay không? Trong bản bài toán trên slide,
+\(1<N<100\).
+
+\subsection{Trạng thái}
+
+Trong bài toán này, kết quả phụ thuộc vào hai yếu tố chính:
+\begin{itemize}
+  \item số sỏi hiện còn, ký hiệu là \(N\);
+  \item số sỏi tối đa được lấy trong lượt hiện tại, ký hiệu là \(K\).
+\end{itemize}
+
+Ta dùng cặp \((N,K)\) để mô tả một trạng thái. Trạng thái ban đầu là
+\((N,N-1)\), vì Giáp được lấy từ \(1\) đến \(N-1\) viên. Nếu ở trạng thái
+\((N,K)\) người chơi lấy \(x\) viên, với
+\[
+  1\le x\le \min(N,K),
+\]
+thì trạng thái dành cho người kế tiếp là
+\[
+  (N-x,2x).
+\]
+Khi \(N=0\), người đến lượt không có nước đi, nên trạng thái đó là trạng thái
+thua cho người sắp đi.
+
+\subsection{Ví dụ N bằng 4}
+
+Với \(N=4\), trạng thái ban đầu là \((4,3)\). Cây chuyển trạng thái đi từ
+trên xuống như sau:
+\[
+\begin{array}{c}
+(4,3)\\[0.4em]
+\begin{array}{ccc}
+\xrightarrow{x=1} & \xrightarrow{x=2} & \xrightarrow{x=3}\\[-0.2em]
+(3,2) & (2,4) & (1,6)
+\end{array}
+\end{array}
+\]
+Vì nếu \(K\ge N\) thì người đang đi có thể lấy hết sỏi, các trạng thái
+\((2,4)\) và \((1,6)\) là trạng thái thắng. Nhánh còn lại có dạng
+\[
+\begin{array}{rcl}
+(3,2) &\to& (2,2)\quad\text{hoặc}\quad (1,4),\\
+(2,2) &\to& (1,2)\quad\text{hoặc}\quad (0,4),\\
+(1,2) &\to& (0,2).
+\end{array}
+\]
+Từ đáy cây suy ngược lên, ta có:
+\[
+\begin{array}{c|c|l}
+\text{Trạng thái} & \text{Loại} & \text{Lý do}\\ \hline
+(0,0) & \Lose & \text{không có nước đi}\\
+(1,K),\ K\ge 1 & \Win & \text{lấy hết một viên}\\
+(2,2) & \Win & \text{có thể đi tới }(0,4)\\
+(3,2) & \Lose & \text{mọi nước đi đều tới trạng thái thắng}\\
+(4,3) & \Win & \text{lấy một viên, để lại }(3,2)
+\end{array}
+\]
+Ở đây \(\Win\) nghĩa là người sắp đi thắng chắc, còn \(\Lose\) nghĩa là người
+sắp đi thua chắc.
+
+\section{Hướng thứ nhất: phương pháp tổng quát}
+
+Phương pháp tổng quát bắt đầu từ trạng thái ban đầu, xét từ trên xuống tất cả
+trạng thái có thể xuất hiện, rồi dựng cấu trúc topo của các phép chuyển trạng
+thái. Điểm mạnh của hướng này là có quy tắc thắng thua và cách cài đặt khá
+thống nhất, nên phạm vi áp dụng rộng. Những bài như bài lấy số của IOI 1996
+hoặc \textit{Ioiwari} của IOI 2001 đều có thể xử lý theo hướng này.
+
+\subsection{Quy tắc thắng thua}
+
+Thắng thua của một trạng thái được quyết định bởi thắng thua của các trạng
+thái con trực tiếp.
+
+\begin{itemize}
+  \item Nếu một trạng thái không có trạng thái con, tức là đã kết thúc ván,
+  thì thắng thua được quyết định trực tiếp theo điều kiện đề bài.
+  \item Nếu một trạng thái có ít nhất một trạng thái con là trạng thái thua
+  cho người sắp đi, thì trạng thái hiện tại là trạng thái thắng. Người chơi
+  chỉ cần đi tới trạng thái con đó.
+  \item Nếu mọi trạng thái con đều là trạng thái thắng cho người sắp đi, thì
+  trạng thái hiện tại là trạng thái thua.
+\end{itemize}
+
+Với bài lấy sỏi, đặt \(f(N,K)\in\{\Win,\Lose\}\). Ta có công thức quy hoạch:
+\[
+f(N,K)=
+\begin{cases}
+\Lose, & N=0,\\
+\Win, & \exists x,\ 1\le x\le \min(N,K),\
+        f(N-x,2x)=\Lose,\\
+\Lose, & \text{ngược lại.}
+\end{cases}
+\]
+Đáp án của bài toán ban đầu là \(f(N,N-1)\).
+
+\subsection{Quy tắc mở rộng}
+
+Trong một số bài, ngoài thắng thua, ta còn cần ghi lại lợi ích lớn nhất hoặc
+nhỏ nhất mà người đi trước có thể bảo đảm khi thắng hoặc khi thua. Khi đó
+trạng thái không chỉ mang nhãn \(\Win/\Lose\), mà còn mang một giá trị số.
+Quy tắc chuyển tiếp được điều chỉnh theo mục tiêu của đề bài.
+
+Slide gốc nêu \textit{Score} của IOI 2001 như một ví dụ: thay vì chỉ hỏi ai
+thắng, bài toán cần đánh giá lợi ích bằng điểm số, nên phải dùng quy tắc suy
+diễn có mục tiêu hơn.
+
+\subsection{Cài đặt}
+
+Có hai cách cài đặt tự nhiên.
+
+\paragraph{Quy hoạch động.}
+Ta liệt kê các trạng thái \((N,K)\) theo thứ tự bảo đảm mọi trạng thái con đã
+được tính trước khi tính trạng thái hiện tại. Vì mỗi nước đi làm số sỏi giảm,
+đồ thị trạng thái không có chu trình.
+
+\paragraph{Tìm kiếm có nhớ.}
+Ta viết hàm đệ quy tính \(f(N,K)\). Khi một trạng thái đã được tính, lưu kết
+quả lại để những nhánh khác dùng lại.
+
+Một phiên bản mã giả là:
+\[
+\begin{array}{l}
+\textsc{Solve}(N,K):\\
+\quad \textbf{if }N=0\textbf{ then return }\Lose\\
+\quad \textbf{if }(N,K)\text{ đã có trong bảng nhớ thì trả lại giá trị đó}\\
+\quad \textbf{for }x=1\textbf{ to }\min(N,K)\textbf{ do}\\
+\quad\quad \textbf{if }\textsc{Solve}(N-x,2x)=\Lose\textbf{ then}\\
+\quad\quad\quad \text{ghi }(N,K)=\Win\text{ và trả về }\Win\\
+\quad \text{ghi }(N,K)=\Lose\text{ và trả về }\Lose.
+\end{array}
+\]
+
+Khi đối cục thực sự diễn ra, chiến lược cũng rất trực tiếp: dựa vào bảng
+thắng thua đã biết, luôn chọn một nước đi đưa đối thủ vào trạng thái thua.
+
+\subsection{Độ phức tạp và hạn chế}
+
+Với bài lấy sỏi có \(N\) viên ban đầu, số trạng thái \((n,k)\) cần xét là
+\(\Oh(N^2)\). Mỗi trạng thái có thể thử đến \(\Oh(N)\) nước đi, nên cách làm
+trực tiếp có độ phức tạp thời gian \(\Oh(N^3)\) và bộ nhớ \(\Oh(N^2)\).
+
+Hạn chế của phương pháp tổng quát đến từ chính nền tảng của nó:
+\begin{itemize}
+  \item nó dựa trên cấu trúc topo của chuyển trạng thái;
+  \item nó phải xét mọi trạng thái liên quan;
+  \item nếu số trạng thái quá lớn, thậm chí vô hạn, hoặc quan hệ chuyển trạng
+  thái quá phức tạp, thời gian và bộ nhớ đều có thể không chấp nhận được.
+\end{itemize}
+
+Vì vậy, phương pháp tổng quát không giải được mọi bài toán đối sách. Để vượt
+qua giới hạn đó, ta cần những lời giải riêng cho từng bài: các phương pháp
+đặc thù.
+
+\section{Hướng thứ hai: phương pháp đặc thù}
+
+Phương pháp đặc thù không cố dựng toàn bộ đồ thị trạng thái. Thay vào đó, nó
+tìm một quy luật ra quyết định để từ trạng thái hiện tại chọn ngay nước đi
+tốt. Cách nghĩ này thường bắt đầu từ những cục diện kết thúc hoặc tàn cuộc
+nhỏ, rồi phân tích ngược từ dưới lên.
+
+\subsection{Ví dụ đồng xu trên bàn tròn}
+
+Xét trò chơi sau. Trên một mặt bàn tròn, Giáp và Ất luân phiên đặt đồng xu
+5 xu, các đồng xu không được chồng lên nhau. Giáp đặt trước; ai đầu tiên
+không đặt được nữa thì thua.
+
+Chiến lược thắng của Giáp là đặt đồng xu đầu tiên đúng tại tâm bàn. Sau đó,
+mỗi khi Ất đặt một đồng xu ở đâu, Giáp đặt đồng xu đối xứng qua tâm. Vì mặt
+bàn tròn đối xứng tâm, nếu Ất đặt hợp lệ thì vị trí đối xứng cũng hợp lệ.
+Giáp luôn khôi phục được tính đối xứng và cuối cùng Ất là người hết nước đi.
+
+Trong ví dụ này, Giáp đã tìm được một loại trạng thái thắng mang tính cân
+bằng. Mỗi khi đối thủ phá cân bằng, Giáp lập tức khôi phục cân bằng. Câu hỏi
+đối với các bài đối sách là: trạng thái cân bằng ở đâu, và quy luật nào giúp
+ta khôi phục cân bằng sau khi nó bị phá?
+
+\subsection{Quan sát từ các trường hợp nhỏ}
+
+Trở lại bài lấy sỏi. Nếu tính các giá trị nhỏ từ tàn cuộc, ta nhận được:
+\[
+\begin{array}{c|cccccccccccc}
+N & 2&3&4&5&6&7&8&9&10&11&12&13\\ \hline
+f(N,N-1) & \Lose&\Lose&\Win&\Lose&\Win&\Win&
+\Lose&\Win&\Win&\Win&\Win&\Lose
+\end{array}
+\]
+Các trạng thái thua đầu tiên của người đi trước là
+\[
+  2,\ 3,\ 5,\ 8,\ 13,\ldots
+\]
+Đây chính là dãy Fibonacci với
+\[
+  F_1=2,\qquad F_2=3,\qquad F_i=F_{i-1}+F_{i-2}\quad(i\ge 3).
+\]
+Từ đó có phỏng đoán:
+\[
+  N\in\{F_i\}\Longrightarrow f(N,N-1)=\Lose,
+  \qquad
+  N\notin\{F_i\}\Longrightarrow f(N,N-1)=\Win.
+\]
+
+\subsection{Bốn tính chất dùng trong chứng minh}
+
+Ta ghi lại bốn tính chất cơ bản xuất hiện trong slide.
+
+\paragraph{Tính chất 1.}
+Nếu \(K\ge N\), thì trạng thái \((N,K)\) là trạng thái thắng. Người sắp đi
+lấy toàn bộ \(N\) viên.
+
+\paragraph{Tính chất 2.}
+Nếu \((N,N-1)\) là trạng thái thua, thì với mọi \(K<N\), trạng thái
+\((N,K)\) cũng là trạng thái thua. Lý do là tập nước đi từ \((N,K)\) chỉ là
+tập con của tập nước đi từ \((N,N-1)\); nếu mọi nước đi trong tập lớn đều dẫn
+tới trạng thái thắng cho đối thủ, thì tập nhỏ cũng vậy.
+
+\paragraph{Tính chất 3.}
+Nếu \(K<N\) ở trạng thái \((N,K)\), thì trong ván chơi tiếp theo, lượt cuối
+cùng lấy hết số sỏi còn lại không thể lấy quá \(2N/3\) viên.
+
+Thật vậy, giả sử lượt cuối cùng lấy \(y\) viên. Ngay trước lượt đó, đối thủ
+vừa lấy một số \(z\) sao cho \(y\le 2z\), tức \(z\ge y/2\). Tổng số sỏi từng
+có trước hai lượt này ít nhất là \(z+y\ge 3y/2\), mà không vượt quá \(N\).
+Do đó \(y\le 2N/3\).
+
+\paragraph{Tính chất 4.}
+Với dãy Fibonacci trên,
+\[
+  \frac{4F_{i-1}}{3}<F_i
+\]
+trong những bước quy nạp được dùng dưới đây. Với các chỉ số đầu, điều này
+kiểm tra trực tiếp; về sau nó theo từ quan hệ truy hồi và tốc độ tăng của
+dãy Fibonacci.
+
+\subsection{Kết luận 1: số Fibonacci là trạng thái cân bằng thua}
+
+\paragraph{Kết luận 1.}
+Với mọi \(i\), trạng thái \((F_i,A)\) là trạng thái thua nếu \(A<F_i\).
+
+\paragraph{Chứng minh.}
+Với \(F_1=2\) và \(F_2=3\), kết luận kiểm tra trực tiếp được.
+
+Giả sử kết luận đúng từ \(F_1\) đến \(F_i\). Ta chứng minh cho
+\(F_{i+1}=F_i+F_{i-1}\). Xét một nước đi đầu tiên lấy \(x\) viên.
+
+Nếu \(x\ge F_{i-1}\), người sau nhận trạng thái
+\[
+  (F_{i+1}-x,2x).
+\]
+Khi đó
+\[
+  2x\ge 2F_{i-1}\ge F_{i-1}+F_{i-2}=F_i>F_{i+1}-x,
+\]
+nên theo tính chất 1, người sau có thể lấy hết phần còn lại và thắng. Vì vậy
+nước đi này làm người đi trước thua.
+
+Nếu \(x<F_{i-1}\), xét riêng phần \(F_{i-1}\) trong phân tích
+\[
+  F_{i+1}=F_i+F_{i-1}.
+\]
+Theo giả thiết quy nạp, trạng thái \((F_{i-1},x)\) là trạng thái thua. Do đó
+người sau có thể chơi trên phần này sao cho sau một số lượt, người đi trước
+phải đối mặt với trạng thái có dạng
+\[
+  (F_i,X).
+\]
+Theo tính chất 3, trong phần \(F_{i-1}\), lượt cuối cùng lấy không quá
+\(2F_{i-1}/3\) viên; do luật nhân đôi, ta có
+\[
+  X\le 2\cdot \frac{2F_{i-1}}{3}
+   =\frac{4F_{i-1}}{3}<F_i.
+\]
+Vì vậy \((F_i,X)\) là trạng thái thua theo giả thiết quy nạp.
+
+Trong cả hai trường hợp, mọi nước đi đầu tiên từ \((F_{i+1},A)\) đều để lại
+cho người sau một cách thắng. Suy ra \((F_{i+1},A)\) là trạng thái thua. Theo
+quy nạp, kết luận 1 đúng.
+
+\subsection{Kết luận 2: ngoài Fibonacci là trạng thái thắng}
+
+\paragraph{Kết luận 2.}
+Với \(N>2\), nếu \(N\notin\{F_i\}\) thì trạng thái ban đầu \((N,N-1)\) là
+trạng thái thắng.
+
+Quy luật quyết định có thể mô tả bằng cách lặp sau. Từ \(N\), tìm số
+Fibonacci lớn nhất nhỏ hơn nó rồi trừ đi; với phần dư nhận được, lại tìm số
+Fibonacci lớn nhất nhỏ hơn phần dư rồi trừ tiếp. Lặp như vậy cho tới khi phần
+dư chính nó là một số Fibonacci. Số còn lại ở bước cuối là số sỏi nên lấy ở
+nước đầu.
+
+Nói cách khác, nếu biểu diễn \(N\) thành tổng các số Fibonacci không kề nhau
+theo quá trình trên,
+\[
+  N=F_{i_1}+F_{i_2}+\cdots+F_{i_t}
+  \quad(i_1>i_2>\cdots>i_t),
+\]
+thì người đi trước lấy số hạng nhỏ nhất \(F_{i_t}\). Nước đi này đưa đối thủ
+vào một trạng thái cân bằng theo nghĩa của kết luận 1 và các bước quy nạp
+trên. Sau đó, mỗi khi đối thủ phá cân bằng, ta dùng cùng quy luật để thu hẹp
+phần còn lại và khôi phục cân bằng.
+
+Ví dụ:
+\[
+\begin{array}{c|c|c}
+N & \text{phân tích Fibonacci} & \text{nước đầu thắng}\\ \hline
+4 & 3+1 & 1\\
+7 & 5+2 & 2\\
+12 & 8+3+1 & 1\\
+18 & 13+5 & 5
+\end{array}
+\]
+Các dòng này khớp với kết quả tính bằng phương pháp tổng quát.
+
+\subsection{Ý nghĩa thuật toán}
+
+Trong bài lấy sỏi, trạng thái cân bằng chính là các số Fibonacci. Quy luật
+quyết định là liên tục thu hẹp phạm vi bằng cách tìm số Fibonacci lớn nhất
+phù hợp, cho tới khi xác định được số sỏi cần lấy.
+
+So với phương pháp tổng quát, độ phức tạp giảm mạnh:
+\[
+\begin{array}{c|c|c}
+\text{Phương pháp} & \text{Bộ nhớ} & \text{Thời gian}\\ \hline
+\text{Tổng quát} & \Oh(N^2) & \Oh(N^3)\\
+\text{Đặc thù} & \Oh(1) & \Oh(\log N)
+\end{array}
+\]
+Ở đây \(\Oh(\log N)\) đến từ việc sinh hoặc tra các số Fibonacci tới \(N\).
+Nếu cần cài đặt cho số lớn, có thể lưu vài số Fibonacci liên tiếp và dịch dần
+theo quan hệ truy hồi, nên bộ nhớ vẫn là hằng số.
+
+\section{Khung của phương pháp đặc thù}
+
+Phương pháp đặc thù vẫn phải mô tả trạng thái: ta liệt kê những yếu tố ảnh
+hưởng đến kết quả thắng thua và tổng hợp chúng thành trạng thái. Điểm khác
+là ta không cần dựng toàn bộ cấu trúc chuyển trạng thái.
+
+Thay vào đó, ta phân tích ngược từ cục diện kết thúc hoặc những tàn cuộc nhỏ.
+Trong các trường hợp đặc biệt như quy mô nhỏ, đối xứng, giá trị cực đại, giá
+trị cực tiểu, ta tìm những lớp trạng thái thắng hoặc thua của người đi trước,
+rồi quan sát điểm chung của chúng. Những điểm chung thường rơi vào ba hướng:
+\begin{itemize}
+  \item tính đối xứng;
+  \item tính đơn giản của mô tả;
+  \item tính dị biệt so với các trạng thái lân cận.
+\end{itemize}
+
+Sau khi tìm được tính chất chung, ta mở rộng nó sang trường hợp tổng quát.
+Kết quả mong muốn là một lớp trạng thái cân bằng, thường là trạng thái thắng
+hoặc thua chắc, cùng một quy luật ra quyết định giúp duy trì cân bằng đó.
+
+Trong slide gốc, các ví dụ được nêu là bài \textit{Polygon} của POI 1999 và
+bài lấy số của IOI 1996: chúng đều có thể được tiếp cận bằng hướng đặc thù.
+
+\section{So sánh hai hướng}
+
+Nếu mở rộng bài lấy sỏi bằng cách cho mỗi lượt lấy nhiều nhất \(3\), \(4\),
+\(5\), hoặc nói chung \(k\) lần số sỏi đối thủ vừa lấy, ta lại đứng trước lựa
+chọn giữa hai hướng:
+\[
+  \text{phương pháp tổng quát}
+  \qquad\text{và}\qquad
+  \text{phương pháp đặc thù}.
+\]
+
+\subsection{Chiều phân tích}
+
+Phương pháp tổng quát đi từ trên xuống: bắt đầu từ trạng thái ban đầu và xét
+thắng thua của mọi trạng thái liên quan.
+
+Phương pháp đặc thù đi từ dưới lên: bắt đầu từ kết thúc hoặc tàn cuộc nhỏ,
+rồi nghiên cứu một lớp trạng thái cân bằng.
+
+\subsection{Quy tắc thắng thua}
+
+Phương pháp tổng quát có quy tắc phổ dụng:
+\[
+\begin{array}{l}
+\text{có một nước đi tới trạng thái thua}\Rightarrow \text{thắng},\\
+\text{mọi nước đi đều tới trạng thái thắng}\Rightarrow \text{thua}.
+\end{array}
+\]
+
+Phương pháp đặc thù không có quy tắc phổ dụng. Mỗi bài cần tìm cấu trúc riêng
+của nó.
+
+\subsection{Cài đặt}
+
+Với phương pháp tổng quát, khâu quan trọng là tiền xử lý bằng quy hoạch động
+hoặc tìm kiếm có nhớ.
+
+Với phương pháp đặc thù, khâu quan trọng là suy nghĩ trước để phát hiện quy
+luật quyết định, rồi chuyển quy luật đó thành chương trình.
+
+\subsection{Ưu và nhược điểm}
+
+\begin{center}
+\begin{tabular}{p{0.24\linewidth}|p{0.34\linewidth}|p{0.34\linewidth}}
+\textbf{Phương pháp} & \textbf{Ưu điểm} & \textbf{Nhược điểm}\\ \hline
+Tổng quát &
+Có quy tắc chung, áp dụng rộng. &
+Bị giới hạn bởi đồ thị chuyển trạng thái; phải xét nhiều trạng thái, có thể
+tốn thời gian và bộ nhớ.\\[0.4em]
+Đặc thù &
+Không phụ thuộc vào việc dựng toàn bộ đồ thị; thường nhanh, tiết kiệm bộ nhớ
+và dễ cài đặt sau khi đã có quy luật. &
+Không có mẫu chung; phần khó nằm ở phân tích và phát hiện quy luật.
+\end{tabular}
+\end{center}
+
+\subsection{Tư tưởng cốt lõi}
+
+Trong bài toán đối sách loại này, một trạng thái hoặc là thắng chắc cho người
+sắp đi, hoặc là thua chắc cho người sắp đi. Vì vậy khi chơi, mục tiêu của ta
+là chiếm trạng thái thắng và để lại trạng thái thua cho đối phương.
+
+Đó là tư tưởng trung tâm của việc giải bài toán đối sách.
+
+Nhìn rộng hơn, phương pháp tổng quát xét mọi trạng thái từ một góc nhìn thống
+nhất để quyết định chiến lược; nó tương tự tinh thần của quy hoạch động.
+Phương pháp đặc thù xét một lớp trạng thái quan trọng từ góc nhìn riêng; nó
+gần với tinh thần tham lam, vì sau khi tìm được quy luật, mỗi bước đều chọn
+ngay quyết định giữ được cấu trúc mong muốn.
+
+\section{Kết luận}
+
+Lý thuyết đối sách là một nhánh quan trọng của vận trù học. Thông qua bài lấy
+sỏi, bài viết đã trình bày hai hướng giải một lớp bài toán đối sách: phương
+pháp tổng quát và phương pháp đặc thù. Hai hướng này vừa là phương pháp, vừa
+là cách tư duy.
+
+Kinh nghiệm trên giấy luôn cần được kiểm chứng bằng thực hành. Khi luyện tập
+nhiều, ta sẽ biết phối hợp tư duy xuôi và tư duy ngược, quan sát bài toán từ
+nhiều góc độ, đi từ tổng quát đến đặc biệt rồi từ đặc biệt quay lại tổng
+quát, và chọn cách cài đặt phù hợp cho từng bài.
+
+Một cách nói cô đọng là: lập mưu trong màn trướng, quyết thắng ngoài nghìn
+dặm.
+
+\end{document}

@@ -1,0 +1,245 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 动态规划 DYNAMIC PROGRAMMING/楼天城牛关于队列优化多重背包.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\Max}{\operatorname{max}}
+\newcommand{\Min}{\operatorname{min}}
+
+\title{Một số ví dụ quy hoạch động phân phối tài nguyên}
+\author{Lou Tiancheng}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Resource-allocation dynamic programming examples}
+\sourcepath{Dynamic Programming / Queue-optimized multiple knapsack - Lou Tiancheng}
+
+\begin{abstract}
+Tài liệu nguồn là một bộ slide ngắn về các bài quy hoạch động dạng phân phối
+tài nguyên và cái túi: phân phối máy, độ tin cậy hệ thống, sản xuất suất ăn
+nhanh, mua hàng có ưu đãi và bài ngân sách của Jinming. Bản dịch chuyển nội
+dung slide thành ghi chú liền mạch, nhấn mạnh trạng thái, chuyển trạng thái,
+khởi tạo và các cách giảm phạm vi lặp.
+\end{abstract}
+
+\tableofcontents
+
+\section{Phân phối máy}
+
+\subsection{Đề bài}
+
+Công ty mẹ có \(M\) máy sản xuất hiệu suất cao và muốn phân phối cho \(N\)
+công ty con. Nếu công ty con \(i\) nhận \(j\) máy, lợi nhuận thu được là
+\(\operatorname{value}[i,j]\). Mỗi công ty có thể nhận số máy tùy ý, nhưng
+tổng số máy được cấp không vượt quá \(M\). Ràng buộc trong slide là
+\[
+  M\le 15,\qquad N\le 10.
+\]
+Dữ liệu gồm \(M,N\), sau đó là ma trận lợi nhuận kích thước \(N\times M\).
+
+\subsection{Phân tích}
+
+Dùng số máy làm tài nguyên. Đặt
+\[
+  F[i,j]
+\]
+là lợi nhuận lớn nhất khi phân phối \(j\) máy cho \(i\) công ty đầu. Nếu công
+ty \(i\) nhận \(j-k\) máy, \(k\) máy còn lại đã được phân phối cho \(i-1\)
+công ty trước đó. Công thức:
+\[
+  F[i,j]=\max_{0\le k\le j}
+  \{F[i-1,k]+\operatorname{value}[i,j-k]\}.
+\]
+Điều kiện đầu là \(F[0,0]=0\). Độ phức tạp là \(\Oh(NM^2)\).
+
+\section{Độ tin cậy hệ thống}
+
+\subsection{Đề bài}
+
+Một hệ thống gồm nhiều bộ phận mắc nối tiếp. Chỉ cần một bộ phận hỏng thì cả
+hệ thống không hoạt động. Để tăng độ tin cậy, mỗi bộ phận có thể lắp thêm các
+linh kiện dự phòng; càng nhiều dự phòng thì xác suất hoạt động càng cao nhưng
+chi phí cũng tăng.
+
+Với bộ phận \(i\), biết đơn giá dự phòng \(\operatorname{cost}[i]\) và xác
+suất hoạt động \(P[i,k]\) khi dùng \(k\) linh kiện dự phòng. Tổng chi phí bị
+giới hạn bởi \(C\). Hãy tối đa hóa xác suất hệ thống hoạt động.
+
+\subsection{Phân tích}
+
+Vì các bộ phận mắc nối tiếp, xác suất hệ thống hoạt động là tích xác suất của
+các bộ phận. Đặt \(F[i,m]\) là độ tin cậy lớn nhất khi dùng ngân sách \(m\)
+cho \(i\) bộ phận đầu. Khi bộ phận \(i\) dùng \(k\) linh kiện dự phòng:
+\[
+  F[i,m]=
+  \max_{0\le k\le \lfloor m/\operatorname{cost}[i]\rfloor}
+  F[i-1,m-k\operatorname{cost}[i]]\cdot P[i,k].
+\]
+Đáp án là \(F[n,C]\). Trong cài đặt thực tế, cần khởi tạo trạng thái xác suất
+theo nghĩa ``không có bộ phận nào'' là xác suất \(1\) tại chi phí \(0\); các
+trạng thái không đạt được đặt thành giá trị không hợp lệ.
+
+\section{Bài toán suất ăn nhanh}
+
+\subsection{Đề bài}
+
+Một suất ăn gồm \(A\) hamburger, \(B\) phần khoai và \(C\) đồ uống. Thời gian
+sản xuất một đơn vị của ba loại lần lượt là \(p_1,p_2,p_3\). Có \(N\) dây
+chuyền sản xuất, dây chuyền \(i\) có thời gian làm việc \(T[i]\). Mỗi dây
+chuyền có thể sản xuất cả ba loại sản phẩm. Hỏi trong một ngày có thể sản xuất
+nhiều nhất bao nhiêu suất ăn. Giả sử sản lượng mỗi loại không vượt quá \(100\).
+
+\subsection{Quy hoạch động}
+
+Vì các dây chuyền độc lập, dùng dây chuyền làm giai đoạn. Đặt
+\[
+  p[i,j,k]
+\]
+là số đồ uống lớn nhất có thể sản xuất sau khi dùng \(i\) dây chuyền đầu,
+trong đó đã sản xuất \(j\) hamburger và \(k\) phần khoai. Đặt
+\[
+  r[i,x,y]
+\]
+là số đồ uống nhiều nhất mà riêng dây chuyền \(i\) có thể sản xuất nếu trên
+dây chuyền này đã sản xuất \(x\) hamburger và \(y\) phần khoai. Khi đó
+\[
+  r[i,x,y]=
+  \left\lfloor
+  \frac{T[i]-xp_1-yp_2}{p_3}
+  \right\rfloor
+\]
+nếu \(xp_1+yp_2\le T[i]\), và trạng thái không hợp lệ nếu ngược lại.
+
+Chuyển trạng thái:
+\[
+  p[i,j,k]=
+  \max_{\substack{0\le j_1\le j\\0\le k_1\le k}}
+  \{p[i-1,j_1,k_1]+r[i,j-j_1,k-k_1]\}.
+\]
+Cách trực tiếp có độ phức tạp \(\Oh(N\cdot 100^4)\).
+
+\subsection{Cắt tỉa và tối ưu}
+
+Ta có thể tính trước một cận trên hiển nhiên cho số suất ăn:
+\[
+  \min\left(
+    \left\lfloor\frac{100}{A}\right\rfloor,
+    \left\lfloor\frac{100}{B}\right\rfloor,
+    \left\lfloor\frac{100}{C}\right\rfloor
+  \right).
+\]
+Sau đó dùng một phương án tham lam nhanh để lấy một nghiệm khả thi. Nếu nghiệm
+khả thi đã đạt cận trên thì có thể kết thúc ngay. Trong quá trình DP, sau mỗi
+giai đoạn cũng có thể so với cận trên để dừng sớm.
+
+Hai tối ưu kỹ thuật khác trong slide:
+\begin{itemize}
+  \item Vì giai đoạn \(i\) chỉ phụ thuộc giai đoạn \(i-1\), dùng hai mảng
+  \(100\times100\) và hoán đổi con trỏ thay vì sao chép toàn bộ mảng.
+  \item Thu hẹp biên vòng lặp bằng các cận trên \(q_1,q_2\) cho số hamburger
+  và khoai, đồng thời giới hạn \(j_1,k_1\) theo thời gian còn lại của dây
+  chuyền hiện tại và tổng thời gian của các dây chuyền trước.
+\end{itemize}
+
+\section{Mua hàng có ưu đãi}
+
+\subsection{Đề bài}
+
+Một cửa hàng bán tối đa \(5\) loại hàng trong giỏ của khách, mỗi loại mua
+không quá \(5\) món. Ngoài giá đơn lẻ, cửa hàng còn có tối đa \(99\) gói ưu
+đãi; mỗi gói gồm một số lượng cụ thể của một hoặc nhiều loại hàng và có giá
+thấp hơn mua lẻ. Cần tính số tiền nhỏ nhất để mua đúng số hàng trong giỏ,
+không được mua thừa dù mua thừa có thể rẻ hơn.
+
+Ví dụ: một bông hoa giá \(2\), một bình hoa giá \(5\). Ưu đãi ba bông hoa giá
+\(5\), hoặc hai bình hoa cộng một bông hoa giá \(10\). Nếu cần mua ba bông hoa
+và hai bình hoa, giá tối ưu là \(14\): dùng gói một bông hoa cộng hai bình
+hoa giá \(10\), rồi mua lẻ hai bông hoa giá \(4\).
+
+\subsection{Phân tích}
+
+Vì có nhiều nhất \(5\) loại hàng và mỗi loại cần nhiều nhất \(5\), có thể dùng
+trạng thái năm chiều:
+\[
+  F[a,b,c,d,e]
+\]
+là chi phí nhỏ nhất để mua các số lượng tương ứng của năm loại hàng. Trạng
+thái khởi tạo chính là mua lẻ:
+\[
+  F[a,b,c,d,e]=
+  a\operatorname{cost}_1+b\operatorname{cost}_2+
+  c\operatorname{cost}_3+d\operatorname{cost}_4+e\operatorname{cost}_5.
+\]
+
+Với mỗi gói ưu đãi \(s\), ký hiệu số lượng của năm loại hàng trong gói là
+\((s_1,s_2,s_3,s_4,s_5)\), giá gói là \(\operatorname{saleCost}[s]\). Nếu
+trạng thái hiện tại đủ hàng để dùng ngược lại gói này, ta cập nhật:
+\[
+\begin{aligned}
+F[a,b,c,d,e]=\min\{F[a,b,c,d,e],\;&
+F[a-s_1,b-s_2,c-s_3,d-s_4,e-s_5]\\
+&+\operatorname{saleCost}[s]\}.
+\end{aligned}
+\]
+
+Bài toán thỏa tính không hậu nghiệm: sau khi dùng một gói ưu đãi, phần còn lại
+là cùng một kiểu bài toán với số lượng nhỏ hơn. Vì gói ưu đãi được dùng không
+giới hạn số lần, ta chỉ cần lặp qua toàn bộ không gian trạng thái nhỏ.
+
+\section{Bài ngân sách của Jinming}
+
+\subsection{Đề bài}
+
+Jinming muốn mua đồ cho phòng của mình trong ngân sách \(N\). Mỗi đồ vật có
+giá \(v[j]\), độ quan trọng \(w[j]\) từ \(1\) đến \(5\), và có thể là vật
+chính hoặc phụ kiện của một vật chính. Nếu mua phụ kiện thì bắt buộc phải mua
+vật chính tương ứng. Mỗi vật chính có \(0,1\) hoặc \(2\) phụ kiện; phụ kiện
+không có phụ kiện con. Cần tối đa hóa
+\[
+  \sum v[j]\cdot w[j]
+\]
+trong ngân sách.
+
+\subsection{Nếu chỉ có vật chính}
+
+Khi không có phụ kiện, đây là cái túi 01 chuẩn. Đặt \(F[i,j]\) là giá trị lớn
+nhất khi xét \(i\) vật phẩm đầu và dùng không quá \(j\) tiền:
+\[
+  F[i,j]=\max\{F[i-1,j],F[i-1,j-C_i]+V_i\}.
+\]
+Độ phức tạp là \(\Oh(nm)\), với \(n\) là ngân sách và \(m\) là số vật phẩm.
+
+\subsection{Quay lại bài gốc}
+
+Với một vật chính \(i\), ta liệt kê các phương án phụ kiện hợp lệ. Nếu vật
+chính có hai phụ kiện thì tối đa có bốn phương án: chỉ vật chính, vật chính
+kèm phụ kiện thứ nhất, vật chính kèm phụ kiện thứ hai, hoặc vật chính kèm cả
+hai. Mỗi phương án trở thành một ``vật phẩm tổng hợp'' có chi phí và giá trị
+bằng tổng của các món trong phương án.
+
+Gọi các phương án của vật chính \(i\) có chi phí \(C_{i,k}\) và giá trị
+\(V_{i,k}\). Công thức:
+\[
+  F[i,j]=
+  \max\left\{
+    F[i-1,j],\;
+    F[i-1,j-C_{i,k}]+V_{i,k}
+  \right\}.
+\]
+Trong đó \(k\) chạy qua các phương án phụ kiện hợp lệ. Có thể thêm các phụ
+kiện ảo có chi phí và giá trị \(0\) để mỗi vật chính luôn có đúng hai phụ
+kiện, rồi liệt kê chọn hoặc không chọn từng phụ kiện. Độ phức tạp vẫn là
+\(\Oh(nm)\) vì số phương án của mỗi vật chính là hằng số.
+
+\section*{Kết luận}
+
+Các ví dụ trong tài liệu đều có cùng khuôn mẫu: chọn một tài nguyên làm chiều
+trạng thái, chia quá trình thành giai đoạn độc lập, rồi liệt kê phần tài
+nguyên cấp cho giai đoạn hiện tại. Khi số trạng thái nhỏ, cách liệt kê trực
+tiếp đủ tốt; khi không gian lớn, cần dùng mảng cuộn, cận trên, cắt tỉa vòng
+lặp hoặc đóng gói nhiều lựa chọn thành một nhóm vật phẩm.
+
+\end{document}

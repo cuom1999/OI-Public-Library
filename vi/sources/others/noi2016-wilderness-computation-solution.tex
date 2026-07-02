@@ -1,0 +1,447 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 其他 OTHERS/NOI2016-旷野大计算-题解.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\usepackage{array}
+
+\title{Lời giải bài ``Đại tính toán nơi hoang dã''}
+\author{Lu Kaifeng\\Người kiểm đề: Wang Yisong, Yu Jiping, Zhang Ruizhe}
+\date{26 tháng 7 năm 2016}
+
+\begin{document}
+\maketitle
+
+\origtitle{NOI2016 Wilderness Computation solution}
+\sourcepath{Others / NOI2016 Wilderness Computation solution.pdf}
+
+\begin{abstract}
+Tài liệu gốc là bộ slide lời giải cho một bài dựng mạng tính toán. Mỗi test
+yêu cầu ghép các nút tính cơ bản thành một mạng càng ít nút càng tốt. Bản
+dịch này chuyển nội dung slide thành bài viết, giữ lại các công thức, bảng
+điểm, ý tưởng chấm điểm và số thao tác.
+\end{abstract}
+
+\tableofcontents
+
+\section{Tán gẫu}
+
+Xin chào mọi người! Tôi, vfk, đã quay lại.
+
+Lần này tôi ra cho mọi người một bài ``đại tính toán nơi hoang dã'', không
+biết mọi người có kiếm được thật nhiều điểm nơi hoang dã không?
+
+Nghe nói Vương quốc Bọ Chét đã chiếm đề bài NOI rồi, nhưng thật ra chúng tôi
+viết hai đề riêng biệt. 233.
+
+\section{Khái quát bài toán}
+
+Hai slide đầu của phần này dùng hình minh họa: một cảnh trong phim
+\textit{Red Cliff}, rồi một sơ đồ mạng nơ-ron truyền thẳng nhỏ. Nội dung cần
+giữ lại là bài toán mô hình hóa việc tính toán bằng một mạng có hướng gồm
+các nút thao tác.
+
+Các loại nút trong mạng tính toán như sau.
+
+\begin{center}
+\small
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|c|>{\centering\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.28\textwidth}|}
+\hline
+Tên nút & Ký hiệu & Kết quả tính & Đặc điểm \\
+\hline
+Nút nhập & \texttt{I} & đầu vào & Nhập và xuất cơ bản \\
+\hline
+Nút xuất & \texttt{O} & đầu ra & Nhập và xuất cơ bản \\
+\hline
+Nút cộng & \texttt{+} & $x_t=x_i+x_j$ & Cộng trừ \\
+\hline
+Nút dịch hằng & \texttt{C} & $x_t=x_i+c$ & Cộng trừ \\
+\hline
+Nút đổi dấu & \texttt{-} & $x_t=-x_i$ & Cộng trừ \\
+\hline
+Nút dịch trái & \texttt{<} & $x_t=x_i\cdot 2^k$ & Nhân chia với lũy thừa của $2$ \\
+\hline
+Nút dịch phải & \texttt{>} & $x_t=x_i/2^k$ & Nhân chia với lũy thừa của $2$ \\
+\hline
+Nút kiểu S & \texttt{S} & $x_t=s(x_i)$ & Một thao tác phi tuyến \\
+\hline
+Nút so sánh & \texttt{P} & $x_t=\operatorname{cmp}(x_i,x_j)$ & Mạnh nhưng bị trừ điểm \\
+\hline
+Nút Max & \texttt{M} & $x_t=\max(x_i,x_j)$ & Mạnh nhưng bị trừ điểm \\
+\hline
+Nút nhân & \texttt{*} & $x_t=x_i\cdot x_j$ & Mạnh nhưng bị trừ điểm \\
+\hline
+\end{tabular}
+\end{center}
+
+Hàm sigmoid được định nghĩa bởi
+\[
+  s(x)=\frac{1}{1+e^{-x}}.
+\]
+
+Đề cho $10$ nhiệm vụ tính toán. Với mỗi nhiệm vụ, ta dùng một số thao tác cơ
+bản để dựng một mạng tính toán. Số nút dùng càng ít càng tốt.
+
+\section{Điểm số}
+
+Điểm cao nhất và điểm trung bình theo từng test như sau.
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Test & Điểm cao nhất & Điểm trung bình \\
+\hline
+1 & 10 & 9.7 \\
+2 & 10 & 9.6 \\
+3 & 10 & 8.4 \\
+4 & 9 & 5.6 \\
+5 & 10 & 9.1 \\
+6 & 9 & 2.3 \\
+7 & 10 & 1.3 \\
+8 & 10 & 4.5 \\
+9 & 10 & 1.2 \\
+10 & 10 & 0.4 \\
+\hline
+\end{tabular}
+\end{center}
+
+Thống kê chung:
+\begin{itemize}
+  \item điểm cao nhất: $97$ điểm, của Yuan Yutao;
+  \item điểm trung bình: $52.1$ điểm;
+  \item trung vị: $52$ điểm;
+  \item mốt: $52$ điểm.
+\end{itemize}
+
+Hai slide ``bí mật lớn của điểm số nơi hoang dã'' và slide ``lời phàn nàn nơi
+hoang dã'' trong bản gốc không có nội dung văn bản trích xuất ngoài tiêu đề.
+
+\section{Test 1: làm quen thao tác cơ bản}
+
+Nhập $a,b$, tính
+\[
+  -2a-2b.
+\]
+
+\subsection*{Cách $5$ điểm}
+
+Dùng biểu thức
+\[
+  -(a\ll 1)+\bigl(-(b\ll 1)\bigr).
+\]
+Tổng cộng $8$ thao tác.
+
+\subsection*{Cách $10$ điểm}
+
+Dùng biểu thức
+\[
+  -\bigl((a+b)\ll 1\bigr).
+\]
+Tổng cộng $6$ thao tác.
+
+\section{Test 2: làm quen thao tác cơ bản}
+
+Nhập $a$, tính
+\[
+  \frac{1}{1+e^{17a}}.
+\]
+
+\subsection*{Cách $4$ điểm}
+
+Dùng
+\[
+  s\bigl(-(a+a+a+\cdots+a)\bigr).
+\]
+Tổng cộng $20$ thao tác.
+
+\subsection*{Cách $10$ điểm}
+
+Dùng
+\[
+  s\bigl(-(a+(a\ll 4))\bigr).
+\]
+Tổng cộng $6$ thao tác.
+
+\section{Test 3: xét dấu}
+
+Nhập $a$, tính
+\[
+  \operatorname{sgn}(a)=
+  \begin{cases}
+    -1, & a<0,\\
+    0, & a=0,\\
+    1, & a>0.
+  \end{cases}
+\]
+
+\subsection*{Cách $6$ điểm}
+
+Dùng thao tác bị trừ điểm. Trước hết dùng $a\gg 1000$ để dựng ra $0$, rồi đưa
+$0$ và $a$ vào nút so sánh.
+
+\subsection*{Cách $10$ điểm}
+
+Đặt
+\[
+  s(x\ll 500)\approx p(x)=
+  \begin{cases}
+    0, & x<0,\\
+    1/2, & x=0,\\
+    1, & x>0.
+  \end{cases}
+\]
+Chỉ cần tịnh tiến và co giãn tuyến tính $p(a)$ là nhận được
+$\operatorname{sgn}(a)$.
+
+\section{Test 4: trị tuyệt đối}
+
+Nhập $a$, tính $\lvert a\rvert$.
+
+\subsection*{Cách $2$ điểm}
+
+Dùng thao tác bị trừ điểm: dùng nút so sánh để tính
+$\operatorname{sgn}(a)$, sau đó dùng nút nhân để tính
+\[
+  \lvert a\rvert=a\cdot \operatorname{sgn}(a).
+\]
+
+\subsection*{Cách $6$ điểm}
+
+Dùng ý tưởng của test 3 để tính $\operatorname{sgn}(a)$, rồi dùng nút nhân
+\[
+  \lvert a\rvert=a\cdot \operatorname{sgn}(a).
+\]
+Hoặc trực tiếp dùng nút Max cũng tính được trị tuyệt đối.
+
+\subsection*{Cách $10$ điểm}
+
+Thử nghĩ: nếu bọc thêm một lớp $s$ thì sao? Với một giá trị $x$, xét
+\[
+  s\bigl(x+(p(x)\ll 500)\bigr)\approx
+  \begin{cases}
+    s(x), & x<0,\\
+    1, & x\ge 0.
+  \end{cases}
+\]
+Nếu vế đầu không phải $s(x)$ mà là chính $x$, mọi chuyện sẽ rất hay.
+
+Khi đại lượng là vô cùng bé thì điều gì xảy ra? Theo định nghĩa đạo hàm, khi
+$x$ rất gần $0$,
+\[
+  \frac{s(x)-s(0)}{x-0}\approx s'(0)=\frac14.
+\]
+Vì vậy, nếu $x$ rất nhỏ, ta có thể suy ngược $x$ từ $s(x)$.
+
+Cụ thể,
+\[
+  s\bigl((x\gg 150)+(p(x)\ll 500)\bigr)\approx
+  \begin{cases}
+    1/2+(x\gg 154), & x<0,\\
+    1, & x\ge 0.
+  \end{cases}
+\]
+Từ đó dựng được $\min(x,0)$, và do đó dựng được $\lvert x\rvert$.
+
+Sau một số chỉnh hằng số cần thiết, có thể lấy $10$ điểm. Mã giả:
+
+\begin{verbatim}
+x = in();
+p = s((x + 1e-30) << 500) << 152;
+y = s((x >> 150) + p);
+r = x + ((-y + 0.5) << 153) + p;
+out(r);
+\end{verbatim}
+
+Tổng cộng $14$ thao tác.
+
+\section{Test 5: chuyển đổi nhị phân}
+
+Xuất số nguyên nhị phân được biểu diễn bởi
+\[
+  a_1,\ldots,a_{32}.
+\]
+
+\subsection*{Cách $10$ điểm}
+
+Trực tiếp dùng cộng và nhân là đủ, tổng cộng $95$ thao tác.
+
+\section{Test 6: chuyển đổi nhị phân}
+
+Xuất biểu diễn nhị phân của số nguyên
+\[
+  a\in [0,2^{32}).
+\]
+
+Ý tưởng cơ bản:
+\begin{verbatim}
+x = in();
+for (i = 31; i >= 0; i--)
+{
+    if (x >= (1 << i))
+        b[i] = 1;
+    else
+        b[i] = 0;
+    x = x + (-(b[i] << i));
+}
+out(b);
+\end{verbatim}
+
+\subsection*{Cách $6$ điểm}
+
+Dùng nút so sánh là có thể qua.
+
+\subsection*{Cách $9$ điểm}
+
+Dùng hàm $p(x)$ đã nói ở trên để hiện thực nút so sánh, kèm một số chỉnh hằng
+số cần thiết. Chẳng hạn có thể dùng $x\ll 500$ thay cho $x$ trong tính toán,
+vì khi tính hàm $p$ đằng nào cũng phải dịch trái.
+
+\subsection*{Cách $10$ điểm}
+
+Chú ý rằng khi $i=0$, ta có thể đặt thẳng $b[0]=x$. Tổng cộng $190$ thao tác.
+
+\section{Sáu test đầu}
+
+Sáu test đầu đều là những thao tác rất cơ bản. Khi đã chơi thật rõ các thao
+tác cơ bản này, bốn test thuật toán nâng cao phía sau cũng không còn khó nữa.
+Hơn nữa các tham số chấm điểm phía sau được đặt rất thoáng.
+
+\section{Test 7: phép toán nhị phân}
+
+Nhập $a,b$, tính $a\operatorname{ xor }b$.
+
+Trước hết cần làm tốt test 5 và test 6. Sau khi chuyển đổi nhị phân, ta chỉ
+cần xét phép xor của hai biến $01$ là $x$ và $y$.
+
+\subsection*{Cách $10$ điểm}
+
+\begin{verbatim}
+s = x + y;
+return s + (-p(s + (-1.5)) << 1);
+\end{verbatim}
+
+Tổng cộng $603$ thao tác. Người kiểm đề saffah tối ưu được xuống $539$ thao
+tác.
+
+\section{Test 8: chia cho hằng số tổng quát}
+
+Nhập $a$, tính $a/10$.
+
+\subsection*{Cách $6$ điểm}
+
+Dùng thao tác bị trừ điểm. Trước hết dùng $x\gg 1000$ để dựng ra $0$, rồi
+cộng thêm $0.1$ để nhận $0.1$, sau đó dùng nút nhân để tính $0.1x$.
+
+\subsection*{Cách chưa rõ điểm}
+
+Có thể nhân $a$ với $2^{32}$, chuyển thành số nguyên, rồi viết một phép chia
+nhị phân.
+
+\subsection*{Cách $7$ đến $8$ điểm}
+
+Viết $0.1$ dưới dạng nhị phân, biến nó thành tổng của một số hạng $x$ dịch
+phải.
+
+\subsection*{Cách $9$ điểm}
+
+Trên nền cách trước, dùng phép trừ để chỉnh hằng số, có thể bỏ đi một đoạn
+liên tiếp các bit $1$ trong biểu diễn nhị phân. Hoặc dùng tuyệt chiêu ``vẻ đẹp
+của chu kỳ'': tính ra một chu kỳ rồi nhân đôi.
+
+\subsection*{Cách $10$ điểm}
+
+Theo định nghĩa đạo hàm, khi $x$ rất gần $x_0$,
+\[
+  \frac{s(x)-s(x_0)}{x-x_0}\approx s'(x_0).
+\]
+Vì vậy chỉ cần giải một $x_0$ sao cho
+\[
+  s'(x_0)=0.1.
+\]
+Cách này chỉ cần $7$ thao tác. Do bài chỉ cần độ chính xác $10^{-9}$, có thể
+dùng \texttt{double} để tính $x_0$, rồi đưa vào checker để tính
+$s(x_0)$ với độ chính xác cao.
+
+\section{Test 9: sắp xếp}
+
+Nhập $a_1,\ldots,a_{16}$ và sắp xếp chúng.
+
+Nhiệm vụ tính toán này cho thấy rõ giới hạn của mô hình mạng tính toán: chỉ
+những thuật toán như sắp xếp nổi bọt hoặc sắp xếp chọn mới thích hợp để chạy.
+Dĩ nhiên có các thuật toán độ phức tạp thấp hơn như bitonic sort, nhưng trong
+bài này dùng sắp xếp nổi bọt đã đủ.
+
+Điểm mấu chốt là hiện thực bộ so sánh. Ví dụ:
+
+\subsection*{Cách $10$ điểm}
+
+\begin{verbatim}
+s = x[i] + x[j];
+x[i] = x[i] + min(-x[i] + x[j], 0);
+x[j] = s + -x[i];
+\end{verbatim}
+
+Tổng cộng $2072$ thao tác. Cách hiện thực cụ thể của $\min(x,0)$ có thể tham
+khảo test 4.
+
+\section{Test 10: phép nhân theo modulo}
+
+Nhập $a,b,m$, tính
+\[
+  a\cdot b\bmod m.
+\]
+
+\subsection*{Cách $10$ điểm}
+
+Hiện thực một phép ``cộng nhanh'', tức lấy thuật toán lũy thừa nhanh rồi thay
+phép nhân trong đó bằng phép cộng. Cần chỉnh hằng số một chút.
+
+Ta chỉ cần hiện thực phép lấy modulo $m$ cho một số trong đoạn $[0,2m)$.
+
+Cách này đã đủ điểm tối đa. Nhưng có thể dùng ít thao tác hơn nữa không?
+
+\subsection*{Cách $10$ điểm mạnh hơn}
+
+Theo khai triển Taylor,
+\[
+  s(x+\ln 3)
+  = \frac14+\frac{3}{16}x+\frac{3}{64}x^2
+    -\frac{1}{256}x^3-\frac{5}{1024}x^4+O(x^5).
+\]
+Từ đó có thể dựng $x^2$, rồi dựng tiếp $xy$. Sau đó mô phỏng ý tưởng chuyển
+số nguyên sang nhị phân để hiện thực phép lấy modulo là xong.
+
+Có thể làm chỉ với $819$ thao tác.
+
+\section{Bài học}
+
+\subsection*{Mô-đun hóa}
+
+Slide gốc dùng một ảnh minh họa cho ý tưởng mô-đun hóa. Trong lời giải, tinh
+thần này thể hiện ở việc tách các khối nhỏ như xét dấu, dựng $\min(x,0)$,
+chuyển nhị phân, bộ so sánh và lấy modulo, rồi tái sử dụng chúng cho các test
+sau.
+
+\subsection*{Rời rạc và liên tục đều có thế mạnh}
+
+Các test sau vừa dùng thủ thuật rời rạc như biểu diễn nhị phân, xor, sắp xếp
+nổi bọt và cộng nhanh, vừa dùng xấp xỉ liên tục qua sigmoid, đạo hàm và khai
+triển Taylor. Hai hướng này bổ sung cho nhau.
+
+\subsection*{Mạng nơ-ron}
+
+Slide gốc kết thúc phần bài học bằng các ảnh minh họa về mạng nơ-ron. Điều
+này tương ứng với mô hình của đề: một mạng gồm các nút tính toán, trong đó
+nút sigmoid đóng vai trò thao tác phi tuyến quan trọng.
+
+\section{Kết thúc}
+
+Hoàn thành một thành tựu trong đời: ra đề ở NOI.
+
+Cảm ơn CCF đã cung cấp nền tảng học tập và giao lưu. Cảm ơn Wang Yisong và Yu
+Jiping đã kiểm đề và siết tham số chấm. Cảm ơn Zhang Dizhu đã cân nhắc câu
+chữ của đề bài.
+
+Cảm ơn mọi người!
+
+\end{document}

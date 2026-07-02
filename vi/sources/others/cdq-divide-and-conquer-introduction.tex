@@ -1,0 +1,416 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 其他 OTHERS/CDQ分治入门经典.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\midp}{\mathrm{mid}}
+\newcommand{\Max}{\operatorname{Max}}
+\newcommand{\Min}{\operatorname{Min}}
+\newcommand{\Solve}{\operatorname{Solve}}
+\newcommand{\SolveTwo}{\operatorname{Solve2}}
+\newcommand{\slope}{\operatorname{slope}}
+\newcommand{\dis}{\operatorname{dis}}
+
+\title{Nhập môn kinh điển về phân trị CDQ}
+\author{AC\_Aerolight}
+\date{28--29 tháng 4, 2013 @ Fuzhou}
+
+\begin{document}
+\maketitle
+
+\origtitle{Discussion topic: divide-and-conquer methods}
+\sourcepath{Others / CDQ divide-and-conquer introduction.pdf}
+
+\begin{abstract}
+Bài giảng trình bày một kiểu phân trị đặc biệt, thường được cộng đồng OI gọi
+là phân trị CDQ. Tư tưởng chính là chia miền chỉ số thành hai nửa, giải nửa
+trái trước, xử lý toàn bộ ảnh hưởng của nửa trái lên nửa phải, rồi tiếp tục
+giải nửa phải. Cách nhìn này biến nhiều bài toán trực tuyến khó xử lý thành
+các bài toán offline có thể sắp xếp, quét và dùng cấu trúc dữ liệu chuẩn.
+\end{abstract}
+
+\tableofcontents
+
+\section{Lời nói đầu}
+
+Tài liệu gốc nhắc tới một dạng phân trị đặc biệt. Cách làm này được thấy
+rộng rãi từ bài tập đội tuyển quốc gia năm 2008 của Chen Danqi, nên trong
+giới OI Trung Quốc nó thường được gọi là phân trị CDQ.
+
+Mục đích của bài giảng là phổ biến phương pháp: các ví dụ được chọn tương
+đối cơ bản, phần suy luận được viết chậm rãi, và những bài đã quen thuộc có
+thể được đọc lướt để tập trung vào mẫu tư duy chung.
+
+Một vài công thức truy hồi xuất hiện nhiều lần:
+\[
+  T(n)=2T(n/2)+\Oh(kn)\Rightarrow T(n)=\Oh(kn\log n),
+\]
+\[
+  T(n)=2T(n/2)+\Oh(kn\log n)\Rightarrow
+  T(n)=\Oh(kn\log^2 n),
+\]
+\[
+  T(n)=2T(n/2)+\Oh(k)\Rightarrow T(n)=\Oh(kn).
+\]
+Trong đó \(k\) là một đa thức không phụ thuộc vào \(n\).
+
+\section{Ví dụ mở đầu: đếm nghịch thế}
+
+Với một hoán vị \(P\), cần đếm số cặp nghịch thế
+\[
+  (i,j)\quad\text{thỏa}\quad i<j,\ P_i>P_j.
+\]
+Nếu \(|P|\le 100000\), thuật toán \(\Oh(n^2)\) là quá chậm. Merge sort cho
+cách làm \(\Oh(n\log n)\):
+\begin{enumerate}
+  \item Gọi đệ quy trên nửa trái.
+  \item Gọi đệ quy trên nửa phải.
+  \item Đếm các cặp có chỉ số trái nằm ở nửa trái và chỉ số phải nằm ở nửa
+  phải trong lúc trộn hai dãy đã sắp xếp.
+\end{enumerate}
+Điểm quan trọng là ảnh hưởng nội bộ của từng nửa đã được đệ quy giải quyết;
+bước gộp chỉ cần quan tâm tới ảnh hưởng chéo.
+
+\section{NOI2007 Cash}
+
+\subsection{Quy hoạch động ban đầu}
+
+Có hai loại trái phiếu. Khi mua ở ngày \(i\), tiền được chia theo tỉ lệ
+\(\operatorname{Rate}[i]\) giữa hai loại; khi bán, người chơi bán một tỉ lệ
+cố định của lượng trái phiếu đang giữ. Biết trước giá hai loại trái phiếu
+\(A[i]\), \(B[i]\) trong \(n\) ngày và vốn ban đầu \(S\), cần tối đa hóa lợi
+nhuận. Để tối ưu, mỗi lần giao dịch rõ ràng nên mua hết hoặc bán hết. Ràng
+buộc chính là
+\[
+  1\le n\le 100000.
+\]
+
+Đặt \(F[i]\) là số lượng trái phiếu loại \(B\) lớn nhất có thể có sau ngày
+\(i\). Khi xét giao dịch trước đó là ngày \(j\), công thức trong slide có
+dạng
+\[
+  F[i]=\max\left\{F[i],
+  \frac{\operatorname{Rate}[j]F[j]A[i]+F[j]B[i]}
+       {\operatorname{Rate}[i]A[i]+B[i]}\right\}.
+\]
+So sánh hai quyết định \(j,k\), ta nhận được điều kiện
+\[
+  \frac{\operatorname{Rate}[j]F[j]-\operatorname{Rate}[k]F[k]}
+       {F[j]-F[k]}
+  > -\frac{B[i]}{A[i]}.
+\]
+Vế trái thường được gọi là \(\slope(j,k)\).
+
+Đặt
+\[
+  G[i]=\operatorname{Rate}[i]F[i],\qquad X_i=(F[i],G[i]).
+\]
+Khi đó \(\slope(j,k)\) là hệ số góc của đường thẳng qua hai điểm \(X_j,X_k\).
+Bài toán cần duy trì một tập điểm động hỗ trợ:
+\begin{enumerate}
+  \item chèn một điểm bất kỳ trong góc phần tư thứ nhất;
+  \item với một hệ số góc âm \(K\), tìm đường thẳng có hệ số góc \(K\), đi
+  qua một điểm của tập, và có tung độ cắt trục \(Y\) lớn nhất.
+\end{enumerate}
+Những điểm có thể được chọn ở thao tác thứ hai đều nằm trên bao lồi trên của
+tập điểm. Nếu xử lý trực tuyến, số biên nhiều và cài đặt dễ rối.
+
+\subsection{Đưa phân trị vào}
+
+Quan sát then chốt là hệ số góc truy vấn \(-B[i]/A[i]\) chỉ phụ thuộc vào
+ngày \(i\), không phụ thuộc vào giá trị hiện tại của \(F\). Khi chèn điểm
+\(X_i\), ta đã biết nó sẽ ảnh hưởng tới những truy vấn \(j>i\) nào. Vì vậy
+có thể định nghĩa
+\[
+  \Solve(l,r)
+\]
+là thủ tục tính được các giá trị \(F[l],F[l+1],\ldots,F[r]\).
+
+Với \(\midp=(l+r)/2\), thủ tục có dạng:
+\begin{enumerate}
+  \item chạy \(\Solve(l,\midp)\);
+  \item xét đồng thời toàn bộ ảnh hưởng của các điểm trong \([l,\midp]\)
+  lên các truy vấn trong \([\midp+1,r]\);
+  \item chạy \(\Solve(\midp+1,r)\).
+\end{enumerate}
+Như vậy, phần giữa chỉ cần bao lồi của điểm ở nửa trái và các truy vấn ở nửa
+phải. Bao lồi của hai tập đã sắp xếp có thể gộp tuyến tính; mỗi truy vấn trên
+bao lồi được trả lời bằng nhị phân. Bước giữa tốn \(\Oh(n\log n)\) trên đoạn
+độ dài \(n=r-l+1\), do đó
+\[
+  T(n)=2T(n/2)+\Oh(n\log n)=\Oh(n\log^2 n).
+\]
+
+Có thể giảm hằng số bằng cách lưu các kết quả trung gian hoặc mô phỏng đệ
+quy thủ công, nhưng nghiệm của truy hồi không đổi. Bài giảng kết luận hai ý:
+phân trị chỉ xét ảnh hưởng chéo, còn ảnh hưởng nội bộ của mỗi đoạn được
+đệ quy xử lý; nếu ảnh hưởng nội bộ có thể tạm bỏ qua, bài toán trở thành
+offline.
+
+\section{WF2011 Machine Works}
+
+Công ty có quyền sử dụng nhà máy trong \(N\) ngày và vốn ban đầu \(C\). Có
+\(M\) máy, mỗi máy có bốn tham số \(D,P,R,G\). Ta có thể mua máy ở ngày
+\(D\) với giá \(P\), từ ngày \(D+1\) máy sinh lời \(G\) mỗi ngày, và khi
+không cần nữa có thể bán máy thu \(R\). Trong nhà máy chỉ được giữ một máy.
+Không thể vận hành máy vào đúng ngày mua hoặc bán, nhưng có thể bán một máy
+rồi mua máy khác trong cùng ngày. Sau ngày \(N+1\), phải bán máy đang giữ và
+cần tối đa hóa vốn.
+
+Dữ liệu có thể tới
+\[
+  D\le 10^9,\quad C\le 10^9,\quad M\le 10^5,
+\]
+\[
+  D_i\le D,\quad 1\le R_i<P_i\le 10^9,\quad 1\le G_i\le 10^9.
+\]
+
+Sắp xếp máy theo ngày bán \(D_i\), rời rạc hóa thời gian, và đặt \(F[i]\) là
+số tiền lớn nhất còn lại sau khi bán máy thứ \(i\). Khi chuyển từ máy \(j\)
+sang máy \(i\):
+\[
+  F[i]=\Max\left(F[i-1],
+  F[j]-P[j]+R[j]+G[j](D[i]-D[j]-1)\right),
+\]
+với điều kiện \(F[j]>P[j]\). Đặt
+\[
+  A[j]=F[j]-P[j]+R[j]-G[j]D[j]-G[j],
+\]
+ta có
+\[
+  F[i]=\Max\left(F[i-1],A[j]+G[j]D[i]\right).
+\]
+Đây lại là truy vấn cực đại trên một tập đường thẳng
+\[
+  y=G[j]x+A[j].
+\]
+Nếu độ dốc \(D[i]\) đã cố định theo thứ tự xử lý, ta có thể dùng phân trị
+trên toàn bộ đoạn \([1,n]\) giống bài Cash. Mỗi bước giữa duy trì một họ
+đường thẳng và trả lời các truy vấn \(x=D[i]\), đạt
+\(\Oh(n\log n)\) hoặc cùng bậc với duy trì bao lồi bằng cây cân bằng.
+
+\section{BOI2007 Mokia}
+
+Bài toán có một bàn cờ rất lớn \(2000000\times 2000000\). Mỗi ô chứa một giá
+trị \(A[x,y]\). Hai thao tác:
+\[
+  \texttt{Add x y a}: A[x,y]\mathrel{+}=a,
+\]
+\[
+  \texttt{Query x0 y0 x1 y1}: \text{hỏi tổng trong hình chữ nhật.}
+\]
+Số thao tác thêm không quá \(160000\), số truy vấn không quá \(10000\).
+
+Do kích thước bàn cờ và số truy vấn chênh nhau lớn, cấu trúc dữ liệu hai
+chiều trực tiếp dễ bị quá bộ nhớ hoặc quá thời gian. Phân trị CDQ xử lý ảnh
+hưởng của các thao tác \texttt{Add} ở nửa trái lên các truy vấn ở nửa phải.
+Mỗi truy vấn hình chữ nhật được tách bằng hiệu tiền tố hai chiều:
+\[
+  [x_0,x_1]\times[y_0,y_1]
+\]
+được đổi thành bốn truy vấn tiền tố \((x,y)\). Ở bước gộp, sắp xếp tất cả
+điểm và truy vấn theo \(x\), quét tăng \(x\), và dùng Fenwick hoặc cây đoạn
+trên trục \(y\). Khi mỗi lớp phân trị tốn \(\Oh(n\log n)\),
+\[
+  T(n)=2T(n/2)+\Oh(n\log n)=\Oh(n\log^2 n).
+\]
+
+\section{Khoảng cách Manhattan động}
+
+Tài liệu nêu một bài toán duy trì tập điểm hai chiều \(P\), hỗ trợ:
+\begin{enumerate}
+  \item chèn điểm \((x,y)\);
+  \item với truy vấn \((x,y)\), tìm điểm gần nhất theo khoảng cách Manhattan.
+\end{enumerate}
+Khoảng cách là
+\[
+  \dis(P_1,P_2)=|x_1-x_2|+|y_1-y_2|,
+\]
+với \(N,m\le 300000\), \(x,y\le 1000000\). Cây \(k\)-d không phù hợp với
+yêu cầu trong bài giảng.
+
+Loại bỏ dấu giá trị tuyệt đối bằng cách xét bốn hướng: trái trên, trái
+dưới, phải trên, phải dưới. Chỉ cần mô tả một hướng, ví dụ đáp án nằm ở
+phía trái dưới truy vấn. Khi đó
+\[
+  \dis((x,y),(x',y'))=(x-x')+(y-y')=x+y-(x'+y').
+\]
+Vì vậy cần tìm điểm thỏa \(x'\le x, y'\le y\) có \(x'+y'\) lớn nhất. Nếu
+không có thao tác chèn động, ta chỉ cần sắp xếp theo \(x\) và dùng Fenwick
+trên \(y\). Với thao tác chèn theo thời gian, phân trị CDQ một lần nữa xử lý
+ảnh hưởng của các điểm ở nửa trái lên truy vấn ở nửa phải:
+\begin{enumerate}
+  \item \(\Solve(l,\midp)\);
+  \item xử lý ảnh hưởng chéo bằng quét offline theo \(x\) và Fenwick theo
+  \(y\);
+  \item \(\Solve(\midp+1,r)\).
+\end{enumerate}
+Mỗi hướng được xử lý tương tự, rồi lấy giá trị nhỏ nhất trong bốn đáp án.
+
+\section{Thứ tự từng phần hai và ba chiều}
+
+\subsection{Hai chiều}
+
+Có \(N\) người, mỗi người có hai chỉ số năng lực \(P_i,Q_i\). Nếu
+\[
+  P_i>P_j\quad\text{và}\quad Q_i>Q_j,
+\]
+nói rằng \(i\) mạnh hơn \(j\). Cần tìm dãy dài nhất
+\[
+  A=(A_1,A_2,\ldots,A_t)
+\]
+sao cho \(A_i\) mạnh hơn \(A_{i+1}\). Với \(N\le 100000\), để dễ nhìn ta giả
+sử \(P,Q\) đều là hoán vị của \(1,\ldots,N\).
+
+Sắp xếp các phần tử theo \(P_i\). Bài toán trở thành LIS trên dãy \(Q_i\):
+\[
+  F[i]=\Max\{F[j]\mid j<i,\ Q[j]<Q[i]\}+1.
+\]
+Fenwick hoặc cây đoạn cho độ phức tạp \(\Oh(n\log n)\).
+
+\subsection{Ba chiều}
+
+Với ba chỉ số \(P_i,Q_i,R_i\), sau khi sắp xếp theo \(P_i\), cần tính
+\[
+  F[i]=\Max\{F[j]\mid j<i,\ Q[j]<Q[i],\ R[j]<R[i]\}+1.
+\]
+Nếu dùng cây đoạn lồng cây cân bằng hoặc cây đoạn bền vững có thể đạt
+\(\Oh(n\log^2 n)\). Bài giảng đưa CDQ vào để xử lý chiều chỉ số \(i\):
+\[
+  \Solve(l,r):
+  \begin{cases}
+    \Solve(l,\midp),\\
+    \text{xử lý ảnh hưởng của }[l,\midp]\text{ lên }[\midp+1,r],\\
+    \Solve(\midp+1,r).
+  \end{cases}
+\]
+Ở bước giữa, xem các điểm bên trái là các điểm có trọng số
+\[
+  X=(Q_i,R_i),\qquad \text{trọng số }F[i],
+\]
+và với mỗi điểm bên phải \((Q_j,R_j)\), cần tìm trọng số lớn nhất trong các
+điểm có
+\[
+  Q_i<Q_j,\qquad R_i<R_j.
+\]
+Sắp xếp tất cả điểm và truy vấn theo \(Q\), quét theo \(Q\), và dùng Fenwick
+hoặc cây đoạn để lấy cực đại theo \(R\). Do bước giữa tốn \(\Oh(n\log n)\),
+\[
+  T(n)=2T(n/2)+\Oh(n\log n)=\Oh(n\log^2 n).
+\]
+
+\section{Thứ tự từng phần bốn chiều}
+
+Với bốn chỉ số \(P_i,Q_i,R_i,S_i\), có hai biến thể trong slide.
+
+Biến thể thứ nhất chỉ cần với mỗi người \(i\) tìm xem có người nào mạnh hơn:
+\[
+  j<i,\quad Q_j<Q_i,\quad R_j<R_i,\quad S_j<S_i.
+\]
+Bài toán tương đương tìm
+\[
+  \Min\{S_j\mid j<i,\ Q_j<Q_i,\ R_j<R_i\}<S_i.
+\]
+Sau khi sắp xếp theo \(P\), có thể dùng đúng cách xử lý của bài ba chiều:
+CDQ theo \(i\), quét theo \(Q\), và cấu trúc dữ liệu trên \(R\) để giữ giá
+trị nhỏ nhất của \(S\).
+
+Biến thể thứ hai yêu cầu dãy dài nhất:
+\[
+  F[i]=\Max\{F[j]\mid j<i,\ Q_j<Q_i,\ R_j<R_i,\ S_j<S_i\}+1.
+\]
+Không còn biến đổi đơn giản như trường hợp chỉ hỏi tồn tại, nên bài giảng
+dùng hai tầng phân trị. Thủ tục ngoài \(\Solve(l,r)\) giải các giá trị
+\(F[l],\ldots,F[r]\). Ở giữa, nó gọi một thủ tục phụ \(\SolveTwo(l,r)\) để
+xử lý ảnh hưởng của \([l,\midp]\) lên \([\midp+1,r]\) theo ba chiều còn lại.
+
+Trong \(\SolveTwo\), ta lại phân trị một lần nữa, rồi ở bước giữa của tầng
+phụ chỉ còn bài toán hai chiều: chèn điểm \((R_i,S_i)\) với trọng số
+\(F[i]\), và truy vấn tại \((R_j,S_j)\) để lấy trọng số lớn nhất trong các
+điểm thỏa
+\[
+  R_i<R_j,\qquad S_i<S_j.
+\]
+Phần này được xử lý offline bằng cách sắp xếp và dùng Fenwick/cây đoạn giống
+trường hợp ba chiều.
+
+Đặt \(T_2(n)\) là độ phức tạp của \(\SolveTwo\):
+\[
+  T_2(n)=2T_2(n/2)+\Oh(n\log n)=\Oh(n\log^2 n).
+\]
+Đặt \(T(n)\) là độ phức tạp của \(\Solve\):
+\[
+  T(n)=2T(n/2)+T_2(n)
+      =2T(n/2)+\Oh(n\log^2 n)
+      =\Oh(n\log^3 n).
+\]
+
+\section{Nhiều chiều và phân trị song song}
+
+Slide đặt câu hỏi vui với thứ tự từng phần \(100\) chiều: mỗi người có
+\(100\) chỉ số năng lực \(P_{i,1},P_{i,2},\ldots,P_{i,100}\); nếu mọi chiều
+của \(i\) đều lớn hơn của \(j\) thì \(i\) mạnh hơn \(j\). Với \(N\le 500\),
+nếu cứ lồng thêm phân trị hoặc cấu trúc dữ liệu theo từng chiều thì sẽ xuất
+hiện rất nhiều thừa số \(\log n\). Đây là lời nhắc rằng CDQ là một công cụ
+chứ không phải câu trả lời tự động cho mọi số chiều.
+
+Một ý tưởng khác trong bài giảng là phân trị song song. Ví dụ trong bài
+POI2011 Meteor, mỗi quốc gia có một ngưỡng cần gom đủ thiên thạch. Ban đầu
+miền đáp án của mỗi quốc gia là \([1,n]\). Ta đồng thời nhị phân đáp án của
+tất cả quốc gia:
+\begin{enumerate}
+  \item lấy trung điểm \(\operatorname{mid}_x\) của miền đáp án của quốc gia
+  \(x\);
+  \item sắp xếp các \(\operatorname{mid}_x\), rồi xử lý offline các trận mưa
+  sao theo thứ tự thời gian;
+  \item nếu tại \(\operatorname{mid}_x\) lượng thu được đủ \(W_x\), đẩy miền
+  về nửa trái; ngược lại đẩy về nửa phải.
+\end{enumerate}
+Sau \(\log k\) vòng, mỗi miền đáp án có độ dài \(1\). Slide ghi độ phức tạp
+theo dạng
+\[
+  \log k\cdot(k\log m+n\log n).
+\]
+
+\section{Một mẫu bài khác: Package}
+
+Với bài \emph{Package}, định nghĩa \(\Solve(l,r)\) để xử lý mọi truy vấn có
+chỉ số \(1\le i\le r\). Thủ tục mở rộng có thêm trạng thái \(S\):
+\[
+  \Solve(l,r,S),
+\]
+trong đó \(S\) là một ba lô \(0/1\) đã chứa mọi vật nằm ngoài đoạn \([l,r]\).
+Khi tới lá \(\Solve(L,L,S)\), ta trả lời tất cả truy vấn \(i=L\).
+
+Đệ quy:
+\[
+  \Solve(l,r,S):
+  \begin{cases}
+    \Solve(l,\midp,S+[\midp+1,r]),\\
+    \Solve(\midp+1,r,S+[l,\midp]).
+  \end{cases}
+\]
+Nếu mỗi lần gộp trạng thái ba lô tốn \(\Oh(nm)\), truy hồi là
+\[
+  T(n)=2T(n/2)+\Oh(nm)=\Oh(nm\log n).
+\]
+Đây là một ví dụ khác của cùng khuôn: tại mỗi nhánh, ta đưa toàn bộ ảnh
+hưởng của phần còn lại vào trạng thái, để câu hỏi tại lá trở nên trực tiếp.
+
+\section{Ghi nhớ khi áp dụng}
+
+Các ví dụ trong tài liệu có bề ngoài rất khác nhau, nhưng cùng dựa trên một
+chuỗi quyết định:
+\begin{enumerate}
+  \item Xác định trục thời gian hoặc trục phụ thuộc: thao tác ở nửa trái có
+  thể ảnh hưởng tới truy vấn hoặc trạng thái ở nửa phải.
+  \item Đảm bảo ảnh hưởng nội bộ đã do đệ quy phụ trách.
+  \item Biến bước ảnh hưởng chéo thành một bài toán offline: sắp xếp theo
+  một chiều, quét, rồi dùng Fenwick, cây đoạn, bao lồi hoặc cấu trúc dữ liệu
+  phù hợp cho các chiều còn lại.
+  \item Phân tích truy hồi của bước giữa. Nếu bước giữa tốn
+  \(\Oh(n\log^c n)\), thường nhận thêm một thừa số \(\log n\) ở tầng CDQ.
+\end{enumerate}
+
+\end{document}

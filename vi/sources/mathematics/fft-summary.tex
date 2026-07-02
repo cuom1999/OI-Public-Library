@@ -1,0 +1,205 @@
+\documentclass[11pt]{article}
+% Source-PDF: 数学 MATHEMATICS/快速傅里叶变换学习总结 - Voiphon.pdf
+\usepackage{oipl-vn}
+
+\title{Tổng kết học nhanh về biến đổi Fourier nhanh}
+\author{Voiphon}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Fast Fourier Transform study summary}
+\sourcepath{Mathematics / Fast Fourier Transform study summary - Voiphon.pdf}
+
+\section{Mở đầu}
+
+Tác giả đã từng đọc nội dung này trong \textit{Introduction to Algorithms} từ
+lâu, nhưng lúc đó chưa thật sự hiểu. Khi tìm lại tài liệu trên mạng, tác giả
+thấy không có nhiều bài viết đủ đơn giản và phù hợp với người mới học; phần
+lớn tài liệu nghiêng về phân tích tín hiệu số. Vì vậy bài viết này được ghi
+lại như một bản tổng kết để tránh quên kiến thức sau vài ngày.
+
+\section{Tích chập: phép nhân đa thức}
+
+Định nghĩa một đa thức bậc $n$ theo dạng
+\[
+  f(x)=a_0+a_1x+\cdots+a_{n-1}x^{n-1}.
+\]
+Ở đây cách gọi "bậc $n$" hơi không chuẩn, vì chỉ số cao nhất là $n-1$.
+
+Tích của hai đa thức $f(x)$ và $g(x)$ hiển nhiên vẫn là một đa thức. Ta gọi
+tích này là \term{tích chập} của $f(x)$ và $g(x)$. Nghiêm túc hơn, tích chập
+thật sự thường được định nghĩa bằng tích phân trên các hàm liên tục, nhưng
+trong bối cảnh lập trình thi đấu, điều cần tính thường là tích chập của hai
+dãy hệ số.
+
+Cách tính trực tiếp là nhân đa thức:
+\[
+  h(x)=f(x)g(x)
+  =a_0b_0+(a_0b_1+a_1b_0)x+\cdots+
+  \left(\sum_{i=0}^{k} a_i b_{k-i}\right)x^k+\cdots.
+\]
+Tách hệ số của $x^k$, ta có
+\[
+  c_k=\sum_{i=0}^{k} a_i b_{k-i}.
+\]
+Đó chính là tích chập của hai dãy số. Cách tính thô trực tiếp theo công thức
+trên có độ phức tạp $O(n^2)$.
+
+\section{Biểu diễn điểm, tính giá trị và nội suy đa thức}
+
+Một đa thức với $n$ hệ số không chỉ có thể biểu diễn bằng bộ hệ số
+\[
+  (a_0,a_1,\ldots,a_{n-1}),
+\]
+mà còn có thể biểu diễn bằng $n$ điểm phân biệt
+\[
+  (x_0,y_0),(x_1,y_1),\ldots,(x_{n-1},y_{n-1}).
+\]
+Lý do là đa thức này có đúng $n$ hằng số cần xác định.
+
+Ưu điểm của biểu diễn điểm là tính tích chập rất nhanh: với những điểm có cùng
+hoành độ $x$, ta chỉ cần nhân trực tiếp các giá trị hàm tương ứng. Độ phức tạp
+khi đó là $O(n)$.
+
+Quá trình chuyển từ biểu diễn hệ số sang biểu diễn điểm được gọi là
+\term{tính giá trị} (evaluation). Cách trực tiếp là thay lần lượt $n$ điểm vào
+đa thức. Với mỗi điểm có thể tính theo dạng Horner:
+\[
+  f(x)=a_0+x(a_1+x(a_2+\cdots)).
+\]
+Mỗi điểm tốn $O(n)$, tổng cộng $O(n^2)$.
+
+Quá trình chuyển từ biểu diễn điểm về biểu diễn hệ số được gọi là
+\term{nội suy} (interpolation). Có thể làm bằng phương pháp hệ số chưa biết
+hoặc nội suy Lagrange; bài viết này không dùng trực tiếp phần đó.
+
+\section{\texorpdfstring{DFT: biến đổi Fourier rời rạc trong $O(n^2)$}{DFT: biến đổi Fourier rời rạc trong O(n\textasciicircum 2)}}
+
+Các điểm $x$ của đa thức không nhất thiết phải là số thực. DFT, viết tắt của
+\term{Discrete Fourier Transform}, thực chất là việc tính giá trị của một đa
+thức tại các căn bậc $n$ của đơn vị.
+
+Căn bậc $n$ của đơn vị là $n$ số phức
+\[
+  \omega_n^k=e^{2\pi ki/n}
+  =\cos\left(k\cdot\frac{2\pi}{n}\right)
+  + i\sin\left(k\cdot\frac{2\pi}{n}\right).
+\]
+Nói trực quan, đó là tọa độ của $n$ đỉnh của đa giác đều nội tiếp đường tròn
+đơn vị, với một đỉnh tại $(1,0)$.
+
+Công thức DFT là
+\[
+  \operatorname{DFT}(k)=y_k=f(\omega_n^k)
+  =\sum_{i=0}^{n-1} a_i(\omega_n^k)^i.
+\]
+Cách tính trực tiếp theo công thức này có độ phức tạp $O(n^2)$.
+
+\section{\texorpdfstring{FFT: biến đổi Fourier nhanh trong $O(n\log n)$}{FFT: biến đổi Fourier nhanh trong O(n log n)}}
+
+FFT là thuật toán tính DFT trong thời gian $O(n\log n)$. Ý tưởng chính là khai
+thác tính chất đặc biệt của căn bậc $n$ của đơn vị, rồi dùng chia để trị để
+tăng tốc.
+
+Giả sử $n$ là số chẵn. Khi đó
+\[
+  (\omega_n^k)^2=(\omega_n^{k+n/2})^2=\omega_{n/2}^{k}.
+\]
+Xét đa thức
+\[
+  f(x)=a_0+a_1x+a_2x^2+\cdots+a_{n-1}x^{n-1}.
+\]
+Ta tách nó thành phần hệ số chẵn và phần hệ số lẻ:
+\[
+  f_1(x)=a_0+a_2x^2+a_4(x^2)^2+\cdots+a_{n-2}(x^2)^{n/2-1},
+\]
+\[
+  f_2(x)=a_1+a_3x^2+a_5(x^2)^2+\cdots+a_{n-1}(x^2)^{n/2-1}.
+\]
+Rõ ràng
+\[
+  f(x)=f_1(x)+x f_2(x).
+\]
+
+Điểm mấu chốt là khi tính trên các căn bậc $n$ của đơn vị, các giá trị $x^2$
+chỉ còn $n/2$ giá trị khác nhau. Vì vậy $f_1$ và $f_2$ tổng cộng chỉ cần tính
+trên $n$ điểm, thay vì $2n$ điểm như trường hợp các $x$ tùy ý. Nếu $n$ là lũy
+thừa của $2$, ta tiếp tục chia để trị như vậy và đạt độ phức tạp
+$O(n\log n)$. Nếu $n$ chưa phải lũy thừa của $2$, ta có thể thêm các hệ số
+$0$ vào đa thức.
+
+\section{IDFT: biến đổi Fourier rời rạc ngược}
+
+DFT dùng để tính giá trị. Biến đổi ngược IDFT dùng để nội suy, tức chuyển từ
+biểu diễn điểm về biểu diễn hệ số.
+
+Viết DFT ở dạng ma trận, ta có một ma trận Vandermonde nhân với vector hệ số
+bằng vector giá trị:
+\[
+  V_n
+  \begin{pmatrix}
+    a_0\\a_1\\a_2\\ \vdots \\ a_{n-1}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    y_0\\y_1\\y_2\\ \vdots \\ y_{n-1}
+  \end{pmatrix}.
+\]
+Ma trận bên trái là ma trận Vandermonde. Nghịch đảo của nó đã có công thức
+chuẩn, từ đó suy ra công thức IDFT:
+\[
+  \operatorname{IDFT}(k)=a_k
+  =\frac{1}{n}\sum_{i=0}^{n-1} y_i(\omega_n^{-k})^i.
+\]
+
+So sánh với công thức DFT
+\[
+  \operatorname{DFT}(k)=y_k=\sum_{i=0}^{n-1} a_i(\omega_n^k)^i,
+\]
+ta thấy hai công thức có hình thức rất giống nhau. Vì vậy chỉ cần thay tham số
+trong FFT, ta cũng có thể nội suy trong $O(n\log n)$.
+
+\section{Quay lại tích chập}
+
+Ta có thể tính tích chập bằng công thức
+\[
+  f\cdot g = \operatorname{IDFT}(\operatorname{DFT}(f)\cdot
+  \operatorname{DFT}(g)).
+\]
+Nghĩa là trước hết tính giá trị để chuyển hai đa thức sang biểu diễn điểm, sau
+đó nhân theo từng điểm, rồi nội suy về đa thức mới.
+
+Khi dùng FFT, tổng thời gian là
+\[
+  O(n\log n)+O(n)+O(n\log n)=O(n\log n).
+\]
+Đây chính là thuật toán nhanh cho tích chập: FFT.
+
+Một mở rộng thường gặp là NTT (Number Theoretic Transform, biến đổi số học),
+cũng có độ phức tạp tương tự nhưng tránh sai số số thực và thường có hằng số
+tốt hơn trong một số bài toán.
+
+\section{Ứng dụng}
+
+Ví dụ mẫu: CodeVS 3123 Super A*B Problem. Cho hai số $A$ và $B$, cần tính
+$A\cdot B$, trong đó $A$ và $B$ có thể dài tới $10^5$ chữ số.
+
+Phân tích: một số nguyên lớn có thể xem như một đa thức tại $x=10$, hoặc trực
+tiếp xem các chữ số của hai số là hai dãy cần lấy tích chập.
+
+\section{Mẫu mã}
+
+PDF gốc có các mục "mẫu mã đệ quy" và "mẫu mã không đệ quy", nhưng phần mã
+không được trích xuất rõ bằng \texttt{pdftotext}. Vì vậy bản dịch này giữ lại
+nội dung lý thuyết và ghi chú rằng phần mã cần được phục dựng riêng nếu có
+nguồn gốc tốt hơn PDF hiện tại.
+
+\section*{Ghi chú nguồn}
+
+PDF gốc dẫn hai bài viết CSDN về FFT và ghi chú rằng sự giống nhau giữa DFT và
+IDFT không phải ngẫu nhiên: chúng là hai quy tắc biến đổi đối xứng như ảnh
+gương trên miền hàm phức.
+
+\end{document}

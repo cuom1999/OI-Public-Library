@@ -1,0 +1,519 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/1999/陈宏.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\Map}{\operatorname{Map}}
+
+\title{Lựa Chọn Cấu Trúc Dữ Liệu Và Hiệu Quả Thuật Toán}
+\author{Chen Hong\\Trường Trung học trực thuộc Đại học Sư phạm Phúc Kiến}
+\date{1999}
+
+\begin{document}
+\maketitle
+
+\origtitle{Data-structure choice and algorithmic efficiency, from IOI 1998 Picture}
+\sourcepath{IOI China candidate team papers / 1999 / Chen Hong.pdf}
+
+\begin{abstract}
+``Thuật toán + cấu trúc dữ liệu = chương trình''. Thiết kế thuật toán và chọn
+cấu trúc dữ liệu phù hợp là hai mặt bổ sung cho nhau trong lập trình. Bài viết
+lấy bài \textit{Picture} của IOI 1998 làm ví dụ, so sánh cách dùng cấu trúc
+tuyến tính và cấu trúc cây, từ đó phân tích ảnh hưởng của lựa chọn cấu trúc dữ
+liệu tới hiệu quả thuật toán.
+\end{abstract}
+
+\noindent\textbf{Từ khóa:} lựa chọn cấu trúc dữ liệu; cấu trúc tuyến tính; cấu
+trúc cây.
+
+\section{Mở đầu}
+
+Thuật toán thường là yếu tố quyết định hiệu quả chương trình, nhưng mọi thuật
+toán cuối cùng đều phải được hiện thực trên một cấu trúc dữ liệu tương ứng.
+Tinh hoa của nhiều thuật toán chính là việc chọn được một cấu trúc dữ liệu phù
+hợp làm nền tảng. Vì vậy khi lập trình, không chỉ cần chú trọng thiết kế thuật
+toán, mà còn phải chọn đúng cấu trúc dữ liệu; lựa chọn tốt thường đem lại hiệu
+quả lớn.
+
+Trong hai mặt thời gian và không gian, bài viết chủ yếu phân tích hiệu quả
+thời gian, tức độ phức tạp thời gian. Ta luôn mong chương trình cho kết quả
+mong muốn trong thời gian ngắn. Nếu tiết kiệm bộ nhớ quá mức khiến thời gian
+không thể chấp nhận thì việc giải bài cũng không có lợi.
+
+\section{Bài toán Picture và khung thuật toán}
+
+\subsection{Phát biểu bài toán}
+
+Bài \textit{Picture} của IOI 1998 được mô tả như sau. Trên tường dán một số
+hình chữ nhật như poster hoặc ảnh; mọi cạnh đều thẳng đứng hoặc nằm ngang. Một
+hình chữ nhật có thể bị các hình chữ nhật khác che một phần hoặc toàn bộ. Chu
+vi biên ngoài của hợp các hình chữ nhật được gọi là \term{chu vi đường bao}.
+Cần viết chương trình tính chu vi đường bao.
+
+Giới hạn dữ liệu:
+\[
+  0\le \text{số hình chữ nhật}<5000,
+\]
+tọa độ là số nguyên trong đoạn \([-10000,10000]\). Hình minh họa trong bản gốc
+có ba hình chữ nhật với chu vi đường bao bằng \(30\).
+
+\subsection{Định nghĩa đường bao}
+
+Trước khi mô tả thuật toán, ta làm rõ khái niệm đường bao:
+\begin{enumerate}
+  \item Đường bao gồm hữu hạn đoạn thẳng; mỗi đoạn là cạnh của một hình chữ
+  nhật hoặc một phần của cạnh hình chữ nhật.
+  \item Đoạn thẳng tạo thành đường bao không được bị bất kỳ hình chữ nhật nào
+  che phủ.
+\end{enumerate}
+Bản gốc có hai hình nhỏ minh họa hai kiểu một đoạn cạnh bị che phủ.
+
+\subsection{Đoạn nguyên tố}
+
+Một đặc điểm quan trọng của bài là ta phân tích các cạnh hình chữ nhật. Vì đầu
+mút cạnh, tức đỉnh hình chữ nhật, có tọa độ nguyên và phạm vi tọa độ bị giới
+hạn, ta có thể xem mặt phẳng như một lưới. Các cạnh hình chữ nhật chắc chắn
+nằm trên các đường lưới.
+
+Với một đoạn thẳng trên lưới, điều ta quan tâm là tọa độ tuyệt đối của nó. Ví
+dụ, một cạnh \(AB\) có thể được chia thành các đoạn nhỏ \(L_1,L_2,L_3\) nối
+hai đỉnh lưới kề nhau. Những đoạn cơ bản như vậy được gọi là
+\term{đoạn nguyên tố}. Đoạn nguyên tố là đơn vị cơ bản tạo nên cạnh hình chữ
+nhật và đường bao. Một đoạn nguyên tố hoặc hoàn toàn thuộc đường bao, hoặc
+hoàn toàn không thuộc đường bao.
+
+Cách định nghĩa này rời rạc hóa bài toán, đưa việc nghiên cứu về từng đơn vị
+cơ bản. Tuy nhiên, tổng số đoạn nguyên tố trên toàn mặt phẳng là rất lớn:
+\[
+  20001\cdot 20000\cdot 2.
+\]
+Nếu phạm vi tọa độ là \([-10^6,10^6]\), số đoạn nguyên tố sẽ lên tới
+\(8\cdot 10^{12}\). Vì vậy cần tối ưu hóa khái niệm này.
+
+\subsection{Siêu đoạn nguyên tố}
+
+Ta định nghĩa một đơn vị cải tiến là \term{siêu đoạn nguyên tố}. Nó thu được
+từ việc cắt mặt phẳng bằng các đường thẳng đi qua cạnh của các hình chữ nhật.
+Cụ thể, với \(N\) hình chữ nhật, dùng hoành độ của \(2N\) cạnh dọc để cắt mặt
+phẳng theo phương dọc, và dùng tung độ của \(2N\) cạnh ngang để cắt theo
+phương ngang. Mặt phẳng bị chia thành \((2N+1)^2\) miền.
+
+Các đoạn như một cạnh ngang \(AB\) giữa hai đường cắt dọc liền kề, hoặc cạnh
+dọc \(CD\) giữa hai đường cắt ngang liền kề, là siêu đoạn nguyên tố. Chúng có
+tính chất tương tự đoạn nguyên tố: là đơn vị cơ bản của đường bao. Khác biệt
+là số lượng siêu đoạn nguyên tố ít hơn nhiều, khoảng \(4N\) đoạn theo các cạnh
+liên quan, và không phụ thuộc vào độ lớn miền tọa độ.
+
+Vì ưu điểm đó, thuật toán sẽ nghiên cứu các siêu đoạn nguyên tố.
+
+\subsection{Rời rạc hóa và khung thuật toán}
+
+Ta không xét từng siêu đoạn nguyên tố riêng lẻ, vì vẫn có thể tốn thời gian;
+cũng không xét toàn bộ cùng lúc, vì khi đó khó xử lý. Một cách trung gian là
+chia các siêu đoạn nguyên tố thành nhóm. Các siêu đoạn kẹp giữa hai đường cắt
+dọc tự nhiên tạo thành một nhóm: chúng có cùng độ dài và cùng hoành độ hai
+đầu. Các đoạn dọc cũng xử lý tương tự.
+
+Sau rời rạc hóa, khung thuật toán cơ bản là:
+\begin{enumerate}
+  \item Cắt mặt phẳng bằng các tọa độ cạnh hình chữ nhật.
+  \item Đặt bộ cộng \(\mathit{ans}\leftarrow 0\).
+  \item Xét từng nhóm siêu đoạn nguyên tố, kiểm tra trong nhóm đó phần nào
+  thuộc đường bao, rồi cộng độ dài tương ứng vào \(\mathit{ans}\).
+  \item In \(\mathit{ans}\).
+\end{enumerate}
+Khung này còn thô; phần tinh chỉnh phụ thuộc vào cấu trúc dữ liệu được chọn.
+
+\section{Lựa chọn thứ nhất: cấu trúc tuyến tính}
+
+\subsection{Xây dựng ánh xạ}
+
+Nền tảng thuật toán là rời rạc hóa mặt phẳng. Để cắt mặt phẳng, ta cần ghi lại
+các tọa độ cắt. Cách trực quan là dùng mảng một chiều: chỉ số biểu diễn số thứ
+tự điểm cắt, phần tử mảng biểu diễn tọa độ. Với mảng, việc truy cập thuận tiện
+và có thể sắp xếp trong \(\Oh(N\log N)\).
+
+Một kiểu ánh xạ có thể mô tả như sau:
+\[
+\begin{array}{ll}
+\texttt{Len} & \text{số điểm cắt},\\
+\texttt{Coord[1..Max]} & \text{tọa độ các điểm cắt}.
+\end{array}
+\]
+Các thao tác gồm:
+\begin{itemize}
+  \item \texttt{Create}: đặt \(\texttt{Len}\leftarrow0\);
+  \item \texttt{Insert(X)}: tăng \(\texttt{Len}\), rồi ghi \(X\) vào
+  \(\texttt{Coord[Len]}\);
+  \item \texttt{Sort}: sắp xếp các tọa độ.
+\end{itemize}
+
+Ví dụ với hoành độ, ta khởi tạo \(\texttt{X\_map}\), chèn hoành độ của mọi
+cạnh dọc hình chữ nhật, rồi sắp xếp. Tung độ xử lý tương tự bằng
+\(\texttt{Y\_map}\). Phần này đáp ứng tốt yêu cầu thuật toán: \texttt{Create}
+và \texttt{Insert} là \(\Oh(1)\), còn \texttt{Sort} là \(\Oh(N\log N)\) và
+chỉ chạy một lần.
+
+\subsection{Mảng tuyến tính cho một nhóm siêu đoạn}
+
+Sau khi xây dựng ánh xạ, mặt phẳng đã được cắt. Vấn đề chính là mô tả trạng
+thái của một nhóm siêu đoạn nguyên tố. Vì cần tính chu vi đường bao, ta quan
+tâm trong một nhóm có bao nhiêu siêu đoạn thuộc đường bao. Xét các nhóm đoạn
+ngang. Giả sử:
+\begin{itemize}
+  \item các nhóm siêu đoạn được đánh số \(1,\ldots,2N-1\);
+  \item nhóm \(s\) có độ dài \(\operatorname{Length}(s)\);
+  \item nhóm \(s\) có \(\operatorname{Belong}(s)\) siêu đoạn thuộc đường bao.
+\end{itemize}
+Khi đó tổng độ dài cạnh ngang của đường bao là
+\[
+  \operatorname{ANS}_h=
+  \sum_{s=1}^{2N-1}\operatorname{Length}(s)\operatorname{Belong}(s).
+\]
+\(\operatorname{Length}(s)\) dễ tính bằng hiệu hai tọa độ cắt kề nhau; vì vậy
+chỉ cần tính \(\operatorname{Belong}(s)\).
+
+Sau rời rạc hóa, số siêu đoạn trong một nhóm ngang hữu hạn, xấp xỉ \(2N\).
+Điều này gợi ý dùng mảng một chiều:
+\[
+  A[1..\texttt{MaxSize}].
+\]
+
+\subsection{Quét cộng dồn}
+
+Ta xem mỗi phần tử \(A[i]\) là một bộ đếm:
+\[
+\begin{aligned}
+A[i]={}&
+\#\{\text{cạnh trên phủ siêu đoạn }i\}\\
+&-\#\{\text{cạnh dưới phủ siêu đoạn }i\}.
+\end{aligned}
+\]
+Sau đó dùng một biến \(\mathit{add}\), quét từ trên xuống dưới và cộng dồn
+\(A[i]\). Một siêu đoạn \(i\) thuộc đường bao trong hai trường hợp:
+\begin{enumerate}
+  \item \(A[i]\ne0\) và trước khi cộng \(A[i]\), \(\mathit{add}=0\). Khi đó
+  siêu đoạn là cạnh trên.
+  \item \(A[i]\ne0\) và sau khi cộng \(A[i]\), \(\mathit{add}=0\). Khi đó
+  siêu đoạn là cạnh dưới.
+\end{enumerate}
+
+Với một nhóm siêu đoạn, quá trình tính \(\operatorname{Belong}(s)\) gồm hai
+phần:
+\begin{enumerate}
+  \item gán giá trị cho \(A[i]\), tức bước tích lũy;
+  \item quét từ trên xuống dưới, duy trì \(\mathit{add}\), tức bước quét.
+\end{enumerate}
+
+Giả mã rút gọn:
+\[
+\begin{array}{ll}
+\textsc{Count}(s):\\
+1 & A \leftarrow 0\\
+2 & \textbf{for } I=1 \textbf{ to } N\\
+3 & \quad \textbf{if rectangle } I \text{ vượt qua nhóm }s\\
+4 & \quad\quad A[\text{cạnh trên của }I] \mathrel{+}=1\\
+5 & \quad\quad A[\text{cạnh dưới của }I] \mathrel{-}=1
+\end{array}
+\]
+\[
+\begin{array}{ll}
+\textsc{Adding}(s):\\
+1 & \textsc{Count}(s)\\
+2 & \mathit{add}\leftarrow0,\quad \mathit{sum}\leftarrow0\\
+3 & \textbf{for } i=1 \textbf{ to } \text{chỉ số tung độ lớn nhất}\\
+4 & \quad \textbf{if } A[i]\ne0\\
+5 & \quad\quad \textbf{if } \mathit{add}=0 \textbf{ then } \mathit{sum}\mathrel{+}=1\\
+6 & \quad\quad \mathit{add}\mathrel{+}=A[i]\\
+7 & \quad\quad \textbf{if } \mathit{add}=0 \textbf{ then } \mathit{sum}\mathrel{+}=1\\
+8 & \textbf{return } \mathit{sum}.
+\end{array}
+\]
+
+Mỗi lần \(\textsc{Adding}\) tốn \(\Oh(N)\). Có \(2N-1\) nhóm siêu đoạn ngang,
+nên tính chu vi ngang tốn \(\Oh(N^2)\). Chu vi dọc tương tự, vì vậy toàn bộ
+bài \textit{Picture} theo cấu trúc tuyến tính có độ phức tạp \(\Oh(N^2)\).
+Đây là đa thức, nhưng khi \(N\) gần \(5000\), lượng tính toán vẫn lớn.
+
+\section{Phân tích thêm về lựa chọn cấu trúc dữ liệu}
+
+Quá trình quét cộng dồn thể hiện một cách nhận thức vấn đề, và dùng mảng một
+chiều làm nền. Nhưng liệu có cách tốt hơn không? Khi chọn cấu trúc dữ liệu cần
+xét vài mặt sau.
+
+\paragraph{Phù hợp với mô tả trạng thái.}
+Cấu trúc dữ liệu phải mô tả được trạng thái của bài toán và cho phép định
+nghĩa rõ các thao tác trên trạng thái. Với \textit{Picture}, trạng thái là một
+nhóm siêu đoạn nguyên tố, mục tiêu là xác định số siêu đoạn thuộc đường bao.
+Mảng tuyến tính mô tả trực quan và dễ cài đặt, nhưng không hiệu quả vì mỗi
+nhóm được quét độc lập; kết quả nhóm sau không dùng được kết quả nhóm trước.
+
+\paragraph{Phù hợp với thuật toán.}
+Cấu trúc dữ liệu phục vụ thuật toán, nên phải xét các thao tác của thuật toán.
+Ngược lại, cấu trúc dữ liệu cũng ảnh hưởng đến thiết kế thuật toán. Chẳng hạn,
+nếu cần heap sort trên một dãy, nên chọn cấu trúc định vị nhanh như mảng, chứ
+không nên chọn danh sách liên kết. Trong bài này, rời rạc hóa cần ghi điểm
+cắt, nên mảng ánh xạ là lựa chọn tự nhiên.
+
+Ảnh hưởng của cấu trúc dữ liệu tới thuật toán thể hiện ở hai mặt. Thứ nhất là
+năng lực lưu trữ: cấu trúc lưu nhiều thông tin giúp thuật toán dễ thiết kế
+hơn, nhưng thường tốn bộ nhớ hơn. Thứ hai là các thao tác được định nghĩa trên
+cấu trúc: thao tác giống như công cụ; công cụ tốt giúp thiết kế thuật toán dễ
+hơn. Mảng tuyến tính có thao tác đơn giản, nhưng không liên kết tốt thống kê
+giữa các nhóm siêu đoạn khác nhau.
+
+\paragraph{Thuận tiện lập trình.}
+Nhiều cấu trúc phức tạp cho hiệu quả cao nhưng khó cài đặt và dễ sai. Khi đó,
+nếu có thể chọn cấu trúc quen thuộc mà không giảm hiệu quả quá nhiều thì đó là
+một thỏa hiệp hợp lý. Trong bài này, để tìm chỉ số ánh xạ của một cạnh hình
+chữ nhật, nếu xây dựng ánh xạ ngược từ tọa độ về chỉ số sẽ phức tạp hơn. Khi
+độ phức tạp chính vẫn là \(\Oh(N)\) cho mỗi lần quét, việc tiếp tục tối ưu ánh
+xạ không thay đổi bản chất hiệu quả, nhưng làm tăng khó khăn cài đặt.
+
+\paragraph{Linh hoạt dùng kiến thức đã có.}
+Nhiều vấn đề mới có liên hệ nội tại với vấn đề cũ. Cấu trúc dữ liệu ``mới''
+đôi khi là sự kết hợp hữu cơ của các cấu trúc cơ bản, hoặc được gợi ra từ cấu
+trúc cơ bản. Nếu tìm được một cấu trúc kinh điển phù hợp như hàng đợi, ngăn
+xếp, danh sách liên kết, cây, v.v., việc hiện thực thường nhẹ hơn và đáng tin
+cậy hơn.
+
+Tóm lại, hướng rời rạc hóa của bài \textit{Picture} là đúng, vì dữ liệu có tới
+gần \(5000\) hình chữ nhật và cần giảm quy mô. Hiệu quả chưa cao chủ yếu do
+lựa chọn cấu trúc tuyến tính. Nút thắt nằm ở việc thống kê các nhóm siêu đoạn
+tách rời nhau. Để khắc phục, ta thử dùng cấu trúc cây, cụ thể là cây đoạn cân
+bằng, gọi là \term{cây siêu đoạn nguyên tố}; thực chất chính là cây đoạn.
+
+\section{Lựa chọn thứ hai: cấu trúc cây}
+
+\subsection{Cây đoạn}
+
+Với một nhóm siêu đoạn, số đoạn thuộc đường bao liên quan chặt chẽ đến vị trí
+các cạnh dọc của hình chữ nhật cắt qua nhóm đó. Chiếu các cạnh dọc lên trục
+\(Y\), ta được các khoảng đóng \(Q\). Dùng cây đoạn để mô tả hợp các khoảng
+đóng này.
+
+Cây đoạn là một cây nhị phân cân bằng mô tả một hoặc nhiều khoảng. Ta cần biết
+trước các giá trị có thể có của đầu mút khoảng. Giả sử
+\[
+  a[1] < a[2] < \cdots < a[N]
+\]
+là tập đầu mút đã sắp xếp. Với mọi khoảng cần mô tả \([x,y]\), tồn tại
+\(1\le i\le j\le N\) sao cho \(x=a[i]\) và \(y=a[j]\). Trong cây đoạn, các chỉ
+số \(i,j\) mới là ý nghĩa chính.
+
+Cây đoạn chia trục số thành các khoảng sơ cấp \([i,i+1]\) với
+\(i=1,\ldots,N-1\). Mỗi khoảng sơ cấp ứng với một lá. Mỗi nút trong ứng với
+một khoảng \([i,j]\) với \(j-i>1\). Một nút có các trường:
+\[
+\begin{array}{ll}
+i,j & \text{chỉ số hai đầu khoảng},\\
+\texttt{count} & \text{số khoảng phủ toàn bộ nút này},\\
+\texttt{leftchild},\texttt{rightchild} & \text{hai con}.
+\end{array}
+\]
+
+Thủ tục xây cây \(\textsc{Build}(l,r)\) đặt \(i=l,j=r,\texttt{count}=0\). Nếu
+\(r-l>1\), chia tại \(k=\lfloor(l+r)/2\rfloor\), xây con trái \([l,k]\) và con
+phải \([k,r]\); nếu không, nút là lá. Cây có chiều cao \(\lceil\log N\rceil\)
+và xây trong \(\Oh(N)\).
+
+\subsection{Chèn và xóa khoảng}
+
+Cây đoạn hỗ trợ chèn khoảng \(\textsc{Insert}(l,r)\):
+\[
+\begin{array}{ll}
+1 & \textbf{if } l\le a[i]\ \textbf{and } a[j]\le r\\
+2 & \quad \texttt{count}\mathrel{+}=1\\
+3 & \textbf{else}\\
+4 & \quad \textbf{if } l<a[(i+j)\operatorname{div}2] \textbf{ then chèn vào con trái}\\
+5 & \quad \textbf{if } r>a[(i+j)\operatorname{div}2] \textbf{ then chèn vào con phải}.
+\end{array}
+\]
+Xóa khoảng \(\textsc{Delete}(l,r)\) tương tự, chỉ thay tăng
+\(\texttt{count}\) bằng giảm \(\texttt{count}\). Điều kiện tiên quyết là khoảng
+\([l,r]\) đã được chèn và chưa bị xóa. Cả chèn và xóa đều có độ phức tạp
+\(\Oh(\log N)\).
+
+\subsection{Độ đo}
+
+Vì cây đoạn được định nghĩa đệ quy, độ đo của hợp khoảng cũng có thể duy trì
+đệ quy. Thêm trường \(M\), là độ đo của hợp khoảng trong cây con nút hiện tại:
+\[
+M=
+\begin{cases}
+a[j]-a[i], & \texttt{count}>0,\\
+0, & \text{nút là lá và }\texttt{count}=0,\\
+M_{\text{trái}}+M_{\text{phải}}, & \text{nút trong và }\texttt{count}=0.
+\end{cases}
+\]
+Sau mỗi lần chèn hoặc xóa, gọi \(\textsc{Update}\) để cập nhật \(M\). Tại một
+nút, cập nhật mất \(\Oh(1)\), nên tổng độ phức tạp của chèn/xóa vẫn là
+\(\Oh(\log N)\).
+
+\subsection{Số đoạn liên tục}
+
+Ở đây số đoạn liên tục nghĩa là hợp các khoảng có thể phân giải thành bao
+nhiêu khoảng độc lập. Ví dụ
+\[
+  [1,2]\cup[2,3]\cup[5,6]
+\]
+tạo thành hai đoạn liên tục: \([1,3]\) và \([5,6]\).
+
+Thêm các trường:
+\[
+\texttt{line},\qquad \texttt{lbd},\qquad \texttt{rbd}.
+\]
+\(\texttt{lbd}=1\) nếu đầu trái \(i\) được phủ, ngược lại bằng \(0\);
+\(\texttt{rbd}\) định nghĩa tương tự cho đầu phải \(j\). Khi \(\texttt{count}>0\),
+cả hai đều bằng \(1\). Nếu là lá và \(\texttt{count}=0\), cả hai bằng \(0\).
+Nếu là nút trong và \(\texttt{count}=0\), thì
+\[
+  \texttt{lbd}=\texttt{left.lbd},\qquad
+  \texttt{rbd}=\texttt{right.rbd}.
+\]
+
+Số đoạn liên tục:
+\[
+\texttt{line}=
+\begin{cases}
+1, & \texttt{count}>0,\\
+0, & \text{lá và }\texttt{count}=0,\\
+\texttt{left.line}+\texttt{right.line}-1,
+  & \text{nút trong, }\texttt{count}=0,\\
+  & \texttt{left.rbd}=1,\ \texttt{right.lbd}=1,\\
+\texttt{left.line}+\texttt{right.line},
+  & \text{nút trong, }\texttt{count}=0 \text{ và hai biên không nối nhau}.
+\end{cases}
+\]
+Trong cài đặt có thể viết gọn:
+\[
+  \texttt{line}=\texttt{left.line}+\texttt{right.line}
+  - \texttt{left.rbd}\cdot\texttt{right.lbd}.
+\]
+
+Như vậy cây đoạn đầy đủ có các trường \(i,j,\texttt{count},\texttt{line},
+\texttt{lbd},\texttt{rbd},M\) và hai con, cùng các thao tác
+\(\textsc{Build}\), \(\textsc{Insert}\), \(\textsc{Delete}\), và cập nhật.
+
+\section{Quét bằng cây đoạn cho Picture}
+
+Cấu trúc tuyến tính kém hiệu quả vì các nhóm siêu đoạn không liên hệ với nhau.
+Thực tế, các nhóm kề nhau có liên hệ rất rõ. Khi quét từ trái sang phải, một
+hình chữ nhật bắt đầu tại cạnh trái sẽ che một đoạn theo trục \(Y\); khi gặp
+cạnh phải, đoạn che phủ ấy biến mất. Đây chính là trạng thái có thể duy trì
+động bằng cây đoạn.
+
+Đặt một đường quét \(L\) đi từ trái sang phải và dừng tại mỗi nhóm siêu đoạn.
+Trạng thái của \(L\) được biểu diễn bằng cây đoạn; mỗi cạnh dọc của hình chữ
+nhật là một khoảng cần hợp nhất. Số đoạn liên tục của cây đoạn nhân \(2\) cho
+biết số siêu đoạn ngang thuộc đường bao trong nhóm đó. Ví dụ trong hình gốc,
+nếu trạng thái là \([G,A]\cup[E,C]\), số đoạn liên tục là \(1\), nên số đoạn
+đường bao ngang của nhóm là \(2\).
+
+Khi quét:
+\begin{itemize}
+  \item trạng thái ban đầu rỗng, tức cây đoạn vừa xây xong;
+  \item gặp cạnh trái hình chữ nhật thì chèn khoảng tung độ của nó;
+  \item gặp cạnh phải hình chữ nhật thì xóa khoảng tung độ của nó.
+\end{itemize}
+Vì quét từ trái sang phải, trước khi xóa cạnh phải, cạnh trái tương ứng đã
+được chèn, nên thao tác xóa hợp lệ.
+
+Quá trình quét còn tính được chu vi dọc. Trước khi trạng thái thay đổi, cây có
+độ đo \(M_1\); sau thay đổi có độ đo \(M_2\). Phần cạnh dọc mới lộ ra hoặc bị
+che đi có độ dài
+\[
+  |M_2-M_1|.
+\]
+
+Các lần chèn/xóa được gọi là \term{sự kiện}; đoạn cần chèn/xóa là
+\term{đoạn sự kiện}. Trước khi quét, sắp xếp sự kiện theo hoành độ.
+
+Thuật toán quét bằng cây đoạn:
+\[
+\begin{array}{ll}
+1 & \text{Rời rạc hóa bằng tọa độ đỉnh hình chữ nhật, lập }X\_\Map,Y\_\Map.\\
+2 & \text{Sắp xếp các sự kiện theo hoành độ.}\\
+3 & \textsc{Root.Build}(1,2N).\\
+4 & \mathit{lastM}\leftarrow0,\quad \mathit{lastLine}\leftarrow0,\quad
+    \mathit{ans}\leftarrow0.\\
+5 & \textbf{for each event } e \textbf{ in order}\\
+6 & \quad \textbf{if } e \text{ là cạnh trái } \textbf{ then Insert}(e.y_1,e.y_2)\\
+7 & \quad \textbf{else } \textbf{Delete}(e.y_1,e.y_2)\\
+8 & \quad \mathit{nowM}\leftarrow\textsc{Root}.M,\quad
+    \mathit{nowLine}\leftarrow\textsc{Root}.\texttt{line}\\
+9 & \quad \mathit{ans}\mathrel{+}=2\cdot \mathit{lastLine}\cdot
+    (x_e-x_{\text{prev}})\\
+10& \quad \mathit{ans}\mathrel{+}=|\mathit{nowM}-\mathit{lastM}|\\
+11& \quad \mathit{lastM}\leftarrow \mathit{nowM},\quad
+    \mathit{lastLine}\leftarrow \mathit{nowLine}.
+\end{array}
+\]
+Trong bản trích xuất PDF, dòng công thức khoảng cách ở bước 9 có nhầm ký hiệu
+\(\texttt{Y\_Map}\); theo nội dung thuật toán, khoảng cách đúng là hiệu hai
+hoành độ sự kiện liên tiếp.
+
+Sắp xếp sự kiện tốn \(\Oh(N\log N)\). Có \(2N\) sự kiện, mỗi chèn/xóa tốn
+\(\Oh(\log N)\), nên toàn bộ quá trình có độ phức tạp \(\Oh(N\log N)\).
+
+\section{So sánh hai cách hiện thực}
+
+Hai cấu trúc dữ liệu khác nhau không chỉ khác về cách lưu trữ và thao tác, mà
+còn tạo ra độ phức tạp thuật toán khác nhau. Cấu trúc tuyến tính dẫn tới
+\(\Oh(N^2)\), còn cấu trúc cây dẫn tới \(\Oh(N\log N)\).
+
+Bản gốc đưa một nhóm dữ liệu thử trên Celeron 300 với Borland Pascal. Với vài
+bộ nhỏ, cả hai đều dưới \(1\) giây. Với bộ lớn hơn, cách tuyến tính khoảng
+\(30\) giây, trong khi cách dùng cây vẫn dưới \(1\) giây. Điều này cho thấy
+khác biệt hiệu quả là rất rõ.
+
+\section{Mở rộng}
+
+Từ phân tích đặc trưng của bài \textit{Picture} và cách dùng cấu trúc cây, có
+thể mở rộng bài toán.
+
+Trước hết, tư tưởng rời rạc hóa cho phép tọa độ đỉnh từ số nguyên mở rộng sang
+số thực. Trong thuật toán và cấu trúc dữ liệu đã chọn, ta không còn dùng tính
+chất đặc biệt của số nguyên. Để thích ứng, chỉ cần đổi kiểu cơ sở của
+\(\texttt{Mapped.Coord}\), trường \(M\) của cây đoạn, và các bộ cộng như
+\(\mathit{ans}\) sang kiểu số thực.
+
+Quan trọng hơn, bài toán chu vi cũng có thể mở rộng thành bài toán diện tích.
+Chu vi dùng số đoạn liên tục và độ đo của đường quét: phần ngang liên quan tới
+\(\texttt{line}\), phần dọc liên quan tới \(M\). Diện tích thì chỉ cần độ đo
+\(M\). Trong quá trình quét, nếu sự kiện hiện tại có hoành độ \(x_i\), diện
+tích dải vừa quét qua là
+\[
+  M\cdot (x_i-x_{i-1}).
+\]
+
+\section{Kết luận}
+
+Với bài \textit{Picture}, trên nền tư tưởng rời rạc hóa, việc đổi cấu trúc dữ
+liệu từ tuyến tính sang cây đã làm giảm mạnh độ phức tạp thời gian. Sự cải
+tiến bắt nguồn từ lựa chọn cấu trúc dữ liệu, và sâu hơn là từ việc hiểu rõ hơn
+bài toán cũng như đặc điểm của cấu trúc dữ liệu.
+
+Thảo luận trên cho thấy tầm quan trọng của việc chọn cấu trúc dữ liệu. Điểm
+quan trọng nhất là cấu trúc dữ liệu phải phù hợp với bài toán và phù hợp với
+thuật toán; chỉ khi đó nó mới mô tả trạng thái một cách bản chất và giúp giải
+quyết vấn đề.
+
+Ở một ý nghĩa nào đó, cấu trúc dữ liệu và thuật toán là biểu hiện cụ thể của
+không gian và thời gian. Chúng có lúc thống nhất, có lúc mâu thuẫn. Trong
+\textit{Picture}, cấu trúc tuyến tính không dùng nhiều bộ nhớ động nhưng có độ
+phức tạp \(\Oh(N^2)\); cấu trúc cây dùng nhiều bộ nhớ hơn nhưng giảm thời gian
+xuống \(\Oh(N\log N)\). Điều hòa mâu thuẫn này và đưa chúng về thống nhất là
+một khâu quan trọng của thiết kế thuật toán.
+
+\section*{Tài liệu tham khảo}
+
+\begin{itemize}
+  \item Fu Qingxiang và Wang Xiaodong, \textit{Thuật toán và cấu trúc dữ liệu},
+  Nhà xuất bản Công nghiệp Điện tử.
+  \item Niklaus Wirth, \textit{Thuật toán + cấu trúc dữ liệu = chương trình},
+  bản dịch của Cao Dehe và Liu Chunnian, Nhà xuất bản Khoa học.
+\end{itemize}
+
+\end{document}

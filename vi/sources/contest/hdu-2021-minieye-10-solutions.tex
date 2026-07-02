@@ -1,0 +1,581 @@
+% !TeX program = lualatex
+% Source-PDF: 比赛 CONTEST/2021“MINIEYE杯”中国大学生算法设计超级联赛/2021“MINIEYE杯”中国大学生算法设计超级联赛（10）/2021“MINIEYE杯”中国大学生算法设计超级联赛（10）-题解.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Lời giải trận thứ mười HDU Multi-University 2021}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Super League of Chinese College Students Algorithm Design 2021, Contest 10}
+\sourcepath{contest/hdu-2021-minieye-10-solutions.pdf}
+
+\section{A. Pty loves sequence}
+
+Làm thế nào để đếm các dãy tốt không trùng và không sót?
+
+Giả sử giá trị lớn nhất là $k$. Ta lấy dãy con đầu tiên dạng
+$[1,2,\ldots,k-1,k]$. Sau đó xét việc chèn thêm số vào các khoảng trống giữa
+các phần tử này. Không khó thấy rằng để dãy con vừa chọn là dãy con xuất
+hiện sớm nhất, điều kiện hạn chế duy nhất là: với khoảng trống đứng trước
+$x-1$ và $x$ ($1\le x\le k$), trong khoảng đó không được có $x$. Riêng khoảng
+trống cuối cùng thì không bị hạn chế.
+
+Vì vậy chỉ cần liệt kê số lượng $i$ của các số được chèn vào khoảng trống
+cuối cùng. Theo phương pháp vách ngăn, số cách điền là
+\[
+  k^i (k-1)^{n-k-i}\binom{n-k-i+k-1}{k-1}.
+\]
+Đáp án cho câu hỏi thứ nhất là
+\[
+  \mathrm{Ans}
+  =
+  \sum_{k=1}^{n}\sum_{i=0}^{n-k}
+  k^i (k-1)^{n-k-i}\binom{n-i-1}{k-1}.
+\]
+
+Cách làm cho câu hỏi thứ hai có thể suy ra từ câu hỏi thứ nhất. Có một kết
+luận khá hiển nhiên:
+\begin{quote}
+Khi $k$ cố định, số lần xuất hiện của các giá trị $1,\ldots,k$ trong các dãy
+tốt là như nhau.
+\end{quote}
+
+Chứng minh ngắn gọn như sau. Trong cách làm của câu hỏi thứ nhất, khi $k$ cố
+định, hạn chế là khoảng trống thứ $i$ không được điền $i$, còn khoảng trống
+cuối cùng tùy ý. Vì ràng buộc trên mỗi phần tử trong $1,\ldots,k$ là giống
+nhau, nên bản chất của các phần tử này là như nhau, do đó số lần xuất hiện
+cũng phải bằng nhau.
+
+Vì thế ta liệt kê $k$ và cộng vào \texttt{ans[1..k]}:
+\[
+  \left(
+  \sum_{i=0}^{n-k}
+  k^i (k-1)^{n-k-i}\binom{n-i-1}{k-1}
+  \right)\cdot \frac{n}{k}.
+\]
+
+Vấn đề cuối cùng là mô-đun của bài này không phải số nguyên tố, nên không có
+nghịch đảo modulo; do đó cần đưa thừa số $n/k$ vào trong biểu thức. Quan sát
+công thức, ta nhận được:
+\begin{itemize}
+  \item nếu $i>0$, chỉ cần đổi $k^i$ thành $k^{i-1}$;
+  \item nếu $i=0$, đổi
+  $\binom{n-1}{k-1}\cdot \frac{n}{k}$ thành $\binom{n}{k}$.
+\end{itemize}
+
+Như vậy trong công thức chỉ còn dùng lũy thừa và tổ hợp. Tổ hợp có thể tiền
+xử lý bằng tam giác Pascal, nên mô-đun không cần là số nguyên tố.
+
+Độ phức tạp thời gian là $O(n^2)$.
+
+Thực ra khi $p=998244353$, bài này có thể làm trong
+$O(n\sqrt n\log n)$ bằng đa thức và tính giá trị tại nhiều điểm. Vì cách này
+có hằng số khá lớn và mã dài, không phù hợp với thi ACM, nên người ra đề đã
+không dùng phiên bản đó.
+
+\section{B. Pty with card}
+
+Ta quy ước một vòng rút bài là khi tất cả người còn trong vòng lần lượt rút
+bài một lần. Một trạng thái là dãy số lượng bài trên tay của tất cả người
+trong vòng, theo thứ tự.
+
+Xét một trạng thái sẽ thay đổi như thế nào. Trạng thái ban đầu là
+$(1,1,1,\ldots,1,1)$. Sau một vòng rút bài, trạng thái trở thành
+$(3,2,2,2,\ldots,2,2)$ hoặc $(4,2,2,2,\ldots,2)$, và số người còn lại chắc
+chắn là
+\[
+  \left\lfloor \frac{N-1}{2}\right\rfloor .
+\]
+
+Nếu một trạng thái còn $2m$ người, trước khi có ai đó bị loại, số bài trên
+tay của mỗi người ở mỗi vòng chắc chắn luôn tăng $1$ hoặc luôn giảm $1$.
+
+Nếu một trạng thái còn $2m+1$ người, sau hai vòng, nếu không có ai bị loại,
+số bài trên tay của mỗi người đều không đổi. Đây là nguyên nhân tạo ra chu
+kỳ; độ dài chu kỳ là $4m+2$.
+
+Thử tay vài dữ liệu, ta thấy vài tính chất:
+\begin{enumerate}
+  \item Nếu một trạng thái còn $2m$ người, thì sau vòng có người bị loại, số
+  người còn lại chắc chắn là $m$. Hơn nữa trạng thái có dạng
+  \[
+    (P+1,P,P,P,\ldots,P,P)
+  \]
+  hoặc
+  \[
+    (P+2,P,P,P,\ldots,P,P),
+  \]
+  và việc là dạng trước hay sau chỉ phụ thuộc vào tính chẵn lẻ của $N$ ban
+  đầu, trong đó $P=2^k,\ k\in\mathbb{Z}^+$.
+  \item Sau vòng đầu tiên, nếu một trạng thái còn $2m+1$ người thì chắc chắn
+  xuất hiện chu kỳ.
+\end{enumerate}
+
+Các tính chất này chứng minh bằng quy nạp khá thuận tiện. Gọi trạng thái ban
+đầu của $m$ người là trạng thái còn $m$ người sau vòng sớm nhất. Nếu trạng
+thái có dạng $(P+1,P,P,P,\ldots,P,P)$ thì gọi là dạng A; nếu có dạng
+$(P+2,P,P,P,\ldots,P,P)$ thì gọi là dạng B, với
+$P=2^k,\ k\in\mathbb{Z}^+$.
+
+Bắt đầu xét từ vòng thứ hai. Ta chứng minh mệnh đề $p$ sau: nếu $N$ lẻ thì
+mọi trạng thái ban đầu có thể đạt được đều có dạng
+$(P+1,P,P,P,\ldots,P,P)$ và lần rút đầu tiên chắc chắn rút $2$ lá; nếu $N$
+chẵn thì trạng thái ban đầu có dạng $(P+2,P,P,P,\ldots,P,P)$ và lần rút đầu
+tiên chắc chắn rút $1$ lá.
+
+Ngay từ đầu, trạng thái có
+$n=\left\lfloor (N-1)/2\right\rfloor$ người và thỏa mệnh đề $p$.
+
+Khi trạng thái có $2m$ người và thỏa mệnh đề $p$, hiển nhiên $P\ge 2$.
+\begin{enumerate}
+  \item Nếu $N$ lẻ, trạng thái ban đầu là
+  $(P+1,P,P,P,\ldots,P,P)$, với $P+1\ge 3$, và lần rút đầu tiên rút $2$ lá.
+  Sau mỗi vòng, giá trị ở vị trí lẻ giảm $1$, còn giá trị ở vị trí chẵn tăng
+  $1$. Cho đến khi trạng thái trở thành
+  \[
+    (2,2P-1,1,2P-1,1,2P-1,\ldots,1,2P-1),
+  \]
+  không có người nào có số bài về $0$. Thêm một vòng nữa, các giá trị ở vị
+  trí lẻ đều trở thành $0$ và những người này ra khỏi vòng; trạng thái trở
+  thành
+  \[
+    (2P+1,2P,2P,2P,\ldots,2P,2P).
+  \]
+  Tiếp theo lại đến lượt rút $2$ lá, nên vẫn thỏa mệnh đề $p$.
+
+  \item Nếu $N$ chẵn, trạng thái ban đầu là
+  $(P+2,P,P,P,\ldots,P,P)$, với $P+2\ge 4$, và lần rút đầu tiên rút $1$ lá.
+  Sau mỗi vòng, giá trị ở vị trí chẵn giảm $1$, còn giá trị ở vị trí lẻ tăng
+  $1$. Cho đến khi trạng thái trở thành
+  \[
+    (2P+1,1,2P-1,1,2P-1,\ldots,2P-1,1),
+  \]
+  không có người nào có số bài về $0$. Thêm một vòng nữa, các giá trị ở vị
+  trí chẵn đều trở thành $0$ và những người này ra khỏi vòng; trạng thái trở
+  thành
+  \[
+    (2P+2,2P,2P,2P,\ldots,2P,2P).
+  \]
+  Tiếp theo lại đến lượt rút $1$ lá, nên vẫn thỏa mệnh đề $p$.
+\end{enumerate}
+
+Khi trạng thái có $2m+1$ người và thỏa mệnh đề $p$, hiển nhiên $P\ge 2$.
+\begin{enumerate}
+  \item Nếu $N$ lẻ, trạng thái là $(P+1,P,P,P,\ldots,P,P)$ và trước hết rút
+  $2$ lá. Sau một vòng, trạng thái trở thành
+  \[
+    (P+1,P+1,P-1,P+1,P-1,\ldots,P+1,P-1).
+  \]
+  Vì $P\ge 2$ nên không có số nào về $0$. Vòng kế tiếp sẽ bắt đầu bằng rút
+  $1$ lá, và sau vòng đó trạng thái trở lại
+  $(P+1,P,P,P,\ldots,P,P)$, tức là xuất hiện chu kỳ.
+
+  \item Nếu $N$ chẵn, trạng thái là $(P+2,P,P,P,\ldots,P,P)$ và trước hết
+  rút $1$ lá. Sau một vòng, trạng thái trở thành
+  \[
+    (P+2,P-1,P+1,P-1,P+1,\ldots,P-1,P+1).
+  \]
+  Vì $P\ge 2$ nên không có số nào về $0$. Vòng kế tiếp sẽ bắt đầu bằng rút
+  $2$ lá, và sau vòng đó trạng thái trở lại
+  $(P+2,P,P,P,\ldots,P,P)$, tức là xuất hiện chu kỳ.
+\end{enumerate}
+
+Chứng minh hoàn tất.
+
+Vậy với $N$, nếu $N\le 2$ thì $F(N)=0$. Ngược lại đặt
+\[
+  m=\left\lfloor\frac{N-1}{2}\right\rfloor,\qquad
+  S=\min\left\{\frac{m}{2^k}\mid 2^k\mid m,\ k\in\mathbb{Z}\right\}.
+\]
+Nếu $S=1$ thì $F(N)=0$, ngược lại $F(N)=2S$.
+
+Sau khi biết điều này, ta xét cách làm bài toán. Vì cần chia cho lũy thừa
+lớn nhất của $2$, có thể dùng \texttt{01-trie} để duy trì. Trong phân rã tâm,
+với mỗi điểm xuất phát, đưa $v_i$ cộng với khoảng cách đến tâm phân rã vào
+\texttt{01-trie}. Với một điểm có khoảng cách đến tâm phân rã là $l$, ta
+thực hiện $l$ lần tăng $1$ trên các giá trị trong \texttt{01-trie}, rồi truy
+vấn đáp án.
+
+Với thao tác tăng $1$ trên \texttt{01-trie}: điều kiện là các số trong
+\texttt{01-trie} được chèn từ bit thấp lên bit cao. Khi cộng $1$ vào một số,
+biểu diễn nhị phân thay đổi dạng
+\[
+  111110\ldots \to 000001\ldots
+\]
+với bit thấp ở trước; điều này tương đương với hoán đổi các nút $0/1$ trên
+\texttt{01-trie}.
+
+Với truy vấn, trước hết giảm $v_i$ đọc vào đi $1$, rồi cộng đáp án ở nhánh
+$0$ và nhánh $1$. Một nút trên \texttt{01-trie} đại diện cho tất cả số có
+$i$ bit đầu giống nhau; ta cần duy trì tổng của các số đó sau khi chia lấy
+sàn cho $2^i$. Khi tính đáp án cần chú ý loại bỏ các lũy thừa của $2$, vì
+đáp án của chúng là $0$.
+
+Độ phức tạp thời gian là $O(n\log^2 n)$.
+
+\section{C. Pty loves lines}
+
+\subsection*{Cách 1}
+
+Ý nghĩa bài toán là tìm mọi giá trị có thể có của
+\[
+  \frac{n(n-1)}{2}
+  -
+  \sum_i \frac{a_i(a_i-1)}{2},
+\]
+với điều kiện $\sum_i a_i=n$.
+
+Vế trái có phần hằng số, nên ta xét mọi giá trị có thể đạt được của vế phải.
+Vì $a_i=1$ có đóng góp $0$, nếu một phương án với $\sum_i a_i=x$ có thể tạo
+ra giá trị $s$, thì tổng lớn hơn $x$ cũng có thể tạo ra giá trị đó.
+
+Chỉ cần đặt $f_n$ là giá trị nhỏ nhất của $\sum_i a_i$ để vế phải bằng $n$.
+Chuyển trạng thái tương tự quy hoạch động ba lô. Độ phức tạp thời gian là
+$O(n^3)$.
+
+\subsection*{Cách 2}
+
+Đặt $f[i][j]$ biểu thị việc dùng $i$ đường thẳng có thể tạo ra $j$ giao điểm
+hay không.
+
+Có thể dùng \texttt{bitset} để tối ưu chuyển trạng thái, đạt
+$O(n^4/w)$, nhưng vẫn khó qua giới hạn thời gian $1$ giây.
+
+Quan sát thấy đáp án có một hậu tố khả thi liên tiếp khá dài. Sau khi lập
+bảng, ta thấy số giao điểm không khả thi lớn nhất không vượt quá $35000$, vì
+vậy thời gian có thể tối ưu thành $35000\times n^2/w$ và đủ qua bài này.
+
+\section{D. Pty hates prime numbers}
+
+\subsection*{Cách 1}
+
+Xét bao hàm--loại trừ kinh điển. Liệt kê mỗi số được chọn hay không được
+chọn; giả sử tích các số được chọn là $S$, khi đó
+\[
+  \mathrm{ans} \mathrel{+}= \left\lfloor\frac{n}{S}\right\rfloor
+  \cdot (-1)^{\text{số lượng số được chọn}}.
+\]
+Độ phức tạp thời gian là $O(2^k)$.
+
+\subsection*{Cách 2}
+
+Giả sử $k=8$. Tích của $8$ số nguyên tố đầu tiên là
+\[
+  2\cdot 3\cdot 5\cdot 7\cdot 11\cdot 13\cdot 17\cdot 19
+  =9699690,
+\]
+rất nhỏ.
+
+Chú ý rằng
+\[
+  [x\text{ không là bội của }8\text{ số nguyên tố đầu}]
+  =
+  [x\bmod 9699690\text{ không là bội của }8\text{ số nguyên tố đầu}].
+\]
+Do đó
+\[
+  \text{đáp án của }n
+  =
+  (\text{đáp án của }9699690)
+  \left\lfloor\frac{n}{9699690}\right\rfloor
+  +(\text{đáp án của }n\bmod 9699690).
+\]
+Tiền xử lý đáp án cho $n=0\sim 9699690$ là có thể trả lời mỗi truy vấn trong
+$O(1)$.
+
+\subsection*{Cách 3}
+
+Kết hợp hai cách trên:
+\begin{enumerate}
+  \item Khi $k\le 8$, làm tùy ý bằng cách trên.
+  \item Khi $k>8$, trước hết bao hàm--loại trừ từ số nguyên tố thứ $9$ đến
+  số nguyên tố thứ $k$; khi còn lại $8$ số nguyên tố đầu thì dùng trực tiếp
+  đáp án đã tiền xử lý trong $O(1)$.
+\end{enumerate}
+
+Độ phức tạp thời gian là
+\[
+  O\left(\sum_{i=1}^{8}\frac{9699690}{p[i]}+T\cdot 2^8\right),
+\]
+dễ dàng qua bài này.
+
+\section{E. Pty loves book}
+
+Đưa tất cả chuỗi vào cùng một automaton AC. Xét việc tính, với mỗi nút $x$
+của automaton AC đại diện cho chuỗi $s$,
+\[
+  \sum_{i=1}^{|s|} f(s,i,|s|)^5.
+\]
+
+Đặt $\mathrm{tot}[x][k]$ là tổng lũy thừa bậc $k$ của giá trị của tất cả hậu
+tố của chuỗi mà $x$ đại diện. Đặt $\mathrm{failtot}[x][k]$ là tổng lũy thừa
+bậc $k$ của các hậu tố của chuỗi mà $x$ đại diện, nhưng có đầu trái nằm trước
+\(\operatorname{fail}(x)\).
+
+$\mathrm{tot}[x]$ được chuyển từ $\mathrm{tot}$ của
+\(\operatorname{fail}(x)\) và $\mathrm{failtot}[x]$.
+
+Xét cách tính $\mathrm{failtot}[x]$. Ta thấy đây chính là tổng
+$\mathrm{failtot}$ của tất cả nút đi qua khi $x$ tìm liên kết fail, bắt đầu
+từ cha của $x$ và bao gồm cả cha của $x$, cộng với phần giá trị tăng thêm do
+thêm một ký tự, tức là tổng giá trị của tất cả fail của $x$. Cần đặc biệt
+tính riêng giá trị của toàn bộ chuỗi tại $x$.
+
+Để xử lý lũy thừa bậc $5$, duy trì thêm tổng lũy thừa bậc $0$ đến $4$ là có
+thể gộp nhanh.
+
+Độ phức tạp thời gian là
+\[
+  O\left(\left(|S|+\sum |T|\right)\times 5^2\right).
+\]
+
+\section{F. Pty loves lcm}
+
+Khi $y-x+1>2$,
+\[
+  f(x,y)\approx \frac{x^{y-x+1}}{(y-x)!},
+\]
+nên số lượng cặp có $f(x,y)<10^{18}$ xấp xỉ $10^6$; có thể tiền xử lý bạo
+lực.
+
+Với $y-x=1$, ta có
+\[
+  \gcd(x,y)=\gcd(x,x+1)=1,
+\]
+nên bài toán trở thành tính các tổng dạng
+\[
+  \sum_{i=1}^{n}\varphi(i)\varphi(i+1).
+\]
+Vì $n\le 10^9$, có thể lập bảng theo đoạn.
+
+Cụ thể, cứ mỗi $10^6$ giá trị lập một bảng, khi đó kích thước bảng khoảng
+$10\,\mathrm{kb}$.
+
+Cả cách lập bảng theo đoạn lẫn lời giải chính đều dùng sàng theo đoạn. Nếu
+sàng đoạn $[l,r]$, trước hết xử lý các số nguyên tố không vượt quá
+$\sqrt r$; với mỗi số nguyên tố, liệt kê các bội của nó trong $[l,r]$, sàng
+đi và nhân với giá trị $\varphi$ tương ứng. Cuối cùng nhân tiếp với giá trị
+$\varphi$ của phần nguyên tố còn lại sau khi sàng.
+
+Độ phức tạp thời gian là $O((r-l)\log\log r)$.
+
+\section{G. Pty loves graph}
+
+Bài toán tương đương với việc trên một chu trình Hamilton có một số dây
+cung. Ta cần bố trí mỗi dây cung ở bên trong hoặc bên ngoài vòng tròn, đồng
+thời hai dây cung giao nhau thực sự, tức là không tính trường hợp chứa nhau
+hoặc rời nhau, không được cùng nằm bên trong hoặc cùng nằm bên ngoài.
+
+Cắt chu trình Hamilton tại một vị trí bất kỳ, quan hệ giao nhau thực sự vẫn
+được giữ nguyên. Xem mỗi dây cung là một đỉnh và nối cạnh giữa hai đỉnh có
+ràng buộc.
+
+Khi đó bài toán tương đương với kiểm tra đồ thị mới có tô được hai màu hay
+không. Ta chỉ quan tâm đến tính liên thông và khả năng tô màu của đồ thị.
+Vì vậy, sắp theo đầu trái giảm dần và đầu phải tăng dần, rồi liệt kê đoạn
+bên phải trong hai đoạn giao nhau. Đồng thời duy trì tập các đầu phải của
+những đoạn có đầu trái nhỏ hơn đầu trái của đoạn hiện tại. Ta thấy các cạnh
+cần thêm ứng với một đoạn liên tiếp của các đầu phải.
+
+Trong đồ thị cuối cùng, đoạn liên tiếp này là liên thông và cùng màu. Vì thế
+khi về sau lại nối vào đoạn này, chỉ cần thêm một cạnh. Hơn nữa các đầu phải
+chỉ bị xóa chứ không được chèn thêm, nên có thể dùng DSU và \texttt{set} để
+tối ưu quá trình thêm cạnh. Mỗi lần, hợp nhất toàn bộ các đầu phải trong
+đoạn cần nối cạnh. Cuối cùng kiểm tra đồ thị có phải đồ thị hai phía hay
+không.
+
+Độ phức tạp thời gian là $O(n\log n)$, bộ nhớ $O(n)$. Cách dùng cây đoạn có
+hằng số thời gian và bộ nhớ tốt cũng có thể qua.
+
+\section{H. Pty loves string}
+
+Xét một vị trí xuất hiện $S[l..r]$. Nó thỏa
+$S[l..l+x-1]$ bằng $S[1..x]$, $S[r-y+1..r]$ bằng $S[n-y+1..n]$, và
+\[
+  l+x=r-y+1.
+\]
+
+Hai điều kiện đầu gợi đến border; dùng KMP là có thể tìm các $x$ hợp lệ cho
+mọi $l+x-1$.
+
+Sau khi chạy KMP, nối một cạnh từ $i$ đến border của $i$. Ta thu được một
+cây; mọi vị trí xuất hiện của một $x$ chính là cây con của nó.
+
+Vậy bài toán chuyển thành: cho hai cây, hỏi trong hai cây con có bao nhiêu
+nút có cùng chỉ số?
+
+Bài toán này có thể chuyển thành đếm điểm hai chiều, rồi duy trì bằng cấu
+trúc dữ liệu, chẳng hạn quét đường và cây Fenwick.
+
+Độ phức tạp là $O(n\log n)$.
+
+\section{I. Pty loves SegmentTree}
+
+Gọi $f_n$ là đáp án khi khoảng của nút gốc là $[1,n]$. Trước hết có
+$f_1=1$. Sau đó xét nút gốc thuộc loại A hay loại B, ta có
+\[
+  f_n=(A-B)f_{n-k}f_k+B\sum_{i=1}^{n-1} f_i f_{n-i}.
+\]
+
+Ta tính $f_k$ trước, rồi đặt $A$ mới bằng $(A-B)f_k$. Xét hàm sinh $F(x)$
+của dãy $\{f_n\}$. Dễ dàng có
+\[
+  F(x)=Ax^kF(x)+BF^2(x)+x.
+\]
+Giải phương trình thu được
+\[
+  F(x)=\frac{1-Ax^k\pm\sqrt{A^2x^{2k}-2Ax^k-4Bx+1}}{2B}.
+\]
+Vì hằng số tự do của $F(x)$ là $0$, ta chọn dấu trừ.
+
+Ta thử tránh ảnh hưởng của căn bậc hai. Đặt
+\[
+  Q^2(x)=A^2x^{2k}-2Ax^k-4Bx+1.
+\]
+Trước hết ta có
+\[
+  2BF(x)=1-Ax^k-Q(x). \tag{1}
+\]
+Lấy đạo hàm hai vế:
+\[
+  2BF'(x)=-kAx^{k-1}-Q'(x),
+\]
+suy ra
+\[
+  Q'(x)=-kAx^{k-1}-2BF'(x). \tag{2}
+\]
+
+Quay lại định nghĩa,
+\[
+  Q^2(x)=A^2x^{2k}-2Ax^k-4Bx+1.
+\]
+Lấy đạo hàm hai vế:
+\[
+  2Q'(x)Q(x)=2kA^2x^{2k-1}-2kAx^{k-1}-4B,
+\]
+hay
+\[
+  Q'(x)Q(x)=kA^2x^{2k-1}-kAx^{k-1}-2B.
+\]
+Thay giá trị $Q'(x)$ từ (2), ta được
+\[
+  (-kAx^{k-1}-2BF'(x))Q(x)
+  =
+  kA^2x^{2k-1}-kAx^{k-1}-2B.
+\]
+Nhân hai vế với $Q(x)$:
+\[
+  (Akx^{k-1}+2BF'(x))Q^2(x)
+  =
+  Q(x)(2B+kAx^{k-1}-kA^2x^{2k-1}).
+\]
+
+Từ (1) ta biết $Q(x)$, còn $Q^2(x)$ là định nghĩa. Thay vào:
+\[
+\begin{aligned}
+ &(Akx^{k-1}+2BF'(x))(A^2x^{2k}-2Ax^k-4Bx+1)\\
+ &\quad =(1-Ax^k-2BF(x))(2B+kAx^{k-1}-kA^2x^{2k-1}).
+\end{aligned}
+\]
+
+Khai triển:
+\[
+\begin{aligned}
+&2BF'(x)(A^2x^{2k}-2Ax^k-4Bx+1)
+  +Akx^{k-1}+A^3kx^{3k-1}\\
+&\quad -2A^2kx^{2k-1}-4AkBx^k\\
+&=
+-2BF(x)(2B+kAx^{k-1}-kA^2x^{2k-1})
+  +2B+kAx^{k-1}\\
+&\quad -kA^2x^{2k-1}-2ABx^k-kA^2x^{2k-1}+kA^3x^{3k-1}.
+\end{aligned}
+\]
+
+Rút gọn:
+\[
+  F'(x)(A^2x^{2k}-2Ax^k-4Bx+1)-2Akx^k
+  =
+  -F(x)(2B+kAx^{k-1}-kA^2x^{2k-1})-Ax^k+1.
+\]
+
+Lấy hệ số của $x^n$ ở hai vế:
+\[
+\begin{aligned}
+ &(n+1)f_{n+1}
+ +A^2(n-2k+1)f_{n-2k+1}
+ -2A(n-k+1)f_{n-k+1}
+ -4Bnf_n\\
+ &\quad =
+ -2Bf_n-kAf_{n-k+1}+kA^2f_{n-2k+1}
+ +[n=k](A(2k-1)).
+\end{aligned}
+\]
+
+Sắp xếp lại:
+\[
+\begin{aligned}
+  (n+1)f_{n+1}
+  &=2B(2n-1)f_n
+    +A(2n-3k+2)f_{n-k+1}\\
+  &\quad
+    -A^2(n-3k+1)f_{n-2k+1}
+    +[n=k](A(2k-1)).
+\end{aligned}
+\]
+
+Đến đây ta đã có công thức truy hồi của $f_{n+1}$ theo
+$f_n$, $f_{n-k+1}$ và $f_{n-2k+1}$, nên chỉ cần truy hồi trực tiếp.
+
+Độ phức tạp là $O(n)$.
+
+\section{J. Pty plays game}
+
+Nếu mỗi bên chỉ có một người, chỉ cần so sánh thời gian hai người đánh chết
+đối phương:
+\[
+  t=\min(h_1/d_2,\ h_2/d_1).
+\]
+Lính $2$ thắng khi và chỉ khi
+\[
+  h_1/d_2<h_2/d_1,
+\]
+chuyển vế được
+\[
+  h_1d_1<h_2d_2.
+\]
+
+Giả sử thời gian hai người đánh nhau là $t$, khi đó
+\[
+  t=\min(h_1/d_2,\ h_2/d_1).
+\]
+Giả sử giá trị này là $h_1/d_2$. Sau thời gian $t$, máu của hai người lần
+lượt là
+\[
+  h_1-(h_1/d_2)d_2,\qquad h_2-(h_1/d_2)d_1.
+\]
+Bây giờ lính $2$ phải đánh với người tiếp theo. Xét tích công kích với máu
+của lính này:
+\[
+  (h_2-(h_1/d_2)d_1)d_2=h_2d_2-h_1d_1.
+\]
+
+Nếu xem tích công kích và máu của một lính là ``sức chiến đấu'' của lính đó,
+thì sau khi hai lính đánh nhau, sức chiến đấu của người có sức chiến đấu cao
+hơn sẽ giảm đi sức chiến đấu của người thấp hơn.
+
+Cuối cùng đội còn lại chắc chắn là đội có tổng sức chiến đấu cao hơn.
+
+Vì công kích và máu đều được viết dưới dạng hàm bậc nhất theo $x$, sức chiến
+đấu của một đội là một hàm bậc hai. Bài toán trở thành truy vấn số nguyên
+không âm nhỏ nhất $x$ sao cho hàm bậc hai đó dương.
+
+Bài này có thể bị kẹt độ chính xác, nên cần dùng một dạng số chính xác cao
+hoặc số nguyên lớn.
+
+Độ phức tạp thời gian là $O(n)$.
+
+\end{document}

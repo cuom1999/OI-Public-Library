@@ -1,0 +1,300 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2009/武森/浅谈信息学竞赛中的“0”和“1”.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\lowbit}{\operatorname{lowbit}}
+\newcommand{\xor}{\mathbin{\mathrm{xor}}}
+
+\title{Bàn về ``0'' và ``1'' trong thi Tin học}
+\author{Wu Sen\\Trường Trung học số 2 Thạch Gia Trang, Hà Bắc}
+\date{2009}
+
+\begin{document}
+\maketitle
+
+\origtitle{Bàn về ``0'' và ``1'' trong thi Tin học}
+\sourcepath{IOI China candidate team papers / 2009 / Wu Sen}
+
+\begin{abstract}
+Máy tính hiện đại biểu diễn và xử lý thông tin bằng hệ nhị phân. Không chỉ
+trong kiến trúc máy tính, tư tưởng nhị phân còn xuất hiện rất nhiều trong
+thi Tin học: từ cấu trúc dữ liệu, nén trạng thái, mô hình hóa bằng bit cho
+tới cây nhị phân \(0/1\). Bài viết dùng bốn ví dụ để tổng kết cách đưa hai
+ký hiệu \(0\) và \(1\) vào phân tích thuật toán.
+\end{abstract}
+
+\paragraph{Từ khóa.}
+Nhị phân; thập phân; cây Fenwick; nén trạng thái; cây nhị phân \(0/1\).
+
+\tableofcontents
+
+\section{Ứng dụng trong cấu trúc dữ liệu}
+
+\subsection{Ví dụ 1: Matrix}
+
+Cho ma trận \(M\times N\), mỗi ô chỉ có giá trị \(0\) hoặc \(1\). Ban đầu mọi
+ô đều bằng \(0\). Mỗi thao tác cập nhật chọn một hình chữ nhật có góc trái
+trên \((x_1,y_1)\) và góc phải dưới \((x_2,y_2)\), rồi đảo bit mọi ô trong
+hình chữ nhật. Mỗi truy vấn hỏi giá trị ô \((x,y)\).
+
+Vì mỗi ô chỉ là \(0\) hoặc \(1\), ta chỉ cần biết ô đó bị đảo bao nhiêu lần;
+đáp án là số lần đảo modulo \(2\).
+
+\subsubsection{Từ một chiều tới hai chiều}
+
+Trước hết xét mảng một chiều \(d\) độ dài \(N\). Một cập nhật đoạn \([x,y]\)
+có thể được đổi thành hai điểm mốc:
+\[
+  d_x \mathrel{+}=1,\qquad d_{y+1}\mathrel{+}=1.
+\]
+Khi hỏi vị trí \(x\), tính
+\[
+  \operatorname{Sum}_x=\sum_{i=1}^{x} d_i,
+\]
+rồi trả \(\operatorname{Sum}_x\bmod 2\).
+
+Với hai chiều, một hình chữ nhật được đánh dấu bằng bốn góc:
+\[
+  (x_1,y_1),\quad (x_2+1,y_1),\quad
+  (x_1,y_2+1),\quad (x_2+1,y_2+1).
+\]
+Khi truy vấn \((x,y)\), tính tổng tiền tố hai chiều
+\[
+  \operatorname{Sum}_{x,y}
+  =\sum_{i=1}^{x}\sum_{j=1}^{y} d_{i,j},
+\]
+và lấy modulo \(2\). Bốn điểm mốc làm cho các vùng ngoài hình chữ nhật nhận
+thêm \(0\), \(2\) hoặc \(4\) lần, nên không đổi modulo \(2\); các điểm bên
+trong nhận thêm đúng \(1\) lần. Cách chứng minh tương tự như hiệu phân nhiều
+chiều.
+
+Lập luận này mở rộng tự nhiên: trong ba chiều cần \(8\) điểm mốc, còn trong
+\(n\) chiều cần \(2^n\) điểm quanh khối cần cập nhật.
+
+\subsubsection{Cây Fenwick và tư tưởng nhị phân}
+
+Để duy trì tổng tiền tố, một cấu trúc ngắn gọn và dễ mở rộng là cây Fenwick
+(Binary Indexed Tree). Mỗi chỉ số được nhìn dưới dạng nhị phân. Nếu
+\[
+  \lowbit(x)=x\mathbin{\&}(-x),
+\]
+thì nút \(x\) lưu tổng của đoạn độ dài \(\lowbit(x)\) kết thúc tại \(x\).
+Ví dụ, \(11=(1011)_2\), và phần bit thấp nhất quyết định kích thước đoạn mà
+nút này đại diện.
+
+\paragraph{Cập nhật.}
+\begin{verbatim}
+while x <= max:
+    C[x] += delta
+    x += x & -x
+\end{verbatim}
+
+\paragraph{Truy vấn tiền tố.}
+\begin{verbatim}
+sum = 0
+while x > 0:
+    sum += C[x]
+    x -= x & -x
+\end{verbatim}
+
+Trong truy vấn, thao tác \(x-\lowbit(x)\) xóa bit \(1\) thấp nhất của \(x\).
+Một số không vượt quá \(n\) có nhiều nhất \(\log n\) bit \(1\), nên truy vấn
+mất \(\Oh(\log n)\). Cập nhật đi qua các tổ tiên tương ứng và cũng mất
+\(\Oh(\log n)\). Ưu điểm của Fenwick là mã ngắn, khó sai, có thể mở rộng lên
+hai hoặc ba chiều, và rất phù hợp với các bài mà thao tác không quá phức tạp.
+
+\section{Ứng dụng trong tư duy giải bài}
+
+\subsection{Ví dụ 2: Sudoku}
+
+Sudoku là bảng \(9\times 9\), chia thành chín khối \(3\times 3\). Cần điền
+các số \(1\) đến \(9\) sao cho mỗi hàng, mỗi cột và mỗi khối đều chứa đủ
+chín số đúng một lần.
+
+Cách tìm kiếm trực tiếp theo thứ tự ô thường quá chậm. Một tối ưu quen thuộc
+là với mỗi ô trống, ghi lại tập chữ số còn có thể đặt, chọn ô có ít lựa chọn
+nhất để rẽ nhánh, rồi cập nhật các ô cùng hàng, cột và khối. Tuy nhiên nếu
+cài bằng tập hợp thông thường, thao tác sửa và sắp lại ứng viên khá rườm rà.
+
+Tư tưởng nhị phân biến tập ứng viên của một ô thành một số \(9\) bit. Bit thứ
+\(i\) biểu thị chữ số \(i\) có bị cấm hay không; chẳng hạn \(0\) nghĩa là có
+thể đặt, \(1\) nghĩa là không thể đặt. Mỗi ô khi đó được biểu diễn bởi một
+số từ \(0\) tới \(511\). Trạng thái hàng, cột và khối cũng có thể là mặt nạ
+bit:
+\[
+  \text{available}(r,c)=\neg(row_r\lor col_c\lor block_{r,c}) \mathbin{\&} 511.
+\]
+Khi tìm kiếm, ta duyệt các bit \(1\) còn đặt được bằng các phép bit. Chỉ riêng
+nén trạng thái bằng bit đã đủ làm bài toán nhanh hơn nhiều; kết hợp thêm chọn
+ô có ít ứng viên nhất sẽ cho lời giải rất ổn định.
+
+\subsection{Ví dụ 3: Requirements}
+
+Cho \(N\) điểm năm chiều
+\[
+  A=(x_1,x_2,x_3,x_4,x_5),
+\]
+cần tìm hai điểm \(X,Y\) có khoảng cách Manhattan lớn nhất:
+\[
+  \sum_{i=1}^{5}|x_i-y_i|.
+\]
+Vì \(N\) có thể tới \(100000\), không thể xét mọi cặp điểm.
+
+Trước hết xét hai chiều. Với hai điểm, đặt \(a=x_i-y_i\), \(b=x_j-y_j\). Ta
+có
+\[
+|a|+|b|
+=\max\{a+b,\ a-b,\ -a+b,\ -a-b\}.
+\]
+Nói cách khác, ta chỉ cần liệt kê dấu cộng/trừ trước từng tọa độ. Mỗi cách
+chọn dấu có thể mã hóa bằng một mặt nạ nhị phân: bit \(1\) nghĩa là dấu cộng,
+bit \(0\) nghĩa là dấu trừ. Với mỗi mặt nạ \(m\), tính giá trị tuyến tính
+\[
+  F_m(P)=\sum_{i=1}^{d} s_i x_i,\qquad s_i\in\{-1,1\},
+\]
+rồi lưu \(\max F_m(P)\) và \(\min F_m(P)\) trên mọi điểm. Đáp án là
+\[
+  \max_m \bigl(\max_P F_m(P)-\min_P F_m(P)\bigr).
+\]
+Với \(d=5\), chỉ có \(2^5=32\) mặt nạ, nên thuật toán chạy trong
+\(\Oh(2^dN)\), rất nhỏ so với \(\Oh(N^2)\). Điều kiện quan trọng là số chiều
+nhỏ hơn nhiều so với số điểm.
+
+\subsection{Ví dụ 4: Cow XOR}
+
+Cho dãy \(a_1,a_2,\ldots,a_N\), cần chọn một đoạn liên tiếp sao cho xor của
+đoạn là lớn nhất. Nếu có nhiều đoạn, chọn đoạn có chỉ số kết thúc nhỏ nhất;
+nếu vẫn hòa, chọn đoạn ngắn nhất. Đặt
+\[
+  S_k=a_1\xor a_2\xor\cdots\xor a_k.
+\]
+Khi đó
+\[
+  a_i\xor a_{i+1}\xor\cdots\xor a_j=S_j\xor S_{i-1}.
+\]
+Vì các số nằm trong khoảng \(0\) tới \(2^{21}-1\), ta có thể lưu các tiền tố
+\(S_i\) trong cây nhị phân \(0/1\) độ cao \(21\). Mỗi cạnh ứng với một bit
+của số; lá lưu chỉ số tiền tố.
+
+Khi đang xét \(S_i\), để tìm tiền tố \(S_t\) làm \(S_i\xor S_t\) lớn nhất,
+ta đi từ bit cao xuống thấp. Nếu bit hiện tại của \(S_i\) là \(0\), ưu tiên
+nhánh \(1\); nếu là \(1\), ưu tiên nhánh \(0\). Tức là luôn cố làm bit cao
+nhất còn lại của xor bằng \(1\). Chiến lược tham lam đúng vì một bit cao
+\(2^k\) lớn hơn tổng mọi bit thấp hơn:
+\[
+  2^k>\sum_{i=0}^{k-1}2^i.
+\]
+Mỗi lần truy vấn và chèn một tiền tố mất \(\Oh(21)\), nên toàn bộ thuật toán
+là \(\Oh(N\log A)\), với \(A<2^{21}\).
+
+\section{Tổng kết}
+
+Các ví dụ trên cho thấy tư tưởng nhị phân không chỉ là cách biểu diễn số.
+Trong cấu trúc dữ liệu, nó tạo ra Fenwick tree với mã ngắn và hiệu quả tốt.
+Trong giải bài, nó giúp nén trạng thái, liệt kê tổ hợp dấu, xây mô hình bằng
+mặt nạ bit và dùng cây nhị phân \(0/1\) để tối ưu xor. Khi biết chuyển bài
+toán từ hệ thập phân quen thuộc sang góc nhìn nhị phân, nhiều lời giải trở
+nên ngắn hơn, rõ hơn và nhanh hơn.
+
+\section{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Liu Rujia và Huang Liang, \textit{Nghệ thuật thuật toán và thi Tin
+  học}, Nhà xuất bản Đại học Thanh Hoa, ấn bản tháng 1 năm 2004.
+  \item Peking University Judge Online, \texttt{http://acm.pku.edu.cn/}.
+  \item Zhejiang University Judge Online, \texttt{http://acm.zju.edu.cn/}.
+  \item USA Computing Olympiad, \texttt{http://ace.delos.com/}.
+\end{enumerate}
+
+\section{Phụ lục: nguyên đề các ví dụ}
+
+\subsection{Matrix}
+
+Cho ma trận \(N\times N\) gồm các phần tử \(0\) hoặc \(1\), ban đầu đều là
+\(0\). Có hai loại lệnh:
+\begin{itemize}
+  \item \texttt{C x1 y1 x2 y2}: đảo bit mọi ô trong hình chữ nhật có góc trái
+  trên \((x_1,y_1)\) và góc phải dưới \((x_2,y_2)\).
+  \item \texttt{Q x y}: hỏi giá trị \(A[x,y]\).
+\end{itemize}
+Có nhiều bộ test, \(N\le 1000\), số lệnh \(T\le 50000\).
+
+\paragraph{Ví dụ.}
+\begin{verbatim}
+Input
+1
+
+2 10
+C 2 1 2 2
+Q 2 2
+C 2 1 2 1
+Q 1 1
+C 1 1 2 1
+C 1 2 1 2
+C 1 1 2 2
+Q 1 1
+C 1 1 2 1
+Q 2 1
+
+Output
+1
+0
+0
+1
+\end{verbatim}
+
+\subsection{Sudoku}
+
+Mỗi test là một dòng \(81\) ký tự mô tả bảng Sudoku theo thứ tự từng hàng.
+Ký tự là chữ số \(1\) đến \(9\) hoặc dấu chấm cho ô trống. Mỗi bảng có đúng
+một nghiệm; input kết thúc bằng dòng \texttt{end}. Với mỗi test, in bảng đã
+hoàn thành trên một dòng.
+
+\subsection{Requirements}
+
+Mỗi trường đại học được mô tả bằng năm số thực không âm, tương ứng năm yêu
+cầu tốt nghiệp. Độ khác nhau giữa hai trường \(X,Y\) là
+\[
+  |x_1-y_1|+|x_2-y_2|+|x_3-y_3|+|x_4-y_4|+|x_5-y_5|.
+\]
+Với \(1\le N\le 100000\), hãy in độ khác nhau lớn nhất giữa hai trường, làm
+tròn đúng hai chữ số thập phân. Input kết thúc bằng \(N=0\).
+
+\paragraph{Ví dụ.}
+\begin{verbatim}
+Input
+3
+2 5 6 2 1.5
+1.2 3 2 5 4
+7 5 3 2 5
+0
+
+Output
+12.80
+\end{verbatim}
+
+\subsection{Cow XOR}
+
+Cho \(N\) con bò theo thứ tự thứ bậc xã hội, mỗi con có một số trong khoảng
+\(0\) tới \(2^{21}-1\). Chọn một đoạn liên tiếp sao cho xor các số trên đoạn
+là lớn nhất. Nếu có nhiều đoạn, chọn đoạn có điểm kết thúc nhỏ nhất; nếu vẫn
+hòa, chọn đoạn ngắn nhất. In giá trị xor lớn nhất, vị trí bắt đầu và vị trí
+kết thúc.
+
+\paragraph{Ví dụ.}
+\begin{verbatim}
+Input
+5
+1
+0
+5
+4
+2
+
+Output
+6 4 5
+\end{verbatim}
+
+\end{document}

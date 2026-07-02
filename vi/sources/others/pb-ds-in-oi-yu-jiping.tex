@@ -1,0 +1,645 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 其他 OTHERS/C++的pb-ds库在OI中的应用 - 于纪平.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Ứng dụng thư viện \texttt{pb\_ds} của C++ trong OI}
+\author{Yu Jiping}
+\date{Trao đổi trại WC2015, tháng 2 năm 2015}
+
+\begin{document}
+\maketitle
+
+\origtitle{Ứng dụng thư viện pb-ds của C++ trong OI}
+\sourcepath{Others / C++ pb-ds library in OI - Yu Jiping}
+
+\begin{abstract}
+Bản gốc là một bộ slide giới thiệu \texttt{pb\_ds} cho thí sinh OI. Tài liệu
+trích xuất từ PDF không giữ được mã Unicode của chữ Hán, nhưng các tên giao
+diện, đoạn mã và bảng số liệu vẫn đọc được. Bản dịch này chuyển nội dung thành
+một bài viết tự chứa bằng tiếng Việt, giữ thứ tự trình bày và các dữ liệu kỹ
+thuật chính của slide: hàng đợi ưu tiên, cây cân bằng, cách tự định nghĩa
+\texttt{Node\_Update}, bảng băm và các so sánh hiệu năng.
+\end{abstract}
+
+\tableofcontents
+
+\section{Tổng quan}
+
+\texttt{pb\_ds} là viết tắt của \term{Policy-Based Data Structures}. Đây là
+một phần mở rộng của GNU libstdc++, cung cấp các cấu trúc dữ liệu có chính
+sách cấu hình được. Tài liệu chính thức mô tả mục tiêu của thư viện là đạt
+hiệu năng cao, linh hoạt, an toàn về mặt ngữ nghĩa và tương thích với các
+container tương ứng trong \texttt{std} và \texttt{std::tr1}.
+
+Các cấu trúc thường dùng trong OI gồm:
+\begin{itemize}
+  \item \texttt{priority\_queue}: nhiều loại heap, có thể sửa hoặc xóa phần tử
+  thông qua iterator, và có thể hợp nhất heap;
+  \item \texttt{tree}: một container kiểu \texttt{set}/\texttt{map}, có thể
+  dùng cây đỏ-đen, splay hoặc ordered-vector tree;
+  \item \texttt{hash\_table}: bảng băm dạng chaining hoặc probing;
+  \item ngoài phạm vi chính của bài còn có trie và một số cấu trúc khác.
+\end{itemize}
+
+So với STL, \texttt{pb\_ds} không phải là một thay thế tuyệt đối. Điểm mạnh của
+nó là cung cấp sẵn những thao tác vốn thường phải tự viết trong bài thi: sửa
+khóa trong heap, hợp nhất nhiều heap, hỏi hạng trong cây cân bằng, tách và
+ghép cây theo giá trị khóa, hoặc dùng bảng băm nhanh hơn \texttt{std::map}
+trong những bài chỉ cần ánh xạ khóa sang giá trị. Tài liệu cũng nhắc rằng khi
+dùng trong các kỳ thi, cần kiểm tra trước môi trường biên dịch và quy định của
+kỳ thi, vì đây là phần mở rộng của GNU.
+
+\section{\texorpdfstring{\texttt{priority\_queue}}{priority queue}}
+
+\subsection{Khai báo và giao diện cơ bản}
+
+Hàng đợi ưu tiên của \texttt{pb\_ds} nằm trong header sau:
+
+\begin{verbatim}
+#include <ext/pb_ds/priority_queue.hpp>
+using namespace __gnu_pbds;
+\end{verbatim}
+
+Cách dùng cơ bản giống \texttt{std::priority\_queue}: có
+\texttt{size()}, \texttt{empty()}, \texttt{push(const T)}, \texttt{top()},
+\texttt{pop()} và \texttt{clear()}. Mẫu lớp trong slide được ghi như sau:
+
+\begingroup
+\small
+\begin{verbatim}
+template <typename Value_Type,
+          typename Cmp_Fn = std::less<Value_Type>,
+          typename Tag = pairing_heap_tag,
+          typename Allocator = std::allocator<char> >
+class priority_queue;
+\end{verbatim}
+\endgroup
+
+Trong đó:
+\begin{itemize}
+  \item \texttt{Value\_Type} là kiểu phần tử;
+  \item \texttt{Cmp\_Fn} là hàm so sánh, mặc định là \texttt{std::less};
+  \item \texttt{Tag} chọn loại heap bên dưới;
+  \item \texttt{Allocator} thường giữ mặc định.
+\end{itemize}
+
+Các tag heap được nhắc trong slide gồm:
+\begin{itemize}
+  \item \texttt{binary\_heap\_tag}: heap nhị phân;
+  \item \texttt{binomial\_heap\_tag}: heap nhị thức;
+  \item \texttt{rc\_binomial\_heap\_tag}: heap nhị thức có redundant counter;
+  \item \texttt{pairing\_heap\_tag}: pairing heap;
+  \item \texttt{thin\_heap\_tag}: một biến thể gần với Fibonacci heap.
+\end{itemize}
+
+\subsection{Các thao tác mở rộng}
+
+Ngoài những thao tác giống STL, \texttt{pb\_ds::priority\_queue} có thể duyệt
+bằng \texttt{begin()} và \texttt{end()}, sửa khóa, xóa một phần tử cụ thể và
+hợp nhất hai heap. Điểm quan trọng là \texttt{push} trả về
+\texttt{point\_iterator}; iterator này dùng lại trong \texttt{modify} hoặc
+\texttt{erase}.
+
+\begingroup
+\small
+\begin{verbatim}
+point_iterator push(const_reference)
+void modify(point_iterator, const_reference)
+void erase(point_iterator)
+void join(priority_queue &other)
+\end{verbatim}
+\endgroup
+
+Ví dụ trong slide:
+
+\begingroup
+\small
+\begin{verbatim}
+priority_queue<int> p;
+priority_queue<int>::point_iterator it = p.push(0);
+p.push(1);
+p.push(2);
+p.modify(it, 3);
+assert(p.top() == 3);
+p.erase(it);
+assert(p.top() == 2);
+\end{verbatim}
+\endgroup
+
+Hàm \texttt{join} nhập toàn bộ phần tử của \texttt{other} vào heap hiện tại;
+sau thao tác này \texttt{other} trở thành rỗng. Đây là thao tác rất tiện trong
+các bài cần nhiều heap có thể hợp nhất, chẳng hạn những mô hình thường viết
+bằng leftist heap hoặc skew heap.
+
+\subsection{Độ phức tạp}
+
+Các thao tác được slide gom lại thành năm nhóm: \texttt{push}, \texttt{pop},
+\texttt{modify}, \texttt{erase} và \texttt{join}. Bảng dưới diễn giải các ghi
+chú về độ phức tạp.
+
+\begin{center}
+\small
+\begin{tabular}{|p{0.31\textwidth}|p{0.58\textwidth}|}
+\hline
+Loại heap & Độ phức tạp được nhấn mạnh \\
+\hline
+\texttt{pairing\_heap\_tag} &
+\texttt{push} và \texttt{join} là $O(1)$, các thao tác còn lại khấu hao
+$\Theta(\log n)$ \\
+\hline
+\texttt{binary\_heap\_tag} &
+chỉ hỗ trợ \texttt{push} và \texttt{pop}; cả hai khấu hao $\Theta(\log n)$ \\
+\hline
+\texttt{binomial\_heap\_tag} &
+\texttt{push} khấu hao $O(1)$, các thao tác còn lại $\Theta(\log n)$ \\
+\hline
+\texttt{rc\_binomial\_heap\_tag} &
+\texttt{push} là $O(1)$, các thao tác còn lại $\Theta(\log n)$ \\
+\hline
+\texttt{thin\_heap\_tag} &
+\texttt{push} là $O(1)$; không hỗ trợ \texttt{join}; các thao tác còn lại
+$\Theta(\log n)$, trong đó \texttt{modify} theo hướng tăng khóa có thể đạt
+$O(1)$ khấu hao \\
+\hline
+\end{tabular}
+\end{center}
+
+Kinh nghiệm trong slide là: nếu bài cần hợp nhất heap, thường ưu tiên
+\texttt{pairing\_heap\_tag}; nếu bài giống Dijkstra và cần sửa khóa, có thể
+thử \texttt{thin\_heap\_tag}, nhưng kết quả thực tế còn phụ thuộc dữ liệu và
+hằng số.
+
+\subsection{So sánh thực nghiệm}
+
+PDF chứa nhiều bảng benchmark. Các bảng này không phải là kết luận phổ quát,
+nhưng cho thấy hằng số trong thực tế quan trọng không kém độ phức tạp tiệm
+cận.
+
+\subsubsection{Chỉ chèn rồi lấy ra}
+
+Thử nghiệm đầu tiên sinh $10^7$ khóa ngẫu nhiên trong $[0,2^{30})$, chèn vào
+heap rồi lần lượt \texttt{pop}. Bảng có hai cột thời gian theo mili-giây.
+
+\begin{center}
+\small
+\begin{tabular}{|l|r|r|}
+\hline
+Cấu trúc & Cột 1 & Cột 2 \\
+\hline
+\texttt{std::priority\_queue} & 16378 ms & 2797 ms \\
+\texttt{binary\_heap\_tag} & 5454 ms & 2720 ms \\
+\texttt{pairing\_heap\_tag} & 21421 ms & 17362 ms \\
+\texttt{thin\_heap\_tag} & 39290 ms & 28672 ms \\
+heap tự viết & 8692 ms & 4916 ms \\
+\texttt{push\_back + sort + pop\_back} & 4563 ms & 938 ms \\
+\hline
+\end{tabular}
+\end{center}
+
+Điểm đáng chú ý là với một lô dữ liệu đã biết trước, sắp xếp mảng rồi lấy dần
+từ cuối có thể nhanh hơn mọi heap. Điều này chỉ dùng được khi toàn bộ dữ liệu
+đã có sẵn và không cần xen kẽ thao tác động.
+
+\subsubsection{Hợp nhất heap}
+
+Thử nghiệm kế tiếp sinh $4194304$ khóa trong $[0,2^{30})$, phân vào nhiều heap
+rồi hợp nhất. Heap nhị phân của \texttt{pb\_ds} không có \texttt{join} thật sự
+nên cách hợp nhất tương ứng phải chèn lại phần tử.
+
+\begin{center}
+\small
+\begin{tabular}{|l|r|r|}
+\hline
+Cấu trúc & Cột 1 & Cột 2 \\
+\hline
+\texttt{std::priority\_queue} + hợp nhất thủ công & 38746 ms & 4642 ms \\
+\texttt{binary\_heap\_tag} & 5605 ms & 3127 ms \\
+\texttt{binary\_heap\_tag} + hợp nhất thủ công & 11206 ms & 3955 ms \\
+\texttt{pairing\_heap\_tag} & 6954 ms & 5328 ms \\
+\texttt{thin\_heap\_tag} & 14514 ms & 9588 ms \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Dijkstra với sửa khóa}
+
+Với đồ thị có $10^6$ đỉnh và $2\cdot 10^7$ cạnh, slide so sánh các heap trong
+một cài đặt Dijkstra có cập nhật khoảng cách. \texttt{binary\_heap\_tag} không
+hỗ trợ sửa khóa nên không xuất hiện trong bảng.
+
+\begin{center}
+\small
+\begin{tabular}{|l|r|r|}
+\hline
+Cấu trúc & Cột 1 & Cột 2 \\
+\hline
+\texttt{binomial\_heap\_tag} & 26807 ms & 17018 ms \\
+\texttt{pairing\_heap\_tag} & 7684 ms & 6230 ms \\
+\texttt{rc\_binomial\_heap\_tag} & 32004 ms & 18745 ms \\
+\texttt{thin\_heap\_tag} & 9388 ms & 6483 ms \\
+heap tự viết & 9595 ms & 5080 ms \\
+\hline
+\end{tabular}
+\end{center}
+
+Một nhóm thử nghiệm khác cho Dijkstra dùng nhiều kích thước đồ thị khác nhau.
+Hai bảng dưới giữ nguyên số liệu của slide; tên một cột trong PDF là heap tự
+viết.
+
+\begin{center}
+\small
+\begin{tabular}{|r|r|r|r|r|r|r|}
+\hline
+$n$ & $m$ & pairing & thin & Fib & heap tự viết & cấu trúc khác \\
+\hline
+100k & 10M & 390 & 578 & 703 & 1088 & 422 \\
+1M & 10M & 2063 & 3516 & 4209 & 9236 & 2594 \\
+1M & 20M & 4298 & 6595 & 6859 & 18648 & 4745 \\
+100k & 25M & 3375 & 4805 & 3735 & 5655 & 2501 \\
+1M & 30M & 6579 & 9609 & 9393 & 27960 & 6816 \\
+50k & 50M & 484 & 563 & 1235 & 6392 & 453 \\
+100k & 50M & 7061 & 9550 & 8051 & 11301 & 4580 \\
+1M & 50M & 11088 & 15559 & 14707 & 47108 & 10848 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\small
+\begin{tabular}{|r|r|r|r|r|r|r|}
+\hline
+$n$ & $m$ & pairing & thin & Fib & heap tự viết & cấu trúc khác \\
+\hline
+100k & 10M & 281 & 360 & 438 & 625 & 219 \\
+1M & 10M & 1485 & 2250 & 2836 & 7968 & 1444 \\
+1M & 20M & 3204 & 4485 & 4987 & 16629 & 2711 \\
+100k & 25M & 2141 & 2798 & 3206 & 2309 & 1262 \\
+1M & 30M & 4908 & 6642 & 6795 & 25128 & 3964 \\
+50k & 50M & 375 & 407 & 680 & 2217 & 280 \\
+100k & 50M & 4245 & 5792 & 4150 & 4105 & 2312 \\
+1M & 50M & 8455 & 11541 & 10927 & 42101 & 6217 \\
+\hline
+\end{tabular}
+\end{center}
+
+Kết luận của phần này là:
+\begin{itemize}
+  \item \texttt{binary\_heap\_tag} thường chỉ hơn \texttt{std::priority\_queue}
+  trong một số trường hợp đơn giản, nhưng không có các thao tác mở rộng;
+  \item \texttt{pairing\_heap\_tag} thường thực dụng hơn
+  \texttt{binomial\_heap\_tag} và \texttt{rc\_binomial\_heap\_tag};
+  \item nếu chỉ có \texttt{push}, \texttt{pop} và \texttt{join}, cần cân nhắc
+  dữ liệu cụ thể; đôi khi heap nhị phân vẫn nhanh;
+  \item nếu cần \texttt{modify}, nên thử \texttt{pairing\_heap\_tag} và
+  \texttt{thin\_heap\_tag}, sau đó đo lại trên bài cụ thể.
+\end{itemize}
+
+\section{\texorpdfstring{\texttt{tree}}{tree}}
+
+\subsection{Khai báo và ý nghĩa tham số}
+
+Container \texttt{tree} nằm trong hai header:
+
+\begin{verbatim}
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+\end{verbatim}
+
+Slide viết dạng đơn giản là \texttt{tree<Key, T>}. Nếu \texttt{T} là một kiểu
+dữ liệu thật, container hoạt động như \texttt{map}; nếu muốn kiểu
+\texttt{set}, dùng \texttt{null\_type} cho tham số mapped. Một số môi trường
+cũ từng dùng \texttt{null\_mapped\_type}; khi biên dịch thực tế cần theo đúng
+phiên bản thư viện.
+
+Mẫu lớp đầy đủ:
+
+\begingroup
+\small
+\begin{verbatim}
+template <
+  typename Key,
+  typename Mapped,
+  typename Cmp_Fn = std::less<Key>,
+  typename Tag = rb_tree_tag,
+  template <
+    typename Const_Node_Iterator,
+    typename Node_Iterator,
+    typename Cmp_Fn_,
+    typename Allocator_>
+  class Node_Update = null_tree_node_update,
+  typename Allocator = std::allocator<char> >
+class tree;
+\end{verbatim}
+\endgroup
+
+Trong đó:
+\begin{itemize}
+  \item \texttt{Key}, \texttt{Mapped}, \texttt{Cmp\_Fn} tương tự
+  \texttt{std::map};
+  \item \texttt{Tag} chọn cấu trúc bên dưới: \texttt{rb\_tree\_tag},
+  \texttt{splay\_tree\_tag} hoặc \texttt{ov\_tree\_tag};
+  \item \texttt{Node\_Update} cho phép mỗi nút lưu thêm metadata và cập nhật
+  metadata đó khi cây xoay hoặc thay đổi.
+\end{itemize}
+
+Vì \texttt{tree} là associative container, nó có nhiều thao tác giống
+\texttt{std::map}: \texttt{begin()}, \texttt{end()}, \texttt{size()},
+\texttt{empty()}, \texttt{clear()}, \texttt{find}, \texttt{lower\_bound},
+\texttt{upper\_bound}, \texttt{erase}, \texttt{insert} và
+\texttt{operator[]}.
+
+\subsection{Ghi chú về splay tree}
+
+Slide có một đoạn nhắc vui rằng nếu không tự viết splay trong bài, có thể dùng
+splay của \texttt{pb\_ds}. Mã nguồn libstdc++ từng chứa dòng chú thích dạng
+leetspeak trong file sau:
+
+\begin{verbatim}
+ext/pb_ds/detail/splay_tree/splay_tree.hpp
+// $p14y 7r33 7481.
+\end{verbatim}
+
+Nội dung kỹ thuật của ghi chú này là: \texttt{splay\_tree\_tag} có sẵn, nhưng
+hằng số không nhất thiết nhỏ hơn cài đặt tay trong mọi bài. Nếu bài chỉ cần
+container có thứ tự thông thường, \texttt{rb\_tree\_tag} thường là lựa chọn
+ổn định hơn.
+
+\subsection{Thống kê thứ tự}
+
+\texttt{pb\_ds} cung cấp sẵn
+\texttt{tree\_order\_statistics\_node\_update}. Khi dùng policy này, cây có
+thêm hai hàm:
+
+\begingroup
+\small
+\begin{verbatim}
+iterator find_by_order(size_type order)
+size_type order_of_key(const_key_reference r_key)
+\end{verbatim}
+\endgroup
+
+\texttt{find\_by\_order(order)} trả về iterator trỏ đến phần tử nhỏ thứ
+\texttt{order + 1}; chỉ số bắt đầu từ $0$. Nếu \texttt{order} vượt quá kích
+thước cây, hàm trả về \texttt{end()}.
+
+\texttt{order\_of\_key(r\_key)} trả về số phần tử trong cây nhỏ hơn
+\texttt{r\_key}. Vì vậy nó chính là hạng 0-indexed của khóa nếu khóa có trong
+cây, và là vị trí chèn nếu khóa chưa tồn tại.
+
+Ví dụ mẫu cho một ordered set:
+
+\begingroup
+\small
+\begin{verbatim}
+tree<int, null_type, std::less<int>, rb_tree_tag,
+     tree_order_statistics_node_update> T;
+
+T.insert(10);
+T.insert(20);
+T.insert(30);
+
+assert(*T.find_by_order(1) == 20);
+assert(T.order_of_key(25) == 2);
+\end{verbatim}
+\endgroup
+
+\subsection{Ghép và tách cây}
+
+\texttt{tree} còn có hai thao tác đặc biệt:
+
+\begingroup
+\small
+\begin{verbatim}
+void join(tree &other)
+void split(const_key_reference r_key, tree &other)
+\end{verbatim}
+\endgroup
+
+\texttt{join(other)} hợp nhất \texttt{other} vào cây hiện tại. Hai cây phải có
+miền khóa rời nhau theo thứ tự: toàn bộ khóa của một cây nhỏ hơn toàn bộ khóa
+của cây còn lại. Nếu điều kiện này không đúng, thư viện có thể ném ngoại lệ.
+Sau khi ghép, \texttt{other} rỗng.
+
+\texttt{split(r\_key, other)} trước hết làm rỗng \texttt{other}, sau đó chuyển
+các phần tử có khóa lớn hơn \texttt{r\_key} từ cây hiện tại sang
+\texttt{other}. Các phần tử không lớn hơn \texttt{r\_key} ở lại trong cây ban
+đầu. Với comparator đảo chiều, ý nghĩa ``lớn hơn'' phải hiểu theo thứ tự do
+comparator định nghĩa.
+
+\section{Tự định nghĩa \texorpdfstring{\texttt{Node\_Update}}{Node Update}}
+
+\subsection{Khung cơ bản}
+
+Một \texttt{Node\_Update} tự định nghĩa là một template nhận các kiểu iterator
+nội bộ của cây, comparator và allocator. Khung trong slide:
+
+\begingroup
+\small
+\begin{verbatim}
+template <class Node_CItr, class Node_Itr,
+          class Cmp_Fn, class _Alloc>
+struct my_node_update {
+  virtual Node_CItr node_begin() const = 0;
+  virtual Node_CItr node_end() const = 0;
+  typedef int metadata_type;
+};
+\end{verbatim}
+\endgroup
+
+\texttt{metadata\_type} là kiểu dữ liệu phụ được lưu ở mỗi nút. Trong ví dụ
+của slide, metadata là \texttt{int} dùng để lưu tổng giá trị trong cây con.
+
+Khi cây thay đổi, thư viện gọi \texttt{operator()} của policy để cập nhật
+metadata tại một nút. Ví dụ:
+
+\begingroup
+\small
+\begin{verbatim}
+inline void operator()(Node_Itr it, Node_CItr end_it) {
+  Node_Itr l = it.get_l_child(), r = it.get_r_child();
+  int left = 0, right = 0;
+  if (l != end_it) left = l.get_metadata();
+  if (r != end_it) right = r.get_metadata();
+  const_cast<metadata_type&>(it.get_metadata())
+      = left + right + (*it)->second;
+}
+\end{verbatim}
+\endgroup
+
+Ở đây \texttt{it} là iterator nội bộ trỏ tới một nút của cây, không phải
+iterator thông thường của container. Biểu thức \texttt{(*it)->second} lấy
+mapped value của phần tử đang nằm trong nút đó. Các hàm
+\texttt{get\_l\_child()}, \texttt{get\_r\_child()} trả về con trái và con
+phải; \texttt{get\_metadata()} truy cập metadata của một nút.
+
+\subsection{Tính tổng tiền tố và tổng đoạn}
+
+Khi mỗi nút lưu tổng giá trị trong cây con, ta có thể tìm tổng trên mọi khóa
+không lớn hơn $x$ bằng cách đi trong cây như tìm kiếm nhị phân.
+
+\begingroup
+\small
+\begin{verbatim}
+inline int prefix_sum(int x) {
+  int ans = 0;
+  Node_CItr it = node_begin();
+  while (it != node_end()) {
+    Node_CItr l = it.get_l_child(), r = it.get_r_child();
+    if (Cmp_Fn()(x, (*it)->first)) {
+      it = l;
+    } else {
+      ans += (*it)->second;
+      if (l != node_end()) ans += l.get_metadata();
+      it = r;
+    }
+  }
+  return ans;
+}
+\end{verbatim}
+\endgroup
+
+Từ đó có tổng trên đoạn khóa $[l,r]$:
+
+\begingroup
+\small
+\begin{verbatim}
+inline int interval_sum(int l, int r) {
+  return prefix_sum(r) - prefix_sum(l - 1);
+}
+\end{verbatim}
+\endgroup
+
+Ví dụ sử dụng:
+
+\begingroup
+\small
+\begin{verbatim}
+tree<int, int, std::less<int>, rb_tree_tag, my_node_update> T;
+T[2] = 100;
+T[3] = 1000;
+T[4] = 10000;
+printf("%d\n", T.interval_sum(3, 4));
+printf("%d\n", T.prefix_sum(3));
+\end{verbatim}
+\endgroup
+
+Ví dụ này minh họa khả năng lấy một cây cân bằng có sẵn rồi gắn thêm thông tin
+động vào mỗi nút. Tuy vậy, slide cũng cảnh báo rằng cách này không phải lúc
+nào cũng tiện hơn tự viết cấu trúc dữ liệu. Một số thao tác như
+\texttt{insert}, \texttt{find}, \texttt{erase}, \texttt{operator[]},
+\texttt{join} và \texttt{split} vẫn có thể dùng, nhưng iterator nội bộ không
+dễ dùng, tài liệu về phần này ít, và nếu cần truy cập sâu vào cấu trúc cây thì
+đôi khi viết tay lại rõ ràng hơn.
+
+\subsection{Benchmark cho \texorpdfstring{\texttt{tree}}{tree}}
+
+Thử nghiệm đầu tiên sinh $10^7$ khóa trong $[0,2^{30})$, chèn vào container và
+sau đó duyệt hoặc xóa. \texttt{ov\_tree\_tag} trong thử nghiệm này không hoàn
+thành trong giới hạn thời gian.
+
+\begin{center}
+\small
+\begin{tabular}{|l|r|r|}
+\hline
+Cấu trúc & Cột 1 & Cột 2 \\
+\hline
+\texttt{std::set} & 16154 ms & 11033 ms \\
+\texttt{rb\_tree\_tag} & 13336 ms & 10909 ms \\
+\texttt{splay\_tree\_tag} & 23425 ms & 15051 ms \\
+splay tự viết & 25157 ms & 15811 ms \\
+treap tự viết & 20906 ms & 16627 ms \\
+cây tìm kiếm nhị phân tự viết & 11783 ms & 9398 ms \\
+\texttt{push\_back + sort} & 4574 ms & 949 ms \\
+\hline
+\end{tabular}
+\end{center}
+
+Thử nghiệm thứ hai dùng khóa trong $[0,2^{30})$ và mapped value, so sánh
+container ánh xạ. Bảng trong slide còn đưa thêm hai bảng băm để đối chiếu.
+
+\begin{center}
+\small
+\begin{tabular}{|l|r|r|}
+\hline
+Cấu trúc & Cột 1 & Cột 2 \\
+\hline
+\texttt{std::map} & 29160 ms & 20598 ms \\
+\texttt{rb\_tree\_tag} & 24661 ms & 20644 ms \\
+\texttt{splay\_tree\_tag} & 48712 ms & 32100 ms \\
+\texttt{push\_back + sort + lower\_bound} & 15236 ms & 5267 ms \\
+\texttt{cc\_hash\_table} & 5705 ms & 3750 ms \\
+\texttt{gp\_hash\_table} & 5173 ms & 1407 ms \\
+\hline
+\end{tabular}
+\end{center}
+
+Kết quả này cho thấy \texttt{rb\_tree\_tag} có thể cạnh tranh với
+\texttt{std::map}/\texttt{std::set}, nhưng nếu bài toán chỉ cần tra cứu tĩnh
+trên dữ liệu đã sắp xếp thì mảng cộng với \texttt{sort} và
+\texttt{lower\_bound} vẫn rất mạnh. Nếu không cần thứ tự, bảng băm thường nhanh
+hơn đáng kể.
+
+\section{\texorpdfstring{\texttt{hash\_table}}{hash table}}
+
+\subsection{Khai báo}
+
+Bảng băm của \texttt{pb\_ds} nằm trong:
+
+\begin{verbatim}
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/hash_policy.hpp>
+using namespace __gnu_pbds;
+\end{verbatim}
+
+Hai lớp được nhắc trong slide:
+
+\begingroup
+\small
+\begin{verbatim}
+cc_hash_table<Key, Mapped>
+gp_hash_table<Key, Mapped>
+\end{verbatim}
+\endgroup
+
+\texttt{cc\_hash\_table} dùng kỹ thuật separate chaining, còn
+\texttt{gp\_hash\_table} dùng probing trong bảng. Cả hai cung cấp những thao
+tác quen thuộc như \texttt{find} và \texttt{operator[]}. Trong benchmark của
+slide, \texttt{gp\_hash\_table} là cấu trúc nhanh nhất ở bài ánh xạ khóa sang
+giá trị, nhưng cũng cần lưu ý rằng bảng băm không giữ thứ tự khóa và phụ thuộc
+vào chất lượng hàm băm.
+
+\subsection{Khi nào dùng}
+
+Trong các bài OI, bảng băm phù hợp khi cần ánh xạ khóa sang giá trị, truy vấn
+không yêu cầu thứ tự và dữ liệu không bị thiết kế để phá hàm băm. Nếu cần
+\texttt{lower\_bound}, hạng, tiền tố hoặc tách theo khóa, phải dùng
+\texttt{tree} hoặc một cấu trúc có thứ tự khác.
+
+\section{Tổng kết}
+
+Các ý chính của slide có thể tóm lại như sau:
+\begin{itemize}
+  \item \texttt{priority\_queue} của \texttt{pb\_ds} bổ sung những thao tác mà
+  STL không có: \texttt{modify}, \texttt{erase} theo iterator và
+  \texttt{join};
+  \item \texttt{tree} có thể dùng như \texttt{set}/\texttt{map}, đồng thời hỗ
+  trợ \texttt{split} và \texttt{join}; với policy thống kê thứ tự, nó còn hỗ
+  trợ hỏi hạng và tìm phần tử thứ $k$;
+  \item tự định nghĩa \texttt{Node\_Update} cho phép lưu metadata ở nút cây,
+  nhưng phần này đòi hỏi hiểu rõ iterator nội bộ và không phải lúc nào cũng
+  đơn giản hơn cài đặt tay;
+  \item nếu chỉ cần ánh xạ khóa sang giá trị và không cần thứ tự,
+  \texttt{cc\_hash\_table} hoặc \texttt{gp\_hash\_table} thường nhanh hơn cây;
+  \item dù \texttt{pb\_ds} rất tiện, không nên mặc định dùng nó để thay thế
+  mọi \texttt{std::set}, \texttt{std::map} hoặc \texttt{std::priority\_queue}.
+  Cần kiểm tra môi trường, quy định cuộc thi, thao tác thật sự cần dùng và
+  hằng số thực nghiệm của bài.
+\end{itemize}
+
+Những hình hoặc bố cục từng bước trong slide gốc không thể phục hồi từ văn bản
+trích xuất. Nội dung tương ứng đã được chuyển thành mô tả bằng lời và các bảng
+trong bản dịch này, không nhúng hình rời.
+
+\end{document}

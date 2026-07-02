@@ -1,0 +1,655 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 其他 OTHERS/函数式编程 - 郭家寶.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\defeq}{\mathrel{::=}}
+\newcommand{\Ycomb}{\mathsf{Y}}
+
+\title{Lập Trình Hàm}
+\author{Guo Jiabao\\\texttt{byvoid@byvoid.com}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Lập trình hàm}
+\sourcepath{Others / Functional Programming - Guo Jiabao}
+
+\begin{abstract}
+Bài trình bày lập trình hàm từ hai góc nhìn. Phần đầu dùng bài toán dừng,
+phép tính lambda, điểm bất động và tổ hợp tử \(\Ycomb\) để giải thích vì sao
+đệ quy có thể được biểu diễn bằng một hệ hình thức rất nhỏ. Phần sau chuyển
+sang thực hành với Haskell: danh sách, khớp mẫu, đệ quy, tính lười, hàm bậc
+cao, rồi kết thúc bằng các đặc trưng lập trình hàm đã đi vào các ngôn ngữ phổ
+biến như Python, JavaScript, C\# và C++11.
+\end{abstract}
+
+\paragraph{Từ khóa.}
+Lập trình hàm; phép tính lambda; bài toán dừng; tổ hợp tử \(\Ycomb\); Haskell;
+tính lười; hàm bậc cao; bao đóng.
+
+\tableofcontents
+
+\section{Lập trình hàm là gì?}
+
+Hầu như ai học lập trình cũng từng nghe về ``hướng đối tượng'': đóng gói, kế
+thừa, đa hình, và nói chung là nghe có vẻ rất mạnh. Ngược lại, cái tên
+``lập trình hàm'' dễ tạo cảm giác đơn giản quá mức.
+
+Thực ra lập trình hàm là một hệ hình lập trình hoàn toàn khác. Đối tượng đối
+lập tự nhiên của nó không phải hướng đối tượng, mà là \term{lập trình mệnh
+lệnh}. Một chương trình mệnh lệnh mô tả một dãy thao tác làm thay đổi trạng
+thái; một chương trình hàm cố gắng mô tả quan hệ tính toán bằng biểu thức và
+hàm. Những đặc trưng thường gặp là:
+\begin{itemize}
+  \item giá trị bất biến;
+  \item tính lười;
+  \item hàm bậc cao;
+  \item không có tác dụng phụ quan sát được;
+  \item mọi thứ đều có thể được nhìn như hàm.
+\end{itemize}
+
+\section{Từ bài toán dừng}
+
+Khi gỡ lỗi, ta thường gặp vòng lặp vô hạn. Một ý tưởng rất hấp dẫn là tạo ra
+một công cụ tự động kiểm tra xem một chương trình có rơi vào vòng lặp vô hạn
+hay không. Đáng tiếc, công cụ tổng quát như vậy không tồn tại.
+
+\term{Bài toán dừng} hỏi: cho một chương trình bất kỳ và đầu vào của nó, hãy
+quyết định chương trình đó có kết thúc sau hữu hạn bước tính hay không.
+
+Giả sử thật sự có một thuật toán quyết định dừng. Ta mô tả nó bằng mã giả:
+\begin{verbatim}
+function halting(func, input) {
+    return if_func_will_halt_on_input;
+}
+\end{verbatim}
+Nghĩa là khi đưa vào một hàm và dữ liệu đầu vào của hàm đó, thuật toán sẽ trả
+lời hàm có kết thúc hay không.
+
+Bây giờ dựng một hàm khác:
+\begin{verbatim}
+function paradox(func) {
+    if (halting(func, func)) {
+        for (;;) {
+            // loop forever
+        }
+    }
+}
+\end{verbatim}
+Sau đó gọi:
+\begin{verbatim}
+paradox(paradox)
+\end{verbatim}
+Nếu \texttt{halting(paradox, paradox)} nói rằng lời gọi này sẽ dừng, thân hàm
+lại đi vào vòng lặp vô hạn. Nếu nó nói rằng lời gọi này không dừng, điều kiện
+\texttt{if} không chạy và hàm kết thúc ngay. Cả hai khả năng đều mâu thuẫn.
+Vì vậy bài toán dừng là không quyết định được.
+
+Ví dụ này chỉ là phần dẫn nhập. Phần chính của bài là phép tính lambda, một
+hệ hình thức rất nhỏ nhưng đủ để mô tả tính toán.
+
+\section{Phép tính lambda}
+
+Cú pháp của phép tính lambda chỉ có ba dạng:
+\[
+\begin{array}{rcl}
+\langle\text{biểu thức}\rangle &\defeq& \langle\text{định danh}\rangle,\\
+\langle\text{biểu thức}\rangle &\defeq&
+  \lambda\ \langle\text{một hoặc nhiều định danh}\rangle.\ 
+  \langle\text{biểu thức}\rangle,\\
+\langle\text{biểu thức}\rangle &\defeq&
+  (\langle\text{biểu thức}\rangle\ \langle\text{biểu thức}\rangle).
+\end{array}
+\]
+Ví dụ:
+\[
+  \lambda x\ y.\ x+y.
+\]
+
+Hai dạng đầu dùng để sinh ra hàm, còn dạng thứ ba dùng để gọi hàm. Chẳng hạn:
+\[
+  ((\lambda x\ y.\ x+y)\ 2\ 3).
+\]
+Để viết gọn, ta có thể đặt:
+\[
+  \texttt{let add} = \lambda x\ y.\ x+y,
+\]
+rồi gọi \((\texttt{add}\ 2\ 3)\).
+
+\subsection{Hai tiên đề cơ bản}
+
+Tiên đề đổi tên cho phép thay tên biến bị ràng buộc mà không đổi ý nghĩa:
+\[
+  \lambda x\ y.\ x+y \Rightarrow \lambda a\ b.\ a+b.
+\]
+Tiên đề thay thế cho phép áp dụng hàm vào đối số:
+\[
+  (\lambda x\ y.\ x+y)\ a\ b \Rightarrow a+b.
+\]
+Hai quy tắc đơn giản này đã tạo thành lõi của phép tính lambda.
+
+Có thể xem phép tính lambda như một máy sinh hàm. Ví dụ:
+\[
+\begin{aligned}
+  \texttt{let mul} &= \lambda x\ y.\ x*y,\\
+  \texttt{let con} &= \lambda x\ y.\ xy.
+\end{aligned}
+\]
+Khi thay đối số vào, ta nhận được:
+\[
+  \texttt{mul}\ 3\ 5 \Rightarrow 3*5,\qquad
+  \texttt{con}\ \texttt{'BYV'}\ \texttt{'oid'} \Rightarrow \texttt{'BYVoid'}.
+\]
+
+\subsection{Biểu thức điều kiện}
+
+Xét hàm phủ định:
+\[
+\begin{array}{rcl}
+\texttt{not false} &\rightarrow& \texttt{true},\\
+\texttt{not true} &\rightarrow& \texttt{false}.
+\end{array}
+\]
+Phép \texttt{and} có thể được định nghĩa theo bảng chân trị:
+\[
+\begin{array}{rcl}
+\texttt{and true true} &\rightarrow& \texttt{true},\\
+\texttt{and true false} &\rightarrow& \texttt{false},\\
+\texttt{and false true} &\rightarrow& \texttt{false},\\
+\texttt{and false false} &\rightarrow& \texttt{false}.
+\end{array}
+\]
+Viết tổng quát hơn:
+\[
+\begin{array}{rcl}
+\texttt{and true value} &\rightarrow& \texttt{value},\\
+\texttt{and false value} &\rightarrow& \texttt{false},\\
+\texttt{and value true} &\rightarrow& \texttt{value},\\
+\texttt{and value false} &\rightarrow& \texttt{false}.
+\end{array}
+\]
+
+Từ đó có thể định nghĩa \texttt{if}:
+\[
+\begin{aligned}
+\texttt{if} = \lambda\ \texttt{cond}\ \texttt{tvalue}\ \texttt{fvalue}.\
+  &(\texttt{cond and tvalue})\\
+  &\texttt{or}\ (\texttt{not cond and fvalue}).
+\end{aligned}
+\]
+Khi \(\texttt{cond}=\texttt{true}\), ta có:
+\[
+\begin{aligned}
+\texttt{if true a b}
+&\rightarrow \texttt{(true and a) or (not true and b)}\\
+&\rightarrow \texttt{a or false}\\
+&\rightarrow \texttt{a}.
+\end{aligned}
+\]
+
+\section{Đệ quy và tổ hợp tử \texorpdfstring{\(\Ycomb\)}{Y}}
+
+Ta muốn tính \(n!\) bằng định nghĩa quen thuộc:
+\[
+  \texttt{let fact} =
+  \lambda n.\ \texttt{if}\ (n==0)\ 1\ (n*\texttt{fact}\ (n-1)).
+\]
+Vấn đề là trong lúc định nghĩa \texttt{fact}, ta đã tham chiếu đến chính
+\texttt{fact}. Các trình biên dịch thực tế thường hỗ trợ cách viết này, nhưng
+nó không trực tiếp nằm trong hệ tiên đề toán học chặt chẽ ở trên.
+
+\subsection{Tham số hóa chính hàm đang định nghĩa}
+
+Nếu không được tham chiếu đến chính mình, ta đưa ``chính mình'' thành một tham
+số:
+\[
+  \texttt{let P} =
+  \lambda\ \texttt{self}\ n.\
+  \texttt{if}\ (n==0)\ 1\ (n * \texttt{self}(\texttt{self}\ (n-1))).
+\]
+Sau đó đặt:
+\[
+  \texttt{let fact}\ n = \texttt{P}\ (\texttt{P}\ n).
+\]
+Khi tính \(4!\), quá trình có dạng:
+\[
+\begin{aligned}
+\texttt{fact}\ 4
+&\rightarrow \texttt{P}\ (\texttt{P}\ 4)\\
+&\rightarrow 4 * \texttt{P}\ (\texttt{P}\ 3)\\
+&\rightarrow 4 * 3 * \texttt{P}\ (\texttt{P}\ 2)\\
+&\rightarrow 4 * 3 * 2 * \texttt{P}\ (\texttt{P}\ 1)\\
+&\rightarrow 4 * 3 * 2 * 1.
+\end{aligned}
+\]
+Cách này chạy được, nhưng nó chưa phải đệ quy thật sự; mỗi lần gọi chỉ truyền
+thêm một tham số phụ.
+
+\subsection{Điểm bất động}
+
+Giả sử hàm đệ quy \texttt{fact} thật sự tồn tại. Quay lại dạng giả đệ quy:
+\[
+  \texttt{let P} =
+  \lambda\ \texttt{self}\ n.\
+  \texttt{if}\ (n==0)\ 1\ (n * \texttt{self}\ (n-1)).
+\]
+Hàm \texttt{P} nhận hai tham số, nhưng ta có thể áp dụng một phần:
+\[
+\begin{aligned}
+  \texttt{P(fact)}
+  &\rightarrow
+  \lambda n.\ \texttt{if}\ (n==0)\ 1\ (n * \texttt{fact}\ (n-1)).
+\end{aligned}
+\]
+Biểu thức vế phải chính là \texttt{fact}, do đó:
+\[
+  \texttt{P(fact)} = \texttt{fact}.
+\]
+Nói cách khác, \texttt{fact} là một \term{điểm bất động} của \texttt{P}: một
+giá trị mà khi đưa qua hàm vẫn thu được chính giá trị đó.
+
+Trên slide gốc, tác giả minh họa bằng hình ảnh một tấm bản đồ rơi xuống sàn:
+trên bản đồ có một điểm trùng với vị trí thật của chính điểm đó ngoài đời.
+Trong bài dịch này ta chỉ giữ ý tưởng, không phục dựng hình.
+
+Nếu tìm được điểm bất động của hàm giả đệ quy \texttt{P}, ta sẽ biến nó thành
+hàm đệ quy thật sự.
+
+\subsection{Tổ hợp tử \texorpdfstring{\(\Ycomb\)}{Y}}
+
+Giả sử có một hàm kỳ diệu \(\Ycomb\) tìm được điểm bất động:
+\[
+  \Ycomb(F) = f = F(\Ycomb(F)).
+\]
+Nếu \(F(f)=f\), thì \(\Ycomb(F)\) là một điểm bất động của \(F\). Với hàm
+\texttt{P} ở trên, ta sẽ có:
+\[
+  \Ycomb(\texttt{P}) = \texttt{fact}.
+\]
+
+Tổ hợp tử \(\Ycomb\) có thể được dựng như sau:
+\[
+\begin{aligned}
+  \texttt{let Y} &= \lambda F.\ G(G),\\
+  \text{trong đó}\quad
+  G &= \lambda\ \texttt{self}.\ F(\texttt{self}(\texttt{self})).
+\end{aligned}
+\]
+Kiểm tra với \texttt{P}:
+\[
+\begin{aligned}
+\Ycomb(\texttt{P})
+&= G(G),\quad G=\lambda\ \texttt{self}.\ \texttt{P}(\texttt{self}(\texttt{self}))\\
+&= \texttt{P}(G(G))\\
+&= \lambda n.\ \texttt{if}\ (n==0)\ 1\ (n * G(G)\ (n-1)).
+\end{aligned}
+\]
+Nếu đặt \(\Ycomb(\texttt{P})=\texttt{fact}\), ta nhận được:
+\[
+  \texttt{fact} =
+  \lambda n.\ \texttt{if}\ (n==0)\ 1\ (n * \texttt{fact}\ (n-1)),
+\]
+đúng là hàm đệ quy mong muốn.
+
+Vậy khi muốn định nghĩa một hàm đệ quy, ta chỉ cần thêm một tham số
+\texttt{self}, viết hàm theo kiểu giả đệ quy, rồi áp dụng tổ hợp tử \(\Ycomb\).
+Tổ hợp tử này cũng là nguồn gốc tên của công ty Y Combinator ở Thung lũng
+Silicon. Nhà sáng lập Paul Graham còn nổi tiếng với cuốn \emph{Hackers and
+Painters}.
+
+\subsection{Tương đương Turing}
+
+Việc suy ra tổ hợp tử \(\Ycomb\) trong hệ tiên đề của phép tính lambda tương
+đương với việc suy ra định lý: trong quá trình định nghĩa hàm, ta có thể tham
+chiếu đến chính hàm đó. Đây là một bước quan trọng để chứng minh phép tính
+lambda là \term{tương đương Turing}.
+
+Điều đó có nghĩa là năng lực tính toán của phép tính lambda khớp với năng lực
+tính toán của máy tính. Bất kỳ chương trình nào cũng có thể được mô tả bằng
+phép tính lambda, và mọi hàm mô tả được bằng phép tính lambda đều có thể được
+máy tính tính toán.
+
+Bài toán dừng cũng có một phát biểu tương đương trong phép tính lambda:
+không tồn tại thuật toán quyết định hai hàm lambda tùy ý có tương đương hay
+không, tức là có cho cùng kết quả với mọi đầu vào \(n\) hay không.
+
+\section{Lập trình hàm trong thế giới thực}
+
+Những phần trên thuộc về lý thuyết phép tính lambda, rất gần với cách suy
+nghĩ của nhà toán học. Bây giờ ta chuyển sang góc nhìn kỹ sư và xem lập trình
+hàm xuất hiện trong thực tế như thế nào.
+
+\subsection{Haskell}
+
+Haskell là một ngôn ngữ lập trình hàm thuần túy, được đặt tên để tưởng nhớ
+Haskell Curry. Tổ hợp tử \(\Ycomb\) vừa nói ở trên gắn với tên ông; ngoài ra
+ông còn đưa ra khái niệm \term{currying}, tức áp dụng một phần.
+
+Trong Haskell, mọi thứ đều là hàm. Thậm chí Haskell không có khái niệm biến
+theo kiểu lập trình mệnh lệnh: một biến chỉ được gán một lần rồi không thay
+đổi, giống như cách biến được dùng trong suy luận toán học.
+
+Haskell cũng không có cấu trúc điều khiển lặp thông thường như \texttt{for};
+thay vào đó, ta dùng đệ quy. Hai đặc trưng quan trọng khác là không có tác
+dụng phụ và tính lười. Không có tác dụng phụ nghĩa là cùng một hàm với cùng
+đầu vào luôn cho cùng kết quả; tính lười nghĩa là biểu thức không được tính
+ngay nếu kết quả của nó chưa cần dùng.
+
+\subsection{Chương trình Haskell đầu tiên}
+
+Trước khi chạy Haskell, cần cài trình biên dịch GHC. Chạy \texttt{ghci} để vào
+chế độ tương tác. Ví dụ định nghĩa hàm lớn hơn:
+\begin{verbatim}
+let max a b = if a > b then a else b
+
+Prelude> max 3 4
+4
+Prelude> max 1.0001 1
+1.0001
+Prelude> max "BYVoid" "CmYkRgB123"
+"CmYkRgB123"
+\end{verbatim}
+
+\subsection{Danh sách}
+
+Danh sách trong Haskell có thể được mô tả bằng định nghĩa đệ quy:
+\[
+  \texttt{list X} \defeq \texttt{[]} \mid
+  \texttt{elem : (list X)}.
+\]
+Tức là:
+\[
+\begin{aligned}
+\text{danh sách rỗng} &= \texttt{[]},\\
+\texttt{[1]} &= \texttt{1:[]},\\
+\texttt{[1,2,3]} &= \texttt{1:2:3:[]}.
+\end{aligned}
+\]
+Nhập \texttt{2:1:3:7:8:[]} trong Haskell sẽ thu được:
+\begin{verbatim}
+[2,1,3,7,8]
+\end{verbatim}
+
+\subsection{Khớp mẫu}
+
+Định nghĩa:
+\begin{verbatim}
+let first (elem:rest) = elem
+\end{verbatim}
+Khi nhập \texttt{first [1,3]}, kết quả là \texttt{1}. Ở đây
+\texttt{elem:rest} là mẫu của đối số hàm. Danh sách \texttt{[1,3]} thật ra là
+\texttt{1:3:[]}; \texttt{elem} khớp với \texttt{1}, còn \texttt{rest} khớp
+với \texttt{3:[]}, tức \texttt{[3]}.
+
+\subsection{Tính tổng danh sách}
+
+Lưu nội dung sau vào \texttt{acc.hs}:
+\begin{verbatim}
+accumulate [] = 0
+accumulate (elem:rest) = elem + accumulate rest
+main = print (accumulate [1,2,3])
+\end{verbatim}
+Chạy \texttt{runghc acc.hs} sẽ in ra:
+\begin{verbatim}
+6
+\end{verbatim}
+
+\subsection{Kiểm tra palindrome}
+
+\begin{verbatim}
+palindrome [] = True
+palindrome [_] = True
+palindrome (elem:rest) =
+    (elem == last rest) && (palindrome (init rest))
+
+> palindrome [1, 2, 3, 2, 1]
+True
+> palindrome [1, 1, 2]
+False
+> palindrome "madam"
+True
+\end{verbatim}
+
+\subsection{Xóa các phần tử lặp liên tiếp}
+
+\begin{verbatim}
+cut cond [] = []
+cut cond (elem:rest) =
+    if cond elem then cut cond rest else elem:rest
+
+compress [] = []
+compress (elem:rest) = elem : compress (cut (== elem) rest)
+
+> compress [1, 2, 2, 2, 3, 3]
+[1, 2, 3]
+> compress "aaabbaccc"
+"abac"
+\end{verbatim}
+
+\section{Tính lười}
+
+Trong Haskell có thể định nghĩa danh sách vô hạn:
+\[
+  \texttt{[1..]}\quad\text{là mọi số nguyên dương,}
+\]
+\[
+  \texttt{[1,3..]}\quad\text{là mọi số lẻ dương.}
+\]
+Trong đa số ngôn ngữ, điều này rất khó tưởng tượng vì chúng dùng tính toán
+sớm. Haskell dùng tính lười, nên danh sách chỉ được tính đến phần thật sự
+cần dùng. Ví dụ:
+\begin{verbatim}
+[1,3..] !! 42
+\end{verbatim}
+trả về \texttt{85}.
+
+\subsection{Dãy Fibonacci}
+
+Cách mô tả Fibonacci gần với toán học nhất là:
+\begin{verbatim}
+fib 0 = 1
+fib 1 = 1
+fib a = fib (a - 1) + fib (a - 2)
+\end{verbatim}
+Không may là thuật toán này có độ phức tạp \(O(2^N)\), và trình biên dịch
+Haskell không tự động biến nó thành đệ quy có ghi nhớ.
+
+Ta có thể dùng danh sách vô hạn để viết thuật toán tuyến tính chỉ bằng một
+dòng:
+\begin{verbatim}
+fib = 1:1:zipWith (+) fib (tail fib)
+\end{verbatim}
+Khi đó \texttt{fib !! 4} là \texttt{5}, còn \texttt{fib !! 42} là
+\texttt{433494437}. Giá trị \texttt{fib !! 1000} là:
+\begin{verbatim}
+70330367711422815821835254877183549770181269836358732742604905087154537118196933
+57974224949456261173348775044924176599108818636326545022364710601205337412127386
+7339111198139373125598767690091902245245323403501
+\end{verbatim}
+
+Hàm \texttt{tail} trả về phần còn lại của danh sách sau khi bỏ phần tử đầu.
+Ví dụ \texttt{tail [1..]} trả về \texttt{[2..]}. Hàm \texttt{zipWith} nhận
+một hàm và hai danh sách, áp dụng hàm đó lên từng cặp phần tử tương ứng rồi
+trả về danh sách kết quả. Ví dụ:
+\begin{verbatim}
+zipWith (*) [2,3,5] [1,2,3]
+\end{verbatim}
+trả về \texttt{[2,6,15]}.
+
+Vì vậy:
+\begin{verbatim}
+fib = 1:1:zipWith (+) fib (tail fib)
+\end{verbatim}
+sinh một danh sách vô hạn. Hai phần tử đầu là \texttt{1}; các phần tử sau
+được tạo bằng cách cộng danh sách hiện tại với chính nó sau khi bỏ phần tử
+đầu:
+\begin{verbatim}
+  [1, 1, 2, 3, 5, 8, 13, 21, ...]   -- fib
++ [1, 2, 3, 5, 8, 13, 21, 34, ...]  -- tail fib
+= [2, 3, 5, 8, 13, 21, 34, 55, ...]
+\end{verbatim}
+Nhờ tính lười, danh sách không được tính toàn bộ ngay lập tức; phần tử nào
+cần dùng mới được sinh ra.
+
+\section{Một số ví dụ Haskell khác}
+
+\subsection{Sắp xếp nhanh}
+
+Trên slide gốc chỉ nêu nhánh đệ quy; để chương trình hoàn chỉnh, ta thêm
+trường hợp danh sách rỗng:
+\begin{verbatim}
+qsort [] = []
+qsort (elem:rest) =
+    (qsort lesser) ++ [elem] ++ (qsort greater)
+  where
+    lesser  = filter (< elem) rest
+    greater = filter (>= elem) rest
+\end{verbatim}
+Toán tử \texttt{++} dùng để nối danh sách. Hàm \texttt{filter} trả về danh
+sách gồm những phần tử thỏa điều kiện.
+
+\subsection{Biểu diễn cây nhị phân}
+
+\begin{verbatim}
+data Tree a = Empty | Node a (Tree a) (Tree a)
+
+tree = Node 'd'
+  (Node 'b'
+    (Node 'a' Empty Empty)
+    (Node 'c' Empty Empty)
+  )
+  (Node 'e'
+    Empty
+    (Node 'g'
+      (Node 'f' Empty Empty)
+      Empty
+    )
+  )
+\end{verbatim}
+Sơ đồ trên slide là cây có gốc \texttt{d}; nhánh trái là \texttt{b} với hai
+con \texttt{a} và \texttt{c}; nhánh phải là \texttt{e}, con phải của
+\texttt{e} là \texttt{g}, và con trái của \texttt{g} là \texttt{f}.
+
+\subsection{Duyệt trung thứ tự}
+
+\begin{verbatim}
+inorder Empty = []
+inorder (Node value left right) =
+    inorder left ++ [value] ++ inorder right
+
+> inorder tree
+"abcdefg"
+\end{verbatim}
+
+\subsection{Chiều cao cây}
+
+\begin{verbatim}
+height Empty = 0
+height (Node value left right) =
+    max (height left) (height right) + 1
+
+> height tree
+4
+\end{verbatim}
+
+\subsection{Hàm bậc cao}
+
+Hàm bậc cao là hàm nhận hàm làm tham số hoặc trả về hàm. Với cây nhị phân ở
+trên, có thể viết một hàm duyệt tổng quát:
+\begin{verbatim}
+traverse func zero Empty = zero
+traverse func zero (Node value left right) =
+    func value
+      (traverse func zero left)
+      (traverse func zero right)
+
+height_func _ a b = max a b + 1
+
+> traverse height_func 0 tree
+4
+\end{verbatim}
+Hàm duyệt trung thứ tự cũng có thể được sinh bằng áp dụng một phần:
+\begin{verbatim}
+inorder_func value left right = left ++ [value] ++ right
+inorder = traverse inorder_func []
+
+> inorder tree
+"abcdefg"
+\end{verbatim}
+
+\section{Ý tưởng hàm trong kỹ nghệ phần mềm}
+
+Lập trình hàm không còn bị giới hạn trong các ngôn ngữ ít phổ biến như
+Haskell. Tư tưởng của nó đã được hầu hết các ngôn ngữ chính thống tiếp nhận.
+Một số ngôn ngữ hỗ trợ đặc trưng lập trình hàm là Python, JavaScript, Ruby,
+C++11, C\#, Scala.
+
+\subsection{Hàm ẩn danh}
+
+Ví dụ hàm bình phương trong một số ngôn ngữ:
+\begin{verbatim}
+-- Python
+lambda x : x**2
+
+-- C#
+x => x**2
+
+-- JavaScript
+function (x) { return x * x; }
+
+-- C++11
+[](int x) -> int { return x * x; }
+\end{verbatim}
+
+\subsection{Bao đóng}
+
+Bao đóng cho phép hàm bên trong giữ quyền truy cập đến môi trường nơi nó được
+tạo ra:
+\begin{verbatim}
+function make_closure() {
+  var inner_variable = 0;
+  return function () {
+    return inner_variable++;
+  }
+}
+
+var counter = make_closure();
+counter();  // 0
+counter();  // 1
+\end{verbatim}
+
+\subsection{Dùng bao đóng để currying}
+
+Nhiều ngôn ngữ không hỗ trợ áp dụng một phần trực tiếp, vì cơ chế currying
+xung đột với cách chúng xử lý danh sách tham số. Tuy nhiên có thể dùng bao
+đóng để mô phỏng. Ví dụ áp dụng một phần cho hàm lũy thừa:
+\begin{verbatim}
+function pow5(x) {
+  return Math.pow(x, 5);
+}
+
+pow5(2);  // prints 32
+\end{verbatim}
+
+\section{Kết luận}
+
+Lập trình hàm bắt đầu từ một lõi lý thuyết rất nhỏ: biểu thức, hàm, gọi hàm
+và thay thế. Từ lõi đó có thể xây dựng điều kiện, đệ quy, điểm bất động và
+một mô hình tính toán tương đương máy Turing. Trong thực hành, cùng những ý
+tưởng ấy xuất hiện dưới dạng giá trị bất biến, hàm bậc cao, khớp mẫu, danh
+sách vô hạn, bao đóng và hàm ẩn danh.
+
+\section*{Tài liệu tham khảo}
+
+\begin{itemize}
+  \item \href{https://en.wikipedia.org/wiki/Fixed-point_combinator}{Fixed-point combinator}
+  \item \href{https://mindhacks.cn/2006/10/15/cantor-godel-turing-an-eternal-golden-diagonal/}{Cantor, Godel, Turing: an eternal golden diagonal}
+  \item \href{https://www.byvoid.com/blog/godel-incompleteness-theorems-agnosticism/}{Godel incompleteness theorems and agnosticism}
+  \item \href{https://wiki.haskell.org/H-99:_Ninety-Nine_Haskell_Problems}{Ninety-Nine Haskell Problems}
+  \item \href{https://developer.mozilla.org/en/JavaScript/Guide/Closures}{MDN: Closures}
+  \item \href{https://www.cprogramming.com/c++11/c++11-lambda-closures.html}{C++11 lambda closures}
+\end{itemize}
+
+\end{document}

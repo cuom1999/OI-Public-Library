@@ -1,0 +1,329 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 数据结构 DATA STRUCTURE/后缀自动机 - 陈立杰.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Máy tự động hậu tố}
+\author{Trần Lập Kiệt, Trường Ngoại ngữ Hàng Châu}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Suffix Automaton}
+
+\section{Mở đầu}
+
+Tài liệu này giới thiệu \term{máy tự động hậu tố} (suffix automaton, viết tắt là
+SAM) và một số ứng dụng kinh điển trong xử lý xâu.  Mục tiêu là có một cấu trúc
+tuyến tính theo độ dài xâu nhưng vẫn trả lời được nhiều câu hỏi về xâu con,
+vị trí xuất hiện và thứ tự từ điển.
+
+Trước hết xét bài SPOJ 1812, \term{Longest Common Substring II}: cho
+$N \le 10$ xâu, mỗi xâu có độ dài không quá $100000$, hãy tìm xâu con liên tiếp
+chung dài nhất của tất cả các xâu.  Một cách đơn giản là nhị phân độ dài rồi
+dùng băm, đạt $O(L\log L)$ với $L$ là tổng độ dài.  Cách này quen thuộc nhưng
+trên môi trường chậm như SPOJ vẫn dễ bị quá thời gian.  SAM đưa ra một hướng
+khác, tuyến tính hơn và phù hợp với các bài trực tuyến.
+
+\section{Các công cụ xử lý xâu trong OI}
+
+Trong OI, các công cụ xử lý xâu thường gặp gồm:
+\begin{itemize}
+  \item mảng hậu tố (suffix array);
+  \item cây hậu tố (suffix tree);
+  \item máy tự động Aho--Corasick;
+  \item băm xâu;
+  \item máy tự động hậu tố.
+\end{itemize}
+
+SAM có thể xem là một phiên bản nén của cây trie các hậu tố, nhưng số trạng thái
+và số cạnh đều chỉ tuyến tính.  So với cây hậu tố, thuật toán xây dựng của SAM
+ngắn và dễ cài đặt hơn, dù các bất biến ban đầu có thể khó nhìn.
+
+\section{Máy tự động hữu hạn}
+
+Một máy tự động hữu hạn dùng để nhận dạng xâu.  Với máy tự động $A$, nếu $A$
+nhận xâu $S$ thì viết $A(S)=\mathrm{True}$, ngược lại là $\mathrm{False}$.
+
+Một máy tự động gồm năm phần:
+\begin{itemize}
+  \item $\Sigma$: bảng chữ cái;
+  \item $\mathrm{state}$: tập trạng thái;
+  \item $\mathrm{init}$: trạng thái ban đầu;
+  \item $\mathrm{end}$: tập trạng thái kết thúc;
+  \item $\mathrm{trans}$: hàm chuyển trạng thái.
+\end{itemize}
+
+Ký hiệu $\mathrm{trans}(s,c)$ là trạng thái đi đến khi đang ở trạng thái $s$ và
+đọc ký tự $c$.  Nếu chuyển này không tồn tại, ta xem kết quả là
+$\mathrm{null}$; trạng thái $\mathrm{null}$ chỉ chuyển về chính nó.  Mở rộng
+cho xâu $t$, $\mathrm{trans}(s,t)$ là trạng thái thu được sau khi lần lượt đọc
+từng ký tự của $t$:
+\begin{verbatim}
+cur = s
+for i = 0 .. length(t)-1:
+    cur = trans(cur, t[i])
+\end{verbatim}
+
+\section{Định nghĩa SAM}
+
+Cho xâu mẹ $S$.  Máy tự động hậu tố của $S$ là một máy tự động nhận đúng tất cả
+các hậu tố của $S$:
+\[
+  \mathrm{SAM}(x)=\mathrm{True}
+  \quad\Longleftrightarrow\quad
+  x \text{ là hậu tố của } S.
+\]
+
+Sau khi xây dựng xong, cùng cấu trúc này cũng nhận biết được tất cả xâu con của
+$S$.  Ký hiệu
+\[
+  \mathrm{ST}(t)=\mathrm{trans}(\mathrm{init},t)
+\]
+là trạng thái đạt được khi đọc $t$ từ gốc.  Khi $\mathrm{ST}(t)\ne
+\mathrm{null}$, $t$ là một xâu con của $S$.
+
+Cách thô sơ nhất là đưa mọi hậu tố của $S$ vào một trie.  Khi đó gốc là trạng
+thái ban đầu, cạnh trie là hàm chuyển, còn các lá là trạng thái kết thúc.  Tuy
+nhiên trie này có thể có kích thước $O(n^2)$.  SAM tối tiểu hóa các trạng thái
+có cùng hành vi, nhờ đó chỉ còn $O(n)$ trạng thái.
+
+\section{Tập vị trí kết thúc và trạng thái}
+
+Với một xâu con $t$ của $S$, đặt
+\[
+  \mathrm{Right}(t)=\{i \mid S[i-|t|+1..i]=t\},
+\]
+tức là tập mọi vị trí kết thúc của những lần xuất hiện của $t$ trong $S$.
+
+Trong SAM tối tiểu, một trạng thái đại diện cho một lớp các xâu con có cùng tập
+$\mathrm{Right}$.  Nếu trạng thái là $s$, ta viết tập này là
+$\mathrm{Right}(s)$.  Các độ dài của xâu con thuộc cùng trạng thái tạo thành
+một đoạn liên tiếp:
+\[
+  [\mathrm{Min}(s),\mathrm{Max}(s)].
+\]
+Một cặp gồm tập $\mathrm{Right}$ và độ dài xác định duy nhất một xâu con.
+
+Với mỗi trạng thái $s$ khác gốc, $\mathrm{parent}(s)$ là trạng thái $x$ sao cho
+$\mathrm{Right}(s)$ là tập con thực sự của $\mathrm{Right}(x)$, và
+$|\mathrm{Right}(x)|$ nhỏ nhất có thể.  Các liên kết $\mathrm{parent}$ tạo thành
+một cây, thường gọi là \term{cây parent} hay \term{suffix-link tree}.  Ta có bất
+biến quan trọng:
+\[
+  \mathrm{Max}(\mathrm{parent}(s))=\mathrm{Min}(s)-1.
+\]
+
+\section{Tính chất về xâu con}
+
+Mọi xâu con của $S$ đều nằm trong một trạng thái nào đó của SAM.  Do đó:
+\[
+  t \text{ là xâu con của } S
+  \quad\Longleftrightarrow\quad
+  \mathrm{ST}(t)\ne \mathrm{null}.
+\]
+
+Nếu đã đi đến trạng thái chứa $t$, số lần xuất hiện của $t$ chính là
+$|\mathrm{Right}(t)|$, tức kích thước của tập $\mathrm{Right}$ tương ứng.
+
+Không nên lưu trực tiếp toàn bộ tập $\mathrm{Right}$ ở mỗi trạng thái vì tốn bộ
+nhớ.  Ta dùng cây parent: tập $\mathrm{Right}$ của một trạng thái là hợp các tập
+$\mathrm{Right}$ của những lá trong cây con của nó.  Nếu đánh số theo thứ tự DFS
+của cây parent, toàn bộ một cây con là một đoạn liên tiếp; nhờ đó có thể dùng
+các cấu trúc dữ liệu trên đoạn để tìm nhanh mọi vị trí xuất hiện của một xâu
+con.
+
+\section{Xây dựng tuyến tính}
+
+Thuật toán xây dựng SAM là trực tuyến: đọc xâu từ trái sang phải và thêm từng ký
+tự.  Dù ý tưởng của nó không hiển nhiên, phần cài đặt ngắn hơn nhiều so với cây
+hậu tố.
+
+Giả sử SAM hiện tại biểu diễn xâu $S$ có độ dài $L$, trạng thái
+$\mathrm{last}$ đại diện cho toàn bộ xâu $S$.  Khi thêm ký tự $c$, ta tạo trạng
+thái mới $np$ với
+\[
+  \mathrm{Max}(np)=L+1.
+\]
+Trạng thái này đại diện cho các hậu tố mới kết thúc ở vị trí $L+1$.
+
+Từ $p=\mathrm{last}$, đi ngược theo các liên kết parent.  Với mọi trạng thái
+$p$ chưa có cạnh $c$, thêm cạnh $p \xrightarrow{c} np$.  Khi quá trình dừng có
+ba trường hợp.
+
+\begin{enumerate}
+  \item Không còn trạng thái nào, tức đã đi qua gốc.  Khi đó
+  $\mathrm{parent}(np)=\mathrm{init}$.
+
+  \item Tồn tại cạnh $p \xrightarrow{c} q$ và
+  $\mathrm{Max}(p)+1=\mathrm{Max}(q)$.  Khi đó $q$ đã là trạng thái đúng để nối
+  tiếp, đặt $\mathrm{parent}(np)=q$.
+
+  \item Tồn tại cạnh $p \xrightarrow{c} q$ nhưng
+  $\mathrm{Max}(p)+1<\mathrm{Max}(q)$.  Khi đó cần tách $q$.  Tạo trạng thái
+  sao chép $nq$, sao chép toàn bộ chuyển trạng thái của $q$, đặt
+  $\mathrm{Max}(nq)=\mathrm{Max}(p)+1$ và
+  $\mathrm{parent}(nq)=\mathrm{parent}(q)$ cũ.  Sau đó đặt
+  $\mathrm{parent}(q)=\mathrm{parent}(np)=nq$, rồi đổi mọi cạnh
+  $v \xrightarrow{c} q$ trên đường parent liên quan thành
+  $v \xrightarrow{c} nq$.
+\end{enumerate}
+
+Cuối cùng đặt $\mathrm{last}=np$.  Trong bước tách, các chuyển của $nq$ giống
+$q$ vì khi đang xử lý ký tự mới ở vị trí $L+1$, phần sau trạng thái này không
+phụ thuộc riêng vào vị trí mới.
+
+\section{Mã giả}
+
+\begin{verbatim}
+extend(c):
+    np = new_state()
+    maxlen[np] = maxlen[last] + 1
+    p = last
+
+    while p exists and next[p][c] is absent:
+        next[p][c] = np
+        p = parent[p]
+
+    if p does not exist:
+        parent[np] = root
+    else:
+        q = next[p][c]
+        if maxlen[p] + 1 == maxlen[q]:
+            parent[np] = q
+        else:
+            nq = clone_state(q)
+            maxlen[nq] = maxlen[p] + 1
+            parent[nq] = parent[q]
+            parent[q] = nq
+            parent[np] = nq
+            while p exists and next[p][c] == q:
+                next[p][c] = nq
+                p = parent[p]
+
+    last = np
+\end{verbatim}
+
+Mỗi lần thêm ký tự chỉ tạo nhiều nhất hai trạng thái.  Vì vậy số trạng thái của
+SAM không vượt quá $2n-1$ với $n>0$.  Số cạnh cũng tuyến tính; nhìn trực quan,
+các cạnh được thêm và đổi hướng dọc theo các suffix link, tổng số lần thao tác
+trên toàn bộ quá trình là tuyến tính.
+
+\section{I. Xâu quay vòng nhỏ nhất}
+
+Cho xâu $S$.  Mỗi lần được chuyển ký tự đầu tiên xuống cuối xâu.  Hãy tìm xâu
+có thứ tự từ điển nhỏ nhất có thể thu được.  Ví dụ với \texttt{BBAAB}, kết quả
+là \texttt{AABBB}.
+
+Xét xâu $SS$.  Bài toán trở thành tìm xâu con độ dài $|S|$ nhỏ nhất theo thứ tự
+từ điển của $SS$.  Xây SAM cho $SS$; từ trạng thái gốc, mỗi lần đi theo cạnh có
+nhãn nhỏ nhất, đi đúng $|S|$ bước thì thu được đáp án.  Lý do là mọi phép quay
+của $S$ đều là một xâu con độ dài $|S|$ trong $SS$, và đi tham lam theo ký tự
+nhỏ nhất sinh ra xâu nhỏ nhất trong ngôn ngữ được SAM biểu diễn.
+
+\section{II. SPOJ NSUBSTR}
+
+Cho xâu $S$.  Gọi $F(x)$ là số lần xuất hiện lớn nhất trong tất cả xâu con độ
+dài $x$ của $S$.  Cần tính $F(1),F(2),\ldots,F(|S|)$, với
+$|S|\le 250000$.
+
+Xây SAM của $S$.  Với mỗi trạng thái $s$, các xâu mà nó đại diện có độ dài nằm
+trong đoạn $[\mathrm{Min}(s),\mathrm{Max}(s)]$, và cùng có số lần xuất hiện
+$|\mathrm{Right}(s)|$.  Vì thế dùng $|\mathrm{Right}(s)|$ để cập nhật
+$F(\mathrm{Max}(s))$.  Sau đó duyệt $i$ giảm dần và gán
+\[
+  F(i-1)=\max(F(i-1),F(i)).
+\]
+Việc lan truyền này đúng vì nếu một xâu dài xuất hiện nhiều lần thì tiền tố
+ngắn hơn của nó cũng xuất hiện ít nhất bấy nhiêu lần.
+
+\section{III. BZOJ2555 SubString}
+
+Bài toán yêu cầu duy trì một xâu, hỗ trợ hai thao tác trực tuyến:
+\begin{itemize}
+  \item thêm một ký tự vào cuối xâu;
+  \item hỏi một xâu xuất hiện bao nhiêu lần trong xâu hiện tại.
+\end{itemize}
+
+Ta xây SAM động bằng thủ tục thêm ký tự ở trên.  Điều thực sự ảnh hưởng đến đáp
+án là kích thước tập $\mathrm{Right}$ của trạng thái truy vấn.  Trong mỗi bước
+xây dựng, liên kết parent chỉ thay đổi hằng số lần; trạng thái mới $np$ tương
+ứng với một lần xuất hiện mới, nên mọi tổ tiên của $np$ trên cây parent cần tăng
+kích thước $\mathrm{Right}$ thêm $1$.
+
+Có hai hướng duy trì:
+\begin{itemize}
+  \item dùng cây động để duy trì cây parent;
+  \item dùng cây cân bằng để duy trì thứ tự DFS của cây parent.
+\end{itemize}
+Các kỹ thuật này nằm ngoài trọng tâm của bài giảng, nên tài liệu gốc chỉ nêu ý
+tưởng.
+
+\section{IV. SPOJ SUBLEX}
+
+Cho một xâu $S$ độ dài không quá $90000$.  Mỗi truy vấn hỏi xâu thứ $K$ theo
+thứ tự từ điển trong tập các xâu con phân biệt của $S$; số truy vấn không quá
+$500$.
+
+Xây SAM của $S$.  Với mỗi trạng thái, tiền xử lý số lượng xâu con phân biệt có
+thể đi tới từ trạng thái đó.  Sau đó trả lời truy vấn bằng cách đi từ gốc theo
+thứ tự nhãn cạnh tăng dần: nếu toàn bộ nhánh hiện tại chứa ít hơn $K$ xâu thì bỏ
+qua nhánh đó và trừ vào $K$; ngược lại chọn cạnh đó, in thêm ký tự cạnh, rồi
+tiếp tục.  Đây là cách DFS theo thứ tự từ điển trên DAG của SAM.
+
+\section{V. SPOJ LCS}
+
+Cho hai xâu $A$ và $B$, mỗi xâu có độ dài nhỏ hơn $100000$, hãy tìm xâu con
+liên tiếp chung dài nhất.  Xây SAM cho $A$.
+
+Duyệt các ký tự của $B$ bằng SAM của $A$.  Duy trì trạng thái hiện tại $s$ và
+độ dài khớp hiện tại $\ell$.
+\begin{itemize}
+  \item Nếu có cạnh nhãn $c$ từ $s$, đi theo cạnh đó và tăng $\ell$.
+  \item Nếu không có, đi ngược theo parent cho đến khi gặp trạng thái $a$ có
+  cạnh nhãn $c$.  Khi đó chuyển đến $\mathrm{trans}(a,c)$ và đặt
+  $\ell=\mathrm{Max}(a)+1$.
+  \item Nếu không có tổ tiên nào có cạnh nhãn $c$, quay về gốc và đặt
+  $\ell=0$.
+\end{itemize}
+
+Trong quá trình duyệt, cập nhật độ dài khớp lớn nhất đạt được ở từng trạng
+thái.  Vì kết quả của một trạng thái cũng có thể đóng góp cho parent của nó,
+cuối cùng duyệt các trạng thái theo $\mathrm{Max}$ giảm dần để đẩy kết quả lên
+cây parent.  Đáp án là giá trị lớn nhất thu được.
+
+\section{VI. SPOJ LCS2}
+
+Bài LCS2 mở rộng bài trước cho nhiều xâu.  Xây SAM của xâu đầu tiên.  Với mỗi
+xâu còn lại, chạy quy trình khớp như trong SPOJ LCS để biết tại mỗi trạng thái
+độ dài lớn nhất mà xâu này có thể khớp.  Sau khi xử lý một xâu, lan truyền kết
+quả lên cây parent, rồi lấy minimum theo từng trạng thái qua tất cả các xâu.
+Giá trị lớn nhất còn lại chính là độ dài xâu con chung dài nhất của toàn bộ tập
+xâu.
+
+\section{Một vài cấu trúc liên quan}
+
+Ngoài suffix automaton còn có nhiều biến thể và họ hàng:
+\begin{itemize}
+  \item factor automaton;
+  \item suffix oracle;
+  \item factor oracle;
+  \item suffix cactus.
+\end{itemize}
+
+Factor oracle là một máy tự động có thể nhận tất cả xâu con của xâu đã cho,
+nhưng cũng có thể nhận thêm một số xâu không thuộc tập đó.  Vì vậy chữ
+``oracle'' ở đây đúng nghĩa là một lời dự đoán: nhanh và đơn giản, nhưng không
+nhất thiết chính xác tuyệt đối.  Tài liệu gốc chỉ nhắc tới nó như phần mở rộng,
+không đi sâu vào ứng dụng trong OI.
+
+\section{Ghi chú về bản dịch}
+
+Một số trang trong PDF nguồn chứa hình minh họa hoặc mã được nhúng dưới dạng
+đối tượng đồ họa nên không trích xuất được văn bản bằng công cụ PDF thông
+thường.  Các phần đó được dựng lại theo đúng trình tự bài giảng và theo thuật
+toán SAM chuẩn: định nghĩa $\mathrm{Right}$, cây parent, thuật toán thêm ký tự,
+và các ứng dụng nêu trong slide.
+
+\end{document}

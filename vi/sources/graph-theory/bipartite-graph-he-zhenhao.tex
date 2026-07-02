@@ -1,0 +1,311 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 图论 GRAPH THEORY/经典算法之二分图 - 何振豪.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Các thuật toán kinh điển trên đồ thị hai phía}
+\author{He Zhenhao}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Classic algorithms for bipartite graphs}
+\sourcepath{Graph Theory / Classic Algorithms for Bipartite Graphs - He Zhenhao}
+
+\section{Khái niệm đồ thị hai phía}
+
+Một đồ thị vô hướng được gọi là \term{đồ thị hai phía} nếu có thể chia toàn bộ
+tập đỉnh của nó thành hai tập rời nhau $U$ và $V$ sao cho mọi cạnh đều nối một
+đỉnh của $U$ với một đỉnh của $V$. Nói cách khác, trong cùng một phía không có
+cạnh nội bộ. Cách chia này thường được gọi là một \term{phân hoạch hai phía}
+của đồ thị.
+
+Nhiều bài toán ghép cặp trong thi đấu lập trình có dạng tự nhiên là đồ thị hai
+phía: một phía là nam, một phía là nữ; một phía là hàng, một phía là cột; hoặc
+một phía là bản sao ``đi ra'' của các đỉnh, phía còn lại là bản sao ``đi vào''
+của các đỉnh. Vì vậy các thuật toán trên đồ thị hai phía thường là cầu nối từ
+một phát biểu tổ hợp sang một thuật toán ghép cặp.
+
+\section{Nhận biết đồ thị hai phía}
+
+Một đồ thị vô hướng $G$ là đồ thị hai phía khi và chỉ khi $G$ không chứa chu
+trình độ dài lẻ. Điều kiện này có thể hiểu như sau. Nếu ta đi quanh một chu
+trình trong đồ thị hai phía, các đỉnh phải luân phiên giữa $U$ và $V$, nên chỉ
+có thể quay về đỉnh xuất phát sau một số chẵn cạnh. Ngược lại, nếu không có
+chu trình lẻ, ta có thể tô màu từng thành phần liên thông bằng hai màu mà không
+gặp mâu thuẫn.
+
+Phương pháp thường dùng là \term{tô màu hai màu}. Với mỗi thành phần liên thông
+chưa xét, chọn một đỉnh bất kỳ, tô nó màu $0$, rồi lan truyền bằng DFS hoặc
+BFS:
+\begin{enumerate}
+  \item Với mỗi cạnh $(u,v)$, nếu $v$ chưa được tô màu thì tô $v$ bằng màu đối
+  với màu của $u$.
+  \item Nếu $v$ đã được tô màu và màu của $v$ trùng với màu của $u$, đồ thị
+  không phải là đồ thị hai phía.
+  \item Nếu quá trình kết thúc trên mọi thành phần mà không có mâu thuẫn, hai
+  lớp màu chính là hai phía của đồ thị.
+\end{enumerate}
+
+Ví dụ điển hình là bài toán chia $n$ học sinh thành hai nhóm sao cho trong cùng
+một nhóm không có cặp học sinh quen biết nhau. Mỗi học sinh là một đỉnh, mỗi
+quan hệ quen biết là một cạnh. Bài toán hỏi đúng xem đồ thị quan hệ quen biết
+có phải là đồ thị hai phía hay không. Lưu ý rằng quan hệ ``$A$ quen $B$'' và
+``$B$ quen $C$'' không kéo theo ``$A$ quen $C$''; vì thế ta chỉ dùng các cạnh
+được cho trực tiếp.
+
+\section{Ghép cực đại trong đồ thị hai phía}
+
+Một \term{matching} là một tập cạnh đôi một không chung đỉnh. Mục tiêu của
+\term{ghép cực đại} là chọn được nhiều cạnh nhất. Trong bài toán tàu lượn, mỗi
+toa có hai chỗ và chỉ cho phép một nam ngồi cùng một nữ; mỗi cô gái chỉ chấp
+nhận một số chàng trai nhất định. Dựng đồ thị hai phía với một phía là các cô
+gái, một phía là các chàng trai, nối cạnh cho mỗi cặp được phép. Số cặp ngồi
+được nhiều nhất chính là kích thước ghép cực đại.
+
+\subsection{Đường luân phiên và đường tăng}
+
+Xét một matching hiện tại $M$. Một cạnh thuộc $M$ gọi là cạnh đã ghép; cạnh
+không thuộc $M$ gọi là cạnh chưa ghép.
+
+\term{Đường luân phiên} là một đường đi bắt đầu từ một đỉnh chưa ghép và có các
+cạnh lần lượt là chưa ghép, đã ghép, chưa ghép, đã ghép, v.v. Một
+\term{đường tăng} là đường luân phiên bắt đầu ở một đỉnh chưa ghép và kết thúc
+ở một đỉnh chưa ghép, trong đó cạnh đầu và cạnh cuối đều là cạnh chưa ghép.
+Trong đồ thị hai phía, nếu ta bắt đầu ở phía trái thì đường tăng sẽ kết thúc ở
+phía phải.
+
+Các slide gốc minh họa một đường tăng
+\[
+  2\to 5\to 1\to 7\to 4\to 8.
+\]
+Trong hình đó, các cạnh màu đỏ là cạnh đã ghép, các cạnh màu đen là cạnh chưa
+ghép. Khi đi theo đường trên, trạng thái cạnh luân phiên giữa chưa ghép và đã
+ghép; hai đầu đường là hai đỉnh chưa ghép.
+
+Một đường tăng có các tính chất cơ bản sau:
+\begin{enumerate}
+  \item Số cạnh trên đường là số lẻ.
+  \item Nếu điểm đầu ở phía trái thì điểm cuối ở phía phải.
+  \item Các đỉnh trên đường luân phiên giữa hai phía, và các cạnh luân phiên
+  giữa chưa ghép và đã ghép.
+  \item Chỉ hai đầu đường chưa được ghép; mọi đỉnh trung gian đều đang được
+  ghép.
+  \item Các cạnh ở vị trí lẻ trên đường là cạnh chưa ghép, còn các cạnh ở vị
+  trí chẵn là cạnh đã ghép.
+\end{enumerate}
+
+Ý nghĩa của đường tăng nằm ở thao tác đảo trạng thái: biến các cạnh chưa ghép
+trên đường thành cạnh đã ghép, đồng thời bỏ các cạnh đã ghép trên đường khỏi
+matching. Vì đường tăng có nhiều hơn đúng một cạnh chưa ghép so với cạnh đã
+ghép, thao tác này làm kích thước matching tăng thêm $1$.
+
+\subsection{Thuật toán Hungary}
+
+Thuật toán Hungary cho ghép cực đại trong đồ thị hai phía lặp lại đúng ý tưởng
+trên:
+\begin{enumerate}
+  \item Khởi tạo matching $M$ rỗng.
+  \item Tìm một đường tăng đối với $M$.
+  \item Nếu tìm được, đảo trạng thái các cạnh trên đường tăng để thu được
+  matching lớn hơn.
+  \item Lặp lại cho đến khi không còn đường tăng.
+\end{enumerate}
+
+Định lý Berge bảo đảm rằng một matching là cực đại khi và chỉ khi không tồn tại
+đường tăng đối với nó. Do đó vòng lặp trên dừng lại với một ghép cực đại.
+
+Trong cài đặt thường gặp, ta duyệt từng đỉnh phía trái và dùng DFS để thử tìm
+đường tăng bắt đầu từ đỉnh đó. Mỗi lần DFS có thể quét qua $O(E)$ cạnh, và có
+$O(V)$ lần thử, nên độ phức tạp là $O(VE)$. Có thể dùng BFS để tổ chức quá
+trình tìm kiếm, nhưng lõi tư tưởng vẫn là tìm đường tăng.
+
+\subsection{Thuật toán Hopcroft--Karp}
+
+Nếu đồ thị có hàng nghìn đỉnh và khá dày, việc mỗi lần chỉ tăng matching thêm
+một cạnh có thể chậm. Thuật toán \term{Hopcroft--Karp} cải thiện bằng cách tìm
+nhiều đường tăng ngắn nhất, đôi một không giao nhau theo đỉnh, trong cùng một
+pha.
+
+Một pha của Hopcroft--Karp gồm hai bước:
+\begin{enumerate}
+  \item BFS từ tất cả đỉnh chưa ghép ở phía trái để xây các lớp khoảng cách
+  trong đồ thị luân phiên. Việc này xác định độ dài nhỏ nhất của một đường
+  tăng hiện tại.
+  \item DFS theo các lớp vừa xây để lấy một họ cực đại các đường tăng ngắn
+  nhất không giao nhau theo đỉnh, rồi đảo trạng thái đồng thời trên các đường
+  này.
+\end{enumerate}
+
+Có thể chứng minh số pha chỉ là $O(\sqrt{|V|})$, vì thế độ phức tạp tổng quát
+là
+\[
+  O(|E|\sqrt{|V|}).
+\]
+Các phần sau đều dựa trên cùng hạt nhân này: đưa bài toán về ghép trong đồ thị
+hai phía, rồi dùng đường tăng hoặc một thuật toán ghép nhanh hơn để giải.
+
+\section{Phủ đỉnh nhỏ nhất trong đồ thị hai phía}
+
+Một \term{phủ đỉnh} là một tập đỉnh sao cho mỗi cạnh của đồ thị có ít nhất một
+đầu mút nằm trong tập đó. Bài toán \term{phủ đỉnh nhỏ nhất} yêu cầu chọn ít
+đỉnh nhất có thể.
+
+Định lý König phát biểu rằng trong đồ thị hai phía,
+\[
+  \text{kích thước ghép cực đại}
+  =
+  \text{kích thước phủ đỉnh nhỏ nhất}.
+\]
+Vì vậy, nếu chỉ cần kích thước phủ nhỏ nhất, ta có thể tính ghép cực đại.
+
+Một ví dụ trong slide là bài toán bắn laser trên lưới $N\times M$. Một số ô có
+vật thể cần loại bỏ. Laser được đặt ở biên, mỗi lần bắn chỉ đi theo một hàng
+hoặc một cột. Hỏi cần ít nhất bao nhiêu lần bắn để mọi vật thể đều bị bắn
+trúng.
+
+Dựng đồ thị hai phía như sau: phía trái gồm các hàng $1,\ldots,N$, phía phải
+gồm các cột $1,\ldots,M$. Với mỗi vật thể ở ô $(i,j)$, thêm cạnh giữa hàng $i$
+và cột $j$. Chọn bắn một hàng hoặc một cột chính là chọn một đỉnh. Mọi vật thể
+bị bắn trúng khi và chỉ khi mọi cạnh được phủ bởi ít nhất một đỉnh đã chọn.
+Do đó đáp án là kích thước phủ đỉnh nhỏ nhất, và theo định lý König bằng kích
+thước ghép cực đại của đồ thị vừa dựng. Trong hình minh họa của slide, có bốn
+vật thể nhưng chỉ cần chọn hai đường thẳng là đủ.
+
+Nếu cần khôi phục chính tập đỉnh phủ nhỏ nhất, sau khi có một ghép cực đại ta
+có thể làm chuẩn như sau. Từ các đỉnh chưa ghép ở phía trái, đi theo cạnh chưa
+ghép từ trái sang phải và cạnh đã ghép từ phải sang trái, đánh dấu tập đỉnh
+đạt được là $Z$. Khi đó một phủ đỉnh nhỏ nhất là
+\[
+  (U\setminus Z)\cup (V\cap Z).
+\]
+
+\section{Phủ đường đi nhỏ nhất}
+
+Bài toán \term{phủ đường đi nhỏ nhất} yêu cầu chọn ít nhất số đường đi đơn,
+đôi một không giao nhau theo đỉnh, sao cho mỗi đỉnh của đồ thị được nằm trong
+đúng một đường đi. Trong ngữ cảnh chuẩn của công thức dưới đây, đồ thị ban đầu
+là một DAG.
+
+Với DAG $G=(V,E)$, tách mỗi đỉnh $x$ thành hai bản sao $x_L$ và $x_R$, rồi
+dựng đồ thị hai phía
+\[
+  U=\{x_L\mid x\in V\},\qquad
+  W=\{x_R\mid x\in V\}.
+\]
+Với mỗi cung $x\to y$ của DAG, thêm cạnh $x_Ly_R$ vào đồ thị hai phía. Khi
+chọn một cạnh trong matching, ta hiểu là nối $x$ đứng trước $y$ trên một đường
+đi. Vì matching không dùng chung đỉnh, mỗi đỉnh trong DAG có nhiều nhất một
+cung được chọn đi ra và nhiều nhất một cung được chọn đi vào; do đó các cạnh
+được chọn tạo thành một họ đường đi rời nhau.
+
+Ban đầu nếu không chọn cạnh nào, ta có $|V|$ đường đi đơn lẻ. Mỗi cạnh ghép
+được chọn nối hai đường đi lại với nhau và làm số đường giảm đi $1$. Vì vậy:
+\[
+  \text{phủ đường đi nhỏ nhất}
+  =
+  |V|-\text{kích thước ghép cực đại}.
+\]
+
+\section{Tập độc lập lớn nhất trong đồ thị hai phía}
+
+Một \term{tập độc lập} là một tập đỉnh sao cho không có cạnh nào nối hai đỉnh
+cùng nằm trong tập đó. Bài toán hỏi số đỉnh nhiều nhất có thể chọn.
+
+Phủ đỉnh và tập độc lập là hai khái niệm bù nhau trong mọi đồ thị. Nếu $C$ là
+một phủ đỉnh, thì $V\setminus C$ là tập độc lập: nếu tồn tại một cạnh có cả hai
+đầu mút trong $V\setminus C$, cạnh đó không được $C$ phủ. Ngược lại, nếu $I$
+là tập độc lập, thì $V\setminus I$ là phủ đỉnh: mỗi cạnh phải có ít nhất một
+đầu mút không thuộc $I$.
+
+Do đó trong đồ thị hai phía,
+\[
+  \alpha(G)
+  =
+  |V|-\tau(G)
+  =
+  |V|-\nu(G),
+\]
+trong đó $\alpha(G)$ là kích thước tập độc lập lớn nhất, $\tau(G)$ là kích
+thước phủ đỉnh nhỏ nhất, và $\nu(G)$ là kích thước ghép cực đại. Nói cách
+khác, với đồ thị hai phía, đáp án tập độc lập lớn nhất bằng tổng số đỉnh trừ
+đi kích thước ghép cực đại.
+
+\section{Ghép hoàn hảo tối ưu trong đồ thị hai phía}
+
+Xét một đồ thị hai phía đầy đủ với hai phía $X$ và $Y$ có cùng kích thước $n$.
+Mỗi cạnh $(i,j)$ có trọng số $w_{ij}$, trọng số có thể âm. Bài toán
+\term{ghép hoàn hảo tối ưu} yêu cầu chọn một ghép hoàn hảo có tổng trọng số
+lớn nhất.
+
+Thuật toán kinh điển cho bài toán cực đại này là \term{Kuhn--Munkres}, thường
+gọi tắt là KM. Hai khái niệm chính là nhãn khả thi và đồ thị bằng nhau.
+
+Một hệ \term{nhãn khả thi} gồm các giá trị $L_x(i)$ với $i\in X$ và $L_y(j)$
+với $j\in Y$ sao cho
+\[
+  L_x(i)+L_y(j)\ge w_{ij}
+  \qquad\text{với mọi }i,j.
+\]
+\term{Đồ thị bằng nhau} là đồ thị con gồm đúng các cạnh thỏa
+\[
+  L_x(i)+L_y(j)=w_{ij}.
+\]
+
+Nếu đồ thị bằng nhau có một ghép hoàn hảo, thì ghép đó là tối ưu trong đồ thị
+ban đầu. Thật vậy, với mọi ghép hoàn hảo $M$ ta có
+\[
+  \sum_{(i,j)\in M} w_{ij}
+  \le
+  \sum_{(i,j)\in M} \bigl(L_x(i)+L_y(j)\bigr)
+  =
+  \sum_i L_x(i)+\sum_j L_y(j).
+\]
+Nếu $M$ nằm hoàn toàn trong đồ thị bằng nhau, bất đẳng thức trở thành đẳng
+thức, nên không ghép hoàn hảo nào có tổng trọng số lớn hơn $M$.
+
+Khung thuật toán KM như sau:
+\begin{enumerate}
+  \item Khởi tạo nhãn khả thi, thường đặt
+  \[
+    L_x(i)=\max_j w_{ij},\qquad L_y(j)=0.
+  \]
+  \item Trên đồ thị bằng nhau hiện tại, dùng thuật toán Hungary để tìm ghép.
+  \item Nếu đã có ghép hoàn hảo thì dừng.
+  \item Nếu chưa, điều chỉnh nhãn để vẫn giữ điều kiện
+  $L_x(i)+L_y(j)\ge w_{ij}$ nhưng làm đồ thị bằng nhau có thêm cạnh, rồi quay
+  lại bước tìm ghép.
+\end{enumerate}
+
+Trong cách cài đặt chuẩn $O(n^3)$, khi một lần tìm đường tăng bị kẹt, ta xét
+tập đỉnh $S\subseteq X$ và $T\subseteq Y$ đã được thăm trong cây luân phiên,
+rồi lấy
+\[
+  \Delta=\min_{i\in S,\ j\notin T}
+  \bigl(L_x(i)+L_y(j)-w_{ij}\bigr).
+\]
+Sau đó giảm $L_x(i)$ đi $\Delta$ với mọi $i\in S$ và tăng $L_y(j)$ thêm
+$\Delta$ với mọi $j\in T$. Các cạnh đang bằng nhau trong cây vẫn bằng nhau,
+điều kiện khả thi vẫn đúng, và ít nhất một cạnh mới từ $S$ sang $Y\setminus T$
+trở thành cạnh bằng nhau. Lặp lại quá trình này cho đến khi thu được ghép hoàn
+hảo.
+
+Nếu bài toán yêu cầu tổng trọng số nhỏ nhất, có thể đổi dấu mọi trọng số rồi
+chạy thuật toán cực đại. Nếu đồ thị không đầy đủ, ta có thể thêm các cạnh giả
+với trọng số rất nhỏ cho bài toán cực đại, hoặc rất lớn cho bài toán cực tiểu,
+miễn là cách thêm cạnh không làm sai ý nghĩa nghiệm hợp lệ.
+
+\section{Ghi chú về đồ thị tổng quát}
+
+Các thuật toán ở trên khai thác mạnh cấu trúc hai phía: cạnh luôn đi từ trái
+sang phải, đường tăng có dạng luân phiên rõ ràng, và các định lý như König
+được dùng trực tiếp. Nếu bài toán là ghép cực đại trong đồ thị tổng quát, ta
+không thể dùng nguyên các thuật toán này; thuật toán kinh điển khi đó là
+thuật toán Blossom.
+
+Các slide gốc có nhắc đến mã nguồn đính kèm cho Hungary, Hopcroft--Karp và KM,
+nhưng phần đính kèm không nằm trong nội dung văn bản trích xuất từ PDF. Vì vậy
+bản ghi chú này chỉ trình bày ý tưởng, định lý và khung cài đặt tự chứa.
+
+\end{document}

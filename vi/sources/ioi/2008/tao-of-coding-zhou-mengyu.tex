@@ -1,0 +1,210 @@
+% Vietnamese translation for OI Public Library
+% Source-File: IOI中国国家候选队论文/2008/Day1/5.周梦宇《码之道——浅谈信息学竞赛中的编码与译码问题》/码之道.pptx
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\permrank}{\operatorname{rank}}
+
+\title{Đạo của mã\\{\large Bàn về mã hóa và giải mã trong thi tin học}}
+\author{Zhou Mengyu (Moony Chou)\\Trường Trung học số 7 Thành Đô}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{The Tao of Coding}
+\sourcepath{IOI 2008 / Zhou Mengyu / The Tao of Coding}
+
+\section{Thông tin và mã hóa}
+
+Thông tin hiện diện ở khắp nơi dưới dạng các bit nhỏ bé \(0\) và \(1\).
+Bài báo kinh điển \emph{The Mathematical Theory of Communication} của
+Claude E. Shannon đặt nền móng cho lý thuyết thông tin. Điện báo, điện
+thoại, phát thanh, điều khiển từ xa, radar và nhiều hệ thống khác đều có
+thể được nhìn như các hệ truyền thông.
+
+Một mô hình truyền thông cơ bản gồm:
+\[
+  \text{nguồn tin}
+  \longrightarrow
+  \text{bộ mã hóa}
+  \longrightarrow
+  \text{kênh}
+  \longrightarrow
+  \text{bộ giải mã}
+  \longrightarrow
+  \text{đích nhận}.
+\]
+Trong quá trình truyền, nguồn nhiễu có thể tác động lên tín hiệu trong kênh.
+Vì thế ta thường tách các nhiệm vụ thành mã hóa nguồn, mã hóa mật mã, mã hóa
+kênh, rồi ở phía nhận thực hiện giải mã kênh, giải mật mã và giải mã nguồn.
+
+Trong ngữ cảnh thi tin học, ``mã hóa'' thường là biến một đối tượng tổ hợp
+thành một số thứ tự hoặc một biểu diễn ngắn gọn; ``giải mã'' là dựng lại đối
+tượng từ số thứ tự hoặc biểu diễn ấy.
+
+\section{Ví dụ: thứ tự từ điển của hoán vị}
+
+Cho một tập ký tự \(S\), với giả thiết \(\lvert S\rvert! < 2^{63}\).
+Xét hai bài toán:
+\begin{enumerate}
+  \item Tìm hoán vị đứng thứ \(k\) theo thứ tự từ điển trong tất cả các hoán
+  vị của \(S\).
+  \item Cho một hoán vị của \(S\), hỏi nó đứng thứ mấy theo thứ tự từ điển.
+\end{enumerate}
+
+Cách trực tiếp là sắp xếp các phần tử của \(S\) để lấy hoán vị nhỏ nhất theo
+thứ tự từ điển, rồi liên tục sinh hoán vị kế tiếp bằng thuật toán
+\texttt{next\_permutation}. Với bài toán giải mã, gọi thuật toán \(k-1\) lần
+sẽ thu được chuỗi cần tìm. Với bài toán mã hóa, ta phải sinh liên tiếp và so
+sánh cho đến khi gặp chuỗi đã cho.
+
+Độ phức tạp của cách này là \(\Oh(\lvert S\rvert k)\), trong khi \(k\) có
+thể lớn đến \(\lvert S\rvert!\).
+
+\subsection{\texorpdfstring{\texttt{next\_permutation}}{next permutation}}
+
+Thuật toán sinh hoán vị kế tiếp có thể viết như sau:
+\begin{enumerate}
+  \item Với chuỗi \(s\), tìm từ phải sang trái chỉ số đầu tiên \(i\) thỏa
+  \(s_i < s_{i+1}\).
+  \item Đổi \(s_i\) với phần tử nhỏ nhất ở bên phải nó nhưng vẫn lớn hơn
+  \(s_i\).
+  \item Đảo ngược hậu tố đứng sau vị trí \(i\).
+\end{enumerate}
+Mỗi lần sinh mất \(\Oh(\lvert s\rvert)\). Thuật toán này rất tiện dụng, nhưng
+không đủ khi ta cần nhảy thẳng đến một thứ hạng rất lớn.
+
+\section{Tư tưởng đếm theo lớp}
+
+Để mã hóa một chuỗi, tức tìm thứ hạng của nó, ta đang hỏi: ``có bao nhiêu đối
+tượng không lớn hơn \(x\)?'' Đây là một bài toán đếm. Thứ tự từ điển được
+quyết định bởi vị trí đầu tiên mà hai chuỗi khác nhau, nên ta có thể phân lớp
+theo từng ký tự từ trái sang phải và cộng dồn số phần tử của các lớp nhỏ hơn.
+
+Ví dụ với hoán vị \(42153\) của tập \(\{1,2,3,4,5\}\):
+\[
+\begin{array}{c|c|c}
+\text{tiền tố nhỏ hơn} & \text{số lựa chọn} & \text{số hoán vị} \\
+\hline
+1????,\ 2????,\ 3???? & 3 & 3\cdot 4! = 72 \\
+41??? & 1 & 1\cdot 3! = 6 \\
+42135 & 2 & 2\cdot 0! = 2
+\end{array}
+\]
+Vì vậy có \(72+6+2=80\) hoán vị đứng trước \(42153\) nếu đánh số từ \(0\).
+Nếu đánh số từ \(1\), thứ hạng là \(81\).
+
+Quá trình giải mã thứ hạng \(80\) làm ngược lại. Trước hết mỗi lớp
+\(1????,2????,3????,4????\) có \(4!=24\) phần tử. Tổng dồn lần lượt là
+\(24,48,72,96\), nên tiền tố đầu tiên là \(4\). Sau đó xét các lớp
+\(41???,42???,\ldots\); mỗi lớp còn \(3!=6\) phần tử, và ta tiếp tục cho đến
+khi dựng xong toàn bộ chuỗi.
+
+Nếu độ dài chuỗi cần tìm là \(n\), kích thước tập ký tự là \(m\), thì mỗi vị
+trí có thể phải cộng dồn qua tối đa \(m\) ký tự. Nếu thao tác đếm cho từng
+lớp mất \(\Oh(m)\), tổng thời gian là
+\[
+  \Oh(nm^2).
+\]
+Con số này tốt hơn rất nhiều so với duyệt tuần tự \(\Oh(n\cdot n!)\).
+
+\section{Các công cụ thường gặp}
+
+Các bài toán mã hóa và giải mã trong OI thường dùng phối hợp nhiều nhóm ý
+tưởng:
+\begin{itemize}
+  \item số học và đếm tổ hợp, ví dụ \emph{Twofive} trong IOI 2001 hoặc
+  \emph{Hexadecimal Numbers} trong CEOI 1997;
+  \item quy hoạch động truy hồi, liệt kê, tìm kiếm, sắp xếp, tham lam và xây
+  dựng, ví dụ \emph{CUDAK}, \emph{Zip}, hoặc \emph{A decorative fence};
+  \item các cấu trúc dữ liệu đặc biệt như heap và cây Fenwick.
+\end{itemize}
+
+Một số ứng dụng tiêu biểu là mã Huffman, mã Gray, mã Prüfer và hàm băm.
+
+\section{\texorpdfstring{Mã Prüfer}{Mã Prüfer}}
+
+Một \term{cây gán nhãn} là cây có \(n\) đỉnh được gán nhãn từ \(1\) đến
+\(n\). Định lý Cayley nói rằng số cây gán nhãn khác nhau trên \(n\) đỉnh là
+\[
+  n^{n-2}.
+\]
+Năm 1918, Heinz Prüfer đưa ra một chứng minh xây dựng khác thông qua mã
+Prüfer: một song ánh giữa cây gán nhãn \(n\) đỉnh và các dãy số nguyên độ dài
+\(n-2\), trong đó mỗi phần tử thuộc đoạn \([1,n]\).
+
+\subsection{Mã hóa}
+
+Với cây gán nhãn \(T\) có \(n\) đỉnh, lặp lại thao tác sau cho đến khi cây
+chỉ còn hai đỉnh:
+\begin{enumerate}
+  \item chọn lá có nhãn nhỏ nhất trong cây hiện tại;
+  \item ghi lại nhãn của đỉnh kề với lá đó;
+  \item xóa lá khỏi cây.
+\end{enumerate}
+Nhãn ghi được ở lần xóa thứ \(i\) chính là phần tử thứ \(i\) của dãy Prüfer.
+
+Ví dụ trên slide cho một cây có \(8\) đỉnh và dãy Prüfer
+\[
+  (2,1,3,3,5,7).
+\]
+Các ngoặc trên hình gốc đánh dấu tuần tự những lá bị xóa trong quá trình mã
+hóa.
+
+\subsection{Giải mã}
+
+Cho dãy Prüfer
+\[
+  (a_1,a_2,\ldots,a_{n-2}).
+\]
+Ta thêm một phần tử phụ \(n\) ở cuối để dễ mô tả, rồi tại bước \(i\), chọn
+nhãn nhỏ nhất chưa bị xóa và không xuất hiện trong phần còn lại
+\[
+  a_i,a_{i+1},\ldots,a_{n-2}.
+\]
+Gọi nhãn đó là \(b_i\). Nối cạnh \((b_i,a_i)\), rồi đánh dấu \(b_i\) là đã
+bị xóa. Sau \(n-2\) bước, hai nhãn còn lại được nối với nhau. Cách làm này
+khôi phục đúng cây ban đầu.
+
+\subsection{Ứng dụng đếm cây}
+
+Bài \emph{Tree Counting} trong HNOI 2004 Day 2 có dạng: cho một cây trên
+\(n\) đỉnh \(v_1,v_2,\ldots,v_n\), biết bậc của \(v_i\) là \(d_i\). Hỏi có
+bao nhiêu cây khác nhau thỏa điều kiện này?
+
+Trong mã Prüfer của một cây gán nhãn, nhãn \(i\) xuất hiện đúng
+\(d_i-1\) lần. Do đó số cây gán nhãn \(n\) đỉnh với dãy bậc đã biết là số
+cách sắp xếp đa tập gồm \(d_i-1\) bản sao của nhãn \(i\):
+\[
+  \frac{(n-2)!}{\prod_{i=1}^{n}(d_i-1)!},
+\]
+với điều kiện \(\sum_{i=1}^{n} d_i = 2n-2\) và mọi \(d_i\ge 1\).
+
+\section{Một vài ứng dụng khác của mã hóa}
+
+Mã hóa và giải mã xuất hiện trong rất nhiều hệ thống thực tế:
+\begin{itemize}
+  \item hệ mật mã khóa công khai RSA;
+  \item chuẩn nén ảnh JPEG;
+  \item MD5 và SHA;
+  \item ISBN, mã bưu chính và số điện thoại;
+  \item mã kiểm tra vòng CRC;
+  \item mã hóa độ dài loạt, mã MH và thuật toán nén LZW;
+  \item truyền thông mạng, liên lạc an toàn và kiểm soát lỗi.
+\end{itemize}
+
+\section{Kết luận}
+
+Mã hóa và giải mã là một nguồn ý tưởng quan trọng trong xử lý thông tin.
+Trong thi tin học, chúng thường biến bài toán thành một câu hỏi đếm, một
+song ánh tổ hợp, hoặc một cách biểu diễn giúp chuyển đổi giữa đối tượng và
+số thứ tự. Khi gặp một bài toán có ``thứ hạng'', ``khôi phục'', ``mã'', hoặc
+``biểu diễn'', nên nghĩ đến việc phân lớp đối tượng, đếm lớp và xây dựng song
+ánh thích hợp.
+
+Tác giả kết thúc bài trình bày bằng lời cảm ơn gia đình, thầy Zhang Junliang,
+các huấn luyện viên, bạn bè và CCF vì cơ hội được trình bày.
+
+\end{document}

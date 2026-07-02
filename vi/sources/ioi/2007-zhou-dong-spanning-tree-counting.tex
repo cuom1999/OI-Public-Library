@@ -1,0 +1,825 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2007/day2/9.周冬《生成树的计数及其应用》.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\mat}[1]{\begin{pmatrix}#1\end{pmatrix}}
+\newcommand{\minor}[3]{#1\!\left(\begin{matrix}#2\\#3\end{matrix}\right)}
+
+\title{Đếm cây khung và ứng dụng}
+\author{Zhou Dong\\An Huy}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Counting spanning trees and its applications}
+\sourcepath{IOI China candidate team papers / 2007 / day 2 / Zhou Dong}
+
+\begin{abstract}
+Trong các kỳ thi tin học, ta thường gặp các bài toán tối ưu hóa liên quan đến
+cây khung, chẳng hạn cây khung nhỏ nhất, nhưng ít khi gặp bài toán đếm cây
+khung và các vấn đề liên quan. Thật ra, đếm cây khung là một chủ đề rất có ý
+nghĩa và có ứng dụng rộng rãi trong nhiều phương diện. Bài viết bắt đầu từ
+một ví dụ trong thi tin học: trước hết giới thiệu một thuật toán quy hoạch
+động có độ phức tạp mũ, sau đó trình bày các khái niệm và tính chất cơ bản
+của định thức. Trên cơ sở đó ta đưa vào định lý Matrix-Tree, đồng thời so
+sánh với một bài toán toán học để làm rõ tư tưởng toán học ẩn trong định lý.
+Cuối cùng, bài viết dùng một vài ví dụ để giới thiệu ứng dụng của việc đếm cây
+khung trong thi tin học và đưa ra tổng kết.
+\end{abstract}
+
+\paragraph{Từ khóa.}
+Đếm cây khung; định lý Matrix-Tree.
+
+\section{Bài toán được đặt ra}
+
+\subsection*{Ví dụ 1: Highways (SPOJ p104)}
+
+Một quốc gia có \(n\) thành phố, đánh số từ \(1\) đến \(n\). Giữa một số cặp
+thành phố có thể xây đường cao tốc. Bây giờ cần chọn xây một số đường cao tốc
+để tạo thành một mạng giao thông. Nhiệm vụ là tính có bao nhiêu phương án sao
+cho giữa hai thành phố bất kỳ có đúng một đường đi.
+
+Quy mô dữ liệu: \(1\le n\le 12\).
+
+\subsubsection*{Phân tích}
+
+Ta có thể chuyển bài toán sang mô hình đồ thị. Vì giữa hai đỉnh bất kỳ có đúng
+một đường đi, kết quả cuối cùng phải là một cây khung của đồ thị ban đầu. Do
+đó bài toán trở thành: cho một đồ thị vô hướng \(G\), hãy tính số cây khung
+\(t(G)\) của nó. Phải làm thế nào?
+
+Qua phân tích, có thể thu được một thuật toán quy hoạch động với độ phức tạp
+\(\Oh(3^n n^2)\). Với giới hạn nhỏ của bài gốc, cách này đủ dùng. Nhưng khi
+\(n\) lớn hơn thì không còn khả thi. Có thuật toán tốt hơn không? Câu trả lời
+là có. Trước khi giới thiệu thuật toán, ta cần học một số kiến thức chuẩn bị.
+
+\section{Kiến thức chuẩn bị}
+
+Dưới đây ta giới thiệu một công cụ đại số quan trọng: định thức. Để định nghĩa
+định thức, trước hết ta xét khái niệm hoán vị.
+
+\subsection{Hoán vị}
+
+\paragraph{Định nghĩa 1.}
+Một dãy có thứ tự \(i_1i_2\cdots i_n\) tạo bởi các số \(1,2,\ldots,n\) được gọi
+là một hoán vị của \(1,2,\ldots,n\).
+
+Theo định nghĩa, \(i_1,i_2,\ldots,i_n\) biểu diễn \(n\) số tự nhiên khác nhau,
+và mỗi số trong đó đều thuộc tập
+\[
+  S_n=\{1,2,\ldots,n\}.
+\]
+Nói cách khác,
+\[
+  1\mapsto i_1,\quad 2\mapsto i_2,\quad \ldots,\quad n\mapsto i_n
+\]
+định nghĩa một song ánh từ \(S_n\) đến chính nó. Song ánh này có thể ký hiệu là
+\[
+  \mat{1 & 2 & \cdots & n\\ i_1 & i_2 & \cdots & i_n},
+\]
+và được gọi là một phép thế. Song ánh trên cũng có thể viết lại dưới dạng
+\[
+  j_1\mapsto i_{j_1},\quad j_2\mapsto i_{j_2},\quad \ldots,\quad
+  j_n\mapsto i_{j_n},
+\]
+trong đó \(j_1j_2\cdots j_n\) là một hoán vị của \(1,2,\ldots,n\). Vì vậy song
+ánh này cũng có thể ký hiệu là
+\[
+  \mat{j_1 & j_2 & \cdots & j_n\\
+       i_{j_1} & i_{j_2} & \cdots & i_{j_n}}.
+\]
+Do đó, với mọi hoán vị \(j_1j_2\cdots j_n\) của \(1,2,\ldots,n\), ta định nghĩa
+\[
+  \mat{1 & 2 & \cdots & n\\ i_1 & i_2 & \cdots & i_n}
+  =
+  \mat{j_1 & j_2 & \cdots & j_n\\
+       i_{j_1} & i_{j_2} & \cdots & i_{j_n}}.
+\]
+
+Lấy một hoán vị \(i_1i_2\cdots i_n\). Nếu đổi chỗ hai số tự nhiên kề nhau
+\(i_{j-1}\) và \(i_j\), ta nhận được hoán vị mới
+\[
+  i_1i_2\cdots i_{j-2}i_ji_{j-1}i_{j+1}\cdots i_n.
+\]
+Hoán vị này gọi là hoán vị sau một phép đổi chỗ của hoán vị ban đầu, và thao
+tác đó gọi là một phép đổi chỗ. Rõ ràng mọi hoán vị đều có thể biến thành hoán
+vị chuẩn \(12\cdots n\) sau một số phép đổi chỗ. Dù chọn cách đổi chỗ nào, với
+hoán vị \(i_1i_2\cdots i_n\) cho trước, số lần đổi chỗ có tính chất quan trọng
+sau.
+
+\paragraph{Định lý 1.}
+Khi biến một hoán vị bất kỳ \(i_1i_2\cdots i_n\) thành hoán vị chuẩn
+\(12\cdots n\) bằng các phép đổi chỗ, tính chẵn lẻ của số phép đổi chỗ cần dùng
+không phụ thuộc vào cách đổi chỗ.
+
+Dựa vào định lý này, ta có định nghĩa sau.
+
+\paragraph{Định nghĩa 2.}
+Một hoán vị \(i_1i_2\cdots i_n\) được gọi là hoán vị chẵn (tương ứng lẻ) nếu
+tồn tại một cách dùng số chẵn (tương ứng lẻ) phép đổi chỗ để biến nó thành
+hoán vị chuẩn \(12\cdots n\).
+
+Giả sử hoán vị \(i_1i_2\cdots i_n\) biến thành \(12\cdots n\) sau \(t\) phép đổi
+chỗ. Khi đó giá trị \((-1)^t\) không phụ thuộc vào cách đổi chỗ. Ta viết giá
+trị này là
+\[
+  \delta\!\binom{12\cdots n}{i_1i_2\cdots i_n}=(-1)^t
+  =
+  \begin{cases}
+    1, & \text{khi } i_1i_2\cdots i_n
+          \text{ là hoán vị chẵn của } 1,2,\ldots,n,\\
+   -1, & \text{khi } i_1i_2\cdots i_n
+          \text{ là hoán vị lẻ của } 1,2,\ldots,n.
+  \end{cases}
+\]
+
+Một hoán vị của \(n\) số tự nhiên cố định \(1,2,\ldots,n\) có thể xem là một
+song ánh từ \(S_n\) đến chính nó. Ta mở rộng khái niệm này cho một tập bất kỳ
+\[
+  S=\{a_1,a_2,\ldots,a_n\}.
+\]
+Với song ánh từ \(S\) đến chính nó
+\[
+  a_1\mapsto a_{i_1},\quad a_2\mapsto a_{i_2},\quad \ldots,\quad
+  a_n\mapsto a_{i_n},
+\]
+dãy \(a_{i_1}a_{i_2}\cdots a_{i_n}\) được gọi là một hoán vị của
+\(a_1,a_2,\ldots,a_n\). Dễ thấy điều kiện cần và đủ để
+\(a_{i_1}a_{i_2}\cdots a_{i_n}\) là một hoán vị của
+\(a_1,a_2,\ldots,a_n\) là \(i_1i_2\cdots i_n\) là một hoán vị của
+\(1,2,\ldots,n\).
+
+Tương tự, tính chẵn lẻ của tổng số phép đổi chỗ cần dùng để biến
+\(a_{i_1}a_{i_2}\cdots a_{i_n}\) thành hoán vị chuẩn
+\(a_1a_2\cdots a_n\) cũng không phụ thuộc vào cách đổi chỗ. Do đó ta đặt
+\[
+  \delta\!\binom{a_1a_2\cdots a_n}{a_{i_1}a_{i_2}\cdots a_{i_n}}
+  =(-1)^t
+  =
+  \begin{cases}
+    1, & \text{khi } a_{i_1}a_{i_2}\cdots a_{i_n}
+          \text{ là hoán vị chẵn của } a_1,a_2,\ldots,a_n,\\
+   -1, & \text{khi } a_{i_1}a_{i_2}\cdots a_{i_n}
+          \text{ là hoán vị lẻ của } a_1,a_2,\ldots,a_n.
+  \end{cases}
+\]
+Ở đây \(t\) là tổng số phép đổi chỗ trong một cách biến
+\(a_{i_1}a_{i_2}\cdots a_{i_n}\) thành \(a_1a_2\cdots a_n\).
+
+\subsection{Định thức}
+
+Định thức cấp một là hàm của một biến \(a_{11}\):
+\[
+  \det(a_{11})=a_{11}.
+\]
+Nó cũng có thể viết thành
+\[
+  \det(a_{11})=\sum_{\mat{1\\1}}
+  \delta\!\binom{1}{1}a_{11}.
+\]
+
+Định thức cấp hai là hàm của bốn biến \(a_{11},a_{12},a_{21},a_{22}\):
+\[
+  \det\mat{a_{11} & a_{12}\\ a_{21} & a_{22}}
+  =a_{11}a_{22}-a_{12}a_{21}.
+\]
+Cũng có thể viết nó thành
+\[
+  \det\mat{a_{11} & a_{12}\\ a_{21} & a_{22}}
+  =
+  \sum_{\mat{1&2\\ i_1&i_2}}
+  \delta\!\binom{12}{i_1i_2}a_{1i_1}a_{2i_2}.
+\]
+
+Định thức cấp ba là hàm của chín biến \(a_{ij}\), \(i,j=1,2,3\):
+\[
+\begin{aligned}
+  \det\mat{a_{11}&a_{12}&a_{13}\\
+           a_{21}&a_{22}&a_{23}\\
+           a_{31}&a_{32}&a_{33}}
+  &=
+  a_{11}a_{22}a_{33}+a_{12}a_{23}a_{31}+a_{13}a_{21}a_{32}\\
+  &\quad
+  -a_{13}a_{22}a_{31}-a_{12}a_{21}a_{33}-a_{11}a_{23}a_{32}.
+\end{aligned}
+\]
+Tương tự, nó có thể viết là
+\[
+  \det\mat{a_{11}&a_{12}&a_{13}\\
+           a_{21}&a_{22}&a_{23}\\
+           a_{31}&a_{32}&a_{33}}
+  =
+  \sum_{\mat{1&2&3\\ i_1&i_2&i_3}}
+  \delta\!\binom{123}{i_1i_2i_3}
+  a_{1i_1}a_{2i_2}a_{3i_3}.
+\]
+
+Quan sát định nghĩa của định thức cấp một, hai, ba, ta nhận được định nghĩa
+tổng quát của định thức cấp \(n\).
+
+\paragraph{Định nghĩa 3.}
+Định thức của ma trận cấp \(n\) \(A=(a_{ij})\) là một số thực, ký hiệu
+\(\det A\), được định nghĩa bởi
+\[
+  \det A=
+  \sum_{\mat{1&2&\cdots&n\\ i_1&i_2&\cdots&i_n}}
+  \delta\!\binom{12\cdots n}{i_1i_2\cdots i_n}
+  a_{1i_1}a_{2i_2}\cdots a_{ni_n}.
+\]
+
+Định thức thường được ký hiệu bằng các dạng tương đương sau:
+\[
+  \det A
+  =
+  \det\mat{a_{11}&\cdots&a_{1n}\\
+           \vdots&       &\vdots\\
+           a_{n1}&\cdots&a_{nn}}
+  =
+  \left|\begin{matrix}
+    a_{11}&\cdots&a_{1n}\\
+    \vdots&       &\vdots\\
+    a_{n1}&\cdots&a_{nn}
+  \end{matrix}\right|
+  =|A|.
+\]
+
+Từ định nghĩa thấy rằng tính trực tiếp định thức bằng công thức trên là rất
+khó; chỉ khi bậc thấp mới có thể làm vậy. Để tính toán hiệu quả, trước hết cần
+suy ra một số tính chất cơ bản của định thức, rồi dùng các tính chất đó để
+biến định thức phức tạp thành định thức đơn giản, hoặc biến định thức bậc cao
+thành định thức bậc thấp.
+
+\paragraph{Tính chất 1.}
+Nếu \(A\) là ma trận cấp \(n\), thì
+\[
+  \det A^{\mathsf T}=\det A.
+\]
+Ý nghĩa quan trọng của tính chất này là: trong định thức, hàng và cột có vai
+trò bình đẳng. Chính xác hơn, mọi tính chất đúng cho hàng cũng đúng cho cột,
+và ngược lại.
+
+\paragraph{Tính chất 2.}
+Đổi chỗ hai hàng bất kỳ (hoặc hai cột bất kỳ) của định thức thì định thức đổi
+dấu.
+
+\paragraph{Hệ quả.}
+Nếu định thức có hai hàng (hoặc hai cột) giống nhau thì giá trị của định thức
+bằng \(0\).
+
+\paragraph{Tính chất 3.}
+Nhân một hàng (hoặc một cột) với số thực \(\lambda\), định thức nhận được bằng
+\(\lambda\) lần định thức ban đầu.
+
+\paragraph{Hệ quả.}
+Nếu định thức có hai hàng (hoặc hai cột) tỉ lệ với nhau thì giá trị bằng
+\(0\). Đặc biệt, nếu định thức có một hàng (hoặc một cột) toàn \(0\), giá trị
+định thức bằng \(0\).
+
+\paragraph{Tính chất 4.}
+Định thức tuyến tính theo từng hàng. Chẳng hạn, nếu hàng thứ \(j\) là tổng của
+hai hàng \((a_{j1},\ldots,a_{jn})\) và \((b_{j1},\ldots,b_{jn})\), thì
+\[
+\begin{aligned}
+&\left|\begin{matrix}
+a_{11}&\cdots&a_{1n}\\
+\vdots&&\vdots\\
+a_{j1}+b_{j1}&\cdots&a_{jn}+b_{jn}\\
+\vdots&&\vdots\\
+a_{n1}&\cdots&a_{nn}
+\end{matrix}\right| \\
+&\quad =
+\left|\begin{matrix}
+a_{11}&\cdots&a_{1n}\\
+\vdots&&\vdots\\
+a_{j1}&\cdots&a_{jn}\\
+\vdots&&\vdots\\
+a_{n1}&\cdots&a_{nn}
+\end{matrix}\right|
++
+\left|\begin{matrix}
+a_{11}&\cdots&a_{1n}\\
+\vdots&&\vdots\\
+b_{j1}&\cdots&b_{jn}\\
+\vdots&&\vdots\\
+a_{n1}&\cdots&a_{nn}
+\end{matrix}\right|.
+\end{aligned}
+\]
+Với cột cũng có tính chất tương tự.
+
+\paragraph{Hệ quả.}
+Nhân một hàng (hoặc một cột) bất kỳ với số thực \(\lambda\), rồi cộng vào hàng
+(hoặc cột) khác tương ứng, thì giá trị định thức không đổi. Ví dụ, khi
+\(j\ne 1\),
+\[
+\left|\begin{matrix}
+a_{11}+\lambda a_{j1}&\cdots&a_{1n}+\lambda a_{jn}\\
+a_{21}&\cdots&a_{2n}\\
+\vdots&&\vdots\\
+a_{n1}&\cdots&a_{nn}
+\end{matrix}\right|
+=
+\left|\begin{matrix}
+a_{11}&\cdots&a_{1n}\\
+a_{21}&\cdots&a_{2n}\\
+\vdots&&\vdots\\
+a_{n1}&\cdots&a_{nn}
+\end{matrix}\right|.
+\]
+
+Dưới đây là một phương pháp tính định thức. Trước hết, không khó chứng minh
+rằng với một ma trận tam giác,
+\[
+\left|\begin{matrix}
+a_{11}&0&\cdots&0\\
+a_{21}&a_{22}&\cdots&a_{2n}\\
+\vdots&\vdots&\ddots&\vdots\\
+a_{n1}&a_{n2}&\cdots&a_{nn}
+\end{matrix}\right|
+=
+\left|\begin{matrix}
+a_{11}&a_{12}&\cdots&a_{1n}\\
+0&a_{22}&\cdots&a_{2n}\\
+\vdots&\vdots&\ddots&\vdots\\
+0&a_{n2}&\cdots&a_{nn}
+\end{matrix}\right|
+=
+\prod_{i=1}^n a_{ii}.
+\]
+
+Xét định thức
+\[
+  \det B=
+  \left|\begin{matrix}
+  b_{11}&\cdots&b_{1n}\\
+  \vdots&&\vdots\\
+  b_{n1}&\cdots&b_{nn}
+  \end{matrix}\right|.
+\]
+Ta có thể biến \(B\) thành dạng tam giác trên, ký hiệu \(B'\), đồng thời ghi
+lại số lần đổi hàng là \(S\). Theo tính chất đổi hàng,
+\[
+  \det B=(-1)^S\det B'
+  =
+  (-1)^S
+  \left|\begin{matrix}
+  b'_{11}&b'_{12}&\cdots&b'_{1n}\\
+  0&b'_{22}&\cdots&b'_{2n}\\
+  \vdots&\ddots&\ddots&\vdots\\
+  0&\cdots&0&b'_{nn}
+  \end{matrix}\right|.
+\]
+Từ kết luận vừa nêu,
+\[
+  \det B=(-1)^S\prod_{i=1}^n b'_{ii}.
+\]
+
+Với ma trận \(A\), lấy \(2p\) số tự nhiên
+\[
+  1\le i_1<i_2<\cdots<i_p\le n,\qquad
+  1\le j_1<j_2<\cdots<j_p\le n.
+\]
+Trong \(A\), lấy các phần tử giao giữa các hàng \(i_1,i_2,\ldots,i_p\) và các
+cột \(j_1,j_2,\ldots,j_p\), giữ nguyên thứ tự ban đầu để tạo thành ma trận cấp
+\(p\). Định thức của ma trận này gọi là một định thức con cấp \(p\) của \(A\),
+ký hiệu
+\[
+  \minor{A}{i_1\ i_2\ \cdots\ i_p}{j_1\ j_2\ \cdots\ j_p}
+  =
+  \left|\begin{matrix}
+  a_{i_1j_1}&\cdots&a_{i_1j_p}\\
+  \vdots&&\vdots\\
+  a_{i_pj_1}&\cdots&a_{i_pj_p}
+  \end{matrix}\right|.
+\]
+
+Dựa trên định nghĩa này, ta giới thiệu một công thức rất quan trọng:
+công thức Binet--Cauchy.
+
+\paragraph{Định lý 8 (công thức Binet--Cauchy).}
+Giả sử \(A\) là ma trận \(p\times q\) và \(B\) là ma trận \(q\times p\). Khi đó
+\[
+  \det(AB)=
+  \begin{cases}
+    0, & p>q,\\
+    \det A\det B, & p=q,\\
+    \displaystyle
+    \sum_{1\le j_1<\cdots<j_p\le q}
+    \minor{A}{1\ 2\ \cdots\ p}{j_1\ j_2\ \cdots\ j_p}
+    \minor{B}{j_1\ j_2\ \cdots\ j_p}{1\ 2\ \cdots\ p},
+    & p<q.
+  \end{cases}
+\]
+Đặc biệt, với ma trận vuông \(A\),
+\[
+  \det(AA^{\mathsf T})=(\det A)^2.
+\]
+
+\section{Phương pháp mới}
+
+\subsection{Giới thiệu}
+
+Bây giờ ta giới thiệu một phương pháp mới: định lý Matrix-Tree, còn gọi là
+định lý ma trận-cây Kirchhoff. Đây là một trong những công cụ mạnh nhất để xử
+lý bài toán đếm cây khung. Định lý này được Kirchhoff chứng minh lần đầu vào
+năm 1847. Trước khi phát biểu định lý, ta làm rõ vài khái niệm.
+
+\begin{enumerate}
+  \item Ma trận bậc của \(G\), ký hiệu \(D[G]\), là một ma trận \(n\times n\).
+  Nó thỏa mãn: khi \(i\ne j\), \(d_{ij}=0\); khi \(i=j\), \(d_{ij}\) bằng bậc
+  của đỉnh \(v_i\).
+
+  \item Ma trận kề của \(G\), ký hiệu \(A[G]\), cũng là một ma trận
+  \(n\times n\). Nó thỏa mãn: nếu giữa \(v_i\) và \(v_j\) có cạnh nối trực tiếp
+  thì \(a_{ij}=1\), ngược lại \(a_{ij}=0\).
+\end{enumerate}
+
+Ta định nghĩa ma trận Kirchhoff của \(G\), còn gọi là toán tử Laplace, bởi
+\[
+  C[G]=D[G]-A[G].
+\]
+Định lý Matrix-Tree có thể phát biểu như sau: số cây khung khác nhau của
+\(G\) bằng trị tuyệt đối của định thức của bất kỳ định thức con chính cấp
+\(n-1\) nào của ma trận Kirchhoff \(C[G]\). Ở đây, định thức con chính cấp
+\(n-1\) nghĩa là: với \(r\), \(1\le r\le n\), xóa đồng thời hàng thứ \(r\) và
+cột thứ \(r\) của \(C[G]\), thu được ma trận mới ký hiệu \(C_r[G]\).
+
+Ta xét một ví dụ để minh họa định lý Matrix-Tree. Giả sử \(G\) là đồ thị vô
+hướng có \(5\) đỉnh như Hình a.
+
+\begin{center}
+  \small Hình a: đồ thị có các cạnh
+  \((1,2),(1,3),(2,3),(2,4),(3,5),(4,5)\).
+\end{center}
+
+Theo định nghĩa, ma trận Kirchhoff \(C[G]\) của nó là
+\[
+  C[G]=
+  \mat{
+   2&-1&-1& 0& 0\\
+  -1& 3&-1&-1& 0\\
+  -1&-1& 3& 0&-1\\
+   0&-1& 0& 2&-1\\
+   0& 0&-1&-1& 2
+  }.
+\]
+Lấy \(r=2\), ta có
+\[
+  C_2[G]=
+  \mat{
+   2&-1& 0& 0\\
+  -1& 3& 0&-1\\
+   0& 0& 2&-1\\
+   0&-1&-1& 2
+  }.
+\]
+Tính định thức:
+\[
+  \det C_2[G]
+  =
+  \left|\begin{matrix}
+   2&-1& 0& 0\\
+  -1& 3& 0&-1\\
+   0& 0& 2&-1\\
+   0&-1&-1& 2
+  \end{matrix}\right|
+  =11.
+\]
+Vì vậy đồ thị này có \(11\) cây khung.
+
+\begin{center}
+  \small Hình b: mười một cây khung khác nhau của đồ thị trong Hình a.
+\end{center}
+
+Định lý này trông rất ``kỳ diệu'': chỉ cần tính định thức của một ma trận là
+có thể thu được số cây khung khác nhau của đồ thị. Vì sao lại như vậy? Ta thử
+chứng minh định lý.
+
+\subsection{Chứng minh}
+
+Không khó nhận ra trọng tâm của định lý là ma trận Kirchhoff của đồ thị. Ma
+trận này có tính chất đặc biệt gì? Qua phân tích, ta thấy:
+\begin{enumerate}
+  \item Với mọi đồ thị \(G\), định thức của ma trận Kirchhoff \(C\) luôn bằng
+  \(0\), vì tổng các phần tử trên mỗi hàng và trên mỗi cột của \(C\) đều bằng
+  \(0\).
+
+  \item Nếu \(G\) không liên thông, thì định thức của mọi định thức con chính
+  của ma trận Kirchhoff \(C\) đều bằng \(0\).
+\end{enumerate}
+
+Chứng minh tính chất thứ hai như sau. Nếu trong \(G\) có
+\(k\), \(k>1\), thành phần liên thông \(G_1,G_2,\ldots,G_k\), ta có thể sắp xếp
+lại các hàng và cột của \(C\) sao cho các đỉnh thuộc \(G_1\) xuất hiện trước,
+rồi đến \(G_2\), v.v. Theo tính chất đổi hàng, giả sử ta thực hiện tổng cộng
+\(t\) lần đổi hàng; hiển nhiên cũng cần \(t\) lần đổi cột. Tổng số lần đổi là
+\(2t\), nên dấu của định thức không đổi.
+
+Sau khi sắp xếp lại, ma trận có dạng khối chéo:
+\[
+  \mat{
+  C[G_1]&0&\cdots&0\\
+  0&C[G_2]&\cdots&0\\
+  \vdots&\vdots&\ddots&\vdots\\
+  0&0&\cdots&C[G_k]
+  }.
+\]
+Các khối \(C[G_i]\) tương ứng với các thành phần liên thông. Ngoài các khối
+này đều là \(0\), vì giữa hai thành phần liên thông khác nhau không có cạnh.
+
+Nếu \(r\) là đỉnh thứ \(j\) trong thành phần liên thông thứ \(i\), thì
+\[
+  \det C_r[G]
+  =
+  \det C[G_1]\det C[G_2]\cdots
+  \det C_j[G_i]\cdots
+  \det C[G_k]
+  =0.
+\]
+
+Tính chất tiếp theo là:
+
+\begin{enumerate}[resume]
+  \item Nếu \(G\) là một cây, thì định thức của mọi định thức con chính cấp
+  \(n-1\) của ma trận Kirchhoff \(C\) đều bằng \(1\).
+\end{enumerate}
+
+Để chứng minh tính chất quan trọng này, ta liên tục biến đổi \(C_r[G]\) để thu
+được một ma trận tam giác trên có toàn bộ phần tử trên đường chéo chính bằng
+\(1\).
+
+\begin{enumerate}
+  \item Sắp xếp các đỉnh theo khoảng cách đến \(v_r\) trên cây, từ gần đến xa:
+  trước hết là \(v_r\), sau đó là các đỉnh cách \(v_r\) một cạnh, tiếp theo là
+  các đỉnh cách \(v_r\) hai cạnh, v.v. Các đỉnh có cùng khoảng cách có thể sắp
+  tùy ý. Ta đánh số lại các đỉnh theo thứ tự này. Đồng thời, trong cây có gốc
+  \(r\), gọi cha của \(v_i\) là \(v_j\). Rõ ràng trong thứ tự vừa thu được,
+  \(v_j\) xuất hiện trước \(v_i\).
+
+  \item Sắp xếp lại \(n-1\) hàng và \(n-1\) cột của \(C_r[G]\) theo thứ tự vừa
+  thu được. Vì cần đổi cả hàng lẫn cột, tổng số lần đổi là số chẵn, nên định
+  thức của \(C_r[G]\) không đổi.
+
+  \item Xử lý theo thứ tự ngược lại của thứ tự trên. Với mỗi \(i\), nếu cha
+  \(v_j\) của \(v_i\) không phải \(v_r\), cộng cột thứ \(i\) vào cột thứ
+  \(j\).
+\end{enumerate}
+
+Sau khi xử lý như vậy, ta kiểm tra \(C_r[G]\) bằng quy nạp. Rõ ràng cột cuối
+cùng thỏa yêu cầu, vì đỉnh cuối chỉ kề với cha của nó và có bậc \(1\). Giả sử
+đang xử lý cột thứ \(i\), và các cột từ \(i+1\) đến \(n-1\) đều đã thỏa yêu
+cầu. Gọi cha của \(v_i\) là \(v_j\), và các con của nó là
+\[
+  v_{i_1},v_{i_2},\ldots,v_{i_k}.
+\]
+Khi đó chỉ các cột \(i_1,i_2,\ldots,i_k\) mới được cộng vào cột \(i\). Mỗi
+cột trong số đó có một phần tử \(-1\) ở hàng \(i\) và một phần tử \(1\) trên
+đường chéo; còn cột \(i\) có giá trị \(-1\) ở các hàng
+\(j,i_1,i_2,\ldots,i_k\), và có giá trị \(k+1\) ở hàng \(i\). Mỗi khi cộng một
+cột con vào, phần tử \((i,i)\) giảm \(1\), đồng thời phần tử tương ứng ở hàng
+con tăng lên thành \(0\). Cuối cùng, phần tử \((i,i)\) trở thành \(1\), còn
+các hàng \(i_1,i_2,\ldots,i_k\) trong cột đó trở thành \(0\). Vì vậy
+\(C_r[G]\) biến thành ma trận tam giác trên có toàn bộ đường chéo chính bằng
+\(1\). Tính chất được chứng minh.
+
+Trong chứng minh định lý Matrix-Tree, ta dùng ma trận liên thuộc \(B\) của đồ
+thị vô hướng \(G\). Ma trận \(B\) có \(n\) hàng và \(m\) cột; hàng ứng với đỉnh,
+cột ứng với cạnh. Nếu có cạnh \(e=\{v_i,v_j\}\), thì trong cột ứng với \(e\),
+hai hàng tương ứng với \(v_i\) và \(v_j\) nhận một giá trị \(1\) và một giá trị
+\(-1\), còn các hàng khác đều là \(0\). Việc chọn đỉnh nào nhận \(1\) và đỉnh
+nào nhận \(-1\) không quan trọng.
+
+\begin{center}
+  \small Hình: ma trận liên thuộc của đồ thị vô hướng; mỗi cột có đúng một
+  \(1\) và một \(-1\) tại hai đầu mút của cạnh.
+\end{center}
+
+Tiếp theo xét \(BB^{\mathsf T}\). Dễ chứng minh
+\((BB^{\mathsf T})_{ij}\) bằng tích vô hướng của hàng thứ \(i\) và hàng thứ
+\(j\) của \(B\). Vì vậy, khi \(i=j\), \((BB^{\mathsf T})_{ij}\) bằng số cạnh
+nối với \(v_i\), tức bậc của \(v_i\). Khi \(i\ne j\), nếu có một cạnh nối
+\(v_i\) và \(v_j\), thì \((BB^{\mathsf T})_{ij}=-1\), ngược lại bằng \(0\).
+Điều này hoàn toàn trùng với định nghĩa của ma trận Kirchhoff. Do đó
+\[
+  C=BB^{\mathsf T}.
+\]
+Nói cách khác, ta có thể chuyển vấn đề về \(C\) sang \(BB^{\mathsf T}\). Việc
+này có ích gì?
+
+Gọi \(B_r\) là ma trận nhận được từ \(B\) sau khi xóa hàng thứ \(r\). Khi đó
+\[
+  C_r=B_rB_r^{\mathsf T}.
+\]
+Theo công thức Binet--Cauchy,
+\[
+\begin{aligned}
+  \det(C_r)
+  &=\det(B_rB_r^{\mathsf T})\\
+  &=
+  \sum_{\substack{x\subseteq E\\ |x|=n-1}}
+  \det(B_r^x)\det\!\bigl((B_r^x)^{\mathsf T}\bigr)\\
+  &=
+  \sum_{\substack{x\subseteq E\\ |x|=n-1}}
+  \det\!\bigl(B_r^x(B_r^x)^{\mathsf T}\bigr)
+  =
+  \sum_{\substack{x\subseteq E\\ |x|=n-1}}
+  \bigl(\det B_r^x\bigr)^2.
+\end{aligned}
+\]
+Ở đây \(B_r^x\) là ma trận tạo bởi các cột của \(B_r\) tương ứng với các cạnh
+thuộc \(x\).
+
+Ta chú ý rằng nếu các cạnh trong \(x\) tạo thành một chu trình thì luôn có
+\[
+  \det B_r^x=0.
+\]
+Chẳng hạn, nếu đồ thị mới có một chu trình độ dài \(3\), ta có thể sắp xếp lại
+\(B_r^x\) sao cho khối liên quan đến chu trình nằm ở góc trái trên.
+
+\begin{center}
+  \small Hình: sau khi sắp xếp lại \(B_r^x\), các hàng và cột của một chu trình
+  tạo thành một khối suy biến ở góc trái trên.
+\end{center}
+
+Khi đó \(\det B_r^x\) bằng định thức của định thức con cấp \(3\) ở góc trái
+trên nhân với định thức của ma trận cấp \(n-4\) ở góc phải dưới. Định thức con
+cấp \(3\) này suy biến, vì tổng trên mỗi hàng và mỗi cột của nó đều bằng
+\(0\). Do đó \(\det B_r^x=0\). Lập luận tương tự có thể mở rộng cho chu trình
+có độ dài bất kỳ.
+
+Rõ ràng \(B_r^x(B_r^x)^{\mathsf T}\) có thể xem là một định thức con chính cấp
+\(n-1\) của ma trận Kirchhoff của đồ thị mới chỉ gồm toàn bộ các đỉnh và các
+cạnh thuộc \(x\). Theo các tính chất của ma trận Kirchhoff, nếu thêm tất cả
+\(n-1\) cạnh thuộc \(x\) vào đồ thị tạo thành một cây, thì
+\[
+  \det\!\bigl(B_r^x(B_r^x)^{\mathsf T}\bigr)=1;
+\]
+nếu không tạo thành cây, thì chắc chắn tồn tại chu trình, và
+\(\det B_r^x=0\). Nói cách khác, ta xét tất cả các tập con cạnh có kích thước
+\(n-1\): nếu tập con đó tạo thành một cây thì đáp án tăng thêm \(1\), còn nếu
+không thì không đóng góp. Điều này đúng bằng số cây khung của đồ thị ban đầu.
+Vì vậy ta đã chứng minh được định lý Matrix-Tree.
+
+Nếu đồ thị có cạnh song song, định lý Matrix-Tree vẫn đúng; cách chứng minh
+tương tự và dành cho người đọc tự suy nghĩ. Vì tính định thức mất
+\(\Oh(n^3)\) thời gian, bài toán đếm cây khung cũng có thể hoàn thành trong
+\(\Oh(n^3)\) thời gian.
+
+\subsection{Cách hiểu trực quan}
+
+Phân tích vừa rồi có thể hơi sâu. Dưới đây ta nhìn định lý này theo cách trực
+quan hơn.
+
+Trước hết xét một bài toán toán học đơn giản: hãy tìm số nghiệm nguyên không
+âm của phương trình
+\[
+  x_1+x_2+x_3=2.
+\]
+Đây là một bài toán đếm tổ hợp quen thuộc. Cách làm thường dùng là lấy hai số
+\(1\) và hai dấu phân cách \(\triangle\), rồi sắp xếp tùy ý bốn phần tử này.
+Số cách sắp xếp khác nhau đúng bằng số nghiệm của phương trình, tức
+\[
+  \binom{4}{2}.
+\]
+Vì sao làm như vậy?
+
+Liệt kê \(6\) cách sắp xếp, ta thấy mỗi cách tương ứng với một nghiệm của
+phương trình:
+\[
+\begin{array}{rcl}
+  \triangle\triangle 11 &\leftrightarrow& x_1=0,\ x_2=0,\ x_3=2,\\
+  \triangle 1\triangle 1 &\leftrightarrow& x_1=0,\ x_2=1,\ x_3=1,\\
+  \triangle 11\triangle &\leftrightarrow& x_1=0,\ x_2=2,\ x_3=0,\\
+  \multicolumn{3}{c}{\cdots}
+\end{array}
+\]
+
+Nói cách khác, thông qua chuyển đổi mô hình, ta tìm ra quan hệ tương ứng giữa
+bài toán ban đầu và bài toán mới, rồi dùng kiến thức toán học liên quan để
+giải bài toán mới; nhờ đó giải luôn bài toán ban đầu. Ý nghĩa quan trọng của
+sự chuyển đổi này là nó dựng nên cầu nối giữa các bài toán khác nhau.
+
+Quay lại định lý Matrix-Tree. Ta cũng chuyển đổi mô hình, từ mô hình đồ thị
+sang mô hình ma trận, rồi phát hiện mỗi hạng tử trong khai triển theo công
+thức Binet--Cauchy tương ứng với một tập con cạnh có kích thước \(n-1\). Trong
+đó, hạng tử có giá trị \(1\) tương ứng với một cây khung; các hạng tử không
+tương ứng với cây khung có giá trị \(0\). Như vậy, bài toán được chuyển thành
+tính tổng tất cả các hạng tử trong khai triển. Dùng kiến thức toán học sẵn có
+là có thể giải quyết thành công.
+
+So sánh hai bài toán, ta thấy: trong bài toán thứ nhất, nghiệm của phương
+trình đóng vai trò giống cây khung của đồ thị trong bài toán thứ hai; phương
+án sắp xếp trong bài toán thứ nhất đóng vai trò giống mỗi hạng tử trong khai
+triển ở bài toán thứ hai. Đồng thời, trong mỗi bài toán, hai đối tượng lại có
+quan hệ tương ứng với nhau. Khác biệt chỉ nằm ở chỗ quan hệ tương ứng trong
+bài toán thứ hai kín đáo và phức tạp hơn, cần một lý thuyết toán học mạnh hơn
+để chống đỡ.
+
+\section{Ứng dụng cụ thể}
+
+Dưới đây ta xem một vài ví dụ về bài toán đếm cây khung xuất hiện trong thi
+tin học.
+
+\subsection*{Ví dụ 2: Organising the Organisation (UVA p10766)}
+
+Jimmy phụ trách việc phân cấp nhân sự trong công ty. Gần đây anh gặp một rắc
+rối nhỏ: để nâng cao hiệu quả làm việc, hội đồng quản trị quyết định phân cấp
+lại toàn bộ nhân viên.
+
+\begin{center}
+  \small Hình a: sơ đồ phân cấp nhân viên; \(A\) trực tiếp lãnh đạo \(B\) và
+  \(D\), còn \(D\) trực tiếp lãnh đạo \(C\).
+\end{center}
+
+Tình hình sau khi phân cấp được mô tả như Hình a. Cụ thể, ngoại trừ một tổng
+giám đốc, mỗi nhân viên khác có đúng một cấp trên trực tiếp. Do quan hệ cá
+nhân giữa các nhân viên, có thể xuất hiện trường hợp \(a\) và \(b\) đều không
+muốn người kia trở thành cấp trên trực tiếp của mình. Công ty có \(n\) nhân
+viên, đánh số từ \(1\) đến \(n\), và hội đồng quản trị đã quyết định để nhân
+viên số \(k\) làm tổng giám đốc. Nhiệm vụ của Jimmy là tính có bao nhiêu sơ đồ
+phân cấp nhân viên khác nhau.
+
+Quy mô dữ liệu: \(1\le n\le 50\).
+
+\subsubsection*{Phân tích}
+
+Cách giải bài này khá rõ. Nếu giữa \(a\) và \(b\) không có mâu thuẫn trực tiếp,
+ta nối một cạnh giữa họ. Hiển nhiên đồ thị quan hệ nhân viên cuối cùng phải là
+một cây khung của đồ thị ban đầu. Dù đề bài đã quy định gốc của cây khung,
+số cây khung của đồ thị vô hướng không phụ thuộc vào gốc, nên ta chỉ cần trực
+tiếp dùng định lý Matrix-Tree để tính số cây khung của đồ thị ban đầu.
+
+\subsection*{Ví dụ 3: Nỗi phiền của nhà vua}
+
+Quốc vương Byteotia của Byteland gần đây rất phiền lòng: đất nước của ông bị
+lũ lụt tấn công. Trận lũ trăm năm mới gặp đã phá hủy nhiều con đường quan
+trọng của Byteland, khiến cả quốc gia rơi vào tê liệt. Byteland gồm \(n\)
+thành phố, và giữa hai thành phố khác nhau bất kỳ đều có đường nối. Để khôi
+phục trật tự bình thường càng nhanh càng tốt, Byteotia tổ chức cho các chuyên
+gia nghiên cứu và liệt kê tất cả các con đường có thể đi lại bình thường
+(những con đường khác có thể vẫn đang ngập trong nước). Trong số đó, có đường
+đã bị phá hủy và cần sửa lại; có đường vẫn có thể tiếp tục sử dụng. Điều kỳ
+lạ là tất cả các con đường còn có thể sử dụng không tạo thành chu trình. Để
+tiết kiệm thời gian tối đa, Byteotia muốn chỉ sửa số đường ít nhất sao cho cả
+quốc gia liên thông. Ban đầu Byteotia định đánh giá từng phương án rồi chọn
+phương án tối ưu, nhưng rất nhanh ông phát hiện số phương án quá lớn. Vì vậy,
+ông tìm đến bạn, chuyên gia máy tính giỏi nhất của Byteland, nhờ bạn tính số
+phương án sửa đường có thể có.
+
+Quy mô dữ liệu: \(1\le n\le 500\).
+
+\subsubsection*{Phân tích}
+
+Thoạt nhìn bài này khá khó, vì phải đếm số phương án sửa ít đường nhất, đồng
+thời còn phải xét các con đường không cần sửa. Phân tích kỹ hơn, ta thấy một
+điều kiện rất quan trọng: tất cả các con đường còn có thể sử dụng không tạo
+thành chu trình. Điều này tạo thuận lợi cho lời giải. Ta biết rằng để một đồ
+thị \(n\) đỉnh liên thông, ít nhất cần \(n-1\) cạnh; các cạnh đó tạo thành một
+cây. Một tính chất quan trọng của cây là không có chu trình, nên mọi con đường
+vẫn dùng được chắc chắn phải xuất hiện trong cây cuối cùng. Như vậy, ta đã
+chuyển bài toán thành: đếm số cây khung của một đồ thị, trong đó một số cạnh
+bắt buộc phải chọn.
+
+Đây cũng là một bài toán đếm cây khung. Tuy nhiên, do tồn tại các cạnh bắt
+buộc, ta không thể áp dụng trực tiếp định lý Matrix-Tree. Phải làm gì?
+
+Ta biết rằng nếu yêu cầu cây khung phải chứa một cạnh \(e\), thì số cây khung
+\(t(G)\) của đồ thị \(G\) bằng \(t(G/e)\), tức số cây khung của đồ thị mới
+nhận được sau khi co cạnh \(e\). Vì vậy cần:
+\begin{enumerate}
+  \item co tất cả các cạnh bắt buộc;
+  \item tính số cây khung của đồ thị mới sau khi co.
+\end{enumerate}
+
+Co một cạnh mất \(\Oh(n)\) thời gian, và nhiều nhất chỉ có \(n-1\) cạnh cần
+co, nên bước này có độ phức tạp \(\Oh(n^2)\). Theo phân tích phía trên, tính
+số cây khung của một đồ thị có độ phức tạp \(\Oh(n^3)\). Vì vậy ta giải được
+toàn bộ bài toán trong thời gian \(\Oh(n^3)\).
+
+\section{Tổng kết}
+
+Bài viết bắt đầu từ một ví dụ trong thi tin học, giới thiệu thuật toán đếm cây
+khung, tư tưởng toán học bên trong thuật toán, và ứng dụng của nó trong thi
+tin học. Trong quá trình thảo luận, ta liên hệ chặt chẽ hai đối tượng tưởng
+như không liên quan: cây khung của đồ thị và định thức của ma trận. Trước hết,
+ta chuyển bài toán đếm cây khung của đồ thị thành bài toán tính định thức ma
+trận; sau đó dùng chứng minh toán học để luận chứng quan hệ tương ứng giữa
+định thức ma trận và cây khung của đồ thị. Từ đó không khó nhận ra: nền tảng
+toán học vững chắc là bảo đảm để giải quyết vấn đề, còn liên tưởng sáng tạo
+là linh hồn của lời giải.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Ju Yuma và các tác giả khác, \textit{Linear Algebra}.
+  \item Xu Yichao, \textit{Introduction to Algebra}.
+  \item Reinhard Diestel, \textit{Graph Theory II}.
+  \item Hu Maolin, \textit{Counting spanning trees in connected graphs
+  containing specified edges}.
+  \item Martin Rubey, \textit{Counting Spanning Tree}.
+\end{enumerate}
+
+\end{document}

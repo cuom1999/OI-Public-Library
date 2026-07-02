@@ -1,0 +1,266 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2002/王知昆.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Lựa chọn thứ tự tìm kiếm}
+\author{Wang Zhikun}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Choosing the search order}
+\sourcepath{IOI China candidate team papers / 2002 / Wang Zhikun.pdf}
+
+\section{Mở đầu: bài toán xếp cách quãng}
+
+Xét bài toán \term{xếp cách quãng}. Có \(2N\) khối gỗ; mỗi khối được ghi một
+số tự nhiên từ \(1\) đến \(N\), và mỗi số xuất hiện trên đúng hai khối. Ta
+cần xếp các khối thành một hàng sao cho giữa hai khối mang số \(i\) có đúng
+\(i\) khối khác.
+
+Chẳng hạn với \(N=3\), một cách xếp hợp lệ là
+\[
+  3,\ 1,\ 2,\ 1,\ 3,\ 2.
+\]
+Bài toán lập trình là: với \(N\le 40\) cho trước, hãy tìm một cách xếp hợp lệ.
+
+Chỉ thay đổi thứ tự tìm kiếm đã tạo ra khác biệt rất lớn về thời gian chạy:
+
+\begin{center}
+\begin{tabular}{c|cc}
+\hline
+\(N\) & Tìm từ lớn đến nhỏ & Tìm từ nhỏ đến lớn \\
+\hline
+11 & 0.00 sec & 0.00 sec \\
+15 & 0.00 sec & 0.11 sec \\
+20 & 0.00 sec & 36.32 sec \\
+32 & 0.00 sec & quá thời gian \\
+40 & 0.00 sec & quá thời gian \\
+\hline
+\end{tabular}
+\end{center}
+
+Ví dụ này cho thấy thứ tự xét các phần tử tìm kiếm không phải là chi tiết phụ.
+Nó có thể quyết định trực tiếp kích thước cây tìm kiếm và hiệu quả của thuật
+toán quay lui.
+
+\section{Các nguyên tắc cơ bản}
+
+Khi lựa chọn thứ tự tìm kiếm, ta thường dựa vào ba nguyên tắc sau.
+
+\begin{enumerate}
+  \item Phần tử tìm kiếm có miền giá trị nhỏ nên được xét trước.
+  \item Sau khi một phần tử tìm kiếm được xác định, mức độ nó làm thay đổi
+  miền giá trị của các phần tử khác được gọi là \term{lực ràng buộc}. Phần tử
+  có lực ràng buộc lớn nên được xét trước.
+  \item Xét trước những phần tử ảnh hưởng mạnh tới nghiệm giúp hàm đánh giá
+  trong bước cắt tỉa chính xác hơn, từ đó làm cắt tỉa hiệu quả hơn.
+\end{enumerate}
+
+Ba nguyên tắc này không thay thế phân tích bài toán cụ thể, nhưng chúng là
+điểm xuất phát tự nhiên để thu hẹp cây tìm kiếm.
+
+\section{Ví dụ: giải mã toán tử}
+
+Bài toán \term{giải mã toán tử} trong NOI 2000 có thể mô tả ngắn gọn như sau.
+Các toán tử cổ được ký hiệu bằng các chữ cái thường từ \texttt{a} đến
+\texttt{m}; chúng lần lượt tương ứng với một trong các ký hiệu hiện đại
+\[
+  0,1,2,3,4,5,6,7,8,9,+,*,=.
+\]
+Cho một nhóm đẳng thức viết bằng các toán tử cổ. Nếu tồn tại một ánh xạ làm
+mọi đẳng thức đúng, cần in ra tất cả các quan hệ tương ứng chắc chắn xác định
+được giữa toán tử cổ và toán tử hiện đại; nếu không tồn tại ánh xạ nào, in
+\texttt{noway}.
+
+\subsection{Ba phần tử đặc biệt nhất}
+
+Trong bài này, ba ký hiệu đặc biệt nhất là \(=\), \(*\) và \(+\). Chúng phải
+thỏa các điều kiện sau.
+
+\begin{enumerate}
+  \item Ba ký hiệu này không được xuất hiện ở đầu trái hoặc đầu phải của một
+  đẳng thức.
+  \item Không có hai ký hiệu nào trong ba ký hiệu này được đứng cạnh nhau.
+  \item Ký hiệu \(=\) là ký hiệu đặc biệt nhất: trong mỗi đẳng thức nó phải
+  xuất hiện đúng một lần.
+\end{enumerate}
+
+\subsection{Xác định thứ tự tìm kiếm}
+
+Xét về miền giá trị, ba ký hiệu \(=\), \(+\), \(*\) có miền nhỏ nhất trong mọi
+toán tử. Xét về lực ràng buộc, \(=\), \(+\), \(*\) rõ ràng mạnh hơn mười chữ
+số \(0\) đến \(9\). Xét theo lợi ích đối với cắt tỉa, ba ký hiệu này cũng ảnh
+hưởng lớn nhất tới nghiệm. Vì vậy chúng nên được đặt ở đầu dãy tìm kiếm.
+
+Trong ba ký hiệu đó, \(=\) chịu nhiều hạn chế hơn và có miền giá trị nhỏ hơn,
+nên phải được tìm trước. Thứ tự tốt nhất rút ra từ phân tích này là:
+\[
+  =,\quad +,\quad *,\quad \text{rồi đến mười chữ số.}
+\]
+
+\section{Hai cách giảm quy mô cây tìm kiếm}
+
+Có hai hướng hiện thực cụ thể để giảm quy mô cây tìm kiếm bằng thứ tự tìm kiếm.
+
+\begin{enumerate}
+  \item \term{Tối ưu tĩnh thứ tự tìm kiếm}. Ví dụ: bài \term{Prime Square}
+  trong IOI 1994 và bài \term{Fence} trong USACO Training.
+  \item \term{Điều chỉnh động thứ tự tìm kiếm}. Ví dụ: bài duyệt bàn cờ và
+  bài \term{Basketball Championship} trong BOI 1998.
+\end{enumerate}
+
+\subsection{Tối ưu tĩnh thứ tự tìm kiếm}
+
+Trong một số bài toán, lực ràng buộc và miền giá trị của các phần tử tìm kiếm
+không thay đổi nhiều trong quá trình tìm, hoặc sự thay đổi ấy không ảnh hưởng
+đáng kể tới hiệu quả. Nếu phải phán đoán động miền giá trị và lực ràng buộc
+của từng phần tử thì chi phí có thể lớn, trong khi hiệu quả tối ưu không cao.
+
+Trong trường hợp đó, chỉ cần xác định thứ tự tìm kiếm trước khi bắt đầu, và
+không cần thay đổi thứ tự trong quá trình tìm kiếm.
+
+\subsection{Điều chỉnh động thứ tự tìm kiếm}
+
+Đôi khi miền giá trị và lực ràng buộc của phần tử tìm kiếm biến đổi mạnh trong
+quá trình tìm, và những biến đổi này trực tiếp ảnh hưởng đến quy mô cây tìm
+kiếm. Khi đó ta cần điều chỉnh thứ tự tìm kiếm một cách động, tức dùng tìm
+kiếm theo heuristic.
+
+Tìm kiếm heuristic vẫn giữ các ưu điểm của quay lui: dùng ít bộ nhớ và lập
+trình tương đối đơn giản. Ưu điểm lớn nhất của nó là có thể tìm được một
+nghiệm khả thi trong thời gian ngắn, nên rất thích hợp cho lớp bài toán tìm
+kiếm chỉ yêu cầu tìm một nghiệm.
+
+\section{Ví dụ tối ưu tĩnh: Prime Square}
+
+Bài \term{Prime Square} trong IOI 1994 yêu cầu điền chữ số vào một ma trận
+\(5\times 5\) sao cho năm chữ số trên mỗi hàng, mỗi cột và hai đường chéo đều
+tạo thành một số nguyên tố năm chữ số; chữ số đầu của mỗi số nguyên tố không
+được là \(0\). Tổng các chữ số của mọi số nguyên tố này phải bằng một hằng số
+cho trước. Hằng số ấy và chữ số ở góc trái trên của ma trận được cho trước.
+Nếu có nhiều nghiệm thì phải tìm tất cả.
+
+\subsection{Tính chất của phần tử tìm kiếm}
+
+Các phần tử tìm kiếm trong bài này có những tính chất khác nhau.
+
+\begin{enumerate}
+  \item Hàng cuối và cột cuối: chữ số có thể điền chỉ thuộc tập
+  \(\{1,3,7,9\}\), vì chúng là chữ số cuối của số nguyên tố năm chữ số.
+  \item Hai đường chéo: chúng liên quan tới toàn bộ tập số nguyên tố năm chữ
+  số có tổng chữ số bằng hằng số đã cho.
+  \item Các hàng và cột còn lại: mức độ đặc biệt phụ thuộc vào số ô đã được
+  xác định trên hàng hoặc cột đó.
+\end{enumerate}
+
+\subsection{Thứ tự tìm kiếm}
+
+Dựa trên miền giá trị và lực ràng buộc, ta có thứ tự tìm kiếm sau.
+
+\begin{enumerate}
+  \item Hàng cuối và cột cuối là các phần tử tìm kiếm có miền giá trị nhỏ
+  nhất. Chúng cũng ràng buộc ở mức nhất định lên mọi phần tử khác, nên cần
+  đặt ở đầu dãy tìm kiếm.
+  \item Hai đường chéo cũng ảnh hưởng tới mọi phần tử tìm kiếm khác. Trong
+  các ô còn lại, lực ràng buộc của chúng là lớn nhất, vì vậy chúng cũng nên
+  được ưu tiên.
+  \item Các hàng và cột còn lại được sắp theo kích thước miền giá trị của
+  chúng.
+\end{enumerate}
+
+\section{Ví dụ điều chỉnh động: Basketball Championship}
+
+Bài \term{Basketball Championship} trong BOI 1998 có thể mô tả như sau. Có
+năm đội tham gia một giải bóng rổ vòng tròn một lượt; mỗi cặp đội đấu đúng
+một trận. Ta biết số trận thắng, số trận thua, tổng điểm ghi được và tổng
+điểm bị ghi của mỗi đội, đồng thời biết danh sách điểm số của mọi trận đấu.
+Yêu cầu là khôi phục các khả năng có thể xảy ra của giải đấu, tức bảng thành
+tích điểm số của từng đội trong từng trận.
+
+\subsection{Căn cứ để điều chỉnh động}
+
+Trong bài này, lực ràng buộc giữa các phần tử tìm kiếm, tức các điểm số của
+từng trận, rất khó xác định chính xác.
+
+Ta định nghĩa miền giá trị của một phần tử là số cách có thể chọn điểm của
+một đội trong một trận cụ thể. Vì miền giá trị của điểm số thay đổi mạnh trong
+quá trình tìm, và sự thay đổi ấy trực tiếp ảnh hưởng đến quy mô cây tìm kiếm,
+căn cứ chính để thay đổi thứ tự tìm kiếm là kích thước miền giá trị của từng
+điểm số.
+
+\subsection{Phán đoán động miền giá trị}
+
+Trước hết cần tiền xử lý: liệt kê mọi trường hợp mà tổng của \(n\) lần ghi
+điểm bằng \(m\). Có thể dùng bảng băm để tăng tốc tra cứu. Trong mỗi bước tìm
+kiếm, dựa trên các điểm số đã điền, ta có thể xác định trong các điểm số còn
+lại những giá trị nào không thể đặt vào một vị trí cụ thể.
+
+Ngoài ra, nếu đã biết kết quả thắng thua của trận giữa \(i\) và \(j\), và đã
+biết số điểm mà \(i\) ghi được trong trận đó, thì điểm số mà \(j\) ghi vào
+rổ của \(i\) cũng bị hạn chế. Từ đó có thể xác định miền giá trị của từng
+phần tử.
+
+\subsection{So sánh thời gian chạy}
+
+\begin{center}
+\begin{tabular}{c|cc|cc}
+\hline
+Dữ liệu &
+\multicolumn{2}{c|}{Tìm một nghiệm} &
+\multicolumn{2}{c}{Tìm mọi nghiệm} \\
+ & Tìm thường + cắt tỉa & Điều chỉnh động
+ & Tìm thường + cắt tỉa & Điều chỉnh động \\
+\hline
+1 & 2.09 sec & 0.00 sec & 12.97 sec & 0.11 sec \\
+2 & 2.69 sec & 0.00 sec & 15.22 sec & 0.00 sec \\
+3 & quá thời gian & 0.16 sec & quá thời gian & 0.11 sec \\
+4 & quá thời gian & 0.05 sec & quá thời gian & 0.27 sec \\
+5 & quá thời gian & 0.27 sec & quá thời gian & 1.10 sec \\
+\hline
+\end{tabular}
+\end{center}
+
+Bảng trên cho thấy việc điều chỉnh động thứ tự tìm kiếm có thể biến một cây
+tìm kiếm quá lớn thành một quá trình xử lý rất ngắn.
+
+\section{Thứ tự tìm kiếm và tối ưu cắt tỉa}
+
+Tối ưu cắt tỉa luôn là một bước quan trọng nhất trong tối ưu tìm kiếm. Tuy
+nhiên, hiệu quả của cắt tỉa phụ thuộc vào thứ tự tìm kiếm. Chỉ khi chọn đúng
+thứ tự có lợi cho cắt tỉa, các điều kiện cắt tỉa mới phát huy đầy đủ tác dụng.
+
+\subsection{Ví dụ: Birthday Cake}
+
+Bài \term{Birthday Cake} trong NOI 1999 yêu cầu thiết kế một chiếc bánh gồm
+\(m\) tầng, có thể tích \(N\pi\). Mỗi tầng là một hình trụ; chiều cao \(H\)
+và bán kính \(R\) của mỗi tầng đều nhỏ hơn tầng bên dưới nó. Với \(N\) và
+\(m\) cho trước, hãy tìm diện tích mặt ngoài nhỏ nhất có thể của chiếc bánh,
+không tính đáy dưới của tầng thấp nhất.
+
+\subsection{Ảnh hưởng của thứ tự tìm kiếm tới cắt tỉa}
+
+Vì \(R\) và \(H\) giảm dần từ dưới lên trên, thể tích mỗi tầng cũng giảm dần
+từ dưới lên trên. Do đó, chọn thứ tự tìm kiếm từ dưới lên giúp phán đoán tình
+trạng hiện tại có còn khả thi hay không.
+
+Ngoài ra, diện tích mặt ngoài gồm diện tích xung quanh của từng tầng và diện
+tích phần mặt trên lộ ra. Khi tầng thấp nhất đã được xác định, tổng diện tích
+mặt trên lộ ra của mọi tầng cũng được xác định; phần còn phải xét chỉ là diện
+tích xung quanh của từng tầng. Vì vậy thứ tự tìm kiếm này cũng giúp phán đoán
+liệu còn khả năng xuất hiện nghiệm tốt hơn nghiệm tốt nhất đã biết hay không.
+
+\section{Kết luận}
+
+Trong giải bài thực tế và trong ứng dụng, bài toán tìm kiếm hầu như luôn gắn
+với tối ưu, mà bước đầu tiên của tối ưu là chọn đúng thứ tự tìm kiếm. Từ các
+phân tích trên có thể thấy lựa chọn thứ tự tìm kiếm có vai trò quan trọng đối
+với hiệu quả của thuật toán tìm kiếm.
+
+Tuy nhiên, việc chọn thứ tự tìm kiếm không thể chỉ dựa vào vài phương pháp và
+tư tưởng cơ bản. Nó đòi hỏi phân tích bài toán một cách toàn diện và thấu
+đáo, đào sâu bản chất của bài toán, từ đó tìm ra điểm đột phá của lời giải.
+
+\end{document}

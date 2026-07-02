@@ -1,0 +1,187 @@
+\documentclass[11pt]{article}
+% Source-PDF: 图论 GRAPH THEORY/2-SAT信息学奥林匹克论文 - 赵爽.pdf
+\usepackage{oipl-vn}
+
+\title{Phân tích sơ lược lời giải 2-SAT}
+\author{Zhao Shuang}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{2-SAT problem analysis}
+\sourcepath{graph-theory/2-SAT-informatics-olympiad-paper-zhao-shuang.pdf}
+
+\section{Cơ sở lý thuyết SAT}
+
+Đặt $B=\{b_1,b_2,\ldots,b_n\}$ là một tập hữu hạn các biến Boolean, và
+\[
+  \hat B=\{b_1,b_2,\ldots,b_n,\neg b_1,\neg b_2,\ldots,\neg b_n\}.
+\]
+Nếu $B'$ là một tập con không rỗng của $\hat B$, định nghĩa
+\[
+  \bigvee B'=\bigvee_{b\in B'} b.
+\]
+Với các tập đã cho $B'_1,B'_2,\ldots,B'_m\in \hat B$,\footnote{Trong phần sau,
+$X_1,\ldots,X_n$ được viết gọn thành $\{X_n\}$.} bài toán tìm một phép gán cho
+$B$ sao cho
+\[
+  \left(\bigvee B'_1\right)\land
+  \left(\bigvee B'_2\right)\land \cdots \land
+  \left(\bigvee B'_m\right)=1
+\]
+được gọi là bài toán \term{thỏa mãn được} (Satisfiability), viết tắt là SAT.
+
+Đặc biệt, với một họ các tập $\{B'_m\}$ đã cho, nếu
+\[
+  \max_{i=1,2,\ldots,m} |B'_i|=k,
+\]
+ta gọi bài toán này là $k$-SAT. Có thể chứng minh rằng khi $k>2$, $k$-SAT là
+NP-đầy đủ. Phần dưới đây xét trường hợp $k=2$.
+
+\section{2-SAT}
+
+Trong 2-SAT, mỗi $B'_i$ chỉ có hai dạng: một biến Boolean đơn lẻ
+$x\in \hat B$, hoặc phép hoặc của hai biến Boolean:
+\[
+  x\lor y,\qquad x,y\in \hat B.
+\]
+Để tiện trình bày, trước hết ta phân tích trường hợp chỉ tồn tại dạng thứ hai.
+
+Ta có thể dùng một đồ thị có hướng $G$. Đồ thị $G$ có $2n$ đỉnh, tương ứng với
+$2n$ phần tử của $\hat B$. Bài toán được chuyển thành việc chọn $n$ đỉnh trong
+$G$ sao cho thỏa mãn điều kiện của 2-SAT; tất nhiên hai đỉnh đại diện cho
+$b_i$ và $\neg b_i$ không được đồng thời được chọn. Sau đây xét mệnh đề
+$B'_i=x\lor y$ tương ứng với gì trên đồ thị.
+
+Rõ ràng
+\[
+  x\lor y=\neg(\neg x\land \neg y).
+\]
+Điều này có nghĩa là nếu ta chọn $\neg x$ thì bắt buộc phải chọn $y$; tương tự,
+nếu chọn $\neg y$ thì bắt buộc phải chọn $x$. Vì vậy, với $B'_i=x\lor y$, ta
+thêm vào $G$ hai cung $(\neg x,y)$ và $(\neg y,x)$.\footnote{Ở đây
+$x,y,\neg x,\neg y$ đều chỉ các đỉnh trong $G$ đại diện cho chúng. Các phần
+sau cũng dùng quy ước này.}
+
+Tiếp theo, ta tìm tất cả các \term{thành phần liên thông mạnh} (strongly
+connected components) của $G$. Nếu chọn bất kỳ một đỉnh trong một thành phần
+liên thông mạnh, thì mọi đỉnh khác trong thành phần đó cũng bắt buộc phải
+được chọn. Nếu $b_j$ và $\neg b_j$ nằm trong cùng một thành phần liên thông
+mạnh, ta gặp mâu thuẫn và công thức 2-SAT vô nghiệm.
+
+Nếu không có mâu thuẫn, ta gộp các đỉnh và cung thuộc cùng một thành phần liên
+thông mạnh thành một đỉnh, thu được đồ thị có hướng mới $G'$. Sau đó đảo
+chiều tất cả các cung của $G'$ để thu được $G''$.
+
+Bây giờ xét $G''$. Vì đã gộp các thành phần liên thông mạnh thành đỉnh, $G''$
+không có chu trình, nghĩa là $G''$ là một DAG và có thứ tự topo. Ta đặt tất cả
+các đỉnh của $G''$ ở trạng thái "chưa tô màu", rồi lặp lại các thao tác sau
+theo thứ tự topo:
+
+\begin{enumerate}
+  \item Chọn đỉnh chưa tô màu đầu tiên $x$, và tô $x$ màu đỏ.
+  \item Tô màu xanh cho mọi đỉnh $y$ mâu thuẫn với $x$, cùng toàn bộ hậu duệ
+  của $y$. Hai đỉnh $x$ và $y$ được gọi là mâu thuẫn nếu tồn tại
+  $b_j,\neg b_j\in \hat B$ sao cho $b_j$ thuộc thành phần liên thông mạnh mà
+  $x$ đại diện, còn $\neg b_j$ thuộc thành phần liên thông mạnh mà $y$ đại
+  diện.
+  \item Lặp lại hai bước trên cho đến khi không còn đỉnh chưa tô màu. Khi đó,
+  tập các đỉnh được tô màu đỏ trong $G''$, ánh xạ ngược về tập đỉnh tương ứng
+  trong $G$, cho ta một nghiệm của 2-SAT.
+\end{enumerate}
+
+Các thao tác trên có thể sinh mâu thuẫn hay không? Câu trả lời là không.
+Trước hết, giả sử ta chọn một đỉnh chưa tô màu $p$ trong $G''$. Mọi đỉnh mâu
+thuẫn với $p$, cùng mọi hậu duệ của chúng, đều sẽ được tô màu xanh. Vì thế khi
+tô $p$ màu đỏ, không có đỉnh nào mâu thuẫn với $p$ cũng đã có màu đỏ.
+
+Đồng thời, do ta duyệt theo thứ tự topo và mỗi khi tô xanh một đỉnh, ta lập
+tức tô xanh tất cả hậu duệ của nó. Nói cách khác, nếu một đỉnh $p$ không thể
+được chọn, thì mọi đỉnh trực tiếp hoặc gián tiếp thỏa điều kiện "nếu chọn $q$
+thì bắt buộc phải chọn $p$" cũng sẽ được tô màu xanh. Như vậy trong $G''$
+không tồn tại cung $(x,y)$ với $x$ màu đỏ và $y$ màu xanh. Kết luận thu được
+không thể trái với điều kiện tương ứng với bất kỳ $B'_i$ nào.
+
+Từ hai nhận xét trên, ta có thể chứng minh rằng các thao tác tô màu không sinh
+ra mâu thuẫn.
+
+Tiếp theo chứng minh nghiệm tương ứng với $G''$ thật sự là nghiệm của công
+thức 2-SAT.
+
+\subsection*{1. Nghiệm không đồng thời chọn $b_j$ và $\neg b_j$}
+
+Với $b_j$ và $\neg b_j$, chúng chắc chắn nằm trong hai thành phần liên thông
+mạnh khác nhau của $G$; nếu không, bài toán đã bị kết luận là vô nghiệm từ
+trước. Trong $G''$, hai thành phần này được đại diện bởi hai đỉnh khác nhau,
+gọi là $p$ và $q$.
+
+Rõ ràng $p$ và $q$ là hai đỉnh mâu thuẫn nhau. Vì quá trình tô màu ở trên
+không sinh mâu thuẫn, $p$ và $q$ không thể đồng thời được tô màu đỏ. Do đó
+nghiệm thu được không thể đồng thời chọn $b_j$ và $\neg b_j$.
+
+\subsection*{2. Với mọi cặp $b_j,\neg b_j\in\hat B$, nghiệm chọn ít nhất một trong hai}
+
+Lưu ý rằng với mỗi cung $(x,y)$ trong $G$, luôn tồn tại một cung "đối ngẫu"
+$(\neg y,\neg x)$. Điều này xuất phát từ dạng của $B'_i$. Hệ quả là nếu $x$ và
+$y$ cùng nằm trong một thành phần liên thông mạnh của $G$, thì $\neg x$ và
+$\neg y$ cũng nằm trong một thành phần liên thông mạnh; nếu có đường đi từ $x$
+đến $y$, thì cũng có đường đi từ $\neg y$ đến $\neg x$.
+
+Giả sử ngược lại rằng cả $b_j$ lẫn $\neg b_j$ đều không được chọn, tức hai
+thành phần liên thông mạnh $p$ và $q$ chứa chúng đều bị tô màu xanh. Ta xét hai
+trường hợp.
+
+\paragraph{Trường hợp 1: $p$ và $q$ bị tô xanh trong cùng một lần tô màu.}
+Không mất tính tổng quát, giả sử sau khi tô đỏ đỉnh $r$, ta đồng thời tô xanh
+$p$ và $q$. Trong $G''$, giữa $p$ và $q$ không có đường đi. Nếu có đường đi
+giữa $p$ và $q$, thì do cấu trúc của $G$, sẽ cũng có đường đi theo chiều ngược
+giữa $q$ và $p$, mâu thuẫn với tính chất DAG của $G''$.
+
+Nếu giữa $p$ và $q$ không có đường đi, thì tồn tại $p',q'\in G''$ sao cho
+$p'$ và $q'$ mâu thuẫn trực tiếp với $r$, $p$ là hậu duệ của $p'$, và $q$ là
+hậu duệ của $q'$. Khi đó tồn tại
+\[
+  G(x)\in G''(r),\quad G(\neg x)\in G''(p'),
+\]
+và
+\[
+  G(y)\in G''(r),\quad G(\neg y)\in G''(q').
+\]
+Nhưng theo cấu trúc của $G$, $\neg x$ và $\neg y$ phải nằm trong cùng một
+thành phần liên thông mạnh. Điều này mâu thuẫn với
+$G(\neg x)\in G''(p')$ và $G(\neg y)\in G''(q')$.\footnote{Ở đây
+$G(x)\in G''(r)$ có nghĩa là đỉnh $x$ của $G$ nằm trong thành phần liên thông
+mạnh được đại diện bởi đỉnh $r$ của $G''$. Các ký hiệu sau cũng được hiểu như
+vậy.}
+
+Vì thế $p$ và $q$ không thể bị tô màu trong cùng một lần tô màu.
+
+\paragraph{Trường hợp 2: $p$ và $q$ bị tô xanh ở hai thời điểm khác nhau.}
+Không mất tính tổng quát, giả sử $q$ bị tô màu sau; cụ thể, khi tô đỏ $r$, do
+$q$ mâu thuẫn với $r$ nên $q$ bị tô xanh.
+
+Nếu $q$ và $r$ mâu thuẫn trực tiếp, tức tồn tại
+\[
+  G(x)\in G''(r),\quad G(\neg x)\in G''(q),
+\]
+lại có $G(\neg b_j)\in G''(q)$. Theo cấu trúc của $G$, suy ra
+$G(b_j)\in G''(r)$, nên $r=p$. Điều này mâu thuẫn với việc $p$ đã bị tô xanh.
+
+Nếu $q$ và $r$ mâu thuẫn gián tiếp, tức tồn tại
+\[
+  G(x)\in G''(r),\quad G(\neg x)\in G''(r'),
+\]
+và $q$ là tổ tiên của $r'$. Theo cấu trúc của $G$, $p$ tất yếu là tổ tiên của
+$r$. Nhưng $p$ đã bị tô màu xanh, nên $r$ không thể được tô màu đỏ, mâu thuẫn.
+
+Kết hợp hai trường hợp, mệnh đề được chứng minh.
+
+\section{Độ phức tạp}
+
+Qua chứng minh trên, thuật toán là đúng. Việc tìm các thành phần liên thông
+mạnh của đồ thị có hướng và sắp xếp topo đều có độ phức tạp $O(e)$; thao tác
+tô màu cũng có độ phức tạp $O(e)$. Vì vậy, toàn bộ thuật toán có độ phức tạp
+$O(e)$.
+
+\end{document}

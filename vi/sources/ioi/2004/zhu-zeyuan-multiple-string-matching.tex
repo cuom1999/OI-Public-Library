@@ -1,0 +1,944 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2004/朱泽园.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Thuật toán khớp nhiều xâu và những gợi ý từ nó}
+\author{Zhu Zeyuan\\Trường Ngoại ngữ Nam Kinh}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Multiple string matching algorithms and their implications}
+\sourcepath{IOI China candidate team papers / 2004 / Zhu Zeyuan.pdf}
+
+\section*{Từ khóa}
+
+Xâu mẫu; cây tiền tố từ; cây hậu tố; khớp xâu.
+
+\section*{Trích yếu}
+
+Xử lý xâu có vị trí quan trọng trong ứng dụng thực tế. Nó trông có vẻ đơn
+giản, nhưng khi nghiên cứu sâu hơn, nhiều tư tưởng tinh tế xuất hiện trong đó
+và độ khó cũng trở nên rất lớn. Vì vậy, các kỳ thi tin học thường dùng bài
+toán xử lý xâu để rèn luyện năng lực sáng tạo của thí sinh.
+
+Bài viết nêu bài toán và phân tích trực tiếp ban đầu ở Chương 1. Chương 2,
+3 và 5 lần lượt giới thiệu ba công cụ chuẩn bị: thuật toán khớp mẫu KMP, cấu
+trúc cây tiền tố từ do tác giả xây dựng, và thuật toán cây hậu tố. Dựa trên tư
+tưởng cốt lõi của KMP, Chương 4 đưa ra một thuật toán tuyến tính cho bài toán
+khớp nhiều xâu. Bài viết không dừng ở độ phức tạp tuyến tính; Chương 6 tiếp
+tục đề xuất một thuật toán có hiệu năng trung bình tốt hơn. Cuối cùng, Chương
+7 phân tích cách hình thành thuật toán và nâng tư tưởng ấy lên mức phương
+pháp luận.
+
+\tableofcontents
+
+\section{Đặt vấn đề}
+
+\subsection{Mô tả bài toán}
+
+Khớp nhiều xâu nghĩa là: cho một số xâu mẫu, trong một văn bản chỉ gồm 26 chữ
+cái thường \texttt{a} đến \texttt{z}, tìm vị trí xuất hiện đầu tiên của bất kỳ
+xâu mẫu nào. Cụ thể, cho $m$ xâu mẫu
+\[
+  P_1[1..L_1], P_2[1..L_2], \ldots, P_m[1..L_m]
+\]
+và văn bản $T[1..n]$. Với ràng buộc
+\[
+  \sum L \le 100K,\qquad m\le 1000,\qquad n\le 900K,
+\]
+ta cần tìm số nguyên nhỏ nhất $s\in[1,n]$ sao cho tồn tại $a\in[1,m]$ thỏa
+\[
+  \forall x\in[1,L_a],\qquad T[s+x-1]=P_a[x].
+\]
+
+Nếu các mẫu là \texttt{cdefg} và \texttt{efg}, còn văn bản là
+\texttt{abcdefgh}, yêu cầu ``tìm tất cả vị trí xuất hiện của tất cả mẫu'' dễ
+làm mục tiêu trở nên không rõ ràng khi chỉ cần một câu trả lời. Vì vậy ta
+thường chuyển sang tìm ``vị trí đầu tiên''. Các thuật toán bên dưới vẫn có thể
+liệt kê mọi lần xuất hiện mà không đổi bậc độ phức tạp.
+
+Một ứng dụng thực tế là công cụ tìm kiếm có từ khóa logic. Trong sinh học, khi
+tìm một vài mẫu có thể là biến dị trong chuỗi DNA, ta cũng gặp bài toán cùng
+loại. Do đó, giải bài toán này bằng thuật toán hiệu quả có thể cải thiện đáng
+kể hiệu suất trong nhiều lĩnh vực.
+
+\subsection{Những ý tưởng ban đầu}
+
+Cách đơn giản nhất là xét từng vị trí rồi thử từng mẫu:
+
+\begin{verbatim}
+for i <- 1 to n do
+  for j <- 1 to m do
+    if i + L[j] - 1 <= n then
+      if T[i..i+L[j]-1] = P[j][1..L[j]] then
+        output i and stop
+\end{verbatim}
+
+Thuật toán này kiểm tra các vị trí theo thứ tự tăng dần. Trong trường hợp xấu
+nhất, độ phức tạp thời gian là
+\[
+  O\left(n\sum L\right).
+\]
+
+Một cải tiến tự nhiên hơn là tìm lần xuất hiện đầu tiên của từng mẫu trong
+văn bản:
+
+\begin{verbatim}
+for i <- 1 to m do
+  X[i] <- first occurrence of P[i] in T, or infinity if absent
+output min(X)
+\end{verbatim}
+
+Vị trí xuất hiện đầu tiên của $P_i$ trong $T$ có thể tìm bằng KMP trong
+$O(n+L_i)$, do đó tổng độ phức tạp là
+\[
+  O\left(nm+\sum L\right).
+\]
+
+Hai phương pháp này vẫn quá yếu trước quy mô dữ liệu đã nêu. Ta cần cố gắng
+tìm một thuật toán tuyến tính, hoặc còn tốt hơn. Trước hết ta giới thiệu KMP,
+thuật toán khớp một xâu, và một cấu trúc dữ liệu chuẩn bị là cây tiền tố từ.
+
+\section{Thuật toán Knuth--Morris--Pratt}
+
+Thuật toán này được D. E. Knuth, J. H. Morris và V. R. Pratt độc lập phát
+hiện, thường gọi tắt là KMP.
+
+\subsection{Định nghĩa}
+
+Cho mẫu $P[1..m]$ và văn bản $T[1..n]$. Ta cần tìm mọi số nguyên
+$s\in[1,n-m+1]$ sao cho
+\[
+  \forall x\in[1,m],\qquad T[s+x-1]=P[x].
+\]
+
+\subsection{Hàm tiền tố của mẫu}
+
+Với $1\le i\le m$, định nghĩa hàm tiền tố
+\[
+  \pi(i)=\max\{j\mid 0\le j<i,\; P[1..j]=P[i-j+1..i]\}.
+\]
+Nói cách khác, $\pi(i)$ là độ dài biên dài nhất của $P[1..i]$, tức một tiền tố
+đồng thời là hậu tố thật sự của đoạn này.
+
+Hàm này có thể được tiền xử lý bằng đoạn sau:
+
+\begin{verbatim}
+k <- 0
+pi[1] <- 0
+for i <- 2 to m do
+  while k > 0 and P[k+1] != P[i] do
+    k <- pi[k]
+  if P[k+1] = P[i] then
+    k <- k + 1
+  pi[i] <- k
+\end{verbatim}
+
+Vì $k$ tăng nhiều nhất $m-1$ lần, số lần thực hiện phép gán
+\texttt{k <- pi[k]} cũng không vượt quá $m-1$. Vì vậy đoạn tiền xử lý có độ
+phức tạp $O(m)$.
+
+\subsection{Thuật toán chính của KMP}
+
+Hàm tiền tố ghi lại thông tin tự khớp sau khi dịch của chính mẫu. Khi gặp ký
+tự không khớp, ta có thể dựa vào hàm tiền tố để điều chỉnh vị trí mẫu thay vì
+so sánh lại từ đầu.
+
+Ví dụ, nếu đang khớp được một đoạn dài $5$ và $\pi(5)=3$, mẫu có thể dịch
+sang phải $5-3=2$ ô rồi tiếp tục so sánh. Nếu vẫn không khớp, ta lại tiếp tục
+dùng $\pi$ để dịch.
+
+Tương tự cách tính mảng tiền tố, thuật toán khớp chính có dạng:
+
+\begin{verbatim}
+q <- 0
+for i <- 1 to n do
+  while q > 0 and P[q+1] != T[i] do
+    q <- pi[q]
+  if P[q+1] = T[i] then
+    q <- q + 1
+  if q = m then
+    output an occurrence ending at i
+    q <- pi[q]
+\end{verbatim}
+
+Giống phần tính hàm tiền tố, số lần thực hiện \texttt{q <- pi[q]} không vượt
+quá $n$. Vì vậy toàn bộ KMP chạy trong
+\[
+  O(n+m).
+\]
+
+\section{Cây tiền tố từ}
+
+\subsection{Định nghĩa trie}
+
+Cây tiền tố từ thực chất là một trie. Trong trường hợp lý tưởng, đó là một cây
+26 phân vô hạn; 26 cạnh đi xuống từ mỗi nút được gắn nhãn lần lượt là
+\texttt{a}, \texttt{b}, \ldots, \texttt{z}.
+
+Với mỗi nút $p$, ghép các chữ cái trên đường đi từ gốc đến $p$ ta được một
+xâu, ký hiệu $S_p$. Ngược lại, với một xâu $S$, ta đi theo các chữ cái của
+$S$ trong trie và đến một nút cuối, ký hiệu $p_S$. Như vậy trong trie đầy đủ
+có tương ứng một-một giữa nút và xâu.
+
+\subsection{Xây dựng trie}
+
+Trong thực tế ta không thể xây một trie vô hạn. Ta bắt đầu từ cây rỗng và lần
+lượt chèn những từ cần dùng. Chẳng hạn, sau khi chèn \texttt{aa} rồi
+\texttt{aza}, phần hữu hạn của trie chứa các đường:
+\[
+\begin{array}{c}
+\varepsilon\\
+\downarrow\texttt{a}\\
+\texttt{a}\\
+\swarrow\texttt{a}\quad\searrow\texttt{z}\\
+\texttt{aa}\qquad\texttt{az}\\
+\hfill\downarrow\texttt{a}\\
+\hfill\texttt{aza}
+\end{array}
+\]
+
+Quy trình chèn một xâu $S[1..n]$ là:
+
+\begin{verbatim}
+p <- Root
+for i <- 1 to n do
+  if p.Child[S[i]] = NIL then
+    create and initialize p.Child[S[i]]
+  p <- p.Child[S[i]]
+\end{verbatim}
+
+Ở đây \texttt{p.Child[ch]}, với \texttt{ch} thuộc \texttt{a..z}, là con của
+$p$ theo cạnh mang nhãn \texttt{ch}.
+
+\subsection{Định nghĩa con trỏ tiền tố}
+
+Cây tiền tố từ khác trie thường ở chỗ mỗi nút không phải gốc có thêm một con
+trỏ tiền tố. Với nút $p$, tìm số nguyên nhỏ nhất
+\[
+  k\in[2,|S_p|]
+\]
+sao cho $S_p[k..|S_p|]$ tồn tại trong cây. Khi đó con trỏ tiền tố của $p$ trỏ
+đến nút
+\[
+  p_{S_p[k..|S_p|]}.
+\]
+
+Ví dụ, xét nút ứng với \texttt{abab}. Ta thử hậu tố \texttt{bab}; nếu
+\texttt{bab} không xuất hiện trong trie, ta thử tiếp \texttt{ab}. Nếu
+\texttt{ab} có trong trie, con trỏ tiền tố của \texttt{abab} trỏ đến nút
+\texttt{ab}. Các nút rỗng không được biểu diễn trong các sơ đồ này; con trỏ
+tiền tố nên hiểu như một cạnh phụ không thuộc cây.
+
+\subsection{Sinh con trỏ tiền tố}
+
+Nếu tính con trỏ tiền tố bằng cách dò lại từ định nghĩa, độ phức tạp sẽ rất
+lớn. Bắt chước hàm tiền tố trong KMP, ta có thể dùng con trỏ tiền tố của nút
+cha để suy ra con trỏ tiền tố của nút hiện tại. Gọi nút được con trỏ tiền tố
+của $p$ trỏ tới là nút tiền tố của $p$.
+
+Giả sử đang xử lý nút $p$ và mọi nút có độ sâu nhỏ hơn đã có con trỏ tiền tố.
+Ta tính con trỏ của $p$ như sau:
+
+\begin{verbatim}
+q <- p.Father
+ch <- label of the edge q -> p
+q <- q.Prefix
+while q != Root and q.Child[ch] = NIL do
+  q <- q.Prefix
+if q.Child[ch] = NIL then
+  p.Prefix <- Root
+else
+  p.Prefix <- q.Child[ch]
+\end{verbatim}
+
+Nói bằng lời: từ nút tiền tố của cha, thử đi xuống bằng đúng chữ cái cuối cùng
+dẫn vào $p$; nếu không có cạnh đó, tiếp tục đi theo các con trỏ tiền tố cho
+đến khi tìm được hoặc về gốc.
+
+\section{Thuật toán chính thứ nhất: thuật toán tuyến tính}
+
+\subsection{Gợi ý từ KMP}
+
+Tinh túy của KMP là giảm tính toán trùng lặp: dựa vào sự tự khớp sau khi dịch
+của mẫu để xác định cần dịch mẫu bao nhiêu. Với bài toán nhiều mẫu, ta cũng
+muốn chỉ quét văn bản một lần. Khi gặp ký tự không khớp, ta cần tìm hậu tố
+dài nhất có thể của tiền tố hiện tại. Hậu tố ấy không nhất thiết phải là tiền
+tố của cùng một mẫu; nó có thể là tiền tố của bất kỳ mẫu nào.
+
+Ví dụ, văn bản có đoạn đầu \texttt{zababaa...}; mẫu \texttt{ababaca} thất bại
+sau khi đã khớp \texttt{ababa}. Ta không nhất thiết dịch mẫu này sang phải
+2 ô. Nếu có mẫu khác như \texttt{babaab}, ta có thể dịch ít hơn và tiếp tục từ
+tiền tố của mẫu mới. Dịch càng ít càng tốt mới là điều cần thiết.
+
+Các mẫu liên hệ với nhau khá chặt chẽ. Để hạ độ phức tạp cài đặt, cấu trúc
+cây là một lựa chọn tự nhiên. Kết hợp với tư tưởng hàm tiền tố của KMP, ta thu
+được cây tiền tố từ đã nêu ở Chương 3.
+
+\subsection{Dùng cây tiền tố từ và nhãn phụ}
+
+Ta xây cây tiền tố từ \texttt{TreeA} bằng cách chèn toàn bộ mẫu, rồi tính các
+con trỏ tiền tố. Khi nào thì ta thật sự tìm thấy một mẫu $P_a$? Cách đơn giản
+nhất là đặt nhãn phụ \texttt{Okay} tại nút $p_{P_a}$, với giá trị $a$, để ghi
+nhận rằng đây là điểm kết thúc của mẫu $a$; các nút khác có
+\texttt{Okay = 0}.
+
+Chỉ đánh dấu như vậy vẫn chưa đủ. Nếu có hai mẫu \texttt{abcd} và \texttt{bc},
+khi đang ở nút \texttt{abcd}, mẫu \texttt{bc} cũng vừa kết thúc, vì
+\texttt{bc} là một hậu tố có mặt trong trie. Nút \texttt{bc} chính là nút tiền
+tố của \texttt{abcd}. Vì vậy khi sinh con trỏ tiền tố, ta truyền nhãn
+\texttt{Okay}: nếu nút tiền tố của nút hiện tại có nhãn \texttt{Okay}, nút
+hiện tại cũng phải ghi nhận nhãn ấy. Trong cài đặt để tìm mọi mẫu, một nút nên
+lưu danh sách các mẫu kết thúc tại nó thay vì chỉ một giá trị.
+
+\subsection{Độ phức tạp của cây tiền tố từ}
+
+Trong quá trình sinh con trỏ tiền tố, ta dùng đúng tư tưởng như khi sinh mảng
+tiền tố KMP. Có thể chứng minh độ phức tạp bằng phân tích thế năng.
+
+Với một mẫu $P[1..n]$, đặt $p_i$ là nút tương ứng với $P[1..i]$ trong trie,
+và $p_0$ là gốc. Ta chứng minh tổng chi phí tính con trỏ tiền tố cho
+$p_0,p_1,\ldots,p_n$ là $O(n)$.
+
+Gọi $c_i$ là chi phí tính con trỏ tiền tố của $p_i$, với $c_0=1$. Định nghĩa
+thế năng $\Phi(i)$ của $p_i$ như sau:
+\[
+  \Phi(0)=0,\qquad
+  \Phi(i)=\text{độ sâu của nút tiền tố của }p_i\quad(1\le i\le n).
+\]
+Rõ ràng $p_i$ là cha của $p_{i+1}$ khi $0\le i<n$. Trong giả mã sinh con trỏ,
+mỗi lần vòng lặp đi theo \texttt{q.Prefix}, độ sâu của $q$ giảm ít nhất $1$.
+Do đó số lần lặp khi tính $p_{i+1}$ nhiều nhất là
+\[
+  \Phi(i)+1-\Phi(i+1).
+\]
+Suy ra
+\[
+  c_{i+1}\le \Phi(i)+2-\Phi(i+1).
+\]
+Cộng theo mọi $0\le i<n$:
+\[
+  \sum_{i=1}^{n} c_i
+  \le 2n+\Phi(0)-\Phi(n)
+  \le 2n.
+\]
+Vì vậy việc tính con trỏ tiền tố trên $n$ nút này mất $O(n)$ thời gian. Toàn
+bộ cây tiền tố từ được xây trong
+\[
+  O\left(\sum L\right).
+\]
+
+\subsection{Quy trình chính}
+
+Bắt chước KMP, thuật toán khớp nhiều xâu đầu tiên là:
+
+\begin{verbatim}
+Algorithm MultiPatternMatching1
+  preprocess: build the prefix trie
+  q <- Root
+  for i <- 1 to n do
+    while q != Root and q.Child[T[i]] = NIL do
+      q <- q.Prefix
+    if q.Child[T[i]] != NIL then
+      q <- q.Child[T[i]]
+    if q.Okay then
+      output every pattern ending at i represented by q.Okay
+End
+\end{verbatim}
+
+Giống KMP, số lần thực hiện \texttt{q <- q.Prefix} không vượt quá tổng số lần
+đi xuống theo cạnh cây. Vì vậy phần quét văn bản chạy trong $O(n)$.
+
+Nếu yêu cầu đúng vị trí bắt đầu nhỏ nhất của một mẫu, cần chú ý rằng mẫu kết
+thúc sớm hơn chưa chắc bắt đầu sớm hơn. Ví dụ một mẫu dài hơn có thể bắt đầu
+trước nhưng kết thúc sau một mẫu ngắn. Ta chỉ cần thêm phép so sánh vị trí bắt
+đầu $i-L_a+1$ của mọi mẫu vừa được báo, rồi lấy vị trí nhỏ nhất.
+
+\subsection{Độ phức tạp thời gian và bộ nhớ}
+
+Chương trình chính gồm hai phần: xây cây tiền tố từ và quét văn bản. Tổng thời
+gian là
+\[
+  O\left(\sum L+n\right).
+\]
+
+Nếu mỗi nút lưu đủ 26 con trỏ, mỗi nút cần $26$ ô con trỏ. Số nút là
+$O(\sum L)$, do đó bộ nhớ là
+\[
+  O\left(26\sum L\right).
+\]
+Quét văn bản không cần thêm bộ nhớ đáng kể.
+
+\subsection{Một số mở rộng}
+
+Nếu văn bản không dài, hoặc bảng chữ cái lớn, bộ nhớ có thể trở thành nút thắt
+cổ chai. Có hai hướng xử lý.
+
+Thứ nhất, chuyển mọi ký tự thành nhị phân rồi xây cây nhị phân. Ví dụ chữ
+\texttt{a} có thể được biểu diễn bằng một dãy bit cố định như
+\texttt{01100001}. Khi đó cây 26 phân trở thành cây nhị phân. Mức cải thiện
+không thật lý tưởng vì độ dài biểu diễn tăng lên.
+
+Thứ hai, phân bổ động danh sách con của từng nút và lưu có thứ tự. Khi cần đi
+theo một ký tự, ta tìm nhị phân trong danh sách con. Thời gian có tăng một
+nhân tử nhỏ, nhưng bộ nhớ giảm còn
+\[
+  O\left(\sum L\right).
+\]
+
+Nếu yêu cầu mọi vị trí xuất hiện của mọi mẫu, thuật toán vẫn làm được. Điểm
+khác là tại \texttt{Okay} có thể có nhiều mẫu cùng kết thúc, nên ta lưu một
+danh sách thay vì một nhãn đơn.
+
+Khi mẫu ngắn nhất rất dài và văn bản gần như ngẫu nhiên, còn có một thuật toán
+có hiệu năng trung bình tốt hơn. Để trình bày nó, trước hết cần giới thiệu cây
+hậu tố.
+
+\section{Cây hậu tố và thuật toán McCreight}
+
+\subsection{Cấu trúc dữ liệu}
+
+Cây hậu tố cơ bản là trie tạo bởi tất cả hậu tố của một từ. Với từ
+\texttt{ababc}, ta có năm hậu tố:
+\[
+  \texttt{ababc},\quad \texttt{babc},\quad
+  \texttt{abc},\quad \texttt{bc},\quad \texttt{c}.
+\]
+Nếu xây trie trực tiếp, số nút có thể đạt cấp $O(N^2)$ với $N$ là độ dài từ.
+Để tránh điều này, ta nén các đường chỉ có một nhánh: mỗi cạnh có thể mang cả
+một xâu, và các cạnh đi ra từ cùng một nút có ký tự đầu khác nhau. Khi chèn
+một hậu tố, nhiều nhất chỉ thêm một cạnh mới, nên số nút là $O(N)$.
+
+Một vấn đề nhỏ là có thể có một hậu tố kết thúc ở giữa một cạnh đã nén. Để
+tránh trường hợp ấy, ta thêm vào cuối xâu một ký tự chưa xuất hiện trong xâu,
+ví dụ \texttt{\$}. Khi đó không hậu tố nào là tiền tố của hậu tố khác.
+
+\subsection{Một số định nghĩa}
+
+Cho từ $S[1..n]$. Ký hiệu
+\[
+  \operatorname{suf}_i=S[i..n]
+\]
+là hậu tố dài thứ $i$ của $S$.
+
+Mỗi nút trong cây hậu tố có các trường chính:
+\begin{itemize}
+  \item \texttt{Father}: con trỏ đến cha;
+  \item \texttt{Suffix}: liên kết hậu tố, sẽ định nghĩa bên dưới;
+  \item \texttt{Child[c]}: con có cạnh bắt đầu bằng ký tự \texttt{c};
+  \item \texttt{String[c]}: xâu ghi trên cạnh đến \texttt{Child[c]}.
+\end{itemize}
+Trong cài đặt, \texttt{String[c]} thường được biểu diễn bằng hai chỉ số đầu và
+cuối trỏ vào xâu gốc $S$.
+
+\subsection{Xây cây hậu tố: khung ban đầu}
+
+Thuật toán McCreight xây cây hậu tố $T$ trong $n$ bước. Ban đầu $T$ rỗng; ở
+bước $i$, chèn $\operatorname{suf}_i$ vào $T$.
+
+Định nghĩa $\operatorname{head}_i$ là tiền tố chung dài nhất, lấy lớn nhất
+trên mọi $\operatorname{suf}_j$ với $1\le j<i$, giữa $\operatorname{suf}_i$
+và $\operatorname{suf}_j$. Viết
+\[
+  \operatorname{suf}_i=\operatorname{head}_i+\operatorname{tail}_i.
+\]
+Khung xây dựng là:
+
+\begin{verbatim}
+for i <- 1 to n do
+  find the node corresponding to head[i]
+  create p.Child[tail[i][1]] and initialize it
+  p.String[tail[i][1]] <- tail[i]
+\end{verbatim}
+
+Ví dụ với $S=\texttt{abab\$}$, ta lần lượt chèn
+\texttt{abab\$}, \texttt{bab\$}, \texttt{ab\$}, \texttt{b\$}, \texttt{\$}.
+Việc thêm \texttt{tail[i]} chỉ tốn $O(1)$ nếu đã biết nút của
+\texttt{head[i]}; nút này mới là phần khó. Nếu mỗi lần đều dò từ gốc, tổng
+thời gian sẽ rất cao.
+
+\subsection{Liên kết hậu tố}
+
+Tính chất 1. Nếu $\operatorname{head}_{i-1}$ viết được thành $x\delta$, trong
+đó $x$ là một ký tự và $\delta$ có thể rỗng, thì $\delta$ chắc chắn là tiền tố
+của $\operatorname{head}_i$.
+
+Thật vậy, cây rẽ nhánh tại nút ứng với $\operatorname{head}_{i-1}$, nên tồn
+tại $j<i-1$ sao cho $x\delta$ là tiền tố của $\operatorname{suf}_j$. Khi đó
+$\delta$ là tiền tố của $\operatorname{suf}_{j+1}$. Đồng thời $\delta$ cũng là
+tiền tố của $\operatorname{suf}_i$, nên nó là tiền tố của
+$\operatorname{head}_i$.
+
+Liên kết hậu tố được định nghĩa như sau. Với mỗi nút trong không phải lá $p$,
+xâu ứng với nó có thể viết là $x\delta$, với $x$ là một ký tự và $\delta$ có
+thể rỗng. Con trỏ \texttt{p.Suffix} trỏ đến vị trí của $\delta$ trong cây; nếu
+$\delta$ rỗng thì trỏ về gốc. Liên kết hậu tố của gốc trỏ đến chính gốc.
+
+Trong quá trình xây, ta duy trì:
+
+\begin{itemize}
+  \item Tính chất 2: ngay sau khi một nút trong không phải lá được tạo, liên
+  kết hậu tố của nó được tính ngay.
+  \item Tính chất 3: khi cần tính liên kết hậu tố của một nút trong, xâu đích
+  của liên kết hậu tố đã xuất hiện trong cây.
+\end{itemize}
+
+Nhờ vậy, tương tự cây tiền tố từ, để xây liên kết hậu tố của nút $p$ ta bắt
+đầu từ liên kết hậu tố của cha $p$, rồi đi xuống:
+
+\begin{verbatim}
+Procedure CountSuffixLink(p)
+  q <- p.Father.Suffix
+  s <- string on the edge p.Father -> p
+  if q = Root then
+    s <- s[2..|s|]
+  while s != "" do
+    s1 <- q.String[s[1]]
+    L <- min(|s|, |s1|)
+    if L = |s| and L != |s1| then
+      create an internal node r and initialize it
+      r.String[s1[L+1]] <- s1[L+1..|s1|]
+      r.Child[s1[L+1]] <- q.Child[s[1]]
+      q.String[s[1]] <- s
+      q.Child[s[1]] <- r
+      p.Suffix <- r
+      CountSuffixLink(r)
+      return
+    q <- q.Child[s[1]]
+    s <- s[L+1..|s|]
+End
+\end{verbatim}
+
+Vì tính chất 3 đảm bảo xâu cần tìm đã có trong cây, ở dòng tính $L$ chỉ cần so
+sánh độ dài phần cạnh liên quan để biết đi tiếp hay tách cạnh.
+
+\subsection{Xây cây hậu tố}
+
+Khi đã có liên kết hậu tố, mỗi lần tìm $\operatorname{head}_i$ chỉ cần bắt đầu
+từ liên kết hậu tố của nút ứng với $\operatorname{head}_{i-1}$ rồi đi xuống.
+Khung thuật toán trở thành:
+
+\begin{verbatim}
+for i <- 1 to n do
+  1. find the node p corresponding to head[i-1]
+  2. from p.Suffix, descend to the node q for head[i]
+  3. create q.Child[tail[i][1]] and initialize it
+  4. q.String[tail[i][1]] <- tail[i]
+  5. if p.Suffix != q then CountSuffixLink(q)
+\end{verbatim}
+
+Phân tích thời gian:
+\begin{itemize}
+  \item Các bước 1, 3 và 4 tốn $O(1)$ mỗi vòng, tổng cộng $O(N)$.
+  \item Bước 5 tính liên kết hậu tố cho mọi nút trong. Vì trong
+  \texttt{CountSuffixLink} ta dùng độ dài cạnh để đi qua hoặc tách cạnh, tổng
+  chi phí tỉ lệ với số nút, tức $O(N)$.
+  \item Bước 2 tốn $O(|\operatorname{head}_i|-|\operatorname{head}_{i-1}|+1)$
+  theo phân tích khấu hao, tổng cộng cũng là $O(N)$.
+\end{itemize}
+Vì vậy thuật toán McCreight xây cây hậu tố trong $O(N)$.
+
+\section{Thuật toán chính thứ hai: thuật toán có hiệu năng trung bình tốt hơn}
+
+\subsection{Dùng và mở rộng cây tiền tố từ}
+
+Tương tự thuật toán chính thứ nhất, ta dùng cây tiền tố từ \texttt{TreeA} xây
+từ toàn bộ mẫu. Để phù hợp với thuật toán thứ hai, mỗi nút thêm tham số
+\texttt{Shift}. Tham số này ghi độ dài đường đi ngắn nhất từ nút hiện tại đến
+một nút \texttt{Okay} bất kỳ, không kể chính nó. Đường đi có thể dùng cạnh cây
+hoặc con trỏ tiền tố; cạnh cây có trọng số $1$, con trỏ tiền tố có trọng số
+$0$.
+
+Ý nghĩa của \texttt{Shift}: nếu con trỏ hiện đang ở nút này, ta cần đọc thêm
+ít nhất bao nhiêu ký tự nữa mới có thể tạo ra một lần khớp mẫu.
+
+Với các mẫu \texttt{abab}, \texttt{ba}, \texttt{bb}, các nút kết thúc mẫu được
+đánh dấu \texttt{Okay}. Giá trị \texttt{Shift} được xây như sau. Khi chèn ký
+tự thứ $j$ của mẫu $P_i$, đặt
+\[
+  \operatorname{new}=
+  \begin{cases}
+    L_i-j, & 1\le j<L_i,\\
+    L_i, & j=L_i.
+  \end{cases}
+\]
+Nếu tạo nút mới $p$, gán \texttt{p.Shift <- new}. Nếu đi đến một nút đã tồn
+tại $p$, gán
+\[
+  \texttt{p.Shift}\leftarrow
+  \min(\texttt{p.Shift},\operatorname{new}).
+\]
+
+Như vậy mới xét các cạnh cây, chưa xét con trỏ tiền tố. Vì con trỏ tiền tố
+luôn đi từ tầng sâu lên tầng nông hơn, ta duyệt các nút theo độ sâu tăng dần
+và cập nhật
+\[
+  \texttt{p.Shift}\leftarrow
+  \min(\texttt{p.Shift},\texttt{p.Prefix.Shift}).
+\]
+Tổng số nút là $O(\sum L)$, nên xây và duy trì \texttt{TreeA} mất
+$O(\sum L)$ thời gian.
+
+\subsection{Dùng và mở rộng cây hậu tố}
+
+Thuật toán thứ hai còn dùng một cây hậu tố \texttt{TreeB}, được xây từ tất cả
+hậu tố của các mẫu sau khi đảo ngược.
+
+Nếu các mẫu là \texttt{abab}, \texttt{ba}, \texttt{bb}, các xâu đảo lần lượt
+là \texttt{baba}, \texttt{ab}, \texttt{bb}. Cây hậu tố của chúng cho phép ta
+kiểm tra từ phải sang trái một đoạn văn bản và biết trong $O(N)$ thời gian
+liệu đoạn độ dài $N$ ấy có phải là xâu con của một mẫu nào không.
+
+Khác phần trình bày cây hậu tố ở trên, trong mô tả \texttt{TreeB} ta không cần
+hiện các cạnh chứa ký tự kết thúc \texttt{\$}; ký tự ấy chỉ phục vụ quá trình
+xây dựng.
+
+\subsection{Hai hàm trên \texttt{TreeA} và \texttt{TreeB}}
+
+\begin{verbatim}
+Function ScanA(L, R, point)
+  scan T[L..R] in TreeA, starting from node point
+  set point to the last reached node
+  while point.Shift < shortest_pattern_length div 2 do
+    read one more character from the text
+    continue moving point in TreeA
+  output every Okay encountered during the process
+  return the last text position scanned and the final point
+End
+\end{verbatim}
+
+Quét trong \texttt{TreeA} chính là bước đi của thuật toán ở Chương 4: đi xuống
+theo cạnh cây khi có thể, nếu không thì theo con trỏ tiền tố để lùi. Theo phân
+tích khấu hao, thời gian tỉ lệ với số ký tự đã quét. Để trình bày gọn, từ đây
+ta xét bài toán tìm mọi vị trí xuất hiện của mọi mẫu.
+
+\begin{verbatim}
+Function ScanB(L, R)
+  scan T[L..R] from right to left in TreeB
+  stop when no path matches, or when reaching L
+  return the last text position scanned
+End
+\end{verbatim}
+
+Nếu hàm này trả về $L$, đoạn $T[L..R]$ là xâu con của một mẫu nào đó. Ta gọi
+đoạn như vậy là \term{hợp lệ}; ngược lại là \term{không hợp lệ}.
+
+\subsection{Quy trình chính}
+
+\begin{verbatim}
+Algorithm MultiPatternMatching2
+  preprocess: build TreeA and TreeB
+  L <- 0
+  R <- shortest_pattern_length
+  point <- TreeA.Root
+  while R <= n do
+    pos <- ScanB(L+1, R)
+    if pos > L + 1 then
+      point <- TreeA.Root
+    (L, point) <- ScanA(pos, R, point)
+    R <- L + point.Shift
+End
+\end{verbatim}
+
+Tư tưởng cơ bản là như sau. Điểm bắt đầu đang xét là $L+1$. Nếu tại đó có một
+mẫu xuất hiện, đuôi của mẫu phải nằm sau $R$. Ta quét ngược từ $R$ bằng
+\texttt{ScanB} và giả sử nó dừng ở \texttt{pos}.
+
+Nếu \texttt{pos = L+1}, đoạn $T[L+1..R]$ là hợp lệ, nên có thể tiếp tục quét
+tiến bằng \texttt{ScanA} từ $L+1$.
+
+Nếu \texttt{pos > L+1}, thì mọi vị trí $L+1,L+2,\ldots,\texttt{pos}-1$ đều
+không thể là đầu của một lần khớp mẫu. Thật vậy, nếu tại một vị trí
+$x$ trong khoảng đó có mẫu xuất hiện, đoạn $T[x..R]$ phải là hợp lệ, mâu
+thuẫn với việc \texttt{ScanB} dừng tại \texttt{pos}. Đoạn $T[\texttt{pos}..R]$
+là hợp lệ, nên ta đặt lại \texttt{point} về gốc của \texttt{TreeA} rồi quét
+tiến từ \texttt{pos}.
+
+Điều kiện dừng của \texttt{ScanA},
+\[
+  \texttt{point.Shift}\ge \left\lfloor\frac{\theta}{2}\right\rfloor,
+\]
+với $\theta$ là độ dài mẫu ngắn nhất, nhằm bảo đảm ở giai đoạn kế tiếp
+$R-L$ có cỡ ít nhất $\theta/2$.
+
+\subsection{Một ví dụ}
+
+Lấy hai mẫu \texttt{abcd} và \texttt{bcde}. Cây tiền tố \texttt{TreeA} gồm hai
+đường:
+\[
+\begin{array}{cccccc}
+1&\xrightarrow{\texttt{a}}&2&\xrightarrow{\texttt{b}}&3&
+\xrightarrow{\texttt{c}}4\xrightarrow{\texttt{d}}5,\\[0.4em]
+1&\xrightarrow{\texttt{b}}&6&\xrightarrow{\texttt{c}}&7&
+\xrightarrow{\texttt{d}}8\xrightarrow{\texttt{e}}9.
+\end{array}
+\]
+Các nút $5$ và $9$ là nút \texttt{Okay}. Bảng \texttt{Shift} là:
+\[
+\begin{array}{c|ccccccccc}
+\text{nút} & 1&2&3&4&5&6&7&8&9\\
+\hline
+\texttt{Shift} & 4&3&2&1&1&3&2&1&4
+\end{array}
+\]
+
+Giả sử văn bản $T=\texttt{abcabcde}$.
+
+Giai đoạn 1: $L=0$, $R=4$, \texttt{point = 1}. Quét ngược bằng \texttt{ScanB}
+từ $R$ về $L$. Chỉ đoạn \texttt{a} là hợp lệ, còn \texttt{ca} không hợp lệ,
+nên \texttt{pos = 4}. Vì \texttt{pos > L+1}, các vị trí $1..3$ không thể bắt
+đầu một mẫu; nếu có, mẫu ấy phải chứa đoạn \texttt{ca}, nhưng \texttt{ca}
+không là xâu con của mẫu nào. Sau đó \texttt{ScanA} quét đoạn
+$T[4..4]=\texttt{a}$, đưa \texttt{point} từ $1$ đến $2$. Vì
+\texttt{Shift[2] = 3} không nhỏ hơn $\lfloor 4/2\rfloor$, giai đoạn kết thúc
+và chưa tìm thấy mẫu.
+
+Giai đoạn 2: $L=4$, $R=L+\texttt{Shift[point]}=7$, \texttt{point = 2}. Quét
+ngược thấy \texttt{bcd} hợp lệ và dừng tại \texttt{pos = 5 = L+1}, nên không
+cần đặt lại \texttt{point}. Quét tiến $T[5..7]$ đưa \texttt{point} đến nút
+$5$ và phát hiện mẫu \texttt{abcd}. Vì $\texttt{Shift[5]} = 1 <
+\lfloor4/2\rfloor$, \texttt{ScanA} đọc thêm ký tự \texttt{e}, đi qua các con
+trỏ và cạnh tương ứng đến nút $9$, rồi phát hiện tiếp mẫu \texttt{bcde}. Khi
+hết văn bản, thuật toán dừng.
+
+\subsection{Phân tích độ phức tạp}
+
+Xây cây tiền tố từ và cây hậu tố tốn
+\[
+  O\left(26\sum L\right),
+\]
+trong đó bộ nhớ vẫn có thể là nút thắt cổ chai như đã nêu ở Chương 4. Ta tập
+trung phân tích quá trình quét văn bản.
+
+Gọi $\theta$ là độ dài mẫu ngắn nhất. Trường hợp xấu nhất, \texttt{ScanA} có
+thể phải quét toàn bộ văn bản vì \texttt{Shift} luôn nhỏ hơn $\theta/2$. Khi
+đó thuật toán vẫn tốn $O(n)$ thời gian.
+
+Khi mọi mẫu đều có độ dài $\theta$, $\theta$ đủ lớn, văn bản ngẫu nhiên và
+bảng chữ cái đủ lớn, xác suất để \texttt{ScanB} quét hết $T[L+1..R]$ không
+lớn. Khi ấy độ phức tạp trung bình nhỏ hơn nhiều so với $O(n)$. Ta tính như
+sau.
+
+Giả sử mọi mẫu có độ dài $\theta$ và
+\[
+  M=\sum L=\theta^k,
+\]
+trong đó $k$ là hằng số nhỏ vì $\theta$ lớn. Gọi $\alpha$ là kích thước bảng
+chữ cái, chẳng hạn $26$. Với $\theta$ và $\alpha$ đủ lớn, giả sử
+\[
+  \log_\alpha M^3 \le \frac{\theta}{2},
+  \qquad\text{tức}\qquad
+  3k\log_\alpha\theta\le \frac{\theta}{2}.
+\]
+Một lần \texttt{ScanB} cộng với một lần \texttt{ScanA} được gọi là một giai
+đoạn.
+
+\paragraph{Mệnh đề 1.}
+Trong mỗi giai đoạn, $R-L$ có bậc $O(\theta)$.
+
+Lần đầu vào vòng lặp, $L=0$ và $R=\theta$. Các lần sau, vì \texttt{ScanA} chỉ
+dừng khi $\texttt{Shift}\ge \theta/2$, ta có $R\ge L+\theta/2$. Do đó
+$R-L$ luôn có cỡ $O(\theta)$ trong phân tích này.
+
+\paragraph{Mệnh đề 2.}
+Số giai đoạn nhiều nhất là $O(n/\theta)$. Điều này suy ra trực tiếp từ mệnh
+đề 1.
+
+\paragraph{Mệnh đề 3.}
+Tập mẫu $P$ có không quá $\theta^{2k}$ xâu con, tức không quá chừng ấy xâu hợp
+lệ.
+
+Mỗi mẫu có không quá $\theta^2$ xâu con. Số mẫu là $\theta^{k-1}$, nên tổng số
+xâu con không vượt quá một cận cùng bậc; trong lập luận của tác giả, dùng cận
+rộng $\theta^{2k}$ là đủ.
+
+\paragraph{Mệnh đề 4.}
+Tồn tại hằng số $C$ sao cho một xâu gồm $C\log_\alpha\theta$ ký tự ngẫu nhiên
+có xác suất không quá $1/M$ để là xâu con của một mẫu trong $P$.
+
+Theo mệnh đề 3, số xâu hợp lệ không quá $\theta^{2k}$. Số xâu độ dài
+$C\log_\alpha\theta$ là
+\[
+  \alpha^{C\log_\alpha\theta}=\theta^C.
+\]
+Vì các khả năng được đọc vào có xác suất như nhau, xác suất đọc được xâu hợp
+lệ không vượt quá
+\[
+  \frac{\theta^{2k}}{\theta^C}.
+\]
+Muốn giá trị này không quá $1/M=1/\theta^k$, chỉ cần $C\ge 3k$. Chọn $C=3k$
+là một hằng số; giả thiết ở trên cũng cho
+$C\log_\alpha\theta\le\theta/2$.
+
+\paragraph{Mệnh đề 5.}
+Trong \texttt{ScanA}, khi xử lý đến nút $p$ ở độ sâu $x$ trên \texttt{TreeA}
+và tương ứng với ký tự văn bản $T[y]$, đoạn $T[y-x+1..y]$ là hợp lệ.
+
+Thật vậy, đoạn này chính là xâu tạo bởi đường đi từ gốc \texttt{TreeA} đến
+$p$. Nó là tiền tố của một mẫu, do đó là xâu con của một mẫu.
+
+\paragraph{Mệnh đề 6.}
+Trong \texttt{ScanA}, số ký tự kỳ vọng cần đọc thêm ngoài $[L..R]$ cho đến khi
+gặp nút có \texttt{Shift} ít nhất $\theta/2$ là
+\[
+  O(\log_\alpha\theta).
+\]
+
+Nếu \texttt{ScanA} dừng trong $C\log_\alpha\theta$ ký tự đầu, kết quả hiển
+nhiên. Nếu nó dừng trong khoảng từ $C\log_\alpha\theta$ đến
+$2C\log_\alpha\theta$, thì sau $C\log_\alpha\theta$ ký tự đầu, con trỏ trong
+\texttt{TreeA} phải có độ sâu ít nhất $\theta/2$; nếu độ sâu nhỏ hơn, vì
+$C\log_\alpha\theta\le\theta/2$, giá trị \texttt{Shift} đã đủ lớn để dừng.
+Theo mệnh đề 5, xâu dài $C\log_\alpha\theta$ vừa tạo là hợp lệ, xác suất của
+sự kiện này không quá $1/M$ theo mệnh đề 4.
+
+Tương tự, xác suất để dừng trong khoảng
+$xC\log_\alpha\theta$ đến $(x+1)C\log_\alpha\theta$ giảm theo lũy thừa của
+$1/M$. Vì vậy kỳ vọng được chặn bởi một tổng hình học:
+\[
+  \sum_{x\ge 0}
+  (x+1)C\log_\alpha\theta\cdot \frac{1}{M^x}
+  =O(\log_\alpha\theta).
+\]
+
+\paragraph{Mệnh đề 7.}
+Số ký tự kỳ vọng được đọc trong mỗi giai đoạn là
+\[
+  O(\log_\alpha\theta).
+\]
+
+Chia làm hai trường hợp.
+
+Trường hợp 1: \texttt{ScanB} đọc không quá $C\log_\alpha\theta$ ký tự. Theo
+mệnh đề 4, xác suất của trường hợp này ít nhất $1-1/M$. Khi đó \texttt{ScanA}
+bắt đầu từ gốc của \texttt{TreeA} và đọc nhiều nhất
+$C\log_\alpha\theta$ ký tự nữa; vì
+$C\log_\alpha\theta\le\theta/2$, tham số \texttt{Shift} chắc chắn đạt
+$\theta/2$. Tổng số ký tự không quá $2C\log_\alpha\theta$.
+
+Trường hợp 2: \texttt{ScanB} vẫn chưa dừng sau
+$C\log_\alpha\theta$ ký tự. Xác suất không vượt quá $1/M$. Khi đó kỳ vọng số
+ký tự đọc vào không vượt quá $\theta$ cho \texttt{ScanB}, $\theta$ cho phần
+\texttt{ScanA} bên trong đoạn, cộng thêm $C\log_\alpha\theta$ ký tự đọc thêm
+do điều kiện \texttt{Shift}.
+
+Do đó số ký tự kỳ vọng trong một giai đoạn là
+\[
+  \left(1-\frac1M\right)2C\log_\alpha\theta
+  +\frac1M\left(2\theta+C\log_\alpha\theta\right)
+  =O(\log_\alpha\theta).
+\]
+
+Kết hợp mệnh đề 2 và mệnh đề 7, độ phức tạp trung bình của thuật toán là
+\[
+  O\left(\frac{n\log_\alpha\theta}{\theta}\right).
+\]
+Hằng số ẩn khá lớn, nên ưu thế của thuật toán chỉ thể hiện rõ khi $\theta$ và
+$\alpha$ đủ lớn.
+
+\section{Gợi ý và kết luận}
+
+\subsection{Phân tích thuật toán}
+
+Trong thuật toán chính thứ hai, số $\theta/2$ mang hai ý nghĩa cùng lúc:
+\begin{itemize}
+  \item nó là ngưỡng để \texttt{ScanA} dừng;
+  \item nó là cận dưới cho độ dài $R-L$ trong mỗi giai đoạn.
+\end{itemize}
+
+Nếu tăng ngưỡng này, \texttt{ScanA} khó dừng hơn. Nếu giảm nó, số giai đoạn sẽ
+tăng. Cả hai đều làm độ phức tạp trung bình tăng. Vì vậy $\theta/2$ là điểm
+trung gian vừa đủ để đạt độ phức tạp trung bình nhỏ nhất trong phân tích này.
+
+\subsection{Gợi ý phương pháp}
+
+Từ thuật toán này có thể rút ra hai gợi ý:
+\begin{itemize}
+  \item phối hợp nhiều thuật toán hoặc cấu trúc dữ liệu, như cây tiền tố từ và
+  cây hậu tố trong bài này;
+  \item chọn điểm cân bằng thích hợp giữa hai yếu tố đối nghịch.
+\end{itemize}
+
+Trong bài này ta dùng trung bình cộng để chọn điểm cân bằng. Thường gặp hơn là
+trung bình nhân. Một ví dụ điển hình là bài \emph{Editor} ở ngày thi thứ nhất
+NOI 2003: trong một mảng ký tự dài tối đa $2M$, liên tục thực hiện chèn, xóa,
+định vị, đọc, v.v., và cần mô phỏng quá trình đó.
+
+Nếu dùng mảng, chèn và xóa tốn $O(2M)$, còn định vị tốn $O(1)$. Nếu dùng danh
+sách liên kết, chèn và xóa tốn $O(1)$, còn định vị tốn $O(2M)$. Cả hai cách
+đều không đủ mạnh với giới hạn dữ liệu. Ta phối hợp chúng bằng danh sách liên
+kết theo khối:
+\[
+\boxed{\text{mảng khối 1}}\to
+\boxed{\text{mảng khối 2}}\to
+\cdots\to
+\boxed{\text{mảng khối }Y}.
+\]
+Mỗi khối là một mảng. Đặt kích thước khối là $X$ và số khối là $Y$; lý tưởng
+thì $XY$ xấp xỉ độ dài văn bản. Khi chèn hoặc xóa, ta thao tác vụn trong một
+vài khối với chi phí $O(X)$, rồi chỉnh con trỏ danh sách với chi phí $O(1)$.
+Khi định vị, ta tìm khối với chi phí $O(Y)$ rồi tìm vị trí trong khối với chi
+phí $O(1)$.
+
+Chọn $X=Y=\sqrt{2M}$ tạo điểm cân bằng và hạ độ phức tạp tổng thể.
+
+\subsection{Kết luận}
+
+Việc cài đặt thuật toán chính thứ hai đã vượt xa độ khó thông thường của OI;
+hơn nữa thời gian đọc mảng ký tự có thể đã lớn hơn thời gian xử lý chính. Khi
+đã có thuật toán chính thứ nhất đơn giản và dễ dùng, thuật toán thứ hai còn ý
+nghĩa thực tế không?
+
+Có. Trước hết, các thuật toán chuẩn bị được dùng ở đây đều đã trở thành công
+cụ chủ lưu trong thi tin học; nắm vững chúng là năng lực cần có. Tiếp theo,
+độ phức tạp của thuật toán thứ hai phản ánh ở một mức độ khác rằng cán cân
+mâu thuẫn giữa phần cứng và phần mềm lại nghiêng về phía phần mềm: phương
+tiện lưu trữ và thuật toán lưu trữ hiệu quả hơn vẫn cần được tiếp tục phát
+triển.
+
+Điều đáng quý nhất là tư tưởng ``dùng tổng hợp, mở từ điểm yếu nhất'' trong
+cách hình thành thuật toán. Độ bền của một chuỗi phụ thuộc vào mắt yếu nhất;
+lượng nước trong thùng phụ thuộc vào tấm ván ngắn nhất. Chỉ cần liên tục đột
+phá ở nút thắt, ta sẽ luôn tìm được đường đi qua bài toán.
+
+Tin học là một ngành sâu rộng. Bản chất của nó không nằm ở kỹ thuật lập trình
+tầng thấp, mà nằm ở đổi mới tư duy của con người; đó cũng là mục đích của các
+kỳ thi học thuật.
+
+\section*{Lời cảm ơn}
+
+Tác giả cảm ơn toàn thể các thầy cô trong nhóm huấn luyện của Ủy ban Olympic
+Tin học thanh thiếu niên tỉnh Giang Tô; cảm ơn các thầy cô của Trường Ngoại
+ngữ Nam Kinh đã hỗ trợ; cảm ơn bạn Xin Tao ở Liêu Ninh đã giúp đỡ nhiều; cảm
+ơn gia đình đã quan tâm; và cảm ơn tất cả bạn bè trong cộng đồng tin học.
+
+\begin{thebibliography}{9}
+\bibitem{clrs}
+Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford Stein,
+\emph{Introduction to Algorithms}.
+
+\bibitem{taocp}
+Donald E. Knuth,
+\emph{The Art of Computer Programming}.
+
+\bibitem{csehandbook}
+Allen B. Tucker et al.,
+\emph{The Computer Science and Engineering Handbook}.
+
+\bibitem{ukkonen}
+E. Ukkonen,
+\emph{On-line Construction of Suffix Trees}, 1995.
+
+\bibitem{mccreight}
+Barbara König,
+\emph{McCreight's Suffix Tree Construction Algorithm}.
+
+\bibitem{practical}
+Wu Wenhu and Wang Jiande,
+\emph{Analysis and Programming of Practical Algorithms}.
+\end{thebibliography}
+
+\end{document}

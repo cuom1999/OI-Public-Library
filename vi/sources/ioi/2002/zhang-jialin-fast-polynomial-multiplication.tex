@@ -1,0 +1,516 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2002/张家琳.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Nhân đa thức nhanh}
+\author{Zhang Jialin}
+\date{}
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\poly}{\mathcal{P}}
+
+\begin{document}
+\maketitle
+
+\origtitle{Fast polynomial multiplication}
+\sourcepath{IOI China candidate team papers / 2002 / Zhang Jialin.pdf}
+
+\tableofcontents
+
+\section{Dẫn nhập}
+
+Đa thức là một trong những công cụ toán học cơ bản nhất. Vì có dạng đơn giản
+và dễ thực hiện các phép tính trên máy tính, đa thức ngày càng được dùng rộng
+rãi. Nó không chỉ giữ vai trò quan trọng trong các phần mềm toán học như
+Maple, mà còn có nhiều ứng dụng trong kỹ thuật, thông tin và nhiều lĩnh vực
+khác.
+
+Sau đây là một vài ví dụ về xấp xỉ bằng đa thức:
+\[
+  \ln(x+1)=x-\frac{x^2}{2}+\frac{x^3}{3}-\frac{x^4}{4}
+    +\cdots+(-1)^{n-1}\frac{x^n}{n}+\cdots,
+\]
+\[
+  \sin x=x-\frac{x^3}{3!}+\frac{x^5}{5!}-\frac{x^7}{7!}
+    +\cdots+(-1)^n\frac{x^{2n+1}}{(2n+1)!}+\cdots,
+\]
+\[
+  \cos x=1-\frac{x^2}{2!}+\frac{x^4}{4!}-\frac{x^6}{6!}
+    +\cdots+(-1)^n\frac{x^{2n}}{(2n)!}+\cdots.
+\]
+
+\section{Các phép toán cơ bản trên đa thức}
+
+Các phép toán cơ bản gồm phép cộng, phép tính giá trị tại một điểm và phép
+nhân. Với
+\[
+  f(x)=a_0+a_1x+a_2x^2+\cdots+a_nx^n,
+\]
+ta có thể tính giá trị theo lược đồ Horner:
+\[
+  f(x)=a_0+x\bigl(a_1+x(a_2+\cdots+x(a_{n-1}+xa_n)\cdots)\bigr).
+\]
+
+Phần còn lại tập trung vào phép nhân đa thức.
+
+\section{Phép nhân đa thức thông thường}
+
+Nhân đa thức là một bài toán rất thường gặp. Với thuật toán thông thường,
+phép nhân hai đa thức bậc \(n\) cần thời gian \(O(n^2)\). Thuật toán ấy có
+dạng quen thuộc như phép nhân đặt cột:
+\[
+\begin{array}{rrrrr}
+&& a_nx^n+a_{n-1}x^{n-1}+\cdots+a_1x+a_0\\
+&\times& b_nx^n+b_{n-1}x^{n-1}+\cdots+b_1x+b_0\\ \hline
+&& a_nb_0x^n+a_{n-1}b_0x^{n-1}+\cdots+a_1b_0x+a_0b_0\\
+&+& a_nb_1x^{n+1}+a_{n-1}b_1x^n+\cdots+a_1b_1x^2+a_0b_1x\\
+&& \cdots\\
+&+& a_nb_nx^{2n}+\cdots+a_1b_nx^{n+1}+a_0b_nx^n.
+\end{array}
+\]
+Vì thế tích \(r(x)=f(x)g(x)\) có các hệ số
+\[
+  r(x)=a_nb_nx^{2n}
+  +\cdots+
+  \sum_{k=1}^{n} a_{n+1-k}b_k\,x^{n+1}
+  +\sum_{k=0}^{n} a_{n-k}b_k\,x^n
+  +\cdots+(a_1b_0+a_0b_1)x+a_0b_0.
+\]
+
+Nhìn vào quá trình trên, có vẻ thuật toán không làm việc thừa: ta phải xét
+mọi cặp \(a_i b_j\), vì mỗi tích đều ảnh hưởng đến kết quả cuối cùng. Nếu
+chỉ thay đổi thứ tự tính toán, ta không thể giảm bậc độ phức tạp thời gian;
+cùng lắm chỉ giảm được hằng số.
+
+Do đó, muốn giảm độ phức tạp một cách căn bản, ta phải nhìn đa thức từ một
+góc khác.
+
+\section{Biểu diễn điểm--giá trị của đa thức}
+
+Bên cạnh biểu diễn bằng hệ số, ta có thể biểu diễn đa thức bằng
+\term{điểm--giá trị}. Cụ thể, dùng
+\[
+  (x_0,y_0),(x_1,y_1),(x_2,y_2),\ldots,(x_{n-1},y_{n-1}),
+\]
+trong đó \(f(x_i)=y_i\) và các \(x_i\) đôi một khác nhau, để biểu diễn một đa
+thức bậc không quá \(n-1\).
+
+Với một đa thức đã cho, cách đơn giản nhất để sinh \(n\) cặp điểm--giá trị
+là chọn tùy ý \(n\) giá trị \(x_i\) phân biệt, rồi lần lượt tính giá trị đa
+thức tại các điểm ấy.
+
+Ngược lại, \(n\) cặp điểm--giá trị cũng xác định duy nhất một đa thức bậc
+không quá \(n-1\). Quá trình khôi phục đa thức từ các điểm gọi là
+\term{nội suy}.
+
+\paragraph{Bổ đề 1: tính duy nhất của nội suy đa thức.}
+Với tập bất kỳ gồm \(n\) cặp điểm--giá trị
+\[
+  \{(x_0,y_0),(x_1,y_1),\ldots,(x_{n-1},y_{n-1})\},
+\]
+trong đó \(x_0,x_1,\ldots,x_{n-1}\) đôi một khác nhau, tồn tại duy nhất một
+đa thức \(A(x)\) bậc không quá \(n-1\) sao cho
+\[
+  y_k=A(x_k),\qquad k=0,1,\ldots,n-1.
+\]
+
+\paragraph{Chứng minh tồn tại.}
+Đặt
+\[
+  A(x)=a_0+a_1x+a_2x^2+\cdots+a_{n-1}x^{n-1}.
+\]
+Điều kiện \(A(x_k)=y_k\) tương đương hệ phương trình tuyến tính
+\[
+\begin{bmatrix}
+1 & x_0 & x_0^2 & \cdots & x_0^{n-1}\\
+1 & x_1 & x_1^2 & \cdots & x_1^{n-1}\\
+\vdots & \vdots & \vdots & \ddots & \vdots\\
+1 & x_{n-1} & x_{n-1}^2 & \cdots & x_{n-1}^{n-1}
+\end{bmatrix}
+\begin{bmatrix}
+a_0\\ a_1\\ \vdots\\ a_{n-1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+y_0\\ y_1\\ \vdots\\ y_{n-1}
+\end{bmatrix}.
+\]
+Ký hiệu hệ này là \(XA=Y\). Ma trận \(X\) là ma trận Vandermonde. Bằng các
+phép biến đổi định thức, ta có
+\[
+  \det X=\prod_{j<k}(x_k-x_j)\ne0.
+\]
+Vì vậy \(X\) khả nghịch và \(A=X^{-1}Y\) tồn tại.
+
+\paragraph{Chứng minh duy nhất.}
+Giả sử hai đa thức \(f(x)\) và \(g(x)\), đều có bậc không quá \(n-1\), cùng
+thỏa các cặp điểm--giá trị trên. Khi đó
+\[
+  r(x)=f(x)-g(x)
+\]
+có \(n\) nghiệm \(x_0,x_1,\ldots,x_{n-1}\), trong khi \(r(x)\) có bậc không
+quá \(n-1\). Suy ra \(r(x)\equiv0\), tức \(f(x)=g(x)\).
+
+\section{Nhân đa thức trong biểu diễn điểm--giá trị}
+
+Nếu \(r(x)=f(x)g(x)\), thì tại từng điểm \(x_i\),
+\[
+  r(x_i)=f(x_i)g(x_i).
+\]
+Nói cách khác, nếu ta có ba biểu diễn điểm--giá trị dùng cùng các hoành độ,
+\[
+  (x_i,r_i),\qquad (x_i,f_i),\qquad (x_i,g_i),
+\]
+thì
+\[
+  r_i=f_i g_i.
+\]
+
+Vì vậy, nếu dùng đúng cách biểu diễn điểm--giá trị, phép nhân đa thức chỉ
+cần thời gian tuyến tính.
+
+Tuy nhiên, nếu \(f\) và \(g\) đều có bậc không quá \(n-1\), thì \(r=fg\) có
+bậc không quá \(2n-2\). Để xác định duy nhất \(r(x)\), ta cần \(2n-1\) cặp
+điểm--giá trị, trong khi ban đầu chỉ có \(n\) cặp. Ta giải quyết bằng cách
+mở rộng số cặp điểm--giá trị của \(f(x)\) và \(g(x)\) ngay từ đầu lên
+\(2n-1\).
+
+\section{Cải thiện phép nhân hệ số bằng biểu diễn điểm--giá trị}
+
+Ta muốn tận dụng việc nhân trong biểu diễn điểm--giá trị chỉ cần thời gian
+tuyến tính để tăng tốc phép nhân đa thức vốn được cho bằng hệ số. Cần làm
+ba bước:
+\begin{enumerate}
+  \item chuyển từ biểu diễn hệ số sang biểu diễn điểm--giá trị, gọi là quá
+  trình tính giá trị;
+  \item nhân từng điểm trong biểu diễn điểm--giá trị;
+  \item chuyển từ biểu diễn điểm--giá trị về biểu diễn hệ số, gọi là nội suy.
+\end{enumerate}
+Bước thứ hai chỉ cần thời gian tuyến tính. Mấu chốt là bước thứ nhất và bước
+thứ ba.
+
+\section{Từ hệ số sang điểm--giá trị}
+
+Ta cần tính
+\[
+  x_i\mapsto f(x_i),\qquad i=0,1,\ldots,n-1.
+\]
+Nếu dùng Horner trực tiếp thì
+\[
+  f(x_i)=((\cdots(a_{n-1}x_i+a_{n-2})x_i+a_{n-3})\cdots+a_1)x_i+a_0.
+\]
+Điểm quan trọng là các \(x_0,x_1,\ldots,x_{n-1}\) do ta tự chọn. Bằng cách
+chọn phù hợp, ta có thể đưa quá trình chuyển đổi xuống \(O(n\log n)\).
+
+Ta chọn các căn bậc \(n\) của \(1\):
+\[
+  \eps_n^0,\eps_n^1,\ldots,\eps_n^{n-1},
+\]
+trong đó
+\[
+  \eps_n^k=e^{2\pi\ii k/n}
+  =\cos\frac{2\pi k}{n}+\ii\sin\frac{2\pi k}{n}.
+\]
+
+\paragraph{Bổ đề 2: định lý chia đôi.}
+Với mọi số nguyên \(n\ge0\) và \(k\ge0\), ta có
+\[
+  \left(\eps_{2n}^{2k}\right)=\eps_n^k.
+\]
+
+\paragraph{Chứng minh.}
+\[
+  \eps_{2n}^{2k}
+  =\cos\frac{2\pi\cdot2k}{2n}
+   +\ii\sin\frac{2\pi\cdot2k}{2n}
+  =\cos\frac{2\pi k}{n}
+   +\ii\sin\frac{2\pi k}{n}
+  =\eps_n^k.
+\]
+
+Bài toán cần giải là tính
+\[
+  f(\eps_n^k)=a_0+a_1\eps_n^k+\cdots+a_{n-1}(\eps_n^k)^{n-1},
+  \qquad k=0,1,\ldots,n-1.
+\]
+Giả sử \(n\) chẵn; nếu không, ta thêm các hệ số bậc cao bằng \(0\) để đưa
+\(n\) về số chẵn. Đặt
+\[
+  f^{[0]}(x)=a_0+a_2x+\cdots+a_{n-2}x^{n/2-1},
+\]
+\[
+  f^{[1]}(x)=a_1+a_3x+\cdots+a_{n-1}x^{n/2-1}.
+\]
+Đa thức \(f^{[0]}\) chứa mọi hệ số chỉ số chẵn của \(f\), còn \(f^{[1]}\)
+chứa mọi hệ số chỉ số lẻ. Khi đó
+\[
+  f(x)=f^{[0]}(x^2)+x f^{[1]}(x^2).
+\]
+Vì vậy, để tính \(f\) tại \(\eps_n^0,\eps_n^1,\ldots,\eps_n^{n-1}\), ta cần
+tính \(f^{[0]}\) và \(f^{[1]}\) tại các điểm
+\[
+  (\eps_n^0)^2,(\eps_n^1)^2,\ldots,(\eps_n^{n-1})^2.
+\]
+
+Theo định lý chia đôi,
+\[
+\begin{aligned}
+  (\eps_n^0)^2,(\eps_n^1)^2,\ldots,(\eps_n^{n-1})^2
+  &=
+  \eps_{n/2}^0,\eps_{n/2}^1,\ldots,\eps_{n/2}^{n-1}\\
+  &=
+  \eps_{n/2}^0,\eps_{n/2}^1,\ldots,\eps_{n/2}^{n/2-1},
+  \eps_{n/2}^0,\ldots,\eps_{n/2}^{n/2-1}.
+\end{aligned}
+\]
+Nghĩa là các bình phương trên không phải \(n\) số khác nhau; chúng chỉ gồm
+các căn bậc \(n/2\) của \(1\), mỗi căn xuất hiện đúng hai lần. Do đó bài
+toán con có cùng dạng với bài toán gốc nhưng kích thước giảm một nửa. Điều
+này dẫn đến cách giải chia để trị, chính là ý tưởng của FFT.
+
+\paragraph{Thuật toán đệ quy.}
+Trong đoạn giả mã sau, \(a\) là dãy hệ số, \(y\) là dãy giá trị tại các căn
+đơn vị tương ứng.
+\begin{verbatim}
+Function transform(a: atype): ytype;
+  if n = 1 then
+    return a0
+
+  if odd(n) then
+    begin
+      inc(n);
+      a[n-1] := 0;
+    end;
+
+  a[0] := (a0, a2, ..., a[n-2]);
+  a[1] := (a1, a3, ..., a[n-1]);
+
+  y[0] := transform(a[0]);
+  y[1] := transform(a[1]);
+
+  for k := 0 to n-1 do
+    y[k] := y[0][k mod (n/2)]
+            + eps_n^k * y[1][k mod (n/2)];
+
+  return y;
+\end{verbatim}
+Trong công thức ở vòng lặp,
+\[
+  y(\eps_n^k)
+  =y^{[0]}(\eps_{n/2}^k)+\eps_n^k y^{[1]}(\eps_{n/2}^k),
+\]
+với chỉ số ở vế phải hiểu theo chu kỳ \(n/2\). Có thể chứng minh cách tính
+này có độ phức tạp \(O(n\log n)\).
+
+\section{Từ điểm--giá trị về hệ số}
+
+Nội suy là phép ngược của quá trình tính giá trị. Bài toán này có vẻ phức
+tạp hơn, nhưng thực ra có thể chuyển về bài toán trước.
+
+Quá trình tính giá trị có thể viết thành phương trình ma trận
+\[
+  Y=V_nA,
+\]
+trong đó
+\[
+Y=
+\begin{bmatrix}
+y_0\\ y_1\\ y_2\\ y_3\\ \vdots\\ y_{n-1}
+\end{bmatrix},
+\qquad
+A=
+\begin{bmatrix}
+a_0\\ a_1\\ a_2\\ a_3\\ \vdots\\ a_{n-1}
+\end{bmatrix},
+\]
+và
+\[
+V_n=
+\begin{bmatrix}
+1 & 1 & 1 & 1 & \cdots & 1\\
+1 & \eps_n & \eps_n^2 & \eps_n^3 & \cdots & \eps_n^{n-1}\\
+1 & \eps_n^2 & \eps_n^4 & \eps_n^6 & \cdots & \eps_n^{2(n-1)}\\
+1 & \eps_n^3 & \eps_n^6 & \eps_n^9 & \cdots & \eps_n^{3(n-1)}\\
+\vdots & \vdots & \vdots & \vdots & \ddots & \vdots\\
+1 & \eps_n^{n-1} & \eps_n^{2(n-1)} & \eps_n^{3(n-1)}
+  & \cdots & \eps_n^{(n-1)(n-1)}
+\end{bmatrix}.
+\]
+Nếu \(V_n\) khả nghịch, nội suy là
+\[
+  A=V_n^{-1}Y.
+\]
+
+\paragraph{Bổ đề 3.}
+Với ma trận \(V_n\) ở trên,
+\[
+V_n^{-1}=\frac1n
+\begin{bmatrix}
+1 & 1 & 1 & 1 & \cdots & 1\\
+1 & \eps_n^{-1} & \eps_n^{-2} & \eps_n^{-3}
+  & \cdots & \eps_n^{-(n-1)}\\
+1 & \eps_n^{-2} & \eps_n^{-4} & \eps_n^{-6}
+  & \cdots & \eps_n^{-2(n-1)}\\
+1 & \eps_n^{-3} & \eps_n^{-6} & \eps_n^{-9}
+  & \cdots & \eps_n^{-3(n-1)}\\
+\vdots & \vdots & \vdots & \vdots & \ddots & \vdots\\
+1 & \eps_n^{-(n-1)} & \eps_n^{-2(n-1)}
+  & \eps_n^{-3(n-1)} & \cdots & \eps_n^{-(n-1)(n-1)}
+\end{bmatrix}.
+\]
+
+Từ bổ đề này, ta giải được nội suy bằng cùng một thủ tục như quá trình tính
+giá trị, chỉ thay các căn \(\eps_n^k\) bằng \(\eps_n^{-k}\), rồi chia mọi hệ
+số thu được cho \(n\):
+\[
+  A=\frac1n V_n(\eps_n^{-1})Y.
+\]
+
+\paragraph{Thuật toán nội suy.}
+\begin{verbatim}
+Function inverse_transform(y: ytype): atype;
+  if n = 1 then
+    return y0
+
+  if odd(n) then
+    begin
+      inc(n);
+      y[n-1] := 0;
+    end;
+
+  y[0] := (y0, y2, ..., y[n-2]);
+  y[1] := (y1, y3, ..., y[n-1]);
+
+  a[0] := inverse_transform(y[0]);
+  a[1] := inverse_transform(y[1]);
+
+  for k := 0 to n-1 do
+    a[k] := a[0][k mod (n/2)]
+            + eps_n^(-k) * a[1][k mod (n/2)];
+
+  after the recursion, divide every a[k] by n;
+  return a;
+\end{verbatim}
+
+\section{Luồng thuật toán nhân đa thức}
+
+Bài toán: \(f(x)\) và \(g(x)\) là hai đa thức bậc không quá \(n-1\), đã biết
+biểu diễn hệ số của chúng. Hãy tính biểu diễn hệ số của
+\[
+  r(x)=f(x)g(x).
+\]
+
+Luồng thuật toán:
+\begin{enumerate}
+  \item \term{Tiền xử lý.} Thêm \(n-1\) hệ số bậc cao bằng \(0\), để bậc có
+  thể đạt đến \(2n-2\). Mục đích là có đủ số cặp điểm--giá trị để xác định
+  duy nhất \(r(x)\).
+  \item \term{Tính giá trị.} Dùng chia để trị qua hàm \texttt{transform} để
+  tính giá trị của \(f(x)\) và \(g(x)\) tại các căn bậc \(2n-1\) của \(1\).
+  Trong cài đặt FFT thường đệm tiếp đến một lũy thừa của \(2\) không nhỏ hơn
+  \(2n-1\).
+  \item \term{Nhân từng điểm.} Với mỗi điểm, nhân giá trị của \(f\) và \(g\)
+  để thu được giá trị của \(r\) tại điểm đó.
+  \item \term{Nội suy.} Hoán đổi vai trò của \(a\) và \(y\), dùng lại
+  \texttt{transform} với căn nghịch đảo để tìm biểu diễn hệ số của \(r(x)\),
+  rồi chia kết quả cho số điểm.
+\end{enumerate}
+
+Bước 1 và bước 3 đều chạy trong \(O(n)\). Bước 2 và bước 4 đều chạy trong
+\(O(n\log n)\).
+
+\section{Cải tiến thuật toán}
+
+Trong hàm \texttt{transform}, ta đang dùng đệ quy. Với \(n=8\), quá trình
+gọi đệ quy tách các hệ số như sau:
+\[
+\begin{array}{c}
+(a_0,a_1,a_2,a_3,a_4,a_5,a_6,a_7)\\[0.6em]
+\swarrow\hspace{8em}\searrow\\[-0.2em]
+(a_0,a_2,a_4,a_6)\hspace{4em}(a_1,a_3,a_5,a_7)\\[0.6em]
+\swarrow\hspace{2em}\searrow\hspace{5em}\swarrow\hspace{2em}\searrow\\[-0.2em]
+(a_0,a_4)\quad(a_2,a_6)\quad(a_1,a_5)\quad(a_3,a_7)\\[0.6em]
+\downarrow\hspace{3em}\downarrow\hspace{3em}\downarrow\hspace{3em}\downarrow\\[-0.2em]
+(a_0)\quad(a_4)\quad(a_2)\quad(a_6)\quad(a_1)\quad(a_5)\quad(a_3)\quad(a_7).
+\end{array}
+\]
+
+Phương pháp đệ quy cần nhiều bộ nhớ, vì mỗi lần gọi lại cần truyền một mảng
+hệ số mới vào quá trình con. Từ sơ đồ trên, ta thấy có thể làm ngược lại:
+thực hiện từ dưới lên bằng phép lặp. Thứ tự lá là
+\[
+  (a_0),(a_4),(a_2),(a_6),(a_1),(a_5),(a_3),(a_7),
+\]
+rồi lần lượt ghép thành
+\[
+  (a_0,a_4),\ (a_2,a_6),\ (a_1,a_5),\ (a_3,a_7),
+\]
+tiếp đến
+\[
+  (a_0,a_2,a_4,a_6),\qquad (a_1,a_3,a_5,a_7),
+\]
+và cuối cùng trở lại
+\[
+  (a_0,a_1,a_2,a_3,a_4,a_5,a_6,a_7).
+\]
+
+\paragraph{Thuật toán lặp.}
+\begin{verbatim}
+Function transform_better(a: atype): ytype;
+  preprocess:
+    add high-degree zero coefficients until the length is a power of 2
+
+  initialize:
+    y := a
+
+  iterate:
+    for k := 1 to lg n do
+      merge suitable adjacent blocks and put the result
+      into the corresponding positions of y
+
+  return y
+\end{verbatim}
+
+Với \(n=8\), các tầng lặp có thể mô tả như sau:
+\[
+\begin{array}{c}
+(a_0)\ (a_4)\ (a_2)\ (a_6)\ (a_1)\ (a_5)\ (a_3)\ (a_7)\\
+\eps_1^0\quad \eps_1^0\quad \eps_1^0\quad \eps_1^0\quad
+\eps_1^0\quad \eps_1^0\quad \eps_1^0\quad \eps_1^0\\[0.8em]
+(a_0,a_4)\qquad (a_2,a_6)\qquad (a_1,a_5)\qquad (a_3,a_7)\\
+\eps_2^0,\eps_2^1\qquad \eps_2^0,\eps_2^1\qquad
+\eps_2^0,\eps_2^1\qquad \eps_2^0,\eps_2^1\\[0.8em]
+(a_0,a_2,a_4,a_6)\qquad\qquad (a_1,a_3,a_5,a_7)\\
+\eps_4^0,\eps_4^1,\eps_4^2,\eps_4^3\qquad
+\eps_4^0,\eps_4^1,\eps_4^2,\eps_4^3\\[0.8em]
+(a_0,a_1,a_2,a_3,a_4,a_5,a_6,a_7)\\
+\eps_8^0,\eps_8^1,\eps_8^2,\eps_8^3,\eps_8^4,\eps_8^5,\eps_8^6,\eps_8^7.
+\end{array}
+\]
+
+\section{So sánh thực nghiệm}
+
+Cuối cùng, ta so sánh phương pháp được giới thiệu trong bài với phép nhân
+đa thức thông thường.
+
+Môi trường thử nghiệm: PIII 500, 128M RAM, FreePascal 1.0.4.
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{c|rrrrr}
+Bậc đa thức & \(n=100\) & \(n=1000\) & \(n=10000\) & \(n=20000\) & \(n=30000\)\\ \hline
+Thường (s) & 0.02 & 0.07 & 5.02 & 18.06 & \(>30\)\\
+Điểm--giá trị (s) & 0.05 & 0.50 & 2.46 & 2.88 & 3.36\\
+Chính xác \texttt{real} & 10--11 chữ số & 10--11 chữ số & 9--10 chữ số & 8--9 chữ số & 8--9 chữ số
+\end{tabular}
+\end{center}
+
+Bảng cho thấy khi bậc còn nhỏ, chi phí hằng số của phương pháp điểm--giá trị
+có thể lớn hơn. Khi bậc tăng, độ phức tạp \(O(n\log n)\) trở nên vượt trội
+so với \(O(n^2)\), dù cần chú ý sai số số thực trong tính toán với căn đơn
+vị phức.
+
+\end{document}

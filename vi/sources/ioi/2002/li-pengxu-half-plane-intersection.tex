@@ -1,0 +1,622 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2002/李澎煦.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Thuật toán giao nửa mặt phẳng và ứng dụng}
+\author{Li Pengxu}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Algorithms and applications of half-plane intersection}
+\sourcepath{IOI China candidate team papers / 2002 / Li Pengxu.pdf}
+
+\section*{Tổng quan}
+
+Bài viết giới thiệu các khái niệm cơ bản của nửa mặt phẳng và giao nửa mặt
+phẳng, rồi trình bày hai cách tính giao nửa mặt phẳng: thuật toán trực tuyến
+dựa trên việc lần lượt cắt miền hiện có, và thuật toán chia để trị dựa trên
+việc hợp nhất giao của hai tập nửa mặt phẳng. Phần ứng dụng cho thấy nhiều
+bài toán hình học trong thi lập trình có thể được chuyển thành bài toán tìm
+giao của các nửa mặt phẳng hoặc xét tính không rỗng của nghiệm một hệ bất
+đẳng thức tuyến tính hai biến.
+
+\paragraph{Từ khóa.}
+Nửa mặt phẳng; giao nửa mặt phẳng; đa giác lồi; chia để trị; Voronoi.
+
+\tableofcontents
+
+\section{Khái niệm cơ bản}
+
+\term{Nửa mặt phẳng} là một đường thẳng trên mặt phẳng cùng với phần nằm ở
+một phía của đường thẳng đó. Trong hệ tọa độ Descartes, một nửa mặt phẳng có
+thể được xác định bởi bất đẳng thức
+\[
+  ax+by+c\ge 0.
+\]
+
+Trong một miền bị chặn, khi tính toán thực tế ta có thể giả sử có một biên đủ
+lớn, một nửa mặt phẳng hoặc giao của các nửa mặt phẳng là một miền đa giác
+lồi.
+
+Giao của \(n\) nửa mặt phẳng
+\[
+  H_1\cap H_2\cap \cdots \cap H_n
+\]
+là một đa giác lồi có nhiều nhất \(n\) cạnh.
+
+\section{Thuật toán}
+
+\subsection{Thuật toán trực tuyến cho giao nửa mặt phẳng}
+
+\begin{verbatim}
+procedure intersection of half-planes
+Input:
+  n half-planes H1,H2,...,Hn, corresponding to inequalities
+  ai*x+bi*y+ci >= 0, i=1,2,3,...,n
+Output:
+  H1 cap H2 cap ... cap Hn
+
+  Initialize region A as the whole plane.
+  For i = 1,2,...,n:
+    Cut A by the line ai*x+bi*y+ci = 0.
+    Keep the part satisfying ai*x+bi*y+ci >= 0.
+  Output A.
+\end{verbatim}
+
+Thuật toán này có độ phức tạp thời gian \(O(n^2)\), đồng thời có ưu điểm của
+một thuật toán trực tuyến: sau mỗi nửa mặt phẳng mới, ta có thể cập nhật ngay
+miền giao hiện tại.
+
+\subsection{Thuật toán chia để trị cho giao nửa mặt phẳng}
+
+Giả sử ta có thể hợp nhất giao của \(m\) nửa mặt phẳng và giao của \(n\) nửa
+mặt phẳng trong thời gian \(O(m+n)\). Khi đó có thể dùng một thuật toán chia
+để trị \(O(n\log n)\) để tìm giao của các nửa mặt phẳng.
+
+\begin{verbatim}
+Procedure intersection of half-plane (D&C)
+Input:
+  n half-planes H1,H2,...,Hn, corresponding to inequalities
+  ai*x+bi*y+ci >= 0, i=1,2,3,...,n
+Output:
+  H1 cap H2 cap ... cap Hn
+
+  Split H1,...,Hn into two sets of approximately equal size.
+  Recursively compute the intersection in each subproblem.
+  Merge the two convex polygon regions to form
+  H1 cap H2 cap ... cap Hn.
+\end{verbatim}
+
+Vì vậy, điểm mấu chốt của bài toán là làm thế nào để tìm giao của hai đa giác
+lồi trong thời gian \(O(m+n)\).
+
+Ta cắt hai đa giác lồi theo các đường song song với trục \(y\). Trong thời
+gian \(O(m+n)\), hai đa giác có thể được chia thành nhiều nhất \(O(m+n)\)
+miền hình thang. Giao của hai hình thang tương ứng có thể được xử lý trong
+thời gian \(O(1)\).
+
+Để thuận tiện cho thao tác, ta dùng một cách đặc biệt để biểu diễn đa giác
+lồi. Có thể thấy các đỉnh ở biên trên và các đỉnh ở biên dưới của một đa
+giác lồi lần lượt tạo thành hai dãy có tọa độ \(x\) tăng dần. Lưu riêng hai
+dãy đỉnh này dưới dạng hai danh sách liên kết sẽ cho ta biên trên và biên
+dưới xác định miền đa giác lồi.
+
+\paragraph{Thuật toán.}
+\begin{verbatim}
+procedure intersection of convex polygon
+Input:
+  two convex polygon regions A and B
+Output:
+  C = A cap B
+
+1. Classify the vertices of the two polygons by x-coordinate, obtaining
+   the sequence x_i, i=1,...,p.
+2. Initialize C as the empty region.
+3. Process {x_1}.
+4. Process the regions (x_i, x_{i+1}], i=1,...,p-1, in order.
+   4.1 Compute the trapezoids, possibly degenerate, cut from the two
+       polygons in this region. Call them ABCD and A'B'C'D'.
+   4.2 Compute the intersection points
+       AB cap A'B', AB cap C'D', and CD cap A'B'.
+       Sort all existing points by x-coordinate, delete duplicates, and
+       append them to the upper boundary of C. Compute the lower boundary
+       of C in the same way.
+   4.3 Compute the right boundary of this region:
+       EF = BC cap B'C'. Append E and F to the upper and lower boundaries
+       of C, respectively.
+5. Output C.
+\end{verbatim}
+
+Ở bước 1, vì tọa độ \(x\) trên biên trên và biên dưới của \(A\) và \(B\) đều
+đã có thứ tự, ta có thể dùng thao tác trộn tương tự merge sort. Độ phức tạp
+là \(O(m+n)\).
+
+Ở bước 4, các miền được quét theo thứ tự tọa độ \(x\) tăng dần, nên con trỏ
+trên mỗi biên luôn chỉ dịch sang phải trong toàn bộ quá trình. Mỗi đỉnh của
+hai đa giác được quét nhiều nhất một lần. Độ phức tạp là \(O(m+n)\).
+
+Do đó, độ phức tạp thời gian của toàn bộ thuật toán là \(O(m+n)\).
+
+\section{Ứng dụng}
+
+\subsection{Bài toán 1: Hotter and Colder (Waterloo local contest)}
+
+\paragraph{Lược thuật đề bài.}
+Hai người \(A\) và \(B\) chơi một trò chơi trên bàn cờ \(10\times 10\). Người
+\(A\) xác định một điểm \(P\), còn \(B\) di chuyển một lần trong mỗi lượt.
+Mỗi lần, \(A\) nói cho \(B\) biết vị trí hiện tại của \(B\) gần \(P\) hơn
+(\textit{Hot}) hay xa \(P\) hơn (\textit{Cold}) so với trước đó. Đề gốc còn
+phải xét trường hợp khoảng cách không đổi.
+
+Sau mỗi câu trả lời của \(A\), hãy xác định diện tích miền mà điểm \(P\) còn
+có thể nằm trong đó.
+
+\paragraph{Phân tích.}
+Giả sử \(B\) di chuyển từ \(C(x_1,y_1)\) đến \(D(x_2,y_2)\), và \(A\) trả lời
+\textit{Hot}. Khi đó, đối với lượt này, vị trí \(P(x,y)\) phải thỏa
+\(|CP|>|DP|\), tức là
+\[
+  (2x_2-2x_1)x+(2y_2-2y_1)y+x_1^2+y_1^2-x_2^2-y_2^2>0.
+\]
+Tương tự, câu trả lời \textit{Cold} tương ứng với một bất đẳng thức khác.
+
+Ban đầu, miền có thể là \([0,10]\times[0,10]\). Sau mỗi lượt, ta lấy giao
+của miền hiện tại với nửa mặt phẳng tương ứng với bất đẳng thức mới, rồi xuất
+diện tích của giao đó.
+
+\subsection{Bài toán 2: Milk (OOPC1)}
+
+\paragraph{Lược thuật đề bài.}
+SRbGa có một miếng bánh mì hình đa giác lồi \(n\) cạnh, và một chậu sữa có
+diện tích đủ lớn nhưng độ sâu chỉ bằng \(h\). Anh ta muốn chỉ nhúng bánh
+\(k\) lần, mỗi lần đều bảo đảm miếng bánh vuông góc với đáy chậu, sao cho
+diện tích phần bánh dính sữa là lớn nhất.
+
+\paragraph{Phân tích.}
+Do quy mô bài này không lớn, ta xét dùng tìm kiếm theo chiều sâu.
+
+Nhúng theo mỗi cạnh tương ứng với một nửa mặt phẳng của phần còn lại. Với một
+cách chọn \(k\) cạnh \(E_1,\ldots,E_k\) để nhúng, phần bánh còn lại chính là
+giao của \(k\) nửa mặt phẳng này với đa giác ban đầu. Ta xét \(C(n,k)\) cách
+nhúng và chọn cách làm cho diện tích còn lại nhỏ nhất.
+
+Bài toán 1 dùng một số nửa mặt phẳng để lấy giao tuần tự, và sau mỗi lần đều
+phải xuất diện tích. Rõ ràng thuật toán trực tuyến là phù hợp.
+
+Với bài toán 2, nếu dùng thuật toán trực tuyến thì độ phức tạp là
+\(O(C(n,k)\,n)\), đồng thời tiện cắt nhánh trong quá trình tìm kiếm. Nếu dùng
+thuật toán chia để trị ngoại tuyến, độ phức tạp là
+\[
+  O\bigl(C(n,k)(n+k\log k)\bigr).
+\]
+
+\subsection{Bài toán 3: Video (CTSC98)}
+
+\paragraph{Lược thuật đề bài.}
+Cho một đa giác \(P\), không nhất thiết lồi. Hỏi trong \(P\) có tồn tại một
+điểm \(Q\) sao cho từ \(Q\) có thể quan sát toàn bộ miền đa giác hay không.
+
+\paragraph{Phân tích.}
+Giả sử các điểm biên của đa giác được cho theo thứ tự ngược chiều kim đồng
+hồ:
+\[
+  V_0,V_1,V_2,\ldots,V_n,\qquad V_0=V_n.
+\]
+Một điểm \(Q_i\) có thể quan sát cạnh \(V_iV_{i+1}\) nhất định phải thỏa
+\[
+  \overrightarrow{Q_iV_i}\times
+  \overrightarrow{Q_iV_{i+1}}\ge 0,\qquad i=0,\ldots,n-1.
+\]
+
+Hơn nữa, một điểm có thể quan sát tất cả các cạnh thì nhất định có thể quan
+sát toàn bộ miền đa giác.
+
+Nếu dùng tọa độ để tính tích có hướng, mỗi ràng buộc tương ứng với một bất
+đẳng thức bậc nhất hai biến, cũng tức là một nửa mặt phẳng. Vì vậy bài toán
+được chuyển thành việc xét giao của \(n\) nửa mặt phẳng này có rỗng hay
+không.
+
+\subsection{Bài toán 4: Triathlon (NEERC2000)}
+
+\paragraph{Lược thuật đề bài.}
+Có \(n\) vận động viên tham gia cuộc thi ba môn phối hợp. Thứ hạng được xác
+định theo tổng thời gian mỗi vận động viên dùng trên ba chặng. Biết vận tốc
+của vận động viên \(i\) trong ba môn lần lượt là \(U_i,V_i,W_i\).
+
+Hỏi đối với vận động viên \(i\), có thể sắp xếp thích hợp độ dài của ba chặng
+thi, trong đó độ dài mỗi chặng đều không được bằng \(0\), để bảo đảm vận động
+viên đó thắng hay không.
+
+\paragraph{Phân tích.}
+Giả sử độ dài ba chặng lần lượt là \(x,y,z\). Điều kiện cần và đủ để vận động
+viên \(i\) thắng là, với mọi \(j\ne i\),
+\[
+  \frac{x}{U_i}+\frac{y}{V_i}+\frac{z}{W_i}
+  <
+  \frac{x}{U_j}+\frac{y}{V_j}+\frac{z}{W_j}.
+\]
+
+Đây là một hệ bất đẳng thức thuần nhất ba biến. Vì \(z>0\), ta có thể chia
+hai vế của mỗi bất đẳng thức cho \(z\), rồi đặt \(X=x/z\), \(Y=y/z\). Khi đó
+ta nhận được
+\[
+  \left(\frac{1}{U_j}-\frac{1}{U_i}\right)X
+  +\left(\frac{1}{V_j}-\frac{1}{V_i}\right)Y
+  +\left(\frac{1}{W_j}-\frac{1}{W_i}\right)>0,
+  \qquad j\ne i.
+\]
+
+Bài toán được chuyển thành việc tìm giao của \(n-1\) nửa mặt phẳng tương ứng
+với các bất đẳng thức này, rồi kiểm tra diện tích giao có lớn hơn \(0\) hay
+không, tức là loại bỏ các trường hợp tập rỗng, một điểm, hoặc một đoạn thẳng.
+
+Bài toán 3 và bài toán 4 cuối cùng đều được chuyển thành bài toán tồn tại
+nghiệm của một hệ bất đẳng thức hai biến. Có thể dùng thuật toán chia để trị
+để giải tương đối hiệu quả.
+
+\subsection{Bài toán 5: Run away (CERC99)}
+
+\paragraph{Lược thuật đề bài.}
+Trong một hình chữ nhật \(R\) có \(n\) điểm \(P_1,\ldots,P_n\). Hãy tìm một
+điểm \(Q\in R\) sao cho
+\[
+  \min_i |QP_i|
+\]
+là lớn nhất.
+
+\paragraph{Phân tích.}
+Chia \(R\) thành \(n\) miền \(Q_1,\ldots,Q_n\), trong đó \(Q_i\) là tập các
+điểm gần \(P_i\) hơn so với mọi điểm còn lại:
+\[
+  Q_i=\{\,Q\mid |QP_i|\le |QP_j|,\ i\ne j\,\}\cap R.
+\]
+
+Miền \(Q_i\) có thể được tìm bằng giao của các nửa mặt phẳng nằm về phía
+\(P_i\) đối với đường trung trực của \(P_iP_j\). Vì vậy \(Q_i\) là một đa
+giác lồi.
+
+Trong \(Q_i\), điểm xa \(P_i\) nhất chỉ có thể xuất hiện ở một đỉnh của
+\(Q_i\). Do đó, chỉ cần tìm điểm xa nhất trong các đỉnh ấy.
+
+Tìm giao nửa mặt phẳng bằng thuật toán chia để trị có độ phức tạp
+\(O(n\log n)\). Đa giác tương ứng với \(P_i\) có nhiều nhất \(O(n)\) đỉnh,
+nên việc tìm điểm xa nhất trong \(Q_i\) có độ phức tạp \(O(n)\).
+
+Độ phức tạp tổng cộng là \(O(n^2\log n)\).
+
+Thực ra, \(n\) miền đa giác \(Q_1,\ldots,Q_n\) được định nghĩa theo phương
+pháp trên tạo thành một biểu đồ Voronoi. Biểu đồ Voronoi là một đối tượng
+hình học trong hình học tính toán, có tầm quan trọng chỉ sau bao lồi, và có
+ứng dụng rất rộng rãi. Phương pháp dùng giao nửa mặt phẳng để tìm biểu đồ
+Voronoi không phải phương pháp tối ưu. Nhiều thuật toán như chia để trị hoặc
+quét mặt phẳng đều có thể đạt độ phức tạp \(O(n\log n)\), và đó là tối ưu.
+Tuy nhiên, các thuật toán ấy quá phức tạp và không thuộc phạm vi thảo luận
+của bài viết này.
+
+\section{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item F. P. Preparata và M. I. Shamos, \textit{Nhập môn hình học tính toán},
+  bản in lần thứ nhất, tháng 11 năm 1990.
+  \item Zhou Peide, \textit{Hình học tính toán: phân tích và thiết kế thuật
+  toán}, bản in lần thứ nhất, tháng 3 năm 2000.
+\end{enumerate}
+
+\appendix
+\section{Văn bản bản chiếu trích xuất}
+
+Phần sau chuyển sang tiếng Việt phần văn bản trích xuất được từ các bản
+chiếu nằm sau bài viết trong tệp PDF.
+
+\subsection*{Trang tiêu đề}
+
+\begin{center}
+\Large Thuật toán giao nửa mặt phẳng và ứng dụng
+
+\normalsize Trường Trung học số 4 Bắc Kinh
+
+Li Pengxu
+\end{center}
+
+\subsection*{Khái niệm cơ bản}
+
+\begin{itemize}
+  \item Nửa mặt phẳng: đường thẳng trên mặt phẳng và phần nằm ở một phía của
+  nó.
+  \item Nửa mặt phẳng có thể được xác định bởi bất đẳng thức
+  \(ax+by+c\ge 0\).
+  \item Trong một miền bị chặn, nửa mặt phẳng hoặc giao của các nửa mặt phẳng
+  là một miền đa giác lồi.
+  \item Giao của \(n\) nửa mặt phẳng là một đa giác lồi có nhiều nhất \(n\)
+  cạnh.
+\end{itemize}
+
+\subsection*{Thuật toán trực tuyến cho giao nửa mặt phẳng}
+
+\begin{verbatim}
+procedure intersection of half-planes
+Input:
+  n half-planes H1,H2,...,Hn
+Output:
+  H1 cap H2 cap ... cap Hn
+
+  Initialize region A as the whole plane.
+  Cut A successively with the lines ai*x+bi*y+ci=0,
+  i=1,2,...,n, keeping the part satisfying ai*x+bi*y+ci>=0.
+  Output A.
+
+Complexity O(n*n); online algorithm.
+\end{verbatim}
+
+\subsection*{Thuật toán chia để trị cho giao nửa mặt phẳng}
+
+Giả sử có thể hợp nhất giao của \(m\) nửa mặt phẳng và giao của \(n\) nửa
+mặt phẳng trong thời gian \(O(m+n)\). Khi đó có một thuật toán chia để trị
+\(O(n\log n)\) để tìm giao nửa mặt phẳng.
+
+\begin{verbatim}
+Procedure intersection of half-plane (D&C)
+Input:
+  n half-planes H1,H2,...,Hn
+Output:
+  H1 cap H2 cap ... cap Hn
+
+  Split H1,...,Hn into two sets of approximately equal size.
+  Recursively compute the intersection in each subproblem.
+  Merge the two convex polygon regions to form
+  H1 cap H2 cap ... cap Hn.
+\end{verbatim}
+
+Điểm mấu chốt là làm thế nào để tìm giao của hai đa giác lồi trong thời gian
+\(O(m+n)\).
+
+\begin{itemize}
+  \item Cắt hai đa giác lồi theo các đỉnh thành nhiều nhất \(O(m+n)\) hình
+  thang song song với trục \(y\).
+  \item Giao của mỗi cặp hình thang có thể được xử lý trong thời gian
+  \(O(1)\).
+\end{itemize}
+
+\subsection*{Cách mô tả đa giác lồi}
+
+\begin{itemize}
+  \item Các đỉnh ở phía trên và phía dưới của một đa giác lồi lần lượt tạo
+  thành hai dãy có tọa độ \(x\) tăng dần.
+  \item Lưu hai dãy đỉnh này dưới dạng hai danh sách liên kết, ta nhận được
+  biên trên và biên dưới xác định miền đa giác lồi.
+\end{itemize}
+
+\subsection*{Thuật toán giao đa giác lồi, phần 1}
+
+\begin{verbatim}
+procedure intersection of convex polygon
+Input:
+  two convex polygon regions A and B
+Output:
+  C = A cap B
+
+1. Classify the vertex x-coordinates of the two polygons, obtaining
+   the sequence x_i, i=1,...,p.
+2. Initialize C as empty.
+3. Process {x_1}.
+4. Process the regions (x_i,x_{i+1}], i=1,...,p-1, in order.
+5. Output C.
+\end{verbatim}
+
+\subsection*{Thuật toán giao đa giác lồi, phần 2}
+
+\begin{verbatim}
+4. Process the regions (x_i,x_{i+1}], i=1,...,p-1, in order.
+   4.1 Compute the trapezoids, possibly degenerate, cut from the two
+       polygons in this region: ABCD and A'B'C'D'.
+   4.2 Compute AB cap A'B', AB cap C'D', and CD cap A'B'.
+       Sort the existing points by x-coordinate, delete duplicates,
+       and append them to the upper boundary of C.
+   4.3 Compute the lower boundary of C in the same way.
+   4.4 Compute the right boundary of this region, as a segment
+       intersection: EF = BC cap B'C'. Append E and F to the upper
+       and lower boundaries of C, respectively.
+\end{verbatim}
+
+\subsection*{Độ phức tạp của thuật toán}
+
+\begin{itemize}
+  \item Bước 1: vì tọa độ \(x\) trên biên trên và biên dưới của \(A\), \(B\)
+  đều đã có thứ tự, có thể dùng thao tác trộn. Độ phức tạp \(O(m+n)\).
+  \item Bước 4: vì các miền được quét theo thứ tự \(x\) tăng dần, con trỏ
+  trên mỗi biên luôn dịch sang phải trong toàn bộ quá trình. Mỗi đỉnh của
+  hai đa giác được quét nhiều nhất một lần. Độ phức tạp \(O(m+n)\).
+  \item Độ phức tạp thời gian của toàn bộ thuật toán là \(O(m+n)\).
+\end{itemize}
+
+\subsection*{Bài toán 1: Hotter and Colder}
+
+Waterloo local contest.
+
+Hai người \(A\) và \(B\) chơi trên bàn cờ \(10\times 10\). Người \(A\) xác
+định một điểm \(P\), người \(B\) di chuyển một lần trong mỗi lượt. Mỗi lần,
+\(A\) nói cho \(B\) biết vị trí hiện tại gần \(P\) hơn (\textit{Hot}) hay xa
+\(P\) hơn (\textit{Cold}). Đề gốc còn phải xét trường hợp khoảng cách không
+đổi. Sau mỗi câu trả lời, hãy xác định diện tích miền mà \(P\) có thể nằm
+trong đó.
+
+\subsection*{Phân tích bài toán 1}
+
+\begin{itemize}
+  \item Giả sử \(B\) đi từ \(C(x_1,y_1)\) đến \(D(x_2,y_2)\), và \(A\) trả
+  lời \textit{Hot}. Khi đó \(P(x,y)\) thỏa \(|CP|>|DP|\), tức là
+  \[
+    2(x_2-x_1)x+2(y_2-y_1)y+x_1^2+y_1^2-x_2^2-y_2^2>0.
+  \]
+  \item Tương tự, \textit{Cold} tương ứng với một bất đẳng thức khác.
+  \item Ban đầu, miền có thể là \([0,10]\times[0,10]\). Sau mỗi lượt, lấy
+  giao miền hiện tại với nửa mặt phẳng tương ứng, rồi xuất diện tích giao.
+\end{itemize}
+
+\subsection*{Bài toán 2: Nice Milk}
+
+OOPC1.
+
+SRbGa có một miếng bánh mì hình đa giác lồi \(n\) cạnh, và một chậu sữa có
+diện tích đủ lớn nhưng độ sâu chỉ bằng \(h\). Anh ta muốn chỉ nhúng \(k\) lần,
+mỗi lần đều bảo đảm bánh vuông góc với đáy chậu, sao cho diện tích phần bánh
+dính sữa là lớn nhất.
+
+\subsection*{Phân tích bài toán 2}
+
+\begin{itemize}
+  \item Do quy mô bài này không lớn, xét dùng tìm kiếm theo chiều sâu.
+  \item Nhúng theo mỗi cạnh tương ứng với một nửa mặt phẳng của phần còn lại.
+  Với một cách nhúng \(k\) cạnh \(E_1,\ldots,E_k\), phần còn lại tương ứng
+  với giao của \(k\) nửa mặt phẳng ấy và đa giác ban đầu.
+  \item Xét \(C(n,k)\) cách nhúng và chọn cách có diện tích còn lại nhỏ nhất.
+\end{itemize}
+
+\subsection*{Tiểu kết}
+
+\begin{itemize}
+  \item Bài toán 1 dùng một số nửa mặt phẳng để lấy giao tuần tự, và mỗi lần
+  đều phải xuất diện tích. Thuật toán trực tuyến là phù hợp.
+  \item Với bài toán 2, nếu dùng thuật toán trực tuyến, độ phức tạp là
+  \(O(C(n,k)n)\), đồng thời tiện cắt nhánh trong quá trình tìm kiếm. Nếu dùng
+  thuật toán chia để trị ngoại tuyến, độ phức tạp là
+  \(O(C(n,k)(n+k\log k))\).
+\end{itemize}
+
+\subsection*{Bài toán 3: Video}
+
+CTSC98.
+
+Cho một đa giác \(P\), không nhất thiết lồi. Hỏi trong \(P\) có tồn tại điểm
+\(Q\) sao cho từ \(Q\) quan sát được toàn bộ miền đa giác hay không.
+
+\subsection*{Phân tích bài toán 3}
+
+\begin{itemize}
+  \item Nếu các đỉnh đa giác được cho theo thứ tự ngược chiều kim đồng hồ
+  \(V_0,V_1,V_2,\ldots,V_n\), \(V_0=V_n\), thì điểm \(Q_i\) có thể quan sát
+  cạnh \(V_iV_{i+1}\) nhất định thỏa
+  \[
+    \overrightarrow{Q_iV_i}\times\overrightarrow{Q_iV_{i+1}}\ge 0,
+    \qquad i=0,\ldots,n-1.
+  \]
+  \item Điểm quan sát được mọi cạnh nhất định quan sát được toàn bộ miền đa
+  giác.
+  \item Dùng tọa độ để tính tích có hướng, mỗi ràng buộc tương ứng với một
+  bất đẳng thức bậc nhất hai biến, tức là một nửa mặt phẳng. Bài toán trở
+  thành xét giao của \(n\) nửa mặt phẳng có rỗng hay không.
+\end{itemize}
+
+\subsection*{Bài toán 4: Triathlon}
+
+NEERC2000.
+
+Có \(n\) vận động viên tham gia ba môn phối hợp. Thứ hạng được sắp theo tổng
+thời gian dùng trong ba chặng. Biết vận tốc của mỗi vận động viên ở ba môn
+là \(U_i,V_i,W_i\). Hỏi đối với vận động viên \(i\), có thể sắp xếp thích
+hợp độ dài ba chặng, nhưng độ dài mỗi chặng đều không được bằng \(0\), để bảo
+đảm người đó thắng hay không.
+
+\subsection*{Phân tích bài toán 4}
+
+\begin{itemize}
+  \item Giả sử độ dài ba chặng là \(x,y,z\). Điều kiện cần và đủ để vận động
+  viên \(i\) thắng là
+  \[
+    \frac{x}{u_i}+\frac{y}{v_i}+\frac{z}{w_i}
+    <
+    \frac{x}{u_j}+\frac{y}{v_j}+\frac{z}{w_j}.
+  \]
+  \item Đây là hệ bất đẳng thức thuần nhất ba biến. Vì \(z>0\), chia hai vế
+  cho \(z\), rồi đặt \(X=x/z\), \(Y=y/z\), ta được
+  \[
+    \left(\frac{1}{u_j}-\frac{1}{u_i}\right)X
+    +\left(\frac{1}{v_j}-\frac{1}{v_i}\right)Y
+    +\left(\frac{1}{w_j}-\frac{1}{w_i}\right)>0.
+  \]
+  \item Bài toán trở thành tìm giao của \(n-1\) nửa mặt phẳng tương ứng và
+  kiểm tra diện tích có lớn hơn \(0\) hay không, tức là loại bỏ tập rỗng,
+  điểm và đoạn thẳng.
+\end{itemize}
+
+\subsection*{Tiểu kết}
+
+\begin{itemize}
+  \item Bài toán 3 và bài toán 4 cuối cùng đều trở thành bài toán tồn tại
+  nghiệm của một hệ bất đẳng thức hai biến. Có thể dùng thuật toán chia để
+  trị của giao nửa mặt phẳng để giải hiệu quả.
+  \item Hai bài toán hơi khác nhau: một bên dùng biên nghiêm ngặt, một bên
+  dùng biên không nghiêm ngặt. Nói cách khác, cách xử lý biên của đa giác là
+  khác nhau. Với bất đẳng thức có dấu \(\ge 0\), cần xét các trường hợp suy
+  biến thành điểm hoặc đoạn thẳng, nên phức tạp hơn một chút.
+\end{itemize}
+
+\subsection*{Bài toán 5: Run away}
+
+CERC99.
+
+Trong một hình chữ nhật \(R\) có \(n\) điểm \(P_1,\ldots,P_n\). Hãy tìm một
+điểm \(Q\in R\) sao cho \(\min_i |QP_i|\) là lớn nhất.
+
+\subsection*{Phân tích bài toán 5, phần 1}
+
+\begin{itemize}
+  \item Chia \(R\) thành \(n\) miền \(Q_1,\ldots,Q_n\), trong đó \(Q_i\) là
+  tập các điểm trong \(R\) có khoảng cách đến \(P_i\) không lớn hơn khoảng
+  cách đến các điểm khác:
+  \[
+    Q_i=\{\,Q\mid |QP_i|\le |QP_j|,\ i\ne j\,\}\cap R.
+  \]
+  \item \(Q_i\) có thể được tìm bằng giao của các nửa mặt phẳng nằm về phía
+  \(P_i\) đối với đường trung trực của \(P_iP_j\). Vì vậy \(Q_i\) là một đa
+  giác lồi.
+  \item Trong \(Q_i\), điểm xa \(P_i\) nhất chỉ có thể là một đỉnh của
+  \(Q_i\). Tìm điểm xa nhất trong các đỉnh đó là đủ.
+\end{itemize}
+
+\subsection*{Phân tích bài toán 5, phần 2}
+
+\begin{itemize}
+  \item Dùng thuật toán chia để trị cho giao nửa mặt phẳng, độ phức tạp cho
+  mỗi điểm là \(O(n\log n)\).
+  \item Đa giác tương ứng với \(P_i\) có nhiều nhất \(O(n)\) đỉnh, nên tìm
+  điểm xa nhất trong \(Q_i\) có độ phức tạp \(O(n)\).
+  \item Độ phức tạp tổng cộng là \(O(n^2\log n)\).
+\end{itemize}
+
+\subsection*{Biểu đồ Voronoi}
+
+\begin{itemize}
+  \item Thực ra, \(n\) miền đa giác \(Q_1,\ldots,Q_n\) được định nghĩa ở trên
+  tạo thành một biểu đồ Voronoi.
+  \item Biểu đồ Voronoi là một đối tượng hình học trong hình học tính toán,
+  có tầm quan trọng chỉ sau bao lồi, và có ứng dụng rất rộng rãi.
+  \item Thuật toán dùng giao nửa mặt phẳng để tìm biểu đồ Voronoi không phải
+  là tối ưu.
+  \item Chia để trị, quét mặt phẳng và nhiều thuật toán khác đều đạt được độ
+  phức tạp \(O(n\log n)\), đó mới là tối ưu. Nhưng các thuật toán ấy quá phức
+  tạp và không thuộc phạm vi thảo luận của bài viết này.
+\end{itemize}
+
+\subsection*{Dàn ý}
+
+\begin{itemize}
+  \item Khái niệm cơ bản.
+  \item Thuật toán.
+  \item Thuật toán trực tuyến cho giao nửa mặt phẳng.
+  \item Thuật toán chia để trị cho giao nửa mặt phẳng.
+  \item Ứng dụng.
+  \item Bài toán 1: Hotter and Colder.
+  \item Bài toán 2: Milk.
+  \item Tiểu kết.
+  \item Bài toán 3: Video.
+  \item Bài toán 4: Triathlon.
+  \item Tiểu kết.
+  \item Bài toán 5: Run away.
+  \item Biểu đồ Voronoi.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,323 @@
+% Vietnamese translation for OI Public Library
+% Source-File: IOI中国国家候选队论文/2006/陈首元/陈首元.doc
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Duy trì tính liên thông của rừng: cây động}
+\author{Chen Shouyuan}
+\date{2006}
+
+\begin{document}
+\maketitle
+
+\origtitle{Maintaining forest connectivity: dynamic trees}
+\sourcepath{IOI China candidate team papers / 2006 / Chen Shouyuan / Chen Shouyuan.doc}
+
+\section{Giới thiệu}
+
+Bài viết giới thiệu một cấu trúc dữ liệu gọi là \term{cây động}. Cấu trúc này
+có thể duy trì một rừng có trọng số, hỗ trợ thao tác \texttt{link} để nối hai
+cây, và thao tác \texttt{cut} để xóa một cạnh làm một cây tách thành hai cây.
+Nó có rất nhiều ứng dụng trong tối ưu hóa mạng.
+
+\section{Các thao tác cơ bản}
+
+Cây động cần hỗ trợ các thao tác sau:
+
+\begin{itemize}
+  \item \(\operatorname{Parent}(v)\): trả về cha của \(v\), nếu \(v\) là gốc
+  thì trả về \texttt{null}.
+  \item \(\operatorname{Root}(v)\): trả về gốc của cây chứa \(v\).
+  \item \(\operatorname{Cost}(v)\): trả về chi phí cạnh
+  \((v,\operatorname{parent}(v))\), giả sử \(v\) không phải gốc.
+  \item \(\operatorname{Mincost}(v)\): trả về cạnh có trọng số nhỏ nhất trên
+  đường từ \(\operatorname{root}(v)\) đến \(v\).
+  \item \(\operatorname{Update}(v,x)\): cộng \(x\) vào trọng số mọi cạnh trên
+  đường từ \(\operatorname{root}(v)\) đến \(v\).
+  \item \(\operatorname{Link}(v,w,x)\): nối cây có gốc \(v\) vào đỉnh \(w\),
+  với chi phí cạnh \((v,w)\) là \(x\).
+  \item \(\operatorname{Cut}(v)\): xóa cạnh
+  \((v,\operatorname{parent}(v))\), tách cây thành hai cây.
+  \item \(\operatorname{Evert}(v)\): đổi gốc, đặt \(v\) làm gốc và đảo chiều
+  mọi cạnh trên đường từ \(v\) đến gốc cũ.
+\end{itemize}
+
+Thông qua hai lần \(\operatorname{Update}\), ta có thể sửa chi phí một cạnh.
+\(\operatorname{Mincost}\) cũng có thể thay bằng \(\operatorname{Maxcost}\).
+
+Giả sử ban đầu có \(n\) đỉnh rời rạc, sau đó thực hiện \(m\) thao tác thuộc
+các loại trên. Cách thô là lưu \(\operatorname{dparent}(v)\) và
+\(\operatorname{dcost}(v)\), lần lượt là cha của \(v\) và chi phí cạnh nối tới
+cha. Khi đó \(\operatorname{parent}\), \(\operatorname{cost}\),
+\(\operatorname{link}\), \(\operatorname{cut}\) có thể làm trong \(O(1)\),
+nhưng \(\operatorname{root}\), \(\operatorname{mincost}\),
+\(\operatorname{evert}\), \(\operatorname{update}\) phụ thuộc vào độ sâu của
+cây, xấu nhất là \(O(n)\).
+
+Thuật toán trong bài không thao tác trực tiếp trên toàn bộ cây. Nó thực hiện
+\(m\) thao tác trong \(O(m\log n)\) thời gian khấu hao.
+
+\section{Cạnh thực, cạnh ảo và đường}
+
+Chia các cạnh trong cây thành hai loại: \term{cạnh thực} và \term{cạnh ảo}.
+Từ mỗi đỉnh đi xuống con, nhiều nhất có một cạnh thực. Một \term{đường} gồm
+một số cạnh thực liên thông theo chiều từ dưới lên. Các cạnh còn lại là cạnh
+ảo; chúng được lưu bằng \(\operatorname{dparent}(v)\) và
+\(\operatorname{dcost}(v)\). Cạnh ảo có thể được chuyển thành cạnh thực trong
+những điều kiện thích hợp. Nếu \(\operatorname{tail}(P)\) là gốc cây thì
+\(\operatorname{dparent}(P)=\texttt{null}\).
+
+Nhờ thao tác trên các đường chỉ gồm cạnh thực, ta có thể thực hiện thao tác
+cây động. Trước hết giả sử đã có các thao tác đường sau.
+
+\section{Các thao tác trên đường}
+
+\begin{itemize}
+  \item \(\operatorname{Path}(v)\): trả về đường chứa \(v\).
+  \item \(\operatorname{Head}(p)\): trả về đỉnh đầu của đường \(p\).
+  \item \(\operatorname{Tail}(p)\): trả về đỉnh cuối của đường \(p\).
+  \item \(\operatorname{Before}(v)\): trả về đỉnh trước \(v\) trong đường.
+  \item \(\operatorname{After}(v)\): trả về đỉnh sau \(v\) trong đường.
+  \item \(\operatorname{Pcost}(v)\): trả về chi phí cạnh
+  \((v,\operatorname{after}(v))\).
+  \item \(\operatorname{Pmincost}(p)\): trả về cạnh có chi phí nhỏ nhất trong
+  đường \(p\).
+  \item \(\operatorname{Pupdate}(p,x)\): cộng \(x\) vào chi phí mọi cạnh trong
+  đường \(p\).
+  \item \(\operatorname{Reverse}(p)\): đảo chiều mọi cạnh trong đường \(p\).
+  \item \(\operatorname{Concatenate}(p,q,x)\): thêm cạnh
+  \((\operatorname{tail}(p),\operatorname{head}(q))\) có chi phí \(x\), rồi
+  gộp hai đường \(p,q\).
+  \item \(\operatorname{Split}(v)\): xóa hai cạnh kề \(v\) trong
+  \(\operatorname{path}(v)\), tách đường thành ba phần và trả về
+  \(p,q,x,y\), trong đó \(p\) là đoạn từ đầu đường đến
+  \(\operatorname{before}(v)\), \(q\) là đoạn từ \(\operatorname{after}(v)\)
+  đến cuối đường, \(x\) là chi phí cạnh \((\operatorname{before}(v),v)\), và
+  \(y\) là chi phí cạnh \((v,\operatorname{after}(v))\).
+\end{itemize}
+
+Nếu \(v\) là đỉnh đầu thì \(p=\texttt{null}\); nếu \(v\) là đỉnh cuối thì
+\(q=\texttt{null}\).
+
+\section{\texttt{splice} và \texttt{expose}}
+
+Hai thao tác sau dùng để duy trì cạnh thực, cạnh ảo, rồi từ đó cài đặt các
+thao tác cơ bản.
+
+\paragraph{\texttt{Splice(p:path)}.}
+Tác dụng của \texttt{splice} là kéo đường \(p\) lên gần gốc hơn. Cách làm:
+biến cạnh ảo \((\operatorname{tail}(P),\operatorname{dparent}(P))\) thành
+cạnh thực. Để duy trì tính chất ``mỗi đỉnh chỉ có nhiều nhất một cạnh thực đi
+xuống con'', cạnh thực cũ xuất phát từ \(\operatorname{dparent}(P)\) được
+chuyển thành cạnh ảo.
+
+\begin{verbatim}
+Function splice(p:Path);
+Begin
+  U:=dparent(tail(P));
+  [q,r,x,y]:=split(u);
+  If q<>nil Then Begin
+    dparent(tail(q)):=v;
+    dcost(tail(q)):=x;
+  End;
+  P:=concatenate(p,path(P),dcost(tail(P));
+  If r=nil Then return p
+  Else return concatenate(p,r,y);
+End;
+\end{verbatim}
+
+\paragraph{\texttt{Expose(v:vertex)}.}
+Tác dụng của \texttt{expose} là biến mọi cạnh trên đường từ \(v\) đến
+\(\operatorname{root}(v)\) thành cạnh thực. Cách làm là liên tục gọi
+\texttt{splice} cho đến khi gặp gốc.
+
+\begin{verbatim}
+Fucntion expose(v:vertex);
+Begin
+  [q,r,x,y]:=split(v);
+  If q<>nil Then Begin
+    Dparent(tail(q)):=v;
+    Dcost(tail(q)):=x;
+  End;
+  If r=nil Then p:=path(V)
+  Else p:=concatenate(path(V),r,y);
+  While dparent(v)<>nil do p:=splice(p);
+  Return p;
+End;
+\end{verbatim}
+
+\section{Cài đặt các thao tác cây động}
+
+Với \texttt{splice}, \texttt{expose} và các thao tác đường, tám thao tác cơ bản
+của cây động được cài đặt như sau.
+
+\begin{verbatim}
+Function Parent(v:vertex)
+Begin
+  If v=tail(path(v)) Then Return Dparent(v)
+  Else Return after(v)
+End;
+
+Function cost(v:vertex)
+Begin
+  If v=tail(path(v)) Return dcost(v)
+  Else Return Pcost(v)
+End;
+
+Function root(v:vertex);
+Begin
+  Return tail(expose(v));
+End;
+
+Function Mincost(v:vertex);
+Begin
+  Return Pmincost(expose(v));
+End;
+
+Procedure Update(v:vertex;x:real);
+Begin
+  Pupdate(expose(v),x);
+End;
+
+Procedure Link(v,w:vertex;x:real);
+Begin
+  Concatenate(path(v),expose(w),x);
+End;
+
+Function Cut(v:vertex);
+Var
+  p,q:path;
+  x,y:real;
+Begin
+  Expose(v);
+  [p,q,x,y]:=split(v);
+  Dparent(v):=nil;
+  Return y;
+End;
+
+Procedure Evert(v);
+Begin
+  Reverse(expose(v));
+  Dparent(v):=nil;
+End;
+\end{verbatim}
+
+Đến đây, bài toán trên cây đã được chuyển thành bài toán trên các đường.
+
+\section{Cài đặt cấu trúc đường}
+
+Có thể dùng cây splay để lưu mỗi đường. Các đỉnh trên đường được sắp theo
+khoảng cách tới đỉnh đầu đường.
+
+\paragraph{Đảo đường.}
+Mỗi nút lưu một cờ \(\mathit{reverse}\). Nếu cờ này bật, cây con gốc ở nút đó
+cần bị đảo, tức là con trái và con phải của mọi nút trong cây con cần đổi
+chỗ. Khi truy cập nút \(v\), nếu cờ \(\mathit{reverse}\) bật, ta đổi hai con,
+tắt cờ ở \(v\), rồi truyền cờ xuống các con bằng phép lấy phủ định. Thao tác
+\(\operatorname{Reverse}\) chỉ cần đổi cờ ở gốc.
+
+\paragraph{Cộng trọng số trên đường.}
+Với mỗi nút \(v\), lưu \(\mathit{ecost}\) và \(\mathit{change}\). Giá trị
+\(\mathit{ecost}\) là chi phí cạnh \((v,\operatorname{after}(v))\);
+\(\mathit{change}\) là lượng hiệu chỉnh chung của các cạnh trong cây con gốc
+\(v\). Khi truy cập \(v\), cộng \(\mathit{change}\) vào
+\(\mathit{ecost}\), đặt \(\mathit{change}=0\), rồi truyền lượng hiệu chỉnh
+xuống các con. Mỗi nút còn lưu \(\mathit{emin}\), là chi phí nhỏ nhất trong
+cây con của nó. Thao tác \(\operatorname{Pupdate}\) chỉ cần sửa
+\(\mathit{change}\) ở gốc.
+
+Các thao tác \(\operatorname{Path}\), \(\operatorname{Tail}\),
+\(\operatorname{Head}\), \(\operatorname{Before}\), \(\operatorname{After}\),
+\(\operatorname{Concatenate}\) và \(\operatorname{Split}\) đều có thể cài bằng
+các thao tác splay quen thuộc, đồng thời duy trì các giá trị
+\(\mathit{reverse}\), \(\mathit{change}\), \(\mathit{ecost}\) và
+\(\mathit{emin}\).
+
+\section{Phân tích độ phức tạp}
+
+Mỗi thao tác cây động dùng một lần \(\operatorname{expose}\). Ta xét số lần
+\(\operatorname{splice}\) trong \(\operatorname{expose}\). Với cạnh \(v\to w\)
+trong cây động, nếu số đỉnh trong cây con của \(v\) lớn hơn một nửa số đỉnh
+trong cây con của \(w\), gọi đó là cạnh loại A; ngược lại là cạnh loại B.
+Mỗi đỉnh nhiều nhất có một cạnh loại A đi ra, nên trên mọi đường có nhiều
+nhất \(O(\log n)\) cạnh loại B.
+
+Gọi \(p\) là số cạnh ảo loại B. Trong một lần \(\operatorname{splice}\), nếu
+thêm một cạnh ảo loại B vào đường thì \(p\) tăng \(1\); tình huống này chỉ xảy
+ra \(O(\log n)\) lần. Nếu thêm một cạnh ảo loại A vào đường thì \(p\) giảm
+\(1\); việc này có thể xảy ra nhiều lần, nhưng chi phí được trả bằng thế năng
+\(p\), vốn luôn không âm. Vì vậy trung bình mỗi \(\operatorname{expose}\) thực
+hiện \(O(\log n)\) thao tác đường.
+
+Nếu cài đường bằng cây AVL hoặc đỏ-đen, mỗi thao tác đường mất \(O(\log n)\),
+cho tổng \(O(\log^2 n)\). Với cây splay, phân tích khấu hao tốt hơn và đạt
+\(O(\log n)\) cho mỗi thao tác cây động.
+
+Ý tưởng thế năng là: với mỗi đỉnh \(i\), gọi \(s(i)\) là số đỉnh trong cây con
+gốc \(i\) của cây động, và \(r(i)=\log_2 s(i)\). Thế năng của một cây động là
+tổng các \(r(i)\). Tính chất của splay cho biết chi phí khấu hao của một lần
+\(\operatorname{splay}(x)\) không vượt quá
+\[
+  3(r(t)-r(x))+1,
+\]
+với \(t\) là gốc cây splay. Cộng dồn các thao tác trong
+\(\operatorname{expose}\) cho thấy chi phí khấu hao của \(\operatorname{expose}\)
+là \(O(\log n)\). Các thao tác \(\operatorname{link}\) và
+\(\operatorname{cut}\) có thể làm thay đổi thế năng cây động, nhưng mức thay
+đổi vẫn là bậc logarit.
+
+\section{Ứng dụng}
+
+\begin{itemize}
+  \item \term{Tổ tiên chung gần nhất.} Để hỏi LCA của \(v,w\), trước hết thực
+  hiện \(\operatorname{expose}(v)\), rồi thực hiện \(\operatorname{expose}(w)\).
+  Khi chạy \(\operatorname{expose}(w)\), ghi lại điểm gần nhất đã được truy cập
+  trong lần \(\operatorname{expose}\) trước; đó chính là LCA. Mỗi truy vấn mất
+  \(O(\log n)\).
+  \item \term{Hợp nhất và tách tập.} Có thể hỗ trợ \(\operatorname{Union}\) và
+  \(\operatorname{Find}\), đồng thời hỗ trợ tách theo một số cách, với mỗi
+  thao tác \(O(\log n)\).
+  \item \term{Luồng cực đại.} Cây động có thể tối ưu thuật toán tăng đường
+  ngắn nhất, làm mỗi lần tăng còn \(O(m\log n)\), tổng thời gian
+  \(O(mn\log n)\).
+  \item \term{Cây khung nhỏ nhất.} Cây động có nhiều ứng dụng trong thuật toán
+  tăng dần cho cây khung nhỏ nhất, cây khung bị ràng buộc bậc và nhiều biến
+  thể khác.
+\end{itemize}
+
+\section{Ghi chú về cài đặt}
+
+Nguồn gốc còn trình bày một biến thể cài đặt dùng \term{cây ảo}. Mỗi đỉnh của
+cây ảo tương ứng một-một với đỉnh của cây động. Mỗi đỉnh nhiều nhất có hai
+cạnh thực, gọi là con trái và con phải; các đỉnh khác nối bằng cạnh ảo. Mỗi
+đỉnh lưu cha \(p(x)\), con trái \(\operatorname{left}(x)\), con phải
+\(\operatorname{right}(x)\), chi phí \(\operatorname{cost}(x)\), chi phí nhỏ
+nhất trong cây con \(\operatorname{mincost}(x)\), cờ
+\(\operatorname{reverse}\), cùng hai lượng \(\operatorname{dcost}\) và
+\(\operatorname{dmin}\). Với gốc cây thực:
+\[
+  \operatorname{dcost}(x)=\operatorname{cost}(x),
+\]
+còn nếu không phải gốc:
+\[
+  \operatorname{dcost}(x)=\operatorname{cost}(x)-\operatorname{cost}(p(x)).
+\]
+Ngoài ra
+\[
+  \operatorname{dmin}(x)=\operatorname{cost}(x)-\operatorname{mincost}(x).
+\]
+Biến thể này cùng bản chất với thuật toán đã mô tả, nên độ phức tạp khấu hao
+vẫn là \(O(\log n)\) cho mỗi thao tác.
+
+\section*{Tài liệu tham khảo}
+
+\begin{itemize}
+  \item Sleator and Tarjan, \textit{A data structure for dynamic trees}.
+  \item Sleator and Tarjan, \textit{Self-adjusting binary search trees}.
+  \item Georgiadis, Tarjan, Werneck, \textit{Design of data structures for
+  mergeable trees}.
+  \item Ravindra K. Ahuja, Thomas L. Magnanti, James B. Orlin,
+  \textit{Network Flows: Theory, Algorithms, and Applications}.
+\end{itemize}
+
+\end{document}

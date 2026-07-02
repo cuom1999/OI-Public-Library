@@ -1,0 +1,383 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 数学 MATHEMATICS/简单数理逻辑及应用 - 李恺威 .pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\True}{\mathrm{T}}
+\newcommand{\False}{\mathrm{F}}
+\newcommand{\CNF}{\mathrm{CNF}}
+\newcommand{\DNF}{\mathrm{DNF}}
+
+\title{Logic toán học đơn giản và ứng dụng}
+\author{Li Kaiwei\\Khoa Khoa học và Công nghệ Máy tính, Đại học Thanh Hoa}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Simple mathematical logic and its applications}
+\sourcepath{Mathematics / Simple mathematical logic and applications - Li Kaiwei}
+
+\begin{abstract}
+Bài giảng giới thiệu các khái niệm cơ bản của logic mệnh đề: mệnh đề, biến
+mệnh đề, liên kết logic, công thức hợp lệ, công thức tương đương và dạng
+chuẩn. Từ đó tài liệu chuyển sang bài toán SAT, trường hợp đặc biệt 2-SAT,
+thuật toán DPLL, rồi mở rộng sang SMT với các miền như số nguyên, số thực,
+mảng và bit-vector. Phần cuối minh họa cách giải hệ tuyến tính trên
+bit-vector và các ứng dụng trong giải phương trình, sinh kiểm thử và phát
+hiện lỗi chương trình.
+\end{abstract}
+
+\tableofcontents
+
+\section{Logic mệnh đề}
+
+\subsection{Mệnh đề và biến mệnh đề}
+
+Một \term{mệnh đề} là một câu trần thuật có giá trị chân lý xác định: hoặc
+đúng, hoặc sai. Ví dụ ``tuyết màu trắng'' là một mệnh đề đúng; câu tự tham
+chiếu kiểu ``điều tôi đang nói là sai'' cho thấy nếu phát biểu không có giá
+trị chân lý ổn định thì cần xử lý cẩn thận hơn.
+
+Khi hình thức hóa, ta dùng ký hiệu như \(P,Q,R\) để biểu diễn các mệnh đề.
+Một \term{biến mệnh đề} có thể nhận giá trị \(\True\) hoặc \(\False\). Một
+mệnh đề phức hợp có thể phân tách thành nhiều mệnh đề đơn. Ví dụ
+\[
+  P:\quad \text{``tuyết màu trắng và }1+1=2\text{''}
+\]
+có thể tách thành
+\[
+  R:\text{``tuyết màu trắng''},\qquad
+  S:\text{``}1+1=2\text{''}.
+\]
+
+\subsection{Liên kết logic}
+
+Các liên kết thường dùng gồm phủ định \(\neg\), hội \(\land\), tuyển
+\(\lor\), kéo theo \(\to\), và tương đương \(\leftrightarrow\). Bảng chân lý
+cơ bản:
+\[
+\begin{array}{c|c}
+p & \neg p\\ \hline
+\False & \True\\
+\True & \False
+\end{array}
+\qquad
+\begin{array}{c|c|c|c|c|c}
+p&q&p\land q&p\lor q&p\to q&p\leftrightarrow q\\ \hline
+\False&\False&\False&\False&\True&\True\\
+\False&\True&\False&\True&\True&\False\\
+\True&\False&\False&\True&\False&\False\\
+\True&\True&\True&\True&\True&\True
+\end{array}
+\]
+
+Trong công thức \(p\to q\), giá trị sai chỉ xuất hiện khi tiền đề đúng nhưng
+kết luận sai. Điều này phản ánh cách logic hình thức hóa ``nếu \(p\) thì
+\(q\)'', không nhất thiết là quan hệ nhân quả trong đời sống.
+
+\subsection{Công thức hợp lệ}
+
+Một \term{công thức hợp lệ} là chuỗi ký hiệu được tạo từ biến mệnh đề và các
+liên kết theo quy tắc cú pháp:
+\begin{enumerate}
+  \item Mỗi biến mệnh đề là một công thức hợp lệ.
+  \item Nếu \(A\) là công thức hợp lệ thì \(\neg A\) cũng là công thức hợp lệ.
+  \item Nếu \(A,B\) là công thức hợp lệ thì
+  \((A\land B)\), \((A\lor B)\), \((A\to B)\), và
+  \((A\leftrightarrow B)\) đều là công thức hợp lệ.
+  \item Chỉ các chuỗi thu được sau hữu hạn lần dùng ba quy tắc trên mới là
+  công thức hợp lệ.
+\end{enumerate}
+
+Ví dụ:
+\[
+  (p\land(p\to q))\to q
+\]
+là một công thức hợp lệ. Một biểu thức lập trình như
+\texttt{if A then B else C} cũng có thể được biểu diễn bằng công thức logic,
+chẳng hạn
+\[
+  (A\land B)\lor(\neg A\land C).
+\]
+
+\subsection{Phân loại công thức}
+
+Với một diễn giải \(I\), mỗi biến mệnh đề được gán giá trị đúng hoặc sai.
+Một công thức được gọi là:
+\begin{itemize}
+  \item \term{hằng đúng} nếu nó đúng dưới mọi diễn giải;
+  \item \term{khả thỏa} nếu nó đúng dưới ít nhất một diễn giải;
+  \item \term{mâu thuẫn} nếu nó sai dưới mọi diễn giải.
+\end{itemize}
+
+Các quan hệ cơ bản:
+\[
+\begin{aligned}
+A\text{ hằng đúng} &\Longleftrightarrow \neg A\text{ hằng sai},\\
+A\text{ khả thỏa} &\Longleftrightarrow \neg A\text{ không hằng đúng},\\
+A\text{ không khả thỏa} &\Longleftrightarrow A\text{ hằng sai}.
+\end{aligned}
+\]
+
+\section{Tương đương và dạng chuẩn}
+
+\subsection{Công thức tương đương}
+
+Hai công thức \(A,B\) được gọi là \term{tương đương}, ký hiệu \(A=B\), nếu
+chúng có cùng giá trị chân lý dưới mọi diễn giải của các biến xuất hiện trong
+chúng. Khi đó \(A=B\) khi và chỉ khi \(A\leftrightarrow B\) là hằng đúng.
+Ký hiệu \(=\) ở đây không phải là một liên kết logic mới, mà là quan hệ giữa
+hai công thức. Quan hệ này có tính phản xạ, đối xứng và bắc cầu.
+
+Một số luật tương đương thường dùng:
+\[
+\begin{array}{ll}
+\text{Phủ định kép:} & \neg\neg P=P,\\[0.2em]
+\text{Giao hoán:} & P\lor Q=Q\lor P,\quad P\land Q=Q\land P,\\[0.2em]
+\text{Kết hợp:} & (P\lor Q)\lor R=P\lor(Q\lor R),\\
+& (P\land Q)\land R=P\land(Q\land R),\\[0.2em]
+\text{Phân phối:} & P\lor(Q\land R)=(P\lor Q)\land(P\lor R),\\
+& P\land(Q\lor R)=(P\land Q)\lor(P\land R),\\[0.2em]
+\text{Lũy đẳng:} & P\lor P=P,\quad P\land P=P,\\[0.2em]
+\text{Hấp thụ:} & P\lor(P\land Q)=P,\quad P\land(P\lor Q)=P,\\[0.2em]
+\text{De Morgan:} & \neg(P\lor Q)=\neg P\land\neg Q,\\
+& \neg(P\land Q)=\neg P\lor\neg Q.
+\end{array}
+\]
+Ngoài ra,
+\[
+  A\to B=\neg A\lor B,
+\]
+và
+\[
+  A\leftrightarrow B=(\neg A\lor B)\land(A\lor\neg B)
+  =(A\land B)\lor(\neg A\land\neg B).
+\]
+
+\subsection{Từ bảng chân lý đến công thức}
+
+Viết bảng chân lý từ một công thức là dễ. Chiều ngược lại cũng làm được bằng
+cách viết từ các dòng đúng hoặc từ các dòng sai. Ví dụ với hai biến \(P,Q\),
+giả sử công thức \(A\) đúng ở các dòng \((\False,\False)\),
+\((\False,\True)\), \((\True,\True)\), và sai ở
+\((\True,\False)\). Từ các dòng đúng, ta viết:
+\[
+  A=(\neg P\land\neg Q)\lor(\neg P\land Q)\lor(P\land Q).
+\]
+Từ dòng sai duy nhất, ta có thể viết gọn:
+\[
+  A=\neg P\lor Q.
+\]
+
+\subsection{Dạng chuẩn}
+
+Một \term{literal} là biến mệnh đề \(P\) hoặc phủ định của nó \(\neg P\).
+\term{Mệnh đề hội} là hội của một số literal; \term{mệnh đề tuyển} là tuyển
+của một số literal.
+
+Một công thức ở dạng \term{tuyển chuẩn} nếu nó là tuyển của các mệnh đề hội:
+\[
+  A_1\lor A_2\lor\cdots\lor A_n,
+\]
+trong đó mỗi \(A_i\) là hội của các literal. Một công thức ở dạng
+\term{hội chuẩn} nếu nó là hội của các mệnh đề tuyển:
+\[
+  A_1\land A_2\land\cdots\land A_n,
+\]
+trong đó mỗi \(A_i\) là tuyển của các literal.
+
+Định lý dạng chuẩn nói rằng mọi công thức mệnh đề đều có một công thức tương
+đương ở dạng hội chuẩn và một công thức tương đương ở dạng tuyển chuẩn. Các
+luật như \(A\to B=\neg A\lor B\), De Morgan và phân phối là công cụ cơ bản để
+biến đổi.
+
+\section{Bài toán SAT}
+
+\subsection{Định nghĩa}
+
+\term{SAT} là bài toán quyết định xem một công thức logic có khả thỏa hay
+không. Thông thường công thức được đưa về dạng hội chuẩn:
+\[
+  A_1\land A_2\land\cdots\land A_n,
+\]
+trong đó mỗi \(A_i\) là một mệnh đề tuyển
+\[
+  A_i=(P_{i1}\lor P_{i2}\lor\cdots\lor P_{im}).
+\]
+
+\subsection{2-SAT}
+
+2-SAT là trường hợp đặc biệt trong đó mỗi mệnh đề tuyển có không quá hai
+literal. Ví dụ:
+\[
+  (X_0\lor X_2)\land(\neg X_0\lor X_3)\land(X_1\lor\neg X_3).
+\]
+2-SAT có lời giải đa thức bằng đồ thị kéo theo. Với mỗi biến \(A\), tạo hai
+đỉnh \(A\) và \(\neg A\). Với mỗi mệnh đề \((A\lor B)\), dùng tương đương
+\[
+  A\lor B \equiv (\neg A\to B)\land(\neg B\to A),
+\]
+nên thêm hai cung
+\[
+  \neg A\to B,\qquad \neg B\to A.
+\]
+
+Nếu trong đồ thị có cả đường đi \(A\to^{*}\neg A\) và
+\(\neg A\to^{*}A\), tức \(A\) và \(\neg A\) nằm trong cùng một thành phần
+liên thông mạnh, thì công thức vô nghiệm. Ngược lại, thu gọn SCC thành DAG và
+chọn giá trị cho từng cặp đỉnh đối ngẫu theo thứ tự topo ngược để có một gán
+thỏa.
+
+\subsection{3-SAT và DPLL}
+
+Khi có mệnh đề tuyển chứa ba biến, cách làm trên không còn áp dụng trực tiếp.
+3-SAT là bài toán NP-đầy đủ đầu tiên được biết đến, thông qua định lý Cook
+năm 1971. Với SAT tổng quát, ta thường phải tìm kiếm có cắt tỉa.
+
+Thuật toán Davis--Putnam--Logemann--Loveland, gọi tắt là \term{DPLL}, được
+đưa ra năm 1962 như một cải tiến của thuật toán Davis--Putnam năm 1960. Trong
+nhiều thập niên, nó vẫn là lõi của nhiều bộ giải SAT hiệu quả.
+
+Dạng khung:
+\begin{verbatim}
+function DPLL(Phi):
+    if Phi is empty:
+        return true
+    if Phi contains an empty clause:
+        return false
+
+    while Phi has a unit clause l:
+        set l to true and simplify Phi
+
+    while Phi has a pure literal x:
+        set x to true and simplify Phi
+
+    choose an unassigned variable y
+    return DPLL(Phi with y = true)
+        or DPLL(Phi with y = false)
+\end{verbatim}
+
+Ở đây \(\Phi\) là tập các mệnh đề tuyển, được hiểu là hội của chúng. Hai cắt
+tỉa quan trọng là \term{unit propagation}, tức mệnh đề chỉ còn một literal
+thì literal đó buộc phải đúng, và \term{pure literal elimination}, tức nếu một
+biến chỉ xuất hiện với cùng một dấu thì có thể gán nó để làm đúng tất cả các
+mệnh đề chứa nó.
+
+\section{SMT}
+
+\subsection{Từ SAT đến SMT}
+
+SAT chỉ xử lý ràng buộc trên biến Boolean. Trong nhiều bài toán, ràng buộc
+không chỉ là tuyển các biến Boolean, mà còn là phương trình hoặc bất phương
+trình trên số nguyên, số thực, mảng, hoặc bit-vector. \term{SMT}, viết tắt
+của \textit{Satisfiability Modulo Theories}, là bài toán xét khả thỏa của
+công thức logic trên một lý thuyết nền cụ thể.
+
+Một số miền thường gặp:
+\begin{itemize}
+  \item Boolean, tức SAT cổ điển;
+  \item số nguyên;
+  \item số thực;
+  \item mảng;
+  \item bit-vector.
+\end{itemize}
+
+SMT có hai hướng nghiên cứu lớn. Một hướng gần với toán học: giải ràng buộc
+trên số nguyên, số thực, tuyến tính hoặc phi tuyến. Hướng còn lại gần với
+máy tính: bit-vector, mảng và các phép toán mô phỏng chính xác hành vi của
+chương trình.
+
+\subsection{Ví dụ giải hệ tuyến tính trên bit-vector}
+
+Xét hệ trên bit-vector độ rộng \(3\):
+\[
+\begin{aligned}
+3x+4y+2z&=0,\\
+2x+2y+2&=0,\\
+4y+2x+2z&=0.
+\end{aligned}
+\]
+Các phép toán được hiểu theo modulo \(2^3=8\). Từ phương trình đầu, vì
+\(3^{-1}\equiv3\pmod 8\), có thể biểu diễn
+\[
+  x=4y+2z.
+\]
+Thay vào hai phương trình còn lại:
+\[
+\begin{aligned}
+2y+4z+2&=0,\\
+4y+6z&=0.
+\end{aligned}
+\]
+Tất cả hệ số đều chẵn nên chia cho \(2\), đồng thời giảm độ rộng còn \(2\)
+bit và bỏ bit cao:
+\[
+\begin{aligned}
+y[1:0]+2z[1:0]+1&=0,\\
+2y[1:0]+3z[1:0]&=0.
+\end{aligned}
+\]
+Giải \(y[1:0]\) theo \(z[1:0]\):
+\[
+  y[1:0]=2z[1:0]+3.
+\]
+Thay vào phương trình còn lại:
+\[
+  3z[1:0]+2=0,
+\]
+từ đó thu được
+\[
+  z[1:0]=2,\qquad y[1:0]=3.
+\]
+Quay lại độ rộng \(3\), viết \(y=y'\mathbin{@}2\), \(z=z'\mathbin{@}3\) theo
+cách ký hiệu nối bit trong slide, và
+\[
+  x=4y+2z.
+\]
+Ví dụ này minh họa đặc trưng của bit-vector: phép chia, bỏ bit cao và đồng dư
+theo độ rộng đều là một phần của ngữ nghĩa.
+
+\section{Ứng dụng}
+
+\subsection{Giải phương trình}
+
+SMT có thể được dùng trực tiếp để kiểm tra một hệ phương trình hoặc bất
+phương trình có nghiệm hay không, đồng thời trả về một nghiệm nếu tồn tại.
+Tùy miền, bộ giải sẽ dùng các thủ tục khác nhau: Gaussian elimination cho hệ
+tuyến tính, simplex cho ràng buộc tuyến tính trên số thực, hoặc các thủ tục
+bit-vector cho phép toán mức máy.
+
+\subsection{Phát hiện lỗi chương trình}
+
+Một ứng dụng quan trọng là quét lỗi chương trình bằng cách biến đường đi thực
+thi thành ràng buộc. Ví dụ:
+\begin{verbatim}
+int two_hop(int x) {
+    int a[4] = {3, 0, 2, 1};
+    if (x < 0 || x > 3) return -1;
+    return a[a[x] - 1];
+}
+\end{verbatim}
+Điều kiện đầu vào bảo đảm \(x\in[0,3]\), nhưng khi \(x=1\) thì
+\(a[x]=0\), nên truy cập \(a[a[x]-1]=a[-1]\), vượt ngoài mảng. Một bộ giải SMT
+có thể sinh tự động đầu vào \(x=1\) bằng cách mô hình hóa mảng, phép so sánh
+và phép truy cập theo đường đi.
+
+\section*{Tài liệu tham khảo}
+
+\begin{itemize}
+  \item Shi Chunyi, \textit{Mathematical Logic and Set Theory}, Tsinghua
+  University Press, 2000.
+  \item Zhao Shuang, \textit{Analysis of 2-SAT solving methods}.
+  \item Wikipedia: Boolean satisfiability problem.
+  \item Wikipedia: DPLL algorithm.
+  \item Wikipedia: Satisfiability Modulo Theories.
+  \item Cristian Cadar, Vijay Ganesh, Peter Pawlowski, David Dill, and Dawson
+  Engler. \textit{EXE: Automatically generating inputs of death}. ACM CCS,
+  2006.
+  \item Vijay Ganesh. \textit{Decision Procedures for Bit-vectors, Arrays and
+  Integers}. September 2007.
+\end{itemize}
+
+\end{document}

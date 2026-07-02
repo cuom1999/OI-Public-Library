@@ -1,0 +1,207 @@
+% Vietnamese translation for OI Public Library
+% Source-File: IOI中国国家候选队论文/2006/陈启峰/附件/友好的动物的解题报告.doc
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Lời giải bài ``Những loài vật thân thiện''}
+\author{Chen Qifeng}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Friendly Animals solution report}
+\sourcepath{IOI 2006 / Chen Qifeng / attachments / Friendly Animals solution report.doc}
+
+\section{Mô tả bài toán}
+
+Hành tinh \(W\) có khí hậu thích hợp và hệ sinh vật phong phú như Trái Đất.
+Sau nhiều năm nghiên cứu, các nhà sinh vật học ngoài hành tinh đã phát hiện
+được hàng chục nghìn loài, và con số này vẫn tiếp tục tăng.
+
+Sinh vật trên hành tinh \(W\) có quan hệ rất thú vị. Có những cặp loài rất
+thân thiện, luôn ở gần nhau; nhưng cũng có những cặp loài thù địch, cứ gặp
+nhau là dễ xảy ra tranh đấu. Để hiểu rõ hơn mức độ thân thiện giữa các loài,
+các nhà sinh vật học muốn lượng hóa quan hệ này.
+
+Họ nhận thấy mức độ thân thiện giữa hai loài liên quan đến \(k\) thuộc tính,
+tạm đánh số là thuộc tính \(1,2,\ldots,k\). Mỗi thuộc tính đều có thể đo bằng
+một giá trị số. Kết quả nghiên cứu cho thấy: với \(k-1\) thuộc tính đầu, hai
+loài càng khác nhau thì càng thân thiện; riêng thuộc tính thứ \(k\) thì ngược
+lại, hai loài càng giống nhau thì càng thân thiện.
+
+Vì vậy họ dự đoán có thể dùng công thức sau để đo mức độ thân thiện giữa hai
+loài \(a,b\):
+\[
+  \operatorname{Friendliness}(a,b)=
+  \sum_{i=1}^{k-1} C_i\lvert A_{a,i}-A_{b,i}\rvert
+  - C_k\lvert A_{a,k}-A_{b,k}\rvert,
+\]
+trong đó \(C_i\) là các hằng số không âm, còn \(A_{a,i}\) là giá trị thuộc
+tính thứ \(i\) của loài \(a\). Khi biết đầy đủ các thuộc tính của từng loài,
+ta có thể tính trực tiếp mức độ thân thiện của một cặp loài. Câu hỏi là: trong
+các loài đã phát hiện, cặp loài thân thiện nhất là cặp nào, và mức độ thân
+thiện của chúng bằng bao nhiêu?
+
+\section{Mô hình toán học}
+
+Đặt \(A_{j,i}\) là giá trị thuộc tính thứ \(i\) của loài \(j\). Nhiệm vụ là
+tìm hai chỉ số
+\[
+  1\le a<b\le n
+\]
+sao cho hàm mục tiêu
+\begin{equation}
+  \operatorname{Friendliness}(a,b)=
+  \sum_{i=1}^{k-1} C_i\lvert A_{a,i}-A_{b,i}\rvert
+  - C_k\lvert A_{a,k}-A_{b,k}\rvert
+\label{eq:friendliness}
+\end{equation}
+đạt giá trị lớn nhất.
+
+\section{Mâu thuẫn của thuật toán trực tiếp}
+
+Thuật toán nguyên thủy nhất là liệt kê mọi cặp \(a,b\), rồi tính giá trị lớn
+nhất của \(\operatorname{Friendliness}(a,b)\). Độ phức tạp thời gian khi đó là
+\(O(n^2k)\), rõ ràng không thể vượt qua toàn bộ dữ liệu.
+
+Một điều kiện rất dễ chú ý là \(k\le 5\). Điều này gợi ý rằng ta nên nghĩ đến
+các thuật toán có thừa số mũ theo \(k\), chẳng hạn \(O(n2^k)\), \(O(nk!)\) hoặc
+\(O(n\log n)\) sau khi nhân với một hằng số phụ thuộc vào \(k\).
+
+\section{Thử tối ưu bằng cấu trúc dữ liệu}
+
+Trước hết bỏ dấu trị tuyệt đối trong \eqref{eq:friendliness}. Với mỗi chiều, dấu phía trước hiệu
+của hai thuộc tính có thể là dương hoặc âm. Ta thu được dạng
+\begin{equation}
+  \sum_{i=1}^{k} s_i C_i(A_{b,i}-A_{a,i}),
+  \qquad s_i\in\{-1,1\},
+\label{eq:signed}
+\end{equation}
+trong đó dấu được chọn sao cho phù hợp với quan hệ lớn nhỏ của hai giá trị
+thuộc tính tương ứng. Do đó có \(2^k\) trường hợp cần xét.
+
+Với mỗi loài \(a\), dùng một số nhị phân \(BN\in[0,2^k-1]\) để biểu diễn cách
+chọn dấu trong (2). Nếu bit thứ \(i\) của \(BN\) bằng \(1\), đặt
+\(\operatorname{SIGN}(BN,i)=1\); ngược lại đặt
+\(\operatorname{SIGN}(BN,i)=-1\). Định nghĩa
+\[
+  F(a,BN)=\sum_{i=1}^{k}\operatorname{SIGN}(BN,i)C_iA_{a,i}.
+\]
+
+Khi đó giá trị lớn nhất có thể viết dưới dạng
+\begin{equation}
+  \max\{F(b,BN)-F(a,BN)\},
+\label{eq:maxf}
+\end{equation}
+trong đó \(a\ne b\), và với mọi \(i\in[1,k]\), dấu trong \(BN\) phải tương
+thích với thứ tự giữa \(A_{a,i}\) và \(A_{b,i}\):
+\begin{equation}
+  \operatorname{SIGN}(BN,i)(A_{b,i}-A_{a,i})\ge 0.
+\label{eq:strict}
+\end{equation}
+
+Nếu cài đặt đúng điều kiện \eqref{eq:strict}, với mỗi \(a\) và mỗi \(BN\) ta phải tìm một
+loài \(b\) thỏa điều kiện này và có giá trị \(F(b,BN)\) lớn nhất. Có thể nghĩ
+đến việc dùng \(2^k\) cây dữ liệu nhiều tầng: tầng theo các thuộc tính, phần
+tử lưu trữ là giá trị lớn nhất của \(F\). Khi đó mỗi lần tìm kiếm và chèn có
+độ phức tạp \(O(\log^k n)\), tổng thời gian khoảng
+\[
+  O(n2^k\log^k n),
+\]
+còn bộ nhớ khoảng \(O(n\log^{k-1}n)\). Dù đã tốt hơn liệt kê cặp, cách này vẫn
+có nhiều mâu thuẫn: thời gian còn cao, bộ nhớ lớn, và độ phức tạp cài đặt rất
+khó chấp nhận.
+
+\section{Nới điều kiện}
+
+Nguyên nhân căn bản của các mâu thuẫn trên là yêu cầu \eqref{eq:strict} quá khắt khe. Ta thử
+nới yêu cầu này.
+
+Nếu bỏ hẳn \eqref{eq:strict}, kết quả sẽ sai, vì khi đó việc chọn dấu là tùy tiện. Tuy nhiên
+thuộc tính thứ \(k\) có tính chất đặc biệt: nó đi vào hàm mục tiêu với dấu trừ,
+còn \(k-1\) thuộc tính đầu đi vào với dấu cộng. Vì vậy chỉ cần giữ đúng thứ tự
+ở thuộc tính thứ \(k\); các thuộc tính còn lại có thể để việc liệt kê \(BN\)
+tự chọn dấu tốt nhất.
+
+Cụ thể, thay \eqref{eq:strict} bằng điều kiện yếu hơn:
+\begin{equation}
+  \operatorname{SIGN}(BN,k)(A_{b,k}-A_{a,k})\ge 0.
+\label{eq:relaxed}
+\end{equation}
+
+Thực nghiệm với thuật toán nguyên thủy cho kết quả hoàn toàn giống nhau. Phần
+chứng minh dưới đây cho thấy cách nới điều kiện này là đúng.
+
+\paragraph{Định lý.}
+Với mọi \(A,B\in\mathbb{R}\),
+\[
+  \lvert A-B\rvert\ge A-B,\qquad
+  \lvert A-B\rvert\ge B-A.
+\]
+
+\paragraph{Hệ quả.}
+Với mọi cặp loài \(a,b\), nếu cố định dấu của chiều thứ \(k\) đúng với thứ tự
+giữa \(A_{a,k}\) và \(A_{b,k}\), thì việc lấy cực đại trên mọi lựa chọn dấu ở
+các chiều \(1,\ldots,k-1\) cho giá trị đúng bằng
+\[
+  \sum_{i=1}^{k-1} C_i\lvert A_{a,i}-A_{b,i}\rvert
+  - C_k\lvert A_{a,k}-A_{b,k}\rvert.
+\]
+
+Gọi \(S_1\) là tập các bộ \((a,b,BN)\) thỏa điều kiện đầy đủ \eqref{eq:strict}, còn \(S_2\)
+là tập các bộ thỏa điều kiện nới lỏng \eqref{eq:relaxed}. Rõ ràng \(S_1\subseteq S_2\), nên
+nếu
+\[
+  M_1=\max_{(a,b,BN)\in S_1} \{F(b,BN)-F(a,BN)\},\qquad
+  M_2=\max_{(a,b,BN)\in S_2} \{F(b,BN)-F(a,BN)\},
+\]
+thì \(M_1\le M_2\).
+
+Mặt khác, với bất kỳ \((a,b,BN_2)\in S_2\), nhờ định lý trên, ta luôn có thể
+chọn lại các dấu ở \(k-1\) chiều đầu để thu được một \(BN_1\) thỏa \eqref{eq:strict}, đồng
+thời giá trị \(F(b,BN_1)-F(a,BN_1)\) không nhỏ hơn giá trị tương ứng của
+\(BN_2\). Do đó \(M_1\ge M_2\). Suy ra \(M_1=M_2\).
+
+Vậy chỉ cần bảo đảm điều kiện \eqref{eq:relaxed}, cực đại của \eqref{eq:maxf} chính là cực đại của
+\(\operatorname{Friendliness}\).
+
+\section{Cài đặt}
+
+Sắp xếp các loài theo khóa \(A_{\cdot,k}\) tăng dần. Sau khi sắp xếp, chỉ cần
+xét các cặp trong đó loài đứng trước có giá trị thuộc tính thứ \(k\) không lớn
+hơn loài đứng sau.
+
+Với mỗi mẫu dấu \(BN\) có bit thứ \(k\) bằng \(1\), duy trì
+\[
+  \operatorname{Best}(BN)=\max F(b,BN)
+\]
+trên các loài \(b\) đã quét qua. Khi xét loài hiện tại \(a\), dùng
+\[
+  \operatorname{Best}(BN)-F(a,BN)
+\]
+để cập nhật đáp án, rồi đưa \(F(a,BN)\) vào \(\operatorname{Best}(BN)\).
+Làm tương tự cho các mẫu dấu đã bao phủ mọi lựa chọn ở \(k-1\) thuộc tính đầu.
+
+Việc tính tất cả các giá trị \(F(a,BN)\) cần \(O(n2^k)\) thời gian. Phần sắp
+xếp cần \(O(n\log n)\). Do đó độ phức tạp tổng là
+\[
+  O(n\log n+n2^k),
+\]
+và bộ nhớ là \(O(n2^k)\), hoặc \(O(2^k)\) nếu tính \(F\) theo dòng trong quá
+trình quét.
+
+\section{Kết luận}
+
+Các bước giải bài toán bằng phương pháp ``nới điều kiện'' có thể khái quát như
+sau:
+
+\begin{enumerate}
+  \item Chuyển nhiệm vụ thành mô hình toán học.
+  \item Xây dựng thuật toán nguyên thủy.
+  \item Thử tối ưu thuật toán nguyên thủy bằng cấu trúc dữ liệu.
+  \item Phân tích điều kiện khắt khe sau khi tối ưu, rồi chuyển nó thành điều
+  kiện yếu hơn nhưng vẫn giữ nguyên giá trị tối ưu.
+\end{enumerate}
+
+\end{document}

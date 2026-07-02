@@ -1,0 +1,886 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 英文资料 ENGLISH MATERIALS/General Suffix Automaton Construction Algorithm and Space Bounds.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newtheorem{definition}{Định nghĩa}
+\newtheorem{lemma}{Bổ đề}
+\newtheorem{proposition}{Mệnh đề}
+\newtheorem{corollary}{Hệ quả}
+\newenvironment{proof}{\paragraph{Chứng minh.}}{\hfill$\dashv$\par}
+
+\newcommand{\eps}{\epsilon}
+\newcommand{\End}{\operatorname{end\text{-}set}}
+\newcommand{\suff}{\operatorname{suff}}
+\newcommand{\undefinedsym}{\operatorname{undefined}}
+
+\title{Thuật toán xây dựng ô-tô-mát hậu tố tổng quát và các chặn không gian}
+\author{Mehryar Mohri, Pedro Moreno, Eugene Weinstein}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{General Suffix Automaton Construction Algorithm and Space Bounds}
+\sourcepath{english/general-suffix-automaton-construction-algorithm-and-space-bounds.pdf}
+
+\begin{abstract}
+Ô-tô-mát hậu tố và ô-tô-mát nhân tố là các cấu trúc dữ liệu hiệu quả để biểu
+diễn chỉ mục đầy đủ của một tập xâu. Chúng là các ô-tô-mát hữu hạn đơn định
+tối tiểu biểu diễn tập mọi hậu tố hoặc mọi xâu con của một tập xâu. Bài viết
+này đưa ra một phân tích mới về kích thước của ô-tô-mát hậu tố và ô-tô-mát
+nhân tố của một tập xâu. Cụ thể, ô-tô-mát hậu tố hoặc ô-tô-mát nhân tố của
+tập xâu $U$ có nhiều nhất $2Q-2$ trạng thái, trong đó $Q$ là số nút của cây
+tiền tố biểu diễn các xâu trong $U$. Chặn này cải thiện đáng kể so với chặn
+$2\|U\|-1$ của Blumer và cộng sự (1987), trong đó $\|U\|$ là tổng độ dài các
+xâu trong $U$. Tổng quát hơn, bài viết đưa ra các chặn mới cho kích thước của
+ô-tô-mát hậu tố hoặc nhân tố của một ô-tô-mát theo kích thước của ô-tô-mát
+ban đầu và độ dài lớn nhất của một hậu tố chung giữa các xâu mà nó chấp nhận.
+Bài viết cũng mô tả chi tiết một thuật toán thời gian tuyến tính để xây dựng
+ô-tô-mát hậu tố $S$ hoặc ô-tô-mát nhân tố $F$ của $U$ trong thời gian
+$O(|S|)$. Thuật toán thật ra áp dụng được cho mọi ô-tô-mát đầu vào
+hậu-tố-duy-nhất và tổng quát hóa chặt chẽ cách xây dựng trực tuyến chuẩn của
+ô-tô-mát hậu tố cho một xâu đơn. Thuật toán cũng có thể dùng trực tiếp để tạo
+oracle hậu tố hoặc oracle nhân tố của một tập xâu, vốn có nhiều tính chất hữu
+ích trong khớp xâu. Phân tích cho thấy việc dùng ô-tô-mát nhân tố của ô-tô-mát
+có thể khả thi trong các ứng dụng quy mô lớn; điều này cũng được củng cố bởi
+thực nghiệm trên một bài toán nhận dạng nhạc với hơn $15{,}000$ bài hát.
+\end{abstract}
+
+\noindent\textbf{Từ khóa:} khớp xâu, khớp mẫu, chỉ mục, văn bản đảo,
+ô-tô-mát hữu hạn, cây hậu tố, ô-tô-mát hậu tố, ô-tô-mát nhân tố, nhận dạng
+nhạc.
+
+\section{Giới thiệu}
+
+Tìm kiếm mẫu trong những khối lượng rất lớn văn bản ngôn ngữ tự nhiên, chuỗi
+sinh học và các chuỗi số hóa dễ truy cập khác là một vấn đề trung tâm của khoa
+học máy tính. Bài toán có nhiều ứng dụng và đã được nghiên cứu rộng rãi
+\cite{gusfield,crochemore-rytter}.
+
+Bài viết này xét bài toán xây dựng một chỉ mục đầy đủ, hay tệp đảo, cho một
+tập xâu được biểu diễn bằng ô-tô-mát hữu hạn. Khi số xâu lớn, chẳng hạn hàng
+nghìn hoặc hàng triệu xâu, cả tập có thể được lưu gọn dưới dạng ô-tô-mát, đồng
+thời cho phép cài đặt hiệu quả các thuật toán tìm kiếm và những thuật toán
+khác \cite{allauzen-index,weinstein-music}. Trong nhiều ngữ cảnh như nhận dạng
+tiếng nói hoặc trích xuất thông tin, toàn bộ tập xâu thường được cho trực tiếp
+dưới dạng một ô-tô-mát.
+
+Một cấu trúc dữ liệu hiệu quả và gọn để biểu diễn chỉ mục đầy đủ của một tập
+xâu là \term{ô-tô-mát hậu tố}: ô-tô-mát đơn định tối tiểu biểu diễn tập mọi
+hậu tố của tập xâu. Vì một xâu con là tiền tố của một hậu tố, ô-tô-mát hậu tố
+có thể dùng để kiểm tra một xâu $x$ có phải là xâu con hay không trong thời
+gian tuyến tính $O(|x|)$, là tối ưu. Tương tự cây hậu tố, ô-tô-mát hậu tố còn
+có những tính chất thú vị khác trong các bài toán khớp xâu, khiến việc dùng và
+xây dựng nó trở nên hấp dẫn \cite{gusfield,crochemore-rytter}. Một cấu trúc
+tương tự để biểu diễn chỉ mục đầy đủ là \term{ô-tô-mát nhân tố}: ô-tô-mát đơn
+định tối tiểu biểu diễn tập mọi nhân tố, tức mọi xâu con, của một tập xâu.
+Ô-tô-mát nhân tố có cùng tính chất tìm kiếm tuyến tính tối ưu như ô-tô-mát hậu
+tố, và không bao giờ lớn hơn nó.
+
+Việc xây dựng và kích thước của ô-tô-mát nhân tố đã được phân tích riêng cho
+trường hợp một xâu đơn \cite{blumer-smallest,crochemore-transducers}. Các tác
+giả này chứng minh một kết quả đáng chú ý: kích thước ô-tô-mát nhân tố của
+một xâu $x$ là tuyến tính; cụ thể, với $|x|>3$, nó có nhiều nhất $2|x|-2$
+trạng thái và $3|x|-4$ cung. Họ cũng đưa ra thuật toán trực tuyến thời gian
+tuyến tính để xây dựng ô-tô-mát nhân tố từ $x$. Những kết quả tương tự cũng
+đúng cho ô-tô-mát hậu tố, tức ô-tô-mát đơn định tối tiểu chấp nhận đúng tập
+hậu tố của một xâu.
+
+Việc xây dựng và kích thước của ô-tô-mát nhân tố của một tập hữu hạn
+$U=\{x_1,\ldots,x_m\}$ cũng đã được nghiên cứu \cite{blumer-complete}. Các tác
+giả chỉ ra rằng có thể xây dựng một ô-tô-mát chấp nhận mọi nhân tố của $U$ với
+nhiều nhất $2\|U\|-1$ trạng thái và $3\|U\|-3$ cung, trong đó
+\[
+  \|U\|=\sum_{i=1}^m |x_i|
+\]
+là tổng độ dài của mọi xâu trong $U$.
+
+Bài viết này chứng minh một chặn tốt hơn đáng kể cho kích thước của ô-tô-mát
+hậu tố hoặc ô-tô-mát nhân tố của một tập xâu. Cụ thể, chúng có nhiều nhất
+$2Q-2$ trạng thái, trong đó $Q$ là số nút của cây tiền tố biểu diễn các xâu
+trong $U$. Số nút $Q$ có thể nhỏ hơn rất nhiều so với $\|U\|$, nên chặn không
+gian này cải thiện rõ rệt so với kết quả trước \cite{blumer-complete}. Tổng
+quát hơn, chúng tôi đưa ra các chặn mới cho kích thước ô-tô-mát hậu tố hoặc
+nhân tố của một ô-tô-mát hữu hạn phi chu trình, theo kích thước của ô-tô-mát
+ban đầu và độ dài lớn nhất của một hậu tố chung giữa các xâu được chấp nhận.
+Kết quả này có thể so sánh với kết quả của Inenaga và cộng sự cho đồ thị từ
+phi chu trình có hướng dạng nén, có độ phức tạp $O(|\Sigma|Q)$ phụ thuộc vào
+kích thước bảng chữ cái \cite{inenaga}.
+
+Dựa trên phân tích chặn không gian, chúng tôi cũng đưa ra một thuật toán đơn
+giản để xây dựng ô-tô-mát hậu tố $S$ hoặc ô-tô-mát nhân tố $F$ của $U$ trong
+thời gian $O(|S|)$ từ cây tiền tố biểu diễn $U$. Thuật toán thật ra áp dụng cho
+mọi ô-tô-mát đầu vào hậu-tố-duy-nhất và tổng quát hóa chặt chẽ phép xây dựng
+trực tuyến chuẩn của ô-tô-mát hậu tố cho một xâu đơn.
+
+Động cơ ban đầu của công trình là thiết kế một hệ thống nhận dạng nhạc quy mô
+lớn \cite{weinstein-music,mohri-robust}. Trong hệ thống đó, cơ sở dữ liệu bài
+hát được biểu diễn bằng một ô-tô-mát hữu hạn gọn. Để tìm kiếm nhanh các đoạn
+nhạc ngắn, chúng tôi xây dựng ô-tô-mát nhân tố đơn định tối tiểu của ô-tô-mát
+bài hát. Thực nghiệm cho thấy kích thước ô-tô-mát nhân tố không quá lớn. Tuy
+nhiên, để bảo đảm khả năng mở rộng tới tập bài hát lớn hơn, chẳng hạn vài
+triệu bài, ta cần một chặn cho kích thước ô-tô-mát nhân tố của ô-tô-mát. Trong
+ứng dụng này cũng như trong nhiều ứng dụng khác, các xâu gốc không chia sẻ các
+hậu tố dài. Điều đó dẫn tới phân tích kích thước ô-tô-mát nhân tố theo độ dài
+các hậu tố chung trong ô-tô-mát ban đầu.
+
+Phần còn lại của bài viết được tổ chức như sau. Mục 2 giới thiệu các định
+nghĩa và thuật ngữ về xâu và ô-tô-mát. Mục 3 trình bày phân tích mới về
+ô-tô-mát nhân tố và các chặn mới cho kích thước ô-tô-mát hậu tố và nhân tố của
+một ô-tô-mát. Mục 4 mô tả chi tiết thuật toán thời gian tuyến tính để xây dựng
+ô-tô-mát hậu tố và nhân tố của một tập hữu hạn các xâu, hoặc của một
+ô-tô-mát hậu-tố-duy-nhất bất kỳ, kèm mã giả. Mục 5 mô tả ngắn việc dùng
+ô-tô-mát nhân tố trong nhận dạng nhạc và báo cáo một số kết quả thực nghiệm
+về kích thước của chúng.
+
+\section{Nhân tố của một ô-tô-mát hữu hạn}
+
+Mục này nhắc lại một số tính chất then chốt của các nhân tố của một ô-tô-mát
+hữu hạn cố định, tổng quát hóa các quan sát tương tự của Blumer và cộng sự cho
+một xâu đơn \cite{blumer-complete}.
+
+Ký hiệu $\Sigma$ là một bảng chữ cái hữu hạn. Độ dài của xâu $x\in\Sigma^*$
+trên bảng chữ cái đó được ký hiệu là $|x|$. Một \term{nhân tố}, hay xâu con,
+của $x$ là một dãy ký hiệu xuất hiện liên tiếp trong $x$. Vì vậy, $y$ là nhân
+tố của $x$ khi và chỉ khi tồn tại $u,v\in\Sigma^*$ sao cho $x=uyv$. Một
+\term{hậu tố} của $x$ là một nhân tố xuất hiện ở cuối $x$; tương đương, $y$ là
+hậu tố của $x$ khi và chỉ khi tồn tại $u\in\Sigma^*$ sao cho $x=uy$. Tương tự,
+$y$ là \term{tiền tố} của $x$ khi và chỉ khi tồn tại $u\in\Sigma^*$ sao cho
+$x=yu$. Tổng quát hơn, nhân tố, hậu tố hoặc tiền tố của một tập xâu $U$, hoặc
+của một ô-tô-mát $A$, là nhân tố, hậu tố hoặc tiền tố của một xâu trong $U$,
+hoặc của một xâu được $A$ chấp nhận. Ký hiệu $\eps$ biểu diễn xâu rỗng; với
+mọi $x\in\Sigma^*$, $\eps$ luôn là tiền tố, hậu tố và nhân tố của $x$.
+
+\begin{definition}
+Cho $k$ là một số nguyên không âm. Ta nói ô-tô-mát hữu hạn $A$ là
+\term{$k$-hậu-tố-duy-nhất} nếu không có hai xâu nào được $A$ chấp nhận cùng
+chia sẻ một hậu tố độ dài $k$. Ta gọi $A$ là \term{hậu-tố-duy-nhất} khi nó là
+$k$-hậu-tố-duy-nhất với $k=1$.
+\end{definition}
+
+Ví dụ trong bài gốc (Hình 1) là một ô-tô-mát đơn giản chấp nhận ba xâu
+\texttt{ac}, \texttt{acab}, \texttt{acba}; ba xâu kết thúc bằng các ký hiệu
+khác nhau, nên ô-tô-mát này là hậu-tố-duy-nhất.
+
+Các kết quả chính của bài viết đúng cho ô-tô-mát hậu-tố-duy-nhất, nhưng một
+số kết quả cũng được trình bày cho trường hợp tổng quát của ô-tô-mát phi chu
+trình bất kỳ. Ký hiệu $F(A)$ là ô-tô-mát đơn định tối tiểu chấp nhận tập các
+nhân tố của ô-tô-mát hữu hạn $A$, tức tập các nhân tố của những xâu được $A$
+chấp nhận. Tương tự, $S(A)$ là ô-tô-mát đơn định tối tiểu chấp nhận tập các
+hậu tố của $A$.
+
+\begin{definition}
+Cho $A$ là một ô-tô-mát hữu hạn. Với mọi $x\in\Sigma^*$, định nghĩa
+$\End(x)$ là tập trạng thái của $A$ đạt được bởi những đường đi trong $A$ bắt
+đầu bằng $x$. Ta nói hai xâu $x,y\in\Sigma^*$ tương đương, ký hiệu $x\equiv y$,
+khi $\End(x)=\End(y)$. Đây là một quan hệ tương đương bất biến phải trên
+$\Sigma^*$. Ký hiệu $[x]$ là lớp tương đương của $x$.
+\end{definition}
+
+\begin{lemma}
+Giả sử $A$ là hậu-tố-duy-nhất. Khi đó, một nhân tố $x$ không phải hậu tố của
+$A$ là phần tử dài nhất của $[x]$ khi và chỉ khi $x$ là tiền tố của $A$, hoặc
+cả $ax$ và $bx$ đều là nhân tố của $A$ với hai ký hiệu phân biệt
+$a,b\in\Sigma$.
+\end{lemma}
+
+\begin{proof}
+Cho $x$ là một nhân tố không phải hậu tố của $A$. Nếu $x$ không phải tiền tố,
+rõ ràng phải có hai ký hiệu phân biệt $a,b$ sao cho $ax$ và $bx$ là nhân tố
+của $A$; nếu không, $[x]$ sẽ chứa một phần tử dài hơn.
+
+Ngược lại, giả sử $ax$ và $bx$ đều là nhân tố của $A$ với $a\ne b$. Gọi $y$ là
+phần tử dài nhất của $[x]$. Lấy $q\in\End(x)=\End(y)$. Vì $x$ không phải hậu
+tố, $q$ không phải trạng thái kết thúc, nên tồn tại một xâu không rỗng $z$ gán
+nhãn cho một đường đi từ $q$ tới trạng thái kết thúc. Do $A$ là
+hậu-tố-duy-nhất, cả $xz$ và $yz$ là hậu tố của cùng một xâu. Vì $y$ dài nhất
+trong $[x]$, $x$ phải là hậu tố của $y$. Nhưng do $ax$ và $bx$ cùng là nhân tố
+với $a\ne b$, suy ra bắt buộc $y=x$. Cuối cùng, nếu $x$ là tiền tố, hiển nhiên
+nó là phần tử dài nhất của $[x]$.
+\end{proof}
+
+Hình 2 trong bài gốc minh họa ô-tô-mát hậu tố $S(A)$ của ô-tô-mát ở ví dụ
+trên: các trạng thái của $S(A)$ chính là những lớp tương đương của các hậu tố
+và các tiền tố của chúng.
+
+\begin{proposition}
+Giả sử $A$ là hậu-tố-duy-nhất. Xét ô-tô-mát đơn định
+$S_A=(Q_S,I_S,F_S,E_S)$ có tập trạng thái
+\[
+  Q_S=\{[x]\ne\emptyset:x\in\Sigma^*\},
+\]
+trạng thái đầu $I_S=\{[\eps]\}$, tập trạng thái kết thúc
+\[
+  F_S=\{[x]:\End(x)\cap F_A\ne\emptyset\},
+\]
+trong đó $F_A$ là tập trạng thái kết thúc của $A$, và tập cung
+\[
+  E_S=\{([x],a,[xa]): [x],[xa]\in Q_S\}.
+\]
+Khi đó $S_A$ là ô-tô-mát hậu tố đơn định tối tiểu của $A$, tức $S_A=S(A)$.
+\end{proposition}
+
+\begin{proof}
+Theo xây dựng, $S_A$ đơn định và chấp nhận đúng tập hậu tố của $A$. Cho $[x]$
+và $[y]$ là hai trạng thái tương đương của $S_A$. Khi đó, với mọi
+$z\in\Sigma^*$, $[xz]\in F_A$ khi và chỉ khi $[yz]\in F_A$, nghĩa là $xz$ là
+hậu tố của $A$ khi và chỉ khi $yz$ là hậu tố của $A$. Vì $A$ là
+hậu-tố-duy-nhất, điều này kéo theo $x$ là hậu tố của $y$ hoặc ngược lại; do đó
+$[x]=[y]$. Vì vậy $S_A$ tối tiểu.
+\end{proof}
+
+Trong phần sau, ta quan tâm tới trường hợp ô-tô-mát $A$ là phi chu trình. Ký
+hiệu $|A|_Q$ là số trạng thái của $A$, $|A|_E$ là số cung của $A$, và $|A|$ là
+kích thước của $A$, tức tổng số trạng thái và số cung.
+
+\section{Chặn không gian cho ô-tô-mát nhân tố}
+
+Mục tiêu của mục này là suy ra các chặn mới cho kích thước của $S(A)$ và
+$F(A)$ trong trường hợp quan trọng với ứng dụng của chúng tôi: $A$ là một
+ô-tô-mát phi chu trình, thường đơn định và tối tiểu, biểu diễn một tập xâu.
+
+Khi $A$ biểu diễn một xâu đơn, đã có các thuật toán chuẩn xây dựng $S(A)$ và
+$F(A)$ từ $A$ trong thời gian tuyến tính \cite{blumer-smallest,crochemore-transducers}.
+Trong trường hợp tổng quát, $S(A)$ có thể được xây dựng từ $A$ như sau: thêm
+một cung $\eps$ từ trạng thái đầu của $A$ tới mỗi trạng thái của $A$, sau đó
+khử $\eps$, đơn định hóa và tối tiểu hóa. $F(A)$ có thể thu được tương tự bằng
+cách thêm bước biến mọi trạng thái thành kết thúc trước khi khử $\eps$, đơn
+định hóa và tối tiểu hóa. Nó cũng có thể thu được từ $S(A)$ bằng cách biến mọi
+trạng thái của $S(A)$ thành kết thúc rồi tối tiểu hóa.
+
+Khi $A$ biểu diễn một xâu đơn $x$, kích thước của $S(A)$ và $F(A)$ là tuyến
+tính theo $|x|$. Chính xác hơn \cite{crochemore-transducers,blumer-smallest},
+\[
+\begin{array}{ll}
+  |S(A)|_Q \le 2|x|-1, & |S(A)|_E \le 3|x|-4,\\
+  |F(A)|_Q \le 2|x|-2, & |F(A)|_E \le 3|x|-4.
+\end{array}
+\tag{1}
+\]
+Các chặn này là chặt với các xâu có độ dài lớn hơn ba. Blumer và cộng sự
+\cite{blumer-complete} đưa ra kết quả tương tự cho tập xâu $U$:
+\[
+  |F(U)|_Q \le 2\|U\|-1,\qquad |F(U)|_E \le 3\|U\|-3.
+\tag{2}
+\]
+
+Nhìn chung, kích thước của một ô-tô-mát phi chu trình $A$ biểu diễn một tập
+hữu hạn $U$ có thể nhỏ hơn rất nhiều so với $\|U\|$; thật ra $|A|$ có thể nhỏ
+hơn theo cấp số mũ. Vì thế, ta muốn chặn kích thước $S(A)$ hoặc $F(A)$ theo
+kích thước của $A$, thay vì theo tổng độ dài mọi xâu được $A$ chấp nhận.
+
+Với mỗi trạng thái $q$ của $S(A)$, ký hiệu $\suff(q)$ là tập các xâu gán nhãn
+cho những đường đi từ $q$ tới một trạng thái kết thúc. Ký hiệu $N(q)$ là tập
+các trạng thái trong $A$ mà từ đó có một đường đi gán nhãn bằng một xâu không
+rỗng thuộc $\suff(q)$ tới một trạng thái kết thúc.
+
+\begin{lemma}
+Cho $A$ là ô-tô-mát hậu-tố-duy-nhất và $q,q'$ là hai trạng thái của $S(A)$ sao
+cho $N(q)\cap N(q')\ne\emptyset$. Khi đó
+\[
+\begin{aligned}
+  &\bigl(\suff(q)\subseteq\suff(q')\ \text{và}\ N(q)\subseteq N(q')\bigr)\\
+  &\quad\text{hoặc}\quad
+  \bigl(\suff(q')\subseteq\suff(q)\ \text{và}\ N(q')\subseteq N(q)\bigr).
+\end{aligned}
+\tag{3}
+\]
+\end{lemma}
+
+\begin{proof}
+Vì $S(A)$ tối tiểu, mọi trạng thái của nó đều truy cập được từ trạng thái đầu.
+Gọi $u$ là nhãn của một đường đi từ trạng thái đầu $I$ của $S(A)$ tới $q$, và
+tương tự gọi $u'$ là nhãn của một đường đi từ $I$ tới $q'$.
+
+Theo giả thiết, tồn tại $p\in N(q)\cap N(q')$. Do đó tồn tại các xâu không
+rỗng $v\in\suff(q)$ và $v'\in\suff(q')$ sao cho cả $v$ và $v'$ đều gán nhãn
+cho đường đi từ $p$ tới trạng thái kết thúc.
+
+Theo định nghĩa của $u$ và $u'$, cả $uv$ và $u'v'$ đều là hậu tố của $A$. Vì
+$A$ là hậu-tố-duy-nhất và $v$ không rỗng, chỉ có một xâu được $A$ chấp nhận
+kết thúc bằng $v$. Cũng chỉ có một xâu được $A$ chấp nhận kết thúc bằng $uv$.
+Hai xâu đó phải trùng nhau.
+
+Suy ra mọi xâu được $A$ chấp nhận và có hậu tố $v$ cũng có hậu tố $uv$. Đặc
+biệt, nhãn của mọi đường đi từ trạng thái đầu tới $p$ phải có hậu tố $u$. Lập
+luận tương tự với $v'$ cho thấy nhãn đó cũng phải có hậu tố $u'$. Vậy $u$ và
+$u'$ là hậu tố của cùng một xâu; do đó $u$ là hậu tố của $u'$ hoặc ngược lại.
+Hình 3 trong bài gốc minh họa tình huống này: $uv$ và $u'v$ là hậu tố của cùng
+một xâu $x$, nên $u$ và $u'$ cũng là hai hậu tố lồng nhau của $x$.
+
+Không mất tính tổng quát, giả sử $u$ là hậu tố của $u'$. Khi đó với mọi $w$,
+nếu $u'w$ là hậu tố của $A$ thì $uw$ cũng là hậu tố của $A$. Vì vậy
+$\suff(q')\subseteq\suff(q)$, kéo theo $N(q')\subseteq N(q)$. Trường hợp
+$u'$ là hậu tố của $u$ cho kết luận còn lại.
+\end{proof}
+
+Bổ đề 2 vẫn đúng ngay cả khi $A$ là ô-tô-mát không đơn định.
+
+\begin{lemma}
+Cho $A$ là ô-tô-mát đơn định hậu-tố-duy-nhất và $q,q'$ là hai trạng thái phân
+biệt của $S(A)$ sao cho $N(q)=N(q')$. Khi đó hoặc $q$ là trạng thái kết thúc
+còn $q'$ không phải, hoặc $q'$ là trạng thái kết thúc còn $q$ không phải.
+\end{lemma}
+
+\begin{proof}
+Giả sử $N(q)=N(q')$. Theo Bổ đề 2, suy ra $\suff(q)=\suff(q')$. Do đó cùng các
+xâu không rỗng gán nhãn cho các đường đi từ $q$ tới trạng thái kết thúc cũng
+gán nhãn cho các đường đi từ $q'$ tới trạng thái kết thúc. Vì $S(A)$ tối tiểu,
+hai trạng thái phân biệt $q$ và $q'$ không tương đương. Vậy một trong hai trạng
+thái phải cho phép đường đi rỗng tới trạng thái kết thúc, còn trạng thái kia
+thì không.
+\end{proof}
+
+\begin{proposition}
+Cho $A$ là ô-tô-mát đơn định, tối tiểu, hậu-tố-duy-nhất, chấp nhận các xâu có
+độ dài lớn hơn ba. Khi đó số trạng thái của ô-tô-mát hậu tố của $A$ thỏa
+\[
+  |S(A)|_Q \le 2|A|_Q-3.
+\tag{4}
+\]
+\end{proposition}
+
+\begin{proof}
+Nếu mọi xâu được $A$ chấp nhận đều có dạng $a^n$, thì $S(A)$ thu được đơn giản
+bằng cách biến mọi trạng thái của $A$ thành trạng thái kết thúc, và chặn hiển
+nhiên đúng. Vì vậy, phần còn lại giả sử không phải mọi xâu được chấp nhận đều
+có dạng này.
+
+Gọi $F$ là trạng thái kết thúc duy nhất của $S(A)$ không có cung ra. Bổ đề 2
+và 3 cho phép định nghĩa một cây $T$ trên mọi trạng thái của $S(A)$ trừ $F$,
+theo thứ tự
+\[
+  N(q)\sqsubseteq N(q')
+  \quad\Longleftrightarrow\quad
+  \begin{cases}
+    N(q)\subset N(q'),\quad\text{hoặc}\\
+    N(q)=N(q')\ \text{và}\ q'\ \text{kết thúc, còn}\ q\ \text{không kết thúc.}
+  \end{cases}
+\tag{5}
+\]
+Ta đồng nhất mỗi nút của $T$ với trạng thái tương ứng trong $S(A)$. Theo Mệnh
+đề 1, mỗi trạng thái $q$ của $S(A)$ cũng được đồng nhất với một lớp tương
+đương $[x]$. Với $q\ne F$, nếu $[x]$ là lớp tương ứng thì, do $A$ là
+hậu-tố-duy-nhất, $\End(x)$ trùng với $N(q)$.
+
+Ta chứng minh số nút của $T$ nhiều nhất là $2|A|_Q-4$; từ đó suy ra chặn cần
+chứng minh cho $S(A)$. Ta chặn riêng số nút phân nhánh và không phân nhánh
+của $T$.
+
+Cho $q$ là một nút của $T$, $[x]$ là lớp tương ứng, với $x$ là phần tử dài nhất
+của lớp. Con của $q$ là các nút tương ứng với các lớp $[ax]$, trong đó
+$a\in\Sigma$ và $ax$ là nhân tố của $A$.
+
+Theo Bổ đề 1, nếu $x$ là nhân tố không phải hậu tố và không phải tiền tố, thì
+tồn tại hai nhân tố $ax$ và $bx$ với $a\ne b$. Vì thế $q$ có ít nhất hai con
+tương ứng với $[ax]$ và $[bx]$, nên là nút phân nhánh. Do đó nút không phân
+nhánh chỉ có thể là nút mà $x$ là tiền tố, hoặc nút mà $x$ là hậu tố, tức trạng
+thái kết thúc của $S(A)$.
+
+Vì các xâu được $A$ chấp nhận không phải đều có dạng $a^n$, tiền tố rỗng
+$\eps$ xuất hiện trong ít nhất hai ngữ cảnh trái khác nhau $a$ và $b$ với
+$a\ne b$. Vì vậy tiền tố $\eps$, tương ứng với gốc của $T$, chắc chắn phân
+nhánh. Gọi $f$ là trạng thái kết thúc duy nhất của $A$ không có cung ra. Lớp
+tương đương của nhân tố dài nhất kết thúc tại $f$, tức xâu dài nhất được $A$
+chấp nhận, tương ứng với trạng thái $F$ của $S(A)$ và không nằm trong $T$.
+Vậy có nhiều nhất $|A|_Q-2$ tiền tố không phân nhánh.
+
+Mặt khác, với mỗi xâu được $A$ chấp nhận có nhiều nhất một nút không phân
+nhánh tương ứng với hậu tố. Gọi $N_{\rm str}$ là số xâu được $A$ chấp nhận.
+Khi đó số nút không phân nhánh $N_{\rm nb}$ của $T$ thỏa
+\[
+  N_{\rm nb}\le |A|_Q-2+N_{\rm str}.
+\]
+
+Để chặn số nút phân nhánh $N_b$, quan sát rằng do $A$ là hậu-tố-duy-nhất, mỗi
+xâu được $A$ chấp nhận kết thúc bằng một ký hiệu riêng $a_i$,
+$i=1,\ldots,N_{\rm str}$. Mỗi $a_i$ là một ngữ cảnh trái khác nhau của nhân tố
+rỗng $\eps$, nên nút gốc $[\eps]$ có các con $[a_i]$. Gọi $T_{a_i}$ là cây con
+gốc $[a_i]$ và $n_{a_i}$ là số lá của nó. Gọi
+$a_j$, $j=N_{\rm str}+1,\ldots,N_{\rm str}+k$, là các con khác của gốc, và
+$T_{a_j}$ là các cây con tương ứng. Một cây có $n_{a_i}$ lá có ít hơn
+$n_{a_i}$ nút phân nhánh, nên số nút phân nhánh của $T_{a_i}$ nhiều nhất là
+$n_{a_i}-1$. Tổng số lá của $T$ nhiều nhất là số tập con rời nhau của $Q$, bỏ
+trạng thái đầu và $f$.
+
+Nếu gốc chỉ có các con $[a_i]$, tức $k=0$, thì tồn tại ít nhất một $a_i$, gọi
+là $a_1$, cũng là tiền tố của $A$; nếu có ký hiệu khác thì nó đã là con của
+gốc. Nút $a_1$ khi đó cũng có con vì nó tương ứng với một hậu tố, tức một
+trạng thái kết thúc của $S(A)$. Do đó $a_1$ không thể là lá trong trường hợp
+này. Vì vậy
+\[
+  \sum_{i=1}^{N_{\rm str}+k} n_{a_i}\le |A|_Q-2-\mathbf 1_{k=0}.
+\]
+Tổng số nút phân nhánh của $T$, kể cả gốc, nhiều nhất là
+\[
+  N_b \le \sum_{i=1}^{N_{\rm str}+k}(n_{a_i}-1)+1
+      \le |A|_Q-2-\mathbf 1_{k=0}-(N_{\rm str}+k)+1
+      \le |A|_Q-2-N_{\rm str}.
+\]
+Suy ra tổng số nút của $T$ nhiều nhất là
+$N_{\rm nb}+N_b\le 2|A|_Q-4$.
+\end{proof}
+
+Trong trường hợp riêng $A$ biểu diễn một xâu đơn $x$, chặn của Mệnh đề 2 khớp
+với chặn trong \cite{crochemore-transducers,blumer-smallest}, vì
+$|A|_Q=|x|+1$. Chặn này là chặt với các xâu có độ dài lớn hơn ba, nên cũng
+chặt cho các ô-tô-mát chấp nhận xâu có độ dài lớn hơn ba. Ô-tô-mát ở ví dụ
+Hình 1 là hậu-tố-duy-nhất, đơn định và tối tiểu, có $|A|_Q=6$ trạng thái; ô-tô
+mát hậu tố tối tiểu của nó có $|S(A)|_Q=7<2|A|_Q-3$.
+
+\begin{corollary}
+Cho $A$ là ô-tô-mát đơn định, tối tiểu, hậu-tố-duy-nhất, chấp nhận các xâu có
+độ dài lớn hơn ba. Khi đó số trạng thái của ô-tô-mát nhân tố của $A$ thỏa
+\[
+  |F(A)|_Q \le 2|A|_Q-3.
+\tag{6}
+\]
+\end{corollary}
+
+\begin{proof}
+Như đã nói, $F(A)$ thu được từ $S(A)$ bằng cách biến mọi trạng thái thành kết
+thúc rồi tối tiểu hóa. Do đó $|F(A)|\le |S(A)|$, và kết quả suy ra từ Mệnh đề
+2.
+\end{proof}
+
+Blumer và cộng sự (1987) chứng minh rằng một ô-tô-mát chấp nhận mọi nhân tố
+của một tập xâu $U$ có nhiều nhất $2\|U\|-1$ trạng thái, trong đó $\|U\|$ là
+tổng độ dài các xâu trong $U$ \cite{blumer-complete}. Hệ quả sau cho một chặn
+tốt hơn đáng kể theo số nút của cây tiền tố biểu diễn $U$, thường nhỏ hơn
+nhiều so với $\|U\|$.
+
+\begin{corollary}
+Cho $U=\{x_1,\ldots,x_m\}$ là một tập xâu có độ dài lớn hơn ba và $A$ là cây
+tiền tố biểu diễn $U$. Khi đó số trạng thái của ô-tô-mát nhân tố $F(U)$ và
+ô-tô-mát hậu tố $S(U)$ của các xâu trong $U$ thỏa
+\[
+  |F(U)|_Q \le 2|A|_Q-2,\qquad
+  |S(U)|_Q \le 2|A|_Q-2.
+\tag{7}
+\]
+\end{corollary}
+
+\begin{proof}
+Gọi $B$ là cây tiền tố biểu diễn tập
+$U'=\{x_1\mathtt{\$}_1,\ldots,x_m\mathtt{\$}_m\}$, thu được bằng cách gắn vào
+mỗi xâu của $U$ một ký hiệu mới $\mathtt{\$}_i$, $i=1,\ldots,m$, để làm các
+hậu tố phân biệt; gọi $B'$ là ô-tô-mát thu được bằng cách tối tiểu hóa $B$.
+Theo xây dựng, $B$ có nhiều hơn $A$ đúng $m$ trạng thái, nhưng vì mọi trạng
+thái kết thúc của $B$ tương đương và bị nhập lại sau khi tối tiểu hóa, $B'$ có
+nhiều nhất hơn $A$ một trạng thái.
+
+Theo xây dựng, $B'$ là ô-tô-mát hậu-tố-duy-nhất. Theo Mệnh đề 2,
+$|S(B')|_Q\le 2|B'|_Q-3$. Xóa khỏi $S(B')$ các cung gán nhãn bởi các ký hiệu
+phụ $\mathtt{\$}_i$ rồi nối ô-tô-mát kết quả ta thu được ô-tô-mát hậu tố tối
+tiểu $S(U)$. Trong $S(B')$, phải có một trạng thái kết thúc chỉ đạt được qua
+các cung gán nhãn $\mathtt{\$}_i$; trạng thái này trở nên không truy cập được
+sau khi xóa ký hiệu phụ. Vì thế $S(U)$ có ít nhất một trạng thái ít hơn
+$S(B')$, và
+\[
+  |S(U)|_Q \le |S(B')|_Q-1 \le 2|B'|_Q-4 = 2|A|_Q-2.
+\tag{8}
+\]
+Chặn tương tự cho $F(U)$ suy ra theo lập luận trong chứng minh Hệ quả 1.
+\end{proof}
+
+Khi $A$ là $k$-hậu-tố-duy-nhất với $k$ tương đối nhỏ, như trong các ứng dụng
+chúng tôi quan tâm, mệnh đề sau cho một chặn tiện dụng cho kích thước
+ô-tô-mát hậu tố.
+
+\begin{proposition}
+Cho $A$ là ô-tô-mát đơn định $k$-hậu-tố-duy-nhất chấp nhận các xâu có độ dài
+lớn hơn ba, và $n$ là số xâu được $A$ chấp nhận. Khi đó số trạng thái của
+ô-tô-mát hậu tố của $A$ thỏa
+\[
+  |S(A)|_Q \le 2|A_k|_Q + 2kn - 3,
+\tag{9}
+\]
+trong đó $A_k$ là phần của ô-tô-mát $A$ thu được bằng cách bỏ các trạng thái
+và cung của mọi hậu tố độ dài $k$.
+\end{proposition}
+
+\begin{proof}
+Cho $A$ là ô-tô-mát đơn định $k$-hậu-tố-duy-nhất chấp nhận các xâu có độ dài
+lớn hơn ba, và mở rộng bảng chữ cái $\Sigma$ bằng $n$ ký hiệu tạm
+$\mathtt{\$}_1,\ldots,\mathtt{\$}_n$. Bằng cách đánh dấu mỗi xâu được $A$ chấp
+nhận bằng một ký hiệu riêng $\mathtt{\$}_i$, ta biến $A$ thành một ô-tô-mát đơn
+định hậu-tố-duy-nhất $A'$.
+
+Để làm vậy, trước hết ta trải phẳng mọi hậu tố độ dài $k$ của $A$. Trong
+trường hợp xấu nhất, mọi hậu tố phân biệt này trước đó cùng chia sẻ một hậu tố
+độ dài $k-1$; việc trải phẳng khi đó có thể làm tăng số trạng thái của $A$
+thêm tối đa $kn-n$ trạng thái. Đánh dấu cuối mỗi hậu tố bằng một ký hiệu
+$\mathtt{\$}$ riêng làm tăng thêm $n$ trạng thái. Ô-tô-mát kết quả $A'$ là đơn
+định và $|A'|_Q\le |A_k|_Q+kn$. Theo Mệnh đề 2,
+$|S(A')|_Q\le 2|A'|_Q-3$. Vì các cung gán nhãn $\mathtt{\$}$ chỉ có thể xuất
+hiện ở cuối đường đi thành công trong $S(A')$, ta có thể xóa các cung này,
+biến trạng thái xuất phát của chúng thành kết thúc, rồi tối tiểu hóa ô-tô-mát
+thu được để nhận ô-tô-mát đơn định $A''$ chấp nhận tập hậu tố của $A$. Kết
+luận của mệnh đề suy ra từ $|A''|_Q\le |S(A')|_Q$.
+\end{proof}
+
+Vì kích thước $F(A)$ luôn không lớn hơn kích thước $S(A)$, ta có ngay hệ quả
+sau.
+
+\begin{corollary}
+Cho $A$ là ô-tô-mát $k$-hậu-tố-duy-nhất chấp nhận các xâu có độ dài lớn hơn
+ba. Khi đó ô-tô-mát nhân tố của $A$ thỏa
+\[
+  |F(A)|_Q \le 2|A_k|_Q + 2kn - 3.
+\tag{10}
+\]
+\end{corollary}
+
+Chặn trong hệ quả này không chặt với các giá trị $k$ tương đối nhỏ: trong thực
+tế, kích thước ô-tô-mát nhân tố không phụ thuộc vào $kn$, tổng độ dài các hậu
+tố độ dài $k$, mà phụ thuộc nhiều hơn vào số trạng thái của $A$ dùng để biểu
+diễn chúng; với ô-tô-mát tối tiểu, số này có thể nhỏ hơn đáng kể. Tuy nhiên,
+với $k$ lớn, chẳng hạn khi mọi xâu có cùng độ dài và $k$ bằng đúng độ dài các
+xâu được $A$ chấp nhận, chặn của chúng tôi trùng với chặn của
+\cite{blumer-complete}.
+
+\section{Thuật toán xây dựng ô-tô-mát hậu tố}
+
+Mục này mô tả một thuật toán thời gian tuyến tính để xây dựng ô-tô-mát hậu tố
+$S(A)$ của một ô-tô-mát đầu vào hậu-tố-duy-nhất $A$, hoặc tương tự là
+ô-tô-mát nhân tố $F(A)$ của $A$. Vì ô-tô-mát nhân tố có thể thu được từ
+$S(A)$ bằng cách biến mọi trạng thái của $S(A)$ thành kết thúc rồi áp dụng
+thuật toán tối tiểu hóa ô-tô-mát đơn định phi chu trình thời gian tuyến tính
+\cite{revuz}, chỉ cần mô tả thuật toán thời gian tuyến tính cho $S(A)$. Tuy
+nhiên, cũng có thể đưa ra một thuật toán trực tiếp tương tự cho $F(A)$.
+
+Các thuật toán dưới đây xây dựng $S(A)=(Q_S,I,F_S,\delta_S)$ từ
+$A=(Q_A,I,F_A,\delta_A)$, trong đó $A$ là hậu-tố-duy-nhất,
+$\delta_S:Q_S\times\Sigma\to Q_S$ là hàm chuyển bộ phận của $S(A)$, và
+$\delta_A:Q_A\times\Sigma\to Q_A$ là hàm chuyển bộ phận của $A$. Như ở mục
+trước, $f$ là trạng thái kết thúc của $A$ không có cung ra. Ta gọi đích của
+liên kết hậu tố là \term{con trỏ hậu tố}.
+
+\begin{center}
+\begin{tabular}{r p{0.78\linewidth}}
+\multicolumn{2}{l}{\textsc{Create-Suffix-Automaton}$(A,f)$}\\
+1 & $S\leftarrow Q_S\leftarrow\{I\}$ \\
+2 & $s[I]\leftarrow\undefinedsym$; $l[I]\leftarrow 0$\\
+3 & \textbf{while} $S\ne\emptyset$ \textbf{do}\\
+4 & \quad $p\leftarrow \operatorname{Head}(S)$\\
+5 & \quad \textbf{for each} cung $(p,a,q)$ của $A$ \textbf{do}\\
+6 & \quad\quad \textbf{if} $q\ne f$ \textbf{then}\\
+7 & \quad\quad\quad $Q_S\leftarrow Q_S\cup\{q\}$\\
+8 & \quad\quad\quad $l[q]\leftarrow l[p]+1$\\
+9 & \quad\quad\quad \textsc{Suffix-Next}$(p,a,q)$\\
+10 & \quad\quad\quad $\operatorname{Enqueue}(S,q)$\\
+11 & $Q_S\leftarrow Q_S\cup\{f\}$\\
+12 & \textbf{for each} trạng thái $p\in Q_A$ và $a\in\Sigma$ sao cho
+      $\delta_A(p,a)=f$ \textbf{do}\\
+13 & \quad \textsc{Suffix-Next}$(p,a,f)$\\
+14 & \quad \textsc{Suffix-Final}$(f)$\\
+15 & \textbf{for each} $p\in F_A$ \textbf{do}\\
+16 & \quad \textsc{Suffix-Final}$(p)$\\
+17 & \textbf{return} $S(A)=(Q_S,I,F_S,\delta_S)$
+\end{tabular}
+\end{center}
+
+Thuật toán là một tổng quát hóa của phép xây dựng chuẩn cho một xâu đầu vào
+sang trường hợp đầu vào là ô-tô-mát hậu-tố-duy-nhất. Nó duy trì hai giá trị
+$s[q]$ và $l[q]$ cho mỗi trạng thái $q$ của $S(A)$. $s[q]$ là con trỏ hậu tố,
+hay trạng thái thất bại, của $q$. $l[q]$ là độ dài đường đi dài nhất từ trạng
+thái đầu tới $q$ trong $S(A)$. Giá trị $l$ được dùng để xác định các cung đặc,
+hay chuyển tiếp đặc, trong quá trình xây dựng: cung $(p,a,q)$ là đặc nếu
+$l[p]+1=l[q]$, tức nó nằm trên một đường đi dài nhất từ trạng thái đầu tới
+$q$; nếu không, nó là cung tắt.
+
+$S$ là hàng đợi chứa các trạng thái cần xét. Kỷ luật hàng đợi cụ thể không ảnh
+hưởng tới tính đúng đắn; có thể giả sử dùng FIFO, tương ứng với duyệt theo
+chiều rộng và có cài đặt tuyến tính. Trong mỗi vòng lặp dòng 3--10, một trạng
+thái mới $p$ được lấy ra từ $S$. Việc xử lý các cung $(p,a,f)$ có đích là $f$
+được hoãn tới giai đoạn sau (dòng 12--14). Lý do là $f$ có tính chất đặc biệt:
+như đã thảo luận ở mục trước, nó có thể được xem là con của nhiều nút khác
+nhau của cây $T$, nên có thể có các liên kết hậu tố khác nhau. Các cung khác
+$(p,a,q)$ được xử lý lần lượt bằng cách tạo trạng thái đích $q$ nếu cần, thêm
+nó vào $Q_S$, xác định $l[q]$ và gọi \textsc{Suffix-Next}$(p,a,q)$.
+
+\begin{center}
+\begin{tabular}{r p{0.78\linewidth}}
+\multicolumn{2}{l}{\textsc{Suffix-Next}$(p,a,q)$}\\
+1 & $l[q]\leftarrow\max(l[p]+1,l[q])$\\
+2 & \textbf{while} $p\ne I$ và $\delta_S(p,a)=\undefinedsym$ \textbf{do}\\
+3 & \quad $\delta_S(p,a)\leftarrow q$\\
+4 & \quad $p\leftarrow s[p]$\\
+5 & \textbf{if} $\delta_S(p,a)=\undefinedsym$ \textbf{then}\\
+6 & \quad $\delta_S(I,a)\leftarrow q$\\
+7 & \quad $s[q]\leftarrow I$\\
+8 & \textbf{elseif} $l[p]+1=l[\delta_S(p,a)]$ và $\delta_S(p,a)\ne q$
+    \textbf{then}\\
+9 & \quad $s[q]\leftarrow \delta_S(p,a)$\\
+10 & \textbf{else} $r\leftarrow q$\\
+11 & \quad \textbf{if} $\delta_S(p,a)\ne q$ \textbf{then}\\
+12 & \quad\quad $r\leftarrow$ bản sao của $\delta_S(p,a)$ với cùng các cung ra\\
+13 & \quad\quad $Q_S\leftarrow Q_S\cup\{r\}$\\
+14 & \quad\quad $s[q]\leftarrow r$\\
+15 & \quad $s[r]\leftarrow s[\delta_S(p,a)]$\\
+16 & \quad $s[\delta_S(p,a)]\leftarrow r$\\
+17 & \quad $l[r]\leftarrow l[p]+1$\\
+18 & \quad \textbf{while} $p\ne\undefinedsym$ và $l[\delta_S(p,a)]\ge l[r]$
+     \textbf{do}\\
+19 & \quad\quad $\delta_S(p,a)\leftarrow r$\\
+20 & \quad\quad $p\leftarrow s[p]$
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{r p{0.78\linewidth}}
+\multicolumn{2}{l}{\textsc{Suffix-Final}$(p)$}\\
+1 & \textbf{if} $p\in F_S$ \textbf{then}\\
+2 & \quad $p\leftarrow s[p]$\\
+3 & \textbf{while} $p\ne\undefinedsym$ và $p\notin F_S$ \textbf{do}\\
+4 & \quad $F_S\leftarrow F_S\cup\{p\}$\\
+5 & \quad $p\leftarrow s[p]$
+\end{tabular}
+\end{center}
+
+Thủ tục \textsc{Suffix-Next} xử lý mỗi cung $(p,a,q)$ rất giống phép xây dựng
+ô-tô-mát hậu tố chuẩn cho một xâu. Vòng lặp dòng 2--4 duyệt các con trỏ hậu
+tố lặp của $p$ chưa có cung ra gán nhãn $a$. Nó tạo các cung như vậy tới $q$
+từ mọi con trỏ hậu tố lặp cho tới khi gặp trạng thái đầu hoặc một trạng thái
+$p'$ đã có cung này. Trong trường hợp thứ nhất, con trỏ hậu tố của $q$ được
+đặt là trạng thái đầu $I$ và cung $(I,a,q)$ được tạo.
+
+Trong trường hợp thứ hai, nếu cung sẵn có $(p',a,q')$ là cung đặc và $q'=q$,
+thì con trỏ hậu tố của $q$ được đặt là $q'$ (dòng 9). Nếu $q'\ne q$, tạo một
+bản sao $r$ của $q'$ với cùng các cung ra (dòng 12) và đặt con trỏ hậu tố của
+$q$ là $r$. Con trỏ hậu tố của $r$ được đặt thành $s[q']$ (dòng 15), con trỏ
+của $q'$ được đặt thành $r$ (dòng 16), và $l[r]$ được định nghĩa là $l[p]+1$
+(dòng 17). Các cung gán nhãn $a$ đi ra từ các con trỏ hậu tố lặp của $p$ được
+xét và chuyển hướng tới $r$ miễn là chúng là các cung không đặc (dòng 18--20).
+
+Thủ tục \textsc{Suffix-Final} đặt tính kết thúc của các trạng thái trong
+$S(A)$. Với mọi trạng thái $p$ kết thúc trong $A$, trạng thái $p$ và mọi trạng
+thái tìm được bằng cách đi theo chuỗi con trỏ hậu tố bắt đầu từ $p$ đều được
+đưa vào $F_S$ trong vòng lặp dòng 3--5.
+
+Bài gốc minh họa thuật toán bằng Hình 7: từ một ô-tô-mát đầu vào
+hậu-tố-duy-nhất, các giai đoạn trung gian của quá trình xây dựng $S(A)$ được
+vẽ lần lượt; mỗi trạng thái ghi dạng $(n/s,l)$, trong đó $n$ là số hiệu trạng
+thái, $s$ là con trỏ hậu tố của nó, và $l$ là giá trị $l[n]$.
+
+Trong phép xây dựng \term{suffix oracle} \cite{allauzen-oracle}, không có
+trạng thái mới nào được tạo so với đầu vào. Do đó oracle hậu tố của $A$ có thể
+được xây dựng tương tự bằng cách thay dòng 12 trong \textsc{Suffix-Next} bởi
+$r\leftarrow\delta_S(p,a)$ và bỏ các dòng 15--17. Thuật toán này vì thế mở
+rộng trực tiếp phép xây dựng oracle hậu tố sang trường hợp đầu vào là
+ô-tô-mát hậu-tố-duy-nhất.
+
+Với kết quả độ phức tạp sau, ta giả sử hàm chuyển được biểu diễn hiệu quả để
+có thể tìm trong thời gian $O(1)$ một cung ra có nhãn cụ thể tại mỗi trạng
+thái. Một số tác giả giả sử biểu diễn danh sách kề và tìm kiếm nhị phân để tìm
+cung tại một trạng thái, tốn $O(\min\{\log|\Sigma|,e_{\max}\})$, trong đó
+$e_{\max}$ là bậc ra lớn nhất \cite{crochemore-transducers,crochemore-rytter}.
+Nếu dùng giả thiết đó, các kết quả độ phức tạp ở đây cũng như của Blumer và
+cộng sự \cite{blumer-smallest,blumer-complete} cần nhân thêm hệ số
+$\min\{\log|\Sigma|,e_{\max}\}$.
+
+Ta gọi việc chuyển hướng một cung đã từng được chuyển hướng trước đó là
+\term{chuyển hướng nhiều lần}.
+
+\begin{proposition}
+Cho $A$ là ô-tô-mát đơn định tối tiểu hậu-tố-duy-nhất. Khi đó độ phức tạp thời
+gian của thuật toán \textsc{Create-Suffix-Automaton}$(A,f)$ là $O(|S(A)|)$.
+\end{proposition}
+
+\begin{proof}
+Ta phác thảo chứng minh. \textsc{Suffix-Next} được gọi nhiều nhất một lần cho
+mỗi cung, nên tổng số lời gọi là $O(|A|)$. Cố định một cung $(p,a,q)$ của $A$
+với $q\ne f$. Chi phí thực hiện các bước 1--20 của \textsc{Suffix-Next} tỉ lệ
+với tổng số lần đi theo liên kết hậu tố lặp trong các vòng lặp dòng 2--4 và
+18--20. Mỗi lần lặp của dòng 2--4 tạo ra một cung mới trong $S(A)$, nên tổng
+số lần lặp này trên mọi lời gọi \textsc{Suffix-Next} là $O(|S(A)|)$.
+
+Phân tích tổng số lần chuyển hướng trong vòng lặp dòng 18--20 dựa trên một mở
+rộng của phân tích cho trường hợp một xâu đơn \cite{blumer-thesis,blumer-complete}.
+Chặn tuyến tính cho tổng số lần chuyển hướng trong trường hợp một xâu đơn áp
+dụng được cho trường hợp ô-tô-mát của chúng ta trên một chuỗi tuyến tính các
+trạng thái của $A$. Từ tổ hợp xâu con cần thiết trong $A$ để gây ra chuyển
+hướng, có thể chứng minh tổng số chuyển hướng nhiều lần là $O(|A|)$. Do đó độ
+phức tạp tổng là $O(|S(A)|)$.
+\end{proof}
+
+\section{Ô-tô-mát nhân tố cho nhận dạng nhạc}
+
+Chúng tôi kiểm chứng các nhận xét trên về ô-tô-mát nhân tố trong ngữ cảnh một
+hệ thống nhận dạng nhạc \cite{weinstein-music,mohri-robust}. Nhận dạng nhạc là
+nhiệm vụ khớp một luồng âm thanh với một bài hát cụ thể. Trong hệ thống này,
+ta học một kho đơn vị \term{music phone} tương tự âm vị trong tiếng nói, cùng
+một dãy music phone duy nhất đặc trưng cho mỗi bài hát. Tập music phone được
+xem như bảng chữ cái, còn các dãy music phone là tập xâu; bài toán trở thành
+một bài toán nhận dạng nhân tố. Cách tiếp cận là xây dựng một bộ chuyển đổi
+gọn ánh xạ các dãy music phone tới định danh bài hát tương ứng.
+
+\subsection{Xây dựng bộ chuyển đổi nhân tố}
+
+Ký hiệu $\Sigma$ là tập music phone và tập dãy music phone mô tả $m$ bài hát
+là $U=\{x_1,\ldots,x_m\}$, với $x_i\in\Sigma^*$ cho
+$i\in\{1,\ldots,m\}$. Trong thực nghiệm, $m=15{,}455$, $|\Sigma|=1{,}024$ và
+độ dài trung bình của một phiên âm $x_i$ lớn hơn $1{,}700$. Vì vậy trong
+trường hợp xấu nhất có thể có tới
+\[
+  15{,}455\times 1{,}700^2 \approx 45\times 10^9
+\]
+nhân tố. Một biểu diễn ngây thơ dựa trên cây tiền tố sẽ quá lớn, nên ta biểu
+diễn tập nhân tố bằng ô-tô-mát nhân tố gọn hơn nhiều. Chúng tôi xây dựng một
+ô-tô-mát đơn định tối tiểu biểu diễn các dãy trong $U$, rồi xây dựng một bộ
+chuyển đổi hữu hạn trạng thái đơn định tối tiểu ánh xạ mỗi bài hát tới định
+danh của nó bằng các thuật toán đơn định hóa và tối tiểu hóa bộ chuyển đổi
+\cite{mohri-transducers,mohri-applied}.
+
+Gọi $T_0$ là bộ chuyển đổi chưa tối ưu ánh xạ các dãy phone tới định danh bài
+hát. Hình 8 trong bài gốc minh họa $T_0$ khi $U$ chỉ còn ba bài hát ngắn. Gọi
+$A$ là acceptor thu được bằng cách bỏ nhãn đầu ra của $T_0$. Ô-tô-mát nhân tố
+gọn $F(A)$ được xây dựng như ở Mục 3: tạo các cung $\eps$ từ trạng thái đầu
+của $A$ tới mọi trạng thái khác, biến mọi trạng thái thành kết thúc, rồi khử
+$\eps$, đơn định hóa và tối tiểu hóa. Chú ý rằng $F(A)$ không xuất ra định
+danh bài hát gắn với mỗi nhân tố.
+
+Để mô tả bước tiếp theo, ta nhắc ngắn một số tính chất của ô-tô-mát có trọng
+số. Một ô-tô-mát có trọng số được định nghĩa trên một nửa vành
+$(K,\oplus,\otimes,\bar 0,\bar 1)$, quy định tập trọng số và các phép toán đại
+số để kết hợp trọng số dọc theo một đường đi và giữa các đường đi. Nửa vành
+nhiệt đới
+\[
+  (\mathbb R\cup\{-\infty,+\infty\},\min,+,+\infty,0)
+\]
+được dùng rộng rãi trong các lĩnh vực như xử lý tiếng nói và văn bản. Trong
+nửa vành nhiệt đới, tổng trọng số mà ô-tô-mát gán cho một xâu $s$ là đường đi
+có trọng số nhỏ nhất trong ô-tô-mát mang nhãn $s$, trong đó trọng số của một
+đường đi được tính bằng tổng trọng số các cung trên đường đi đó.
+
+Để xây dựng ô-tô-mát nhân tố vẫn giữ được định danh bài hát, ta tạo một
+acceptor có trọng số gọn trên nửa vành nhiệt đới, chấp nhận các nhân tố của
+$U$ và gán tổng trọng số $s_x$ cho mỗi nhân tố $x$. Ưu điểm quan trọng của biểu
+diễn này là có thể dùng đơn định hóa và tối tiểu hóa có trọng số
+\cite{mohri-transducers}; trong các phép toán đó, định danh bài hát được xem
+như trọng số có thể phân bố dọc đường đi. Các phép toán bảo toàn tính chất rằng
+tổng trọng số trên đường đi mang nhãn $x$ là $s_x$. Gọi $F_w(A)$ là ô-tô-mát
+được xây dựng tương tự $F(A)$, nhưng mỗi cung $\eps$ được thêm vào có trọng số
+là định danh bài hát tương ứng. Sau khi đơn định hóa và tối tiểu hóa trên nửa
+vành nhiệt đới, acceptor có trọng số $F_w(A)$ được biến thành bộ chuyển đổi
+nhận dạng bài hát $T$ bằng cách xem mỗi trọng số đầu ra nguyên là một ký hiệu
+đầu ra. Với một dãy music phone đầu vào, định danh bài hát tương ứng được thu
+bằng cách cộng các đầu ra do $T$ sinh ra.
+
+\subsection{Kích thước ô-tô-mát}
+
+Hình 9 trong bài gốc so sánh acceptor nhân tố không trọng số $F(A)$ và
+acceptor nhân tố có trọng số $F_w(A)$ cho hai bài hát; $F_w(A)$ không lớn hơn
+$F(A)$. Đáng chú ý, ngay cả với $15{,}455$ bài hát, tổng số cung của
+$F_w(A)$ là $53.0$ triệu, chỉ nhiều hơn khoảng $0.004\%$ so với $F(A)$. Đồng
+thời,
+\[
+  |F(A)|_E \approx 2.1|A|_E.
+\]
+Quan hệ nhân này được giữ khi kích thước tập bài hát thay đổi từ $1$ tới
+$15{,}455$. Hơn nữa, với $15{,}455$ bài hát, $U$ là
+$45$-hậu-tố-duy-nhất: số ``va chạm'' hậu tố giảm rất nhanh khi độ dài hậu tố
+tăng. Thực nghiệm cũng cho
+\[
+  |F_w(A)|_Q \approx 28.8\text{ triệu} \approx 1.2|A|_Q,
+\]
+nghĩa là chặn trong Hệ quả 3 được xác nhận trong bối cảnh thực nghiệm này.
+
+\section{Kết luận}
+
+Bài viết trình bày một phân tích mới về kích thước của ô-tô-mát hậu tố và
+ô-tô-mát nhân tố của một tập xâu được biểu diễn bằng ô-tô-mát, theo kích thước
+của ô-tô-mát ban đầu. Phân tích cho thấy ô-tô-mát hậu tố và ô-tô-mát nhân tố
+có thể thực tế để xây dựng chỉ mục cho số lượng xâu rất lớn. Ứng dụng vào một
+bài toán nhận dạng nhạc quy mô lớn cũng minh họa thêm điều này. Ô-tô-mát nhân
+tố của ô-tô-mát nhiều khả năng là một chỉ mục hữu ích và gọn cho các tác vụ
+quy mô rất lớn.
+
+Bài viết cũng đưa ra thuật toán thời gian tuyến tính để xây dựng ô-tô-mát hậu
+tố hoặc ô-tô-mát nhân tố của một tập xâu trong thời gian tuyến tính theo kích
+thước của cây tiền tố biểu diễn chúng. Thuật toán áp dụng cho mọi ô-tô-mát đầu
+vào hậu-tố-duy-nhất và tổng quát hóa chặt chẽ phép xây dựng trực tuyến chuẩn
+của ô-tô-mát hậu tố cho một xâu đơn. Thuật toán và phân tích này đặt ra câu
+hỏi tự nhiên về cách xây dựng hiệu quả ô-tô-mát hậu tố của một ô-tô-mát đầu
+vào bất kỳ.
+
+\section*{Lời cảm ơn}
+
+Các tác giả cảm ơn Cyril Allauzen vì nhiều trao đổi về nội dung trình bày.
+Nghiên cứu của Mehryar Mohri và Eugene Weinstein được hỗ trợ một phần bởi New
+York State Office of Science Technology and Academic Research (NYSTAR). Dự án
+cũng được tài trợ một phần bởi Department of the Army, số tài trợ
+W81XWH-04-1-0307. U.S. Army Medical Research Acquisition Activity, 820 Chandler
+Street, Fort Detrick MD 21702-5014 là cơ quan trao và quản lý tài trợ. Nội
+dung tài liệu không nhất thiết phản ánh lập trường hay chính sách của Chính
+phủ, và không nên suy diễn thành sự xác nhận chính thức.
+
+\begin{thebibliography}{99}
+\bibitem{gusfield}
+D. Gusfield, \textit{Algorithms on Strings, Trees, and Sequences}, Cambridge
+University Press, Cambridge, UK, 1997.
+
+\bibitem{crochemore-rytter}
+M. Crochemore, W. Rytter, \textit{Jewels of Stringology}, World Scientific,
+2002.
+
+\bibitem{allauzen-index}
+C. Allauzen, M. Mohri, M. Saraclar, General Indexation of Weighted Automata:
+Application to Spoken Utterance Retrieval, in: Proceedings of the Workshop on
+Interdisciplinary Approaches to Speech Indexing and Retrieval (HLT/NAACL),
+Boston, Massachusetts, 2004, pp. 33--40.
+
+\bibitem{weinstein-music}
+E. Weinstein, P. Moreno, Music Identification with Weighted Finite-State
+Transducers, in: Proceedings of the International Conference on Acoustics,
+Speech, and Signal Processing (ICASSP), Honolulu, Hawaii, 2007, pp. 689--692.
+
+\bibitem{blumer-smallest}
+A. Blumer, J. Blumer, D. Haussler, A. Ehrenfeucht, M. T. Chen, J. I. Seiferas,
+The smallest automaton recognizing the subwords of a text, \textit{Theoretical
+Computer Science} 40 (1985) 31--55.
+
+\bibitem{crochemore-transducers}
+M. Crochemore, Transducers and repetitions, \textit{Theoretical Computer
+Science} 45 (1986) 63--86.
+
+\bibitem{blumer-complete}
+A. Blumer, J. Blumer, D. Haussler, R. M. McConnell, A. Ehrenfeucht, Complete
+inverted files for efficient text retrieval and analysis, \textit{Journal of
+the ACM} 34 (1987) 578--589.
+
+\bibitem{inenaga}
+S. Inenaga, H. Hoshino, A. Shinohara, M. Takeda, S. Arikawa, G. Mauri,
+G. Pavesi, On-line construction of compact directed acyclic word graphs,
+\textit{Discrete Applied Mathematics} 146(2) (2005) 156--179.
+
+\bibitem{mohri-robust}
+M. Mohri, P. Moreno, E. Weinstein, Robust music identification, detection, and
+analysis, in: Proceedings of the International Conference on Music Information
+Retrieval (ISMIR), Vienna, Austria, 2007, pp. 135--139.
+
+\bibitem{allauzen-oracle}
+C. Allauzen, M. Crochemore, M. Raffinot, Efficient experimental string matching
+by weak factor recognition, in: Proceedings of the 12th Annual Symposium on
+Combinatorial Pattern Matching (CPM), Springer-Verlag, London, UK, 2001,
+pp. 51--72.
+
+\bibitem{revuz}
+D. Revuz, Minimisation of acyclic deterministic automata in linear time,
+\textit{Theoretical Computer Science} 92 (1992) 181--189.
+
+\bibitem{blumer-thesis}
+J. A. Blumer, Algorithms for the directed acyclic word graph and related
+structures, Ph.D. thesis, Denver University, 1985.
+
+\bibitem{mohri-transducers}
+M. Mohri, Finite-state transducers in language and speech processing,
+\textit{Computational Linguistics} 23(2) (1997) 269--311.
+
+\bibitem{mohri-applied}
+M. Mohri, Statistical Natural Language Processing, in: M. Lothaire (Ed.),
+\textit{Applied Combinatorics on Words}, Cambridge University Press, 2005.
+\end{thebibliography}
+
+\end{document}

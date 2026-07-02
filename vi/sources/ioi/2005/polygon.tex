@@ -1,0 +1,249 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2005/胡伟栋/附件/polygon.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{IOI'04: Lời giải bài Polygon}
+\author{Ioannis Emiris và Elias Tsigaridas}
+\date{Ngày 9 tháng 9 năm 2004}
+
+\begin{document}
+\maketitle
+
+\origtitle{IOI'04: Solution of Polygon}
+\sourcepath{IOI Candidate Team Papers/2005/Hu Weidong/appendix/polygon.pdf}
+
+\section{Phân rã Minkowski}
+
+\subsection{Bối cảnh}
+
+Mặc dù việc tính tổng Minkowski là trực tiếp \cite{guibas-seidel}, việc quyết
+định một đa giác có phải là tổng Minkowski của hai đa giác hay không lại là
+bài toán NP-đầy đủ.
+
+Với bài toán sau, tồn tại một thuật toán giả đa thức \cite{gao-lauder}; dưới
+đây chúng tôi phác thảo thuật toán đó. Nếu dữ liệu vào là dãy \(N\) cạnh, thì
+kích thước dữ liệu vào là \(O(N(\log m+\log E))\), trong đó \(m\) là số điểm
+nguyên lớn nhất trên một cạnh bất kỳ, còn \(E\) là giá trị tuyệt đối lớn nhất
+của một tọa độ dùng để xác định một vectơ cạnh nguyên thủy, như định nghĩa bên
+dưới. Thuật toán trong \cite{gao-lauder} chạy trong thời gian
+\(O(tNm)\), với \(t=|P\cap\mathbb Z^2|\).
+
+\subsection{Lời giải bài Polygon của IOI-04}
+
+Gọi đa giác vào là \(P\). Giả sử \(P\) gồm \(N\) đỉnh có tọa độ không âm dạng
+\(v_i=(x_i,y_i)\), \(0\le i\le N-1\), được cho theo thứ tự ngược chiều kim
+đồng hồ.
+
+\paragraph{Định nghĩa 1.1.}
+Ta gọi một vectơ \(v=(a,b)\) là \term{nguyên thủy} nếu
+\(\gcd(a,b)=1\), với \(a,b\in\mathbb Z_{\ge 0}\). Tương đương, \(v\) nguyên
+thủy khi và chỉ khi không có điểm nguyên nào nằm trong phần trong của nó.
+
+Các cạnh của \(P\) được biểu diễn bởi các vectơ
+\[
+  E_i=v_i-v_{i-1}=(a_i,b_i),\qquad 1\le i\le N,
+\]
+trong đó \(a_i,b_i\in\mathbb Z\) và các chỉ số được lấy theo modulo \(N\).
+Với một cạnh \((a_i,b_i)\), nếu \(n_i=\gcd(a_i,b_i)\), ta xét cạnh nguyên thủy
+tương ứng
+\[
+  e_i=\left(\frac{a_i}{n_i},\frac{b_i}{n_i}\right).
+\]
+Ta gọi dãy vectơ
+\[
+  \{E_i\}_{1\le i\le N}=\{n_i e_i\}_{1\le i\le N}
+\]
+là \term{dãy cạnh} của đa giác, trong đó \(e_i\) là một vectơ nguyên thủy.
+
+Có một quan sát then chốt khi tính các hạng \(A,B\) sao cho \(P=A+B\).
+
+\paragraph{Bổ đề 1.2.}
+Mọi cạnh nguyên thủy của \(P\) phải xuất hiện như một cạnh của \(A\) hoặc của
+\(B\). Nếu cạnh đó không nguyên thủy, còn có khả năng thứ ba: nó là tổng
+Minkowski của một cạnh của \(A\) và một cạnh của \(B\), trong đó hai cạnh này
+song song.
+
+Từ đó có thể suy ra sự kiện sau: một đa giác là một hạng của \(P\) khi và chỉ
+khi dãy cạnh của nó có dạng
+\[
+  \{k_j e_j\}_{j\in J},
+\]
+trong đó \(J\subseteq\{1,\ldots,N\}\), \(0\le k_j\le n_j\),
+\(k_j\in\mathbb Z\), và
+\[
+  \sum_{j\in J} k_j e_j=(0,0),
+\]
+tức là tổng các vectơ biểu diễn các cạnh của nó bằng không.
+
+Dưới đây chúng tôi trình bày các thuật toán để tìm các hạng theo yêu cầu của
+bài Polygon. Khi tính các đa giác hạng, thuật toán được chọn có thể sinh ra
+một hạng có một hoặc nhiều tọa độ âm. Trong trường hợp này, ta phải tịnh tiến
+cả hai hạng về tọa độ không âm. Đây là một thao tác hợp lệ, vì tịnh tiến không
+làm thay đổi bản chất đa giác.
+
+\subsection{Tìm một hạng là đoạn thẳng}
+
+Đa giác có một hạng là đoạn thẳng khi và chỉ khi ít nhất một cặp vectơ con
+trong dãy cạnh của nó có tổng bằng vectơ không. Dựa trên sự kiện này, ta trình
+bày ba thuật toán với tốc độ tăng dần.
+
+Các thuật toán bắt đầu bằng việc tìm các vectơ nguyên thủy cho mọi cạnh, thông
+qua một phép tính \(\gcd\) (mục 1.6 đưa ra hai thuật toán tính \(\gcd\)). Với
+những đa giác chỉ chứa các cạnh nguyên thủy, bước này là không cần thiết.
+
+\paragraph{Ngây thơ.}
+Trước hết ta tính các cạnh của đa giác. Mỗi cạnh có dạng
+\[
+  E_i=(x_{i+1}-x_i,\ y_{i+1}-y_i)=(a_i,b_i),
+\]
+trong đó các chỉ số được lấy theo modulo \(N\). Tiếp theo ta tính tất cả các
+giá trị \(\gcd(a_i,b_i)\) và tạo dãy cạnh bằng các vectơ nguyên thủy như ở phần
+mở đầu. Việc tính toán này có thể thực hiện trong thời gian \(O(mN)\), với
+\[
+  m=\max n_i=\max \gcd(a_i,b_i).
+\]
+Với mỗi vectơ trong dãy, ta tính tổng của nó với mọi vectơ khác trong dãy.
+Tổng thời gian là \(O(m^2N^2)\).
+
+\paragraph{Khéo hơn.}
+Ta tính dãy cạnh như trước trong thời gian \(O(mN)\). Ta sắp xếp dãy này theo
+tọa độ \(x\), trong thời gian \(O(mN\lg(mN))\).
+
+Với mỗi vectơ trong dãy, ta kiểm tra xem có vectơ khác trong dãy với tọa độ
+\(x\) đối dấu sao cho tổng của chúng bằng không hay không. Việc tìm kiếm được
+thực hiện bằng tìm kiếm nhị phân, vì dãy đã được sắp xếp, trong thời gian
+\(O(\lg(mN))\). Tổng thời gian là \(O(mN\lg(mN))\).
+
+\paragraph{Nâng cao.}
+Ta tính dãy cạnh như trước trong thời gian \(O(mN)\). Ta chèn các cạnh vào một
+bảng băm, dùng tọa độ \(x\) làm khóa. Mỗi phép chèn thực hiện trong \(O(1)\).
+
+Với mỗi cạnh trong dãy, ta tìm trong bảng băm một cạnh khác có tọa độ \(x\) đối
+dấu và cộng với nó thành vectơ không. Phép tìm kiếm thực hiện trong \(O(1)\).
+Tổng thời gian là \(O(mN)\).
+
+\subsection{Tìm một hạng là tam giác}
+
+\paragraph{Ngây thơ.}
+Ta tính dãy cạnh như trước trong thời gian \(O(mN)\). Ta có thể lập mọi bộ ba
+có thể và kiểm tra xem chúng có tổng bằng không hay không. Tổng thời gian là
+\(O(m^3N^3)\).
+
+\paragraph{Khéo hơn.}
+Ta tính dãy cạnh như trước trong thời gian \(O(mN)\) và sắp xếp nó theo tọa độ
+\(x\) trong thời gian \(O(mN\lg(mN))\).
+
+Ta lập mọi tổng có thể của hai vectơ trong thời gian \(O(m^2N^2)\). Với mỗi
+tổng như vậy, ta dùng tìm kiếm nhị phân trong thời gian \(O(\lg(mN))\) để tìm
+một vectơ khác sao cho tổng của chúng bằng không. Tổng thời gian là
+\(O(m^2N^2\lg(mN))\).
+
+\paragraph{Nâng cao.}
+Ta tính dãy cạnh như trước trong thời gian \(O(mN)\) và sắp xếp chúng theo thứ
+tự tăng dần của tọa độ \(x\) trong thời gian \(O(mN\lg(mN))\).
+
+Với mỗi cạnh trong dãy, gọi là \(k\), quét dãy từ trái để tìm \(i\) và từ phải
+để tìm \(j\), sao cho
+\[
+  E_k+E_i+E_j=0.
+\]
+Nhờ thứ tự đã sắp xếp, ta có thể tăng \(i\) hoặc giảm \(j\) tùy theo tổng
+\(E_k+E_i+E_j\) là dương hay âm. Tổng thời gian là \(O(m^2N^2)\).
+
+Một cách khác là chèn các vectơ vào bảng băm, dùng tọa độ \(x\) làm khóa, và
+với mỗi tổng của hai vectơ, ta tìm trong bảng băm một vectơ trong thời gian
+\(O(1)\) sao cho tổng của cả ba bằng không. Khi đó tổng thời gian cũng là
+\(O(m^2N^2)\).
+
+\subsection{Tìm một hạng là tứ giác}
+
+\paragraph{Ngây thơ.}
+Ta tính dãy cạnh như trước trong thời gian \(O(mN)\). Ta có thể lập mọi bộ bốn
+có thể và kiểm tra xem chúng có tổng bằng không hay không. Tổng thời gian của
+thuật toán là \(O(m^4N^4)\).
+
+\paragraph{Khéo hơn.}
+Ta tính dãy cạnh như trước trong thời gian \(O(mN)\). Ta có thể lập mọi bộ ba
+trong thời gian \(O(m^3N^3)\). Với mỗi bộ ba, ta tìm một vectơ sao cho tổng của
+cả bốn bằng không.
+
+Nếu đã sắp xếp các cạnh theo tọa độ \(x\) và dùng tìm kiếm nhị phân, tổng thời
+gian của thuật toán là \(O(m^3N^3\lg(mN))\).
+
+Nếu chèn các cạnh vào bảng băm, dùng tọa độ \(x\) của chúng làm khóa, ta thực
+hiện phép tìm kiếm trong thời gian \(O(1)\), do đó tổng thời gian của thuật
+toán là \(O(m^3N^3)\).
+
+\paragraph{Nâng cao.}
+Ta tính dãy cạnh như trước trong thời gian \(O(mN)\). Ta lập mọi tổng có thể
+của hai cạnh trong thời gian \(O(m^2N^2)\) và chèn chúng vào một bảng băm, dùng
+tọa độ \(x\) làm khóa. Với mỗi tổng như vậy, ta tìm trong bảng băm một vectơ
+sao cho tổng toàn bộ bằng không. Tổng thời gian là \(O(m^2N^2)\).
+
+\subsection{Tính \texorpdfstring{\(\gcd\)}{gcd}}
+
+Chúng tôi trình bày hai thuật toán tính \(\gcd\) của hai số nguyên \(a,b\).
+Thuật toán thứ nhất là thuật toán Euclid truyền thống, còn thuật toán thứ hai
+là thuật toán \(\gcd\) nhị phân (xem chương 4 của \cite{knuth}).
+
+\paragraph{Thuật toán 1. Euclid \(\gcd(a,b)\).}
+\begin{description}[leftmargin=7em,style=nextline]
+  \item[Yêu cầu:] \(a,b\in\mathbb Z\).
+  \item[Bảo đảm:] \(y=\gcd(a,b)\).
+\end{description}
+\begin{verbatim}
+if b = 0 then
+  RETURN a
+else
+  RETURN Euclid gcd(b, a mod b)
+end if
+\end{verbatim}
+
+\paragraph{Thuật toán 2. \(\gcd\) nhị phân \(\gcd(a,b)\).}
+\begin{description}[leftmargin=7em,style=nextline]
+  \item[Yêu cầu:] \(a,b\in\mathbb Z\).
+  \item[Bảo đảm:] \(y=\gcd(a,b)\).
+\end{description}
+\begin{verbatim}
+g = 1
+while a is even AND b is even do
+  a = a/2 (right shift)
+  b = b/2
+  g = 2 * g (left shift)
+end while
+while u > 0 do
+  if a is even then
+    a = a/2
+  else if b is even then
+    b = b/2
+  else
+    t = |a - b|/2
+  end if
+  if a < b then
+    b = t
+  else
+    a = t
+  end if
+end while
+RETURN g * b
+\end{verbatim}
+
+\begin{thebibliography}{9}
+\bibitem{gao-lauder}
+S. Gao và A. Lauder,
+\textit{Decomposition of polytopes and Polynomials},
+Discrete and Computational Geometry 26 (2001), 501--520.
+
+\bibitem{guibas-seidel}
+L. J. Guibas và R. Seidel,
+\textit{Computing Convolutions by Reciprocal Search},
+Symposium of Computational Geometry, 2001.
+
+\bibitem{knuth}
+D. Knuth,
+\textit{The Art of Computer Programming}, tập 2,
+Addison-Wesley, ấn bản thứ 3, 1998.
+\end{thebibliography}
+
+\end{document}

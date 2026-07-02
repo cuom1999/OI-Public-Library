@@ -1,0 +1,542 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2007/day1/9.王欣上《浅谈基于分层思想的网络流算法》.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\usepackage{array}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\level}{\operatorname{level}}
+\newcommand{\throughput}{\operatorname{throughput}}
+\newcommand{\outdeg}{\operatorname{outdeg}}
+\newcommand{\inftycap}{\mathrm{INF}}
+
+\title{Bàn sơ về các thuật toán luồng mạng dựa trên tư tưởng phân tầng}
+\author{Wang Xinshang\\Trường Trung học Diên An, Thượng Hải}
+\date{2007}
+
+\begin{document}
+\maketitle
+
+\origtitle{Bàn sơ về các thuật toán luồng mạng dựa trên tư tưởng phân tầng}
+\sourcepath{IOI China candidate team papers / 2007 / day 1 / Wang Xinshang}
+
+\begin{abstract}
+Bài viết giới thiệu tương đối chi tiết ba thuật toán luồng mạng dựa trên khái
+niệm đồ thị phân tầng, đồng thời dùng các bài toán mẫu để minh họa ưu thế của
+thuật toán Dinic trong các kỳ thi tin học.
+\end{abstract}
+
+\paragraph{Từ khóa.}
+Đồ thị phân tầng; luồng mạng; thuật toán cơ bản; ứng dụng; MPLA; Dinic; MPM.
+
+\section{Dẫn nhập}
+
+Lý thuyết đồ thị là một ngành vừa cổ điển vừa trẻ trung, và chiếm tỉ trọng rất
+lớn trong các kỳ thi tin học. Trong đó, các thuật toán luồng mạng xuất hiện
+khá thường xuyên. Kiến thức về luồng mạng rất phong phú: từ định lý luồng cực
+đại--cắt cực tiểu cơ bản, các biến thể của mô hình mạng, cho tới nhiều kỹ
+thuật tối ưu cho thuật toán đẩy luồng trước. Muốn ứng phó với các dạng bài
+khác nhau, học sinh cần tích lũy dần những kiến thức này.
+
+Khi các kỳ thi phát triển, độ khó và phạm vi kiểm tra cũng tăng lên. Với nhiều
+bài toán mới, chỉ nắm thuật toán tăng luồng thô sơ nhất là chưa đủ. Bài viết
+này trình bày ba thuật toán luồng mạng dựa trên tư tưởng phân tầng, hướng tới
+các bài toán có dữ liệu lớn hơn, và thông qua so sánh để làm rõ cách dùng
+chúng khi giải bài. Những kiến thức nền như định lý luồng cực đại--cắt cực
+tiểu sẽ không được chứng minh lại ở đây; độc giả có thể tìm thấy trong nhiều
+tài liệu khác về luồng mạng.
+
+\section{Các khái niệm chuẩn bị}
+
+\subsection{Đồ thị dư}
+
+Cho một mạng luồng \(G_1=(V_1,E_1)\), nguồn \(s\), đích \(t\), hàm sức chứa
+\(c\), và một hàm luồng khả thi \(f\) trên mạng đó. Đồ thị dư tương ứng
+\(G_2=(V_2,E_2)\) được định nghĩa như sau. Tập đỉnh không đổi:
+\[
+  V_2=V_1.
+\]
+Với mỗi cạnh có hướng \((u,v)\in E_1\):
+\begin{itemize}
+  \item nếu \(f(u,v)<c(u,v)\), đưa cạnh \((u,v)\) vào \(E_2\) với trọng số
+  \[
+    g(u,v)=c(u,v)-f(u,v);
+  \]
+  \item nếu \(f(u,v)>0\), đưa cạnh ngược \((v,u)\) vào \(E_2\) với trọng số
+  \[
+    g(v,u)=f(u,v).
+  \]
+\end{itemize}
+
+Vì vậy, mỗi cạnh của mạng ban đầu biến thành một hoặc hai cạnh trong đồ thị
+dư. Mỗi cạnh dư cho biết ta còn có thể tăng luồng theo hướng ấy trong mạng
+gốc; trọng số \(g(a,b)\) chính là lượng luồng lớn nhất có thể tăng theo hướng
+từ \(a\) tới \(b\) ở thời điểm hiện tại. Do đó, mọi đường đi đơn từ \(s\) tới
+\(t\) trong đồ thị dư tương ứng với một đường tăng luồng, và giá trị nhỏ nhất
+của các trọng số trên đường đi là lượng luồng lớn nhất có thể tăng trong một
+lần theo đường ấy.
+
+\subsection{Mức của đỉnh}
+
+Trong đồ thị dư, độ dài đường đi ngắn nhất từ nguồn \(s\) tới đỉnh \(u\) được
+gọi là \term{mức} của \(u\), ký hiệu \(\level(u)\). Nguồn có mức \(0\). Nếu
+một đỉnh không đi tới được từ nguồn trong đồ thị dư, mức của nó không được
+xác định trong pha hiện tại.
+
+Một cách nhìn đơn giản là chia các đỉnh thành từng lớp:
+\[
+  L_i=\{u\mid \level(u)=i\},\qquad i=0,1,2,\ldots .
+\]
+Mỗi lần chạy BFS từ nguồn trên đồ thị dư, ta thu được các lớp này.
+
+\subsection{Đồ thị phân tầng}
+
+Đồ thị phân tầng \(G_3=(V_3,E_3)\) được dựng trên đồ thị dư \(G_2=(V_2,E_2)\).
+Với một cạnh dư \((u,v)\), ta giữ cạnh ấy trong \(E_3\) khi và chỉ khi
+\[
+  \level(u)+1=\level(v).
+\]
+Tập đỉnh \(V_3\) gồm các đỉnh kề với ít nhất một cạnh trong \(E_3\), cùng với
+nguồn và đích khi cần xét đường tăng luồng.
+
+Trực giác là: đồ thị phân tầng là ``đồ thị các đường ngắn nhất'' xây trên đồ
+thị dư. Nếu bắt đầu từ nguồn và đi theo các cạnh trong đồ thị phân tầng, thì
+sau \(k\) cạnh ta luôn đứng ở một đỉnh có khoảng cách ngắn nhất bằng \(k\) so
+với nguồn trong đồ thị dư.
+
+\subsection{Luồng chặn}
+
+Xét một luồng khả thi \(f\) trong mạng. Nếu trong đồ thị phân tầng của đồ thị
+dư tương ứng không còn đường tăng luồng từ \(s\) tới \(t\), ta gọi \(f\) là
+\term{luồng chặn} của đồ thị phân tầng ấy.
+
+Nói cách khác, luồng chặn không nhất thiết là luồng cực đại của toàn mạng, mà
+chỉ chặn hết mọi đường tăng luồng ngắn nhất trong pha hiện tại.
+
+\section{Thuật toán tăng theo đường ngắn nhất MPLA}
+
+MPLA là viết tắt của \emph{maximum path length augmenting} trong bản dịch này:
+ta luôn làm việc trên các đường tăng luồng ngắn nhất bằng cách dựng đồ thị
+phân tầng. Nội dung chính của thuật toán là lặp lại việc dựng tầng và tăng
+luồng trong đồ thị tầng cho tới khi không còn đường tăng luồng.
+
+\subsection{Các bước thuật toán}
+
+\begin{enumerate}
+  \item Khởi tạo luồng, từ đó có đồ thị dư ban đầu.
+  \item Chạy BFS trên đồ thị dư để tính mức các đỉnh, tức dựng đồ thị phân
+  tầng. Nếu đích không xuất hiện trong các mức, thuật toán kết thúc.
+  \item Trong đồ thị phân tầng, liên tục dùng BFS tìm đường tăng luồng và tăng
+  luồng theo đường đó cho tới khi đồ thị phân tầng không còn đường tăng luồng.
+  \item Quay lại bước 2.
+\end{enumerate}
+
+Một lần thực hiện các bước 2 và 3 được gọi là một \term{pha}. Trong mỗi pha,
+ta dựng đồ thị phân tầng từ đồ thị dư hiện tại, sau đó tìm một luồng chặn
+trong đồ thị phân tầng ấy. Sau khi không còn đường tăng luồng trong tầng,
+thuật toán sang pha tiếp theo.
+
+Khi cài đặt, không cần thật sự tạo một cấu trúc đồ thị mới cho \(G_3\). Chỉ cần
+gán \(\level\) cho từng đỉnh, rồi khi duyệt cạnh \((u,v)\) kiểm tra điều kiện
+\(\level(u)+1=\level(v)\).
+
+\subsection{Số pha}
+
+\paragraph{Định lý.}
+Trong một mạng có \(n\) đỉnh, thuật toán MPLA có nhiều nhất \(n\) pha.
+
+\paragraph{Chứng minh.}
+Giả sử sau khi dựng đồ thị phân tầng, độ dài đường ngắn nhất từ \(s\) tới
+\(t\) trong đồ thị dư là \(k\). Chia các đỉnh đi tới được từ nguồn thành
+\(k+1\) lớp:
+\[
+  L_i=\{u\mid \level(u)=i\},\qquad 0\le i\le k.
+\]
+Trong đồ thị dư lúc đó, các cạnh có thể được nhìn theo hai loại quan trọng:
+\begin{itemize}
+  \item cạnh loại một đi từ \(L_i\) tới \(L_{i+1}\);
+  \item cạnh loại hai đi từ \(L_i\) tới \(L_j\) với \(j\le i\).
+\end{itemize}
+Đồ thị phân tầng chỉ chứa cạnh loại một. Vì vậy mọi đường tăng luồng trong
+tầng đều gồm đúng các cạnh loại một và có độ dài \(k\).
+
+Mỗi lần tăng luồng theo một đường trong tầng, ít nhất một cạnh trên đường bị
+bão hòa và bị xóa khỏi đồ thị dư theo hướng thuận. Đồng thời, các cạnh ngược
+của đường tăng luồng được thêm vào đồ thị dư; những cạnh ngược này đều đi từ
+lớp sâu hơn về lớp nông hơn, tức thuộc loại hai.
+
+Khi đã tìm được luồng chặn, không còn đường nào chỉ đi qua các cạnh loại một
+từ \(L_0\) tới \(L_k\). Mọi đường mới từ \(s\) tới \(t\), nếu còn tồn tại trong
+đồ thị dư, bắt buộc phải dùng ít nhất một cạnh loại hai để lùi lên một lớp
+trước khi đi tiếp xuống các lớp sau. Vì đã phải lùi lại, số cạnh loại một cần
+đi sau đó tăng lên, nên tổng độ dài đường đi lớn hơn \(k\).
+
+Do đó, độ dài đường tăng luồng ngắn nhất tăng nghiêm ngặt sau mỗi pha. Độ dài
+nhỏ nhất có thể là \(1\), lớn nhất có thể là \(n-1\), cộng thêm lần cuối cùng
+khi đích không còn đạt được từ nguồn, nên số pha không vượt quá \(n\).
+
+\subsection{Phân tích độ phức tạp}
+
+Tách chi phí thành hai phần: dựng đồ thị phân tầng và tìm đường tăng luồng
+trong một tầng.
+
+Mỗi pha dựng tầng bằng một BFS trên đồ thị dư, chi phí \(\Oh(m)\). Vì có nhiều
+nhất \(n\) pha, tổng chi phí dựng tầng là
+\[
+  \Oh(nm).
+\]
+
+Trong một pha, mỗi lần tăng luồng làm bão hòa ít nhất một cạnh của đồ thị
+phân tầng. Đồ thị phân tầng có nhiều nhất \(m\) cạnh, nên số lần tăng luồng
+trong một pha không vượt quá \(m\). Với MPLA, mỗi lần lại dùng BFS để tìm
+đường tăng luồng; chi phí tìm đường là \(\Oh(m+n)\), và chi phí sửa luồng dọc
+đường là \(\Oh(n)\). Vì vậy chi phí mỗi pha là
+\[
+  \Oh\bigl(m(m+n)\bigr)=\Oh(m^2)
+\]
+trong các mạng thường xét với \(m\ge n\). Tổng chi phí tăng luồng qua mọi pha
+là \(\Oh(nm^2)\), và đây cũng là độ phức tạp tổng quát của MPLA.
+
+\section{Thuật toán Dinic}
+
+\subsection{Các bước thuật toán}
+
+Dinic cũng chia quá trình thành các pha trên đồ thị phân tầng. Khác biệt then
+chốt so với MPLA là: trong mỗi pha, Dinic dùng một quá trình DFS để tìm luồng
+chặn, thay vì nhiều lần BFS độc lập.
+
+\begin{enumerate}
+  \item Khởi tạo luồng và đồ thị dư.
+  \item Chạy BFS trên đồ thị dư để tính mức các đỉnh. Nếu không tới được đích,
+  thuật toán kết thúc.
+  \item Dùng DFS trên đồ thị phân tầng để tăng luồng cho tới khi thu được
+  luồng chặn.
+  \item Quay lại bước 2.
+\end{enumerate}
+
+Quá trình DFS trong một pha có thể mô tả bằng một đường hiện tại \(p\), ban
+đầu chỉ gồm nguồn \(s\). Ký hiệu \(p.\mathrm{top}\) là đỉnh cuối của đường.
+
+\begin{verbatim}
+p <- [s]
+while outdeg(s) > 0 do
+    u <- p.top
+    if u != t then
+        if outdeg(u) > 0 then
+            choose a level edge (u, v)
+            push v to the end of p
+        else
+            delete u from p and from the level graph
+            delete all level-graph edges incident to u
+    else
+        augment along p and delete saturated edges on p
+        move p.top back to the last reachable vertex on p
+end while
+\end{verbatim}
+
+Nếu đỉnh cuối của \(p\) là đích, ta đã có một đường tăng luồng. Sau khi tăng
+luồng, ít nhất một cạnh trên đường bị bão hòa; đường hiện tại được lùi về đỉnh
+xa nhất trên \(p\) vẫn còn đi tới được từ nguồn theo các cạnh chưa bị xóa.
+
+Nếu đỉnh cuối \(u\) không phải đích, có hai khả năng. Nếu còn cạnh tầng đi ra
+từ \(u\), ta đi tiếp theo cạnh đó. Nếu không còn cạnh đi ra, \(u\) không thể
+nằm trên bất kỳ đường tăng luồng nào của phần đồ thị tầng còn lại; khi đó xóa
+\(u\), xóa các cạnh kề với \(u\), rồi lùi đường hiện tại một đỉnh.
+
+Quá trình trên kết thúc khi mọi cạnh đi ra từ nguồn trong đồ thị tầng đã bị
+xóa. Khi đó đồ thị tầng không còn đường từ \(s\) tới \(t\), tức ta đã tìm được
+một luồng chặn.
+
+\subsection{Minh họa bằng lời}
+
+Trong một đồ thị phân tầng, Dinic luôn giữ một đường hiện tại từ nguồn đi dần
+về phía đích:
+\[
+  s \longrightarrow \cdots \longrightarrow u.
+\]
+Khi còn cạnh hợp lệ từ \(u\), đường được kéo dài. Khi gặp đích, ta đẩy thêm
+luồng trên cả đường; các cạnh bão hòa bị loại khỏi pha hiện tại. Khi gặp một
+đỉnh cụt, đỉnh đó bị xóa vì không thể đóng góp cho đường tăng luồng nào nữa.
+
+Do chỉ đi theo cạnh từ lớp \(i\) sang lớp \(i+1\), DFS không tạo chu trình
+trong một pha. Việc xóa cạnh và xóa đỉnh là nguyên nhân chính giúp Dinic tránh
+lặp lại nhiều phép tìm đường tốn kém như MPLA.
+
+\subsection{Phân tích độ phức tạp}
+
+Lập luận về số pha giống MPLA: sau mỗi pha, độ dài đường tăng luồng ngắn nhất
+tăng nghiêm ngặt, nên Dinic có nhiều nhất \(n\) pha. Tổng chi phí dựng đồ thị
+phân tầng vẫn là \(\Oh(nm)\).
+
+Xét chi phí DFS trong một pha.
+
+\paragraph{Sửa luồng và lùi sau khi tăng.}
+Trong một pha, số lần tăng luồng không vượt quá \(m\), vì mỗi lần tăng làm bão
+hòa ít nhất một cạnh tầng. Mỗi lần sửa luồng dọc đường mất \(\Oh(n)\), và việc
+lùi đường hiện tại cũng mất \(\Oh(n)\). Vì vậy phần này tốn
+\[
+  \Oh(mn)
+\]
+cho một pha.
+
+\paragraph{Đi tới và lùi khi duyệt DFS.}
+Mỗi lần DFS đi tới, nó đi theo một cạnh từ lớp hiện tại sang lớp kế tiếp. Một
+đường đơn trong tầng có độ dài nhiều nhất \(n\). Khi gặp đỉnh cụt, thuật toán
+xóa đỉnh đó; số lần lùi kiểu này trong một pha nhiều nhất \(n\).
+
+Trong trường hợp xấu nhất, có \(n\) lần đi tới bị xóa bỏ cùng với các đỉnh cụt.
+Các lần đi tới còn lại đều góp phần vào những đường tăng luồng đã tìm được.
+Có nhiều nhất \(m\) đường tăng luồng trong một pha, mỗi đường dài nhiều nhất
+\(n\), nên tổng số bước đi tới là \(\Oh(mn)\). Cộng thêm các lần lùi do đỉnh
+cụt, chi phí duyệt DFS trong một pha vẫn là \(\Oh(mn)\).
+
+Vì thế, chi phí tìm luồng chặn trong một pha là \(\Oh(mn)\). Nhân với nhiều
+nhất \(n\) pha, độ phức tạp tổng quát của Dinic là
+\[
+  \Oh(mn^2).
+\]
+
+Trong thực tế thi đấu, Dinic thường nhanh hơn đánh giá tổng quát này rất nhiều,
+đặc biệt trên các mạng hai phía và các mạng có sức chứa nguyên nhỏ.
+
+\section{Ứng dụng của Dinic trong thi tin học}
+
+\subsection{Bài toán 1: Lợi nhuận lớn nhất}
+
+\paragraph{Mô tả bài toán.}
+Có \(N\) trạm trung chuyển tín hiệu liên lạc. Xây trạm \(i\) tốn chi phí
+\(P_i\). Ngoài ra có \(M\) nhóm người dùng. Nhóm \(j\) sẽ dùng hai trạm
+\(A_j\) và \(B_j\) để liên lạc; nếu phục vụ nhóm này, công ty thu được
+\(C_j\). Hãy chọn xây một số trạm sao cho lợi nhuận ròng là lớn nhất.
+
+Giới hạn trong bài gốc: \(N\le 5000\), \(M\le 50000\).
+
+\paragraph{Mô hình hóa ban đầu.}
+Biểu diễn trạm \(i\) bằng một đỉnh có trọng số \(-P_i\). Biểu diễn nhóm người
+dùng \(j\) bằng một cạnh nối hai đỉnh \(A_j,B_j\), có trọng số \(C_j\). Ta cần
+chọn một tập đỉnh sao cho tổng trọng số các đỉnh đã chọn cộng với tổng trọng
+số các cạnh có cả hai đầu mút trong tập là lớn nhất.
+
+Hãy tưởng tượng ban đầu ta định xây mọi trạm và phục vụ mọi nhóm người dùng:
+ta thu \(\sum C_j\) và trả \(\sum P_i\). Mỗi cạnh lợi nhuận có thể dùng một
+phần giá trị của nó để bù chi phí cho hai đầu mút. Nếu một đỉnh vẫn âm sau khi
+mọi cạnh kề đã góp hết, giữ nó là không có lợi; ta nên bỏ trạm đó và bỏ các
+nhóm người dùng cần trạm ấy. Việc bỏ một đỉnh có thể khiến các đỉnh khác mất
+phần bù chi phí và cũng trở nên không có lợi. Quá trình này chính là một bài
+toán cắt tối thiểu.
+
+\paragraph{Mạng luồng.}
+Dựng mạng hai phía như sau.
+\begin{itemize}
+  \item Với mỗi nhóm người dùng \(j\), tạo đỉnh \(X_j\) và nối
+  \(S\to X_j\) với sức chứa \(C_j\).
+  \item Với mỗi trạm \(i\), tạo đỉnh \(Y_i\) và nối \(Y_i\to T\) với sức chứa
+  \(P_i\).
+  \item Với nhóm \(j\), nối \(X_j\to Y_{A_j}\) và \(X_j\to Y_{B_j}\), mỗi cạnh
+  có sức chứa \(\inftycap\).
+\end{itemize}
+
+Một lát cắt hữu hạn không thể cắt các cạnh \(\inftycap\), do đó nếu giữ lợi
+nhuận của nhóm \(j\) ở phía nguồn thì cũng phải giữ cả hai trạm tương ứng ở
+phía nguồn. Giá trị lát cắt tối thiểu bằng
+\[
+  \text{chi phí các trạm được giữ}
+  + \text{lợi nhuận ban đầu của các nhóm bị bỏ}.
+\]
+Vì tổng lợi nhuận ban đầu \(\sum C_j\) là hằng số, đáp án là
+\[
+  \sum_{j=1}^{M} C_j - \operatorname{maxflow}.
+\]
+
+\paragraph{So sánh thuật toán.}
+Với dữ liệu lớn, MPLA thường không qua được các bộ kiểm thử lớn. Tác giả ghi
+nhận thời gian đại diện như sau:
+\[
+\begin{array}{c|ccc}
+\text{Thuật toán} & \text{Test 1--8} & \text{Test 9} & \text{Test 10}\\
+\hline
+\text{MPLA} & <0.1\text{s} & >30\text{s} & >30\text{s}\\
+\text{Dinic} & <0.03\text{s} & 0.40\text{s} & 0.37\text{s}\\
+\text{Đẩy luồng trước} & <0.03\text{s} & 0.53\text{s} & 0.51\text{s}
+\end{array}
+\]
+
+Một hướng khác là dựng luồng ban đầu bằng tham lam, chẳng hạn ưu tiên các đỉnh
+bậc nhỏ trong đồ thị hai phía. Tuy nhiên cách này phụ thuộc nhiều vào đặc điểm
+đồ thị của bài. Dinic ngắn gọn hơn, ít sai hơn, và trong bài này đủ nhanh để
+không cần dựa vào luồng ban đầu đặc biệt.
+
+\paragraph{Nhận xét.}
+Trên mạng hai phía của bài này, Dinic hơi nhanh hơn đẩy luồng trước theo số
+liệu của tác giả. Điều đó không có nghĩa Dinic luôn nhanh hơn mọi biến thể
+đẩy luồng trước; mỗi thuật toán có loại đồ thị thuận lợi riêng. Lợi thế lớn
+của Dinic trong thi đấu là cân bằng tốt giữa tốc độ, độ dễ hiểu và độ dễ cài.
+
+\subsection{Bài toán 2: Trò chơi ma trận}
+
+\paragraph{Mô tả bài toán.}
+Cho các số \(R_1,\ldots,R_n\) và \(C_1,\ldots,C_m\). Hỏi có tồn tại ma trận
+\(0\)-\(1\) kích thước \(n\times m\) sao cho hàng \(i\) có đúng \(R_i\) ô bằng
+\(1\), cột \(j\) có đúng \(C_j\) ô bằng \(1\). Ngoài ra, ở mỗi hàng và mỗi
+cột có nhiều nhất một ô bị chỉ định bắt buộc bằng \(0\). Giới hạn:
+\(n,m\le 1000\), mỗi bộ dữ liệu có nhiều nhất \(10\) test.
+
+\paragraph{Mô hình luồng trực tiếp.}
+Dựng mạng hai phía:
+\begin{itemize}
+  \item tạo đỉnh \(X_i\) cho hàng \(i\), nối \(S\to X_i\) với sức chứa \(R_i\);
+  \item tạo đỉnh \(Y_j\) cho cột \(j\), nối \(Y_j\to T\) với sức chứa \(C_j\);
+  \item nếu ô \((i,j)\) không bị bắt buộc bằng \(0\), nối \(X_i\to Y_j\) với
+  sức chứa \(1\).
+\end{itemize}
+Nếu cạnh \(X_i\to Y_j\) mang một đơn vị luồng, đặt ô \((i,j)=1\). Bài toán có
+lời giải khi và chỉ khi luồng cực đại bằng tổng số ô bằng \(1\), tức bằng
+\(\sum_i R_i=\sum_j C_j\).
+
+Cách dựng này có \(\Oh(nm)\) cạnh. Với MPLA chỉ đạt được một phần điểm; với
+Dinic có thể đạt điểm cao hơn, nhưng vẫn chưa phải lời giải chuẩn của bài.
+
+\paragraph{Một kiểm tra tham lam hỗ trợ.}
+Tạm bỏ qua các ô bị ép bằng \(0\). Vì hoán vị toàn bộ các hàng hoặc các cột
+không làm thay đổi bản chất bài toán, có thể sắp \(R_i\) và \(C_j\) giảm dần.
+Khi xét lần lượt các cột, ta tưởng tượng mỗi hàng có thể cung cấp một ô \(1\)
+cho các cột đầu tiên còn cần. Nếu một cột cần nhiều ô \(1\) hơn số hàng đang
+có thể cung cấp, ta dùng các ô đã ``dư'' từ những cột trước. Nếu tới một cột
+mà kể cả dùng hết phần dư vẫn không đủ, thì chắc chắn không tồn tại ma trận.
+
+Kiểm tra này loại được nhiều trường hợp vô nghiệm trước khi chạy luồng. Trong
+bài gốc, thêm kiểm tra đơn giản ấy rồi dùng Dinic có thể qua toàn bộ dữ liệu,
+trong khi MPLA vẫn không đủ nhanh.
+
+\paragraph{Nhận xét.}
+Lời giải chuẩn của bài là một thuật toán tham lam đầy đủ. Dù vậy, ví dụ này
+cho thấy trong thi đấu, một thuật toán luồng đủ mạnh có thể giúp ta đạt kết
+quả tốt khi chưa kịp khai thác hết cấu trúc riêng của bài.
+
+\section{Thuật toán MPM}
+
+\subsection{Các bước thuật toán}
+
+MPM cũng tìm luồng chặn theo từng pha trên đồ thị phân tầng, nhưng không dùng
+DFS kiểu Dinic. Trước hết, định nghĩa \term{thông lượng} của một đỉnh
+\(u\ne s,t\) trong đồ thị phân tầng:
+\[
+  \throughput(u)=
+  \min\left(
+    \sum_{(v,u)} g(v,u),
+    \sum_{(u,w)} g(u,w)
+  \right).
+\]
+Đây là lượng luồng lớn nhất có thể đi xuyên qua \(u\) nếu chỉ xét cân bằng
+giữa tổng sức chứa đi vào và tổng sức chứa đi ra của \(u\).
+
+Trong mỗi pha, MPM tìm luồng chặn như sau.
+\begin{enumerate}
+  \item Tìm một đỉnh \(u\) có \(\throughput(u)\) nhỏ nhất trong đồ thị phân
+  tầng, không tính nguồn và đích.
+  \item Từ \(u\), đẩy \(\throughput(u)\) đơn vị luồng về phía đích trong đồ
+  thị phân tầng.
+  \item Từ \(u\), kéo \(\throughput(u)\) đơn vị luồng từ phía nguồn trong đồ
+  thị phân tầng.
+  \item Xóa \(u\). Nếu đồ thị phân tầng chỉ còn nguồn và đích, hoặc không còn
+  đường từ nguồn tới đích, pha kết thúc; nếu không, quay lại bước 1.
+\end{enumerate}
+
+Vì \(u\) là đỉnh có thông lượng nhỏ nhất, quá trình đẩy và kéo lượng
+\(\throughput(u)\) sẽ không bị kẹt ở các đỉnh khác. Khi đẩy hoặc kéo, ta luôn
+cố gắng làm bão hòa các cạnh đã dùng; tại mỗi bước chỉ có thể còn nhiều nhất
+một cạnh chưa bão hòa hoàn toàn theo hướng đang xử lý.
+
+\subsection{Phân tích độ phức tạp}
+
+Trong một pha, mỗi vòng của MPM xóa một đỉnh, nên có nhiều nhất \(n\) vòng.
+Nếu chọn đỉnh có thông lượng nhỏ nhất bằng cách quét tuyến tính, mỗi vòng tốn
+\(\Oh(n)\). Mỗi lần đẩy và kéo xử lý nhiều nhất \(\Oh(n)\) cạnh chưa bão hòa
+hoàn toàn, còn trong cả pha tổng số cạnh bị xóa là \(\Oh(m)\). Do đó chi phí
+tìm luồng chặn trong một pha là
+\[
+  \Oh(n(n+n)+m)=\Oh(n^2+m).
+\]
+Trong cách đánh giá của bài gốc, lấy \(\Oh(n^2)\) cho thành phần chính của
+việc tìm luồng chặn trên mỗi tầng. Kết hợp với nhiều nhất \(n\) pha, độ phức
+tạp tổng quát của MPM được ghi là
+\[
+  \Oh(n^3).
+\]
+
+MPM có ý tưởng đẹp nhưng cài đặt rườm rà hơn Dinic. Với yêu cầu thi đấu thông
+thường, lợi ích thực tế của nó không rõ bằng Dinic.
+
+\section{Tổng kết}
+
+Ba thuật toán có thể nhìn nhanh như sau:
+\[
+\begin{array}{c|c|c|c}
+\text{Thuật toán} & \text{Ý tưởng trong mỗi pha} &
+\text{Độ phức tạp} & \text{Đặc điểm}\\
+\hline
+\text{MPLA} & \text{nhiều BFS tìm đường tăng} &
+\Oh(nm^2) & \text{dễ hiểu, hợp dữ liệu vừa và nhỏ}\\
+\text{Dinic} & \text{DFS tìm luồng chặn} &
+\Oh(mn^2) & \text{dễ cài, hợp dữ liệu lớn hơn}\\
+\text{MPM} & \text{xử lý đỉnh có thông lượng nhỏ nhất} &
+\Oh(n^3) & \text{ý tưởng rõ, cài đặt phức tạp hơn}
+\end{array}
+\]
+
+So sánh tổng thể, Dinic là lựa chọn rất đáng ưu tiên trong các kỳ thi tin học:
+nó dựa trên khái niệm phân tầng giống MPLA, nhưng tìm luồng chặn hiệu quả hơn
+nhiều; đồng thời cách cài đặt vẫn đủ ngắn và ổn định để dùng trong điều kiện
+thi.
+
+\section*{Lời cảm ơn}
+
+Tác giả cảm ơn thầy Yu Xiaoqing đã cung cấp đề bài và dữ liệu; cảm ơn Li
+Tianyi, Hu Botao, Hu Gang, Shou Heming và huấn luyện viên Liu Rujia đã góp ý
+cho bản thảo hoặc chương trình.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford
+  Stein, \emph{Introduction to Algorithms}.
+  \item M. H. Alsuwaiyel, \emph{Algorithms: Design Techniques and Analysis}.
+  \item Liu Rujia, Huang Liang, \emph{The Art of Algorithms and Informatics
+  Competitions}.
+  \item Wang Xiaodong, \emph{Computer Algorithm Design Techniques and
+  Analysis}.
+  \item Fred Buckley, Marty Lewinter, \emph{A Friendly Introduction to Graph
+  Theory}.
+  \item Zhou Yuan, solution report for the 2006 Anhui provincial informatics
+  selection contest.
+\end{enumerate}
+
+\section*{Phụ lục: đề bài mẫu}
+
+\subsection*{Lợi nhuận lớn nhất}
+
+Bài từ NOI 2006. Có \(N\) vị trí có thể xây trạm trung chuyển tín hiệu. Xây
+trạm \(i\) tốn \(P_i\). Có \(M\) nhóm người dùng; nhóm \(i\) cần dùng hai trạm
+\(A_i,B_i\) và đem lại lợi nhuận \(C_i\). Công ty được chọn xây một số trạm và
+phục vụ một số nhóm người dùng. Hãy tối đa hóa
+\[
+  \text{lợi nhuận ròng}
+  = \text{tổng lợi nhuận phục vụ} - \text{tổng chi phí xây trạm}.
+\]
+
+Dữ liệu: \(N\le 5000\), \(M\le 50000\), \(0\le C_i\le 100\),
+\(0\le P_i\le 100\). Với \(80\%\) dữ liệu: \(N\le 200\), \(M\le 1000\).
+
+\subsection*{Trò chơi ma trận}
+
+Bài từ JSOI 2006. Với mỗi test, cho \(n,m\le 1000\), các tổng hàng
+\(r_1,\ldots,r_n\), các tổng cột \(c_1,\ldots,c_m\), và một số ô bị bắt buộc
+bằng \(0\). Mỗi hàng và mỗi cột có nhiều nhất một ô bị bắt buộc bằng \(0\).
+Cần xác định có tồn tại ma trận \(0\)-\(1\) thỏa tất cả điều kiện hay không.
+
+Với mỗi test, in \texttt{Yes} nếu tồn tại ma trận, ngược lại in \texttt{No}.
+Các bộ dữ liệu đầu có \(1\le n,m\le 100\), các bộ cuối có
+\(1\le n,m\le 1000\).
+
+\end{document}

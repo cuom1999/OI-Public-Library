@@ -1,0 +1,377 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2009/张昆玮/数学归纳法与解题之道.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\NP}{\mathsf{NP}}
+\newcommand{\True}{\mathsf{True}}
+\newcommand{\xor}{\mathbin{\mathrm{xor}}}
+
+\title{Quy nạp toán học và con đường giải bài}
+\author{Zhang Kunwei\\Trường Thực nghiệm Sơn Tây\\Huấn luyện viên: Tang Wenbin, Hu Weidong}
+\date{16 tháng 12 năm 2008}
+
+\begin{document}
+\maketitle
+
+\origtitle{Quy nạp toán học và con đường giải bài}
+\sourcepath{IOI China candidate team papers / 2009 / Zhang Kunwei}
+
+\begin{abstract}
+Bài viết tóm tắt lý thuyết liên quan đến quy nạp toán học, rồi kết hợp kinh
+nghiệm giải bài của tác giả để trình bày ứng dụng của quy nạp trong Olympic
+Tin học. Qua nhiều bài toán kinh điển và bài thi, bài viết bàn về chứng minh
+tính đúng đắn của thuật toán, thiết kế thuật toán xây dựng, quan hệ giữa quy
+nạp và tối ưu hóa thuật toán, cũng như phạm vi áp dụng và các mở rộng của lối
+tư duy quy nạp.
+\end{abstract}
+
+\tableofcontents
+
+\section{Dẫn nhập}
+
+Trong khi học thuật toán, ta thường tự hỏi: những thuật toán tự nhiên và tinh
+tế ấy được nghĩ ra như thế nào, và vì sao chúng đúng? Đằng sau mỗi lời giải
+không chỉ có kỹ thuật cụ thể, mà còn có một cách nhìn. Nếu muốn tìm một điểm
+khởi đầu cho ``đạo'' giải bài, quy nạp toán học là một lựa chọn rất đáng tin.
+
+Quy nạp không chỉ dùng để viết phần chứng minh sau khi đã biết đáp án. Trong
+quá trình đoán, thử, tách bài toán và xây dựng thuật toán, ta cũng nhiều lần
+dùng tư tưởng: giải được trường hợp nhỏ, rồi tìm cách mở rộng có kiểm soát
+sang trường hợp lớn hơn.
+
+\section{Về quy nạp toán học}
+
+\subsection{Một hồi tưởng ngắn}
+
+Nguyên lý quy nạp toán học có thể truy ngược tới các công trình số học thời
+Phục hưng và sau này được đặt trên nền hệ tiên đề Peano. Vì xử lý trực tiếp
+những mệnh đề phụ thuộc vào số nguyên dương, quy nạp xuất hiện trong số học,
+logic, tổ hợp, đồ thị và nhiều cấu trúc rời rạc khác. Trong Tin học, nơi thuật
+toán thường dựa trên đệ quy, cấu trúc dữ liệu và biến đổi kích thước bài toán,
+quy nạp càng có vai trò tự nhiên.
+
+\subsection{Các định lý, khái niệm và phương pháp cơ bản}
+
+\paragraph{Quy nạp toán học thứ nhất.}
+Với một mệnh đề \(P(n)\) trên các số tự nhiên dương, nếu
+\[
+  P(1)=\True,\qquad P(n)\Rightarrow P(n+1)\quad(n\in\mathbb{N}^{+}),
+\]
+thì \(P(n)\) đúng với mọi \(n\). Có thể hình dung các số tự nhiên là một dãy
+quân domino: quân đầu tiên ngã, và mỗi quân ngã kéo theo quân kế tiếp.
+
+\paragraph{Quy nạp toán học thứ hai.}
+Nếu với mọi \(n\),
+\[
+  \bigl(\forall k<n,\; P(k)\bigr)\Rightarrow P(n),
+\]
+thì \(P(n)\) đúng với mọi \(n\). Dạng này linh hoạt hơn vì ở bước \(n\) ta
+có thể dùng mọi kết quả đã chứng minh trước đó, không chỉ trường hợp \(n-1\).
+Nó cho phép giảm kích thước bài toán đi một nửa, chia thành nhiều phần nhỏ,
+hoặc chọn một trường hợp con thuận lợi.
+
+\paragraph{Quy nạp cấu trúc.}
+Quy nạp cấu trúc là biến thể thường gặp trong logic, khoa học máy tính và lý
+thuyết đồ thị. Ta không nhất thiết quy nạp theo một số tuyến tính, mà theo một
+thứ tự topo của cấu trúc, thường là kích thước bài toán. Với cây, ta có thể
+tách các cây con; với đồ thị, ta có thể bỏ một cạnh hoặc một đỉnh; với biểu
+thức, ta xét các biểu thức con. Tính đúng đắn dựa trên nguyên lý phản ví dụ
+nhỏ nhất: nếu có phản ví dụ thì tồn tại phản ví dụ nhỏ nhất, nhưng lập luận
+quy nạp lại tạo ra một phản ví dụ nhỏ hơn, mâu thuẫn.
+
+\paragraph{Ví dụ 1: mã Prüfer cho cây gán nhãn.}
+Công thức Cayley nói rằng có \(n^{n-2}\) cây không gốc khác nhau trên \(n\)
+đỉnh gán nhãn. Mã Prüfer cho một song ánh giữa cây và dãy độ dài \(n-2\).
+Lập luận quy nạp rất tự nhiên: chọn lá có nhãn nhỏ nhất, ghi nhãn đỉnh kề
+với nó vào dãy, xóa lá đó, rồi dùng giả thiết quy nạp cho cây còn lại. Nếu
+cố quy nạp trực tiếp trên công thức đếm, phần chứng minh sẽ nặng hơn nhiều;
+quy nạp cấu trúc cho ta đúng đối tượng cần thao tác.
+
+\subsection{Không chỉ tổng kết, mà còn khám phá}
+
+Trong giải bài, một phần là đoán và khám phá, phần còn lại là tổng kết và
+chứng minh. Quy nạp thường bị xem như công cụ của giai đoạn thứ hai, nhưng
+thực ra khi ta tìm cách loại bỏ một phần tử, thu nhỏ dữ liệu, hoặc tăng dần
+kích thước nghiệm, ta đã dùng tư duy quy nạp.
+
+\paragraph{Ví dụ 2: bài toán người nổi tiếng.}
+Cho đồ thị có hướng dưới dạng ma trận kề, cần tìm đỉnh chỉ có cạnh đi vào và
+không có cạnh đi ra, với số câu hỏi ít nhất. Xác định trực tiếp ứng viên có
+thể tốn cả ma trận, nhưng loại một đỉnh không thể là đáp án thì dễ hơn. Hỏi
+một cạnh giữa hai ứng viên: nếu cạnh tồn tại, loại đỉnh xuất phát; nếu không,
+loại đỉnh kết thúc. Mỗi câu hỏi giảm kích thước bài toán đi \(1\), rồi giả
+thiết quy nạp tiếp tục xử lý tập còn lại. Thuật toán tương tác chuẩn này chính
+là một quá trình quy nạp.
+
+\section{Ứng dụng trong chứng minh tính đúng đắn}
+
+Trong luyện tập ta thường lấy AC làm điểm kết thúc, nhưng hiểu vì sao thuật
+toán đúng mới là nền tảng vững chắc. Đặc biệt với tham lam, chứng minh thường
+quyết định thuật toán có đáng tin hay không. Quy nạp là một trong các công cụ
+chứng minh phổ biến nhất của thuật toán.
+
+\subsection{Thuật toán tham lam}
+
+\paragraph{Ví dụ 3: Robbers.}
+\(N\) tên cướp chia \(M\) đồng vàng theo tỉ lệ \(X_i/\sum X_i\), nhưng vàng
+không thể chia nhỏ. Gọi \(K_i\) là số vàng tên thứ \(i\) nhận được; cần làm
+nhỏ sai lệch tổng thể. Một chiến lược tự nhiên là trước hết chia phần nguyên
+theo tỉ lệ, rồi mỗi lần cấp một đồng vàng cho người có độ thiếu hụt
+\[
+  \Delta_i=\frac{X_i}{\sum X_i}-\frac{K_i}{\sum K_i}
+\]
+lớn nhất.
+
+Có thể chứng minh bằng quy nạp rằng sau khi đã phát \(m\) đồng vàng,
+\[
+  \max_i\Delta_i-\min_i\Delta_i\le \frac1M.
+\]
+Ở cơ sở, việc chia tỉ lệ ban đầu thỏa bất đẳng thức. Khi thêm một đồng cho
+người đang thiếu nhất, nếu người đó chưa vượt lên thành người ``dư'' nhất thì
+khoảng cách chỉ giảm. Nếu có vượt, giá trị mới cũng chỉ tăng thêm đúng phần
+đóng góp của một đồng vàng, nên bất đẳng thức vẫn giữ được. Phần còn lại là
+chứng minh mọi nghiệm tối ưu cũng phải có tính cân bằng tương tự, từ đó thuật
+toán tham lam là đúng.
+
+\subsection{Các thuật toán khác}
+
+\paragraph{Ví dụ 4: Think Positive.}
+Một hành tinh có \(n\) ngày trong năm; ngày vui có giá trị \(+1\), ngày buồn
+có giá trị \(-1\). Chọn ngày đầu năm sao cho mọi tổng tiền tố trong năm đều
+dương. Bài toán trở thành đếm số vị trí bắt đầu trong một dãy vòng sao cho
+tổng tiền tố luôn dương.
+
+Xét quy nạp mạnh theo độ dài dãy. Nếu tồn tại cặp liên tiếp \(+1,-1\), xóa
+cặp này không đổi tổng toàn dãy. Hai vị trí vừa xóa không thể là điểm bắt đầu
+hợp lệ, còn các vị trí khác giữ nguyên điều kiện tiền tố hoặc trở nên tốt hơn;
+vì vậy bài toán giảm đi \(2\). Nếu không có cặp \(+1,-1\), hoặc dãy toàn
+\(-1\) nên đáp án là \(0\), hoặc dãy toàn \(+1\) nên mọi vị trí đều hợp lệ.
+Lập luận này cho một thuật toán tuyến tính rất đơn giản.
+
+\section{Ứng dụng trong thuật toán xây dựng}
+
+Thuật toán xây dựng thường khó vì không có khuôn mẫu cố định. Quy nạp giúp ta
+tìm điểm bám: xây được nghiệm nhỏ, rồi thêm một phần tử hoặc nối thêm một
+khối sao cho bất biến vẫn đúng.
+
+\subsection{Khôi phục cấu trúc dữ liệu}
+
+\paragraph{Ví dụ 5: Set Cover từ bài toán phủ đoạn.}
+Bài toán phủ đoạn chọn ít điểm nguyên nhất sao cho mỗi đoạn cho trước chứa
+ít nhất một điểm. Nếu một instance của set cover được tạo ra từ bài toán phủ
+đoạn, ta muốn khôi phục đủ cấu trúc tuyến tính để dùng tham lam.
+
+Với các đoạn không chứa nhau, duyệt từ trái sang phải và khi gặp đoạn chưa
+được phủ thì chọn điểm phải nhất còn phủ được nó. Vì set cover tổng quát là
+\(\NP\)-đầy đủ, trọng tâm là khôi phục quan hệ tuyến tính ẩn. Ta chỉ cần biết
+thứ tự tương đối của các đoạn và đầu phải của mỗi đoạn. Giả thiết quy nạp có
+thể là: trong một thành phần liên thông theo quan hệ giao nhau, ta đã biết vị
+trí các đoạn đã xử lý và biết một đoạn \(A\) giao với đoạn mới \(X\). Khoảng
+cách giữa \(A\) và \(X\) suy ra từ sai khác đối xứng của hai tập. Để biết
+\(X\) nằm phía nào của \(A\), dùng thêm một đoạn đã biết hướng \(B\); \(X\)
+và \(B\) ở cùng phía của \(A\) khi phần giao của chúng với \(A\) có quan hệ
+bao hàm. Bằng cách tăng cường giả thiết quy nạp, ta lần lượt dựng lại cấu trúc
+cần thiết.
+
+\paragraph{Ví dụ 6: Roman Roads.}
+Cho quan hệ kề giữa các con đường, cần xác định liệu chúng có thể là các cạnh
+của một cây đường La Mã hay không và dựng cây đó. Với cây, quan hệ giữa cạnh
+và đỉnh có tính đệ quy rõ rệt. Gọi \(X\) là cạnh nối đỉnh \(x\) với cha \(p\),
+và \(P\) là cạnh nối \(p\) với cha của nó. Giả thiết quy nạp: khi biết \(x\),
+\(X\) và \(P\), ta có thể dựng cây con gốc \(x\).
+
+Các cạnh kề với \(X\) chia làm hai loại: cạnh cùng nối tại \(p\), và cạnh nối
+tại \(x\). Các cạnh loại đầu đã thuộc phần phía trên; các cạnh loại sau tạo
+ra các cây con cần tiếp tục quy nạp. Cạnh \(P\) giúp phân biệt hai loại: cạnh
+nối tại \(p\) kề với \(P\), còn cạnh nối tại \(x\) thì không. Từ đó có thể
+dùng phép hiệu tập để tách nhánh và kiểm tra tính hợp lệ.
+
+\subsection{Xây dựng chiến lược và phương án}
+
+\paragraph{Ví dụ 7: Royal Federation.}
+Trong một cây thành phố, cần chia thành các bang, mỗi bang có từ \(B\) đến
+\(3B\) thành phố và có một trung tâm hành chính sao cho mọi thành phố trong
+bang đi tới trung tâm mà không ra khỏi bang. Hãy xem cây có gốc. Giả thiết
+quy nạp: với một cây con nhỏ hơn, ta chia được các phần có kích thước
+\(B\le x\le 2B\), còn lại một tập thành phố nối với gốc và có kích thước
+\(x\le B\).
+
+Áp dụng giả thiết cho từng cây con của gốc, rồi gom các phần dư. Mỗi khi đủ
+\(B\) thành phố thì tạo một bang với trung tâm là gốc hiện tại. Vì mỗi phần
+dư con có kích thước không quá \(B\), bang mới không vượt \(2B\); phần dư
+cuối cùng không quá \(B\). Ở bước cuối cùng, gộp phần dư vào bang kề nó để
+đạt giới hạn \(3B\). Điểm mấu chốt là chọn đúng bất biến ``phần còn lại nối
+với gốc và có kích thước không quá \(B\)''.
+
+\paragraph{Ví dụ 8: Electricity.}
+Mạng điện là một DAG. Chính phủ muốn đảo hướng một số cạnh, mỗi ngày một
+cạnh, và tại mọi thời điểm đồ thị vẫn phải không có chu trình. Giả sử không
+có cạnh song song. Quy nạp theo số đỉnh: chọn một đỉnh \(A\) không có cạnh ra
+trong trạng thái cuối. Các cạnh đi vào \(A\) không cần đổi, còn các cạnh đi
+ra từ \(A\) cần đảo.
+
+Để đảo các cạnh xuất phát từ \(A\), dùng một quy nạp phụ theo số cạnh còn cần
+đổi. Chọn cạnh \(A\to B\) có đỉnh cuối \(B\) đứng sớm nhất trong thứ tự topo
+của đồ thị ban đầu, rồi đảo thành \(B\to A\). Nếu tạo chu trình, chu trình
+phải có dạng
+\[
+  A\to C\to \cdots \to B\to A.
+\]
+Nhưng khi đó \(C\) phải đứng sau \(B\) trong thứ tự topo, mâu thuẫn với đường
+đi \(C\to\cdots\to B\). Do đó bước đảo này an toàn, và phần còn lại giao cho
+giả thiết quy nạp. Từ phân tích này suy ra thuật toán gọn: sắp các cạnh cần
+đổi theo thứ tự nghịch của đỉnh đầu trong trạng thái cuối, rồi theo thứ tự
+thuận của đỉnh cuối trong trạng thái đầu.
+
+\section{Quy nạp toán học và tối ưu hóa thuật toán}
+
+Tối ưu hóa ở đây không phải tối ưu hằng số bằng hợp ngữ, mà là chọn cách cài
+đặt, mô hình và hướng xử lý hiệu quả hơn. Nhiều cải tiến thuật toán có thể
+được nhìn dưới lăng kính quy nạp: chọn lại đối tượng quy nạp, cơ sở quy nạp,
+hướng quy nạp, hoặc tăng cường giả thiết.
+
+\subsection{Chọn khéo đối tượng quy nạp}
+
+\paragraph{Ví dụ 9: Explaining the Stock Market.}
+Cho một dãy giá, cần chia thành ít dãy con đơn điệu tăng hoặc giảm nhất, với
+điều kiện một ngày đơn lẻ không được tính là dãy đơn điệu trừ các trường hợp
+đặc biệt. Nếu quy nạp theo độ dài còn lại bằng cách mỗi lần lấy ra một dãy
+con đơn điệu, ta có một tìm kiếm đúng nhưng nhiều trạng thái.
+
+Trước hết xét biến thể chỉ cho dãy tăng. Duyệt từ trái sang phải; khi thêm
+một giá mới, ta đặt nó vào dãy tăng có phần tử cuối lớn nhất nhưng vẫn nhỏ
+hơn giá mới. Dãy có đuôi nhỏ hơn còn nhiều tiềm năng hơn, nên không nên dùng
+nó nếu không cần. Với cả dãy tăng và giảm, nghiệm cục bộ gồm các đuôi của
+các dãy hiện có; mỗi phần tử mới thử ghép vào một dãy tăng hoặc một dãy giảm,
+rồi giữ nghiệm có số dãy ít hơn. Như vậy đối tượng quy nạp là tiền tố đã xử
+lý và ``nghiệm còn nhiều tiềm năng nhất'', thay vì toàn bộ phần dãy còn lại.
+
+\subsection{Hoàn thiện cơ sở quy nạp}
+
+\paragraph{Ví dụ 10: tối ưu quicksort.}
+Quicksort có thể hiểu là thuật toán quy nạp: phân hoạch dãy rồi sắp xếp hai
+phần nhỏ hơn. Nhưng với dãy rất ngắn, chi phí đệ quy và phân hoạch có thể lớn
+hơn lợi ích. Ta mở rộng cơ sở quy nạp: nếu độ dài nhỏ hơn một ngưỡng, dùng
+insertion sort hoặc heap sort. Cơ sở quy nạp xuất hiện rất nhiều lần trong
+quá trình chạy, nên đầu tư tối ưu ở đây thường có hiệu quả. Introsort và nhiều
+biến thể sắp xếp thực tế dùng đúng tư tưởng này.
+
+\subsection{Chọn hướng quy nạp cẩn thận}
+
+\paragraph{Ví dụ 11: quy tắc Horner.}
+Tính đa thức \(\sum_{i=0}^{N} a_i x^i\). Nếu quy nạp theo tổng các hạng từ
+bậc thấp lên, ta còn phải duy trì \(x^k\). Đổi hướng từ bậc cao xuống cho
+\[
+  \sum_{i=0}^{N}a_i x^i
+  =(\cdots((a_Nx+a_{N-1})x+a_{N-2})\cdots)x+a_0,
+\]
+ta được quy tắc Horner, giảm số phép nhân và trạng thái phụ.
+
+\paragraph{Ví dụ 12: xây dựng heap nhị phân.}
+Từ một mảng vô thứ tự, xây heap từ trên xuống có độ phức tạp
+\(\Theta(n\log n)\), còn xây từ dưới lên là \(\Theta(n)\). Nhìn theo quy nạp,
+phần xử lý sớm thường xảy ra khi kích thước bài toán nhỏ, nên có lợi hơn.
+Heap có nhiều nút ở đáy; chọn hướng từ dưới lên đặt lợi thế này vào đúng phần
+chiếm số lượng lớn.
+
+\subsection{Tăng cường giả thiết quy nạp}
+
+\paragraph{Ví dụ 13: Yet Another Digit.}
+Giữ trọng số nhị phân nhưng cho phép mỗi chữ số là \(0,1,2\); số cách biểu
+diễn một số \(n\) theo dạng này gọi là \(f(n)\). Công thức trực tiếp là
+\[
+f(n)=
+\begin{cases}
+  f(n/2)+f(n/2-1), & n\equiv 0 \pmod 2,\\
+  f(\lceil n/2\rceil), & n\equiv 1 \pmod 2.
+\end{cases}
+\]
+Với \(n\) rất lớn, cách này vẫn khó vì các bài toán con chồng lấn và không
+thuận tiện cho số nguyên lớn. Quan sát \(f(n)\) thường đi cặp với \(f(n-1)\),
+đặt \(g(n)=f(n-1)\) và tăng cường giả thiết quy nạp thành: đã biết
+\[
+  f(\lceil n/2\rceil),\qquad g(\lceil n/2\rceil).
+\]
+Khi đó
+\[
+f(n)=
+\begin{cases}
+  f(\lceil n/2\rceil)+g(\lceil n/2\rceil), & n\equiv 0 \pmod 2,\\
+  f(\lceil n/2\rceil), & n\equiv 1 \pmod 2,
+\end{cases}
+\]
+và
+\[
+g(n)=
+\begin{cases}
+  g(\lceil n/2\rceil), & n\equiv 0 \pmod 2,\\
+  g(\lceil n/2\rceil)+f(\lceil n/2\rceil), & n\equiv 1 \pmod 2.
+\end{cases}
+\]
+Cài đặt chỉ cần hai biến \(f,g\) và quét biểu diễn nhị phân của số lớn từ cao
+đến thấp: gặp bit \(0\) thì cập nhật \(f:=f+g\), gặp bit \(1\) thì cập nhật
+\(g:=f+g\). Độ phức tạp trở thành \(\Theta(\log n)\).
+
+\section{Tác dụng gợi mở và giá trị thẩm mỹ}
+
+Các ví dụ trên cố gắng bóc tách những ``nét bút thần'' trong lời giải thành
+những bước tự nhiên hơn: chọn cấu trúc nhỏ, xác định bất biến, mở rộng có kiểm
+soát. Thuật toán đẹp không nhất thiết là thuật toán gây bất ngờ, mà thường là
+thuật toán đơn giản, đi thẳng vào bản chất. Quy nạp là một trong những cách
+giúp ta tìm sự đơn giản ấy.
+
+Không thể tồn tại một ``thuật toán tìm mọi thuật toán'' theo nghĩa tuyệt đối,
+nhưng ta vẫn có thể rèn luyện các chiến lược tư duy chung. Nếu các định lý và
+kỹ thuật cụ thể là con đường trong từng bài, thì quy nạp là một phương pháp
+định hướng trên con đường đó.
+
+\section{Vấn đề và hạn chế}
+
+\subsection{Về mặt lý thuyết}
+
+Tính đúng đắn của quy nạp dựa vào tiên đề quy nạp trong hệ Peano. Theo định
+lý bất toàn của Gödel, một hệ tiên đề đủ mạnh không thể tự chứng minh toàn bộ
+tính đúng đắn của chính nó trong nội bộ hệ. Trong phạm vi thuật toán thi đấu,
+ta hầu như không gặp những vấn đề nền tảng kiểu này, nên quy nạp vẫn là công
+cụ suy luận đáng tin. Dù vậy, đặc điểm ``từ hữu hạn đi tới vô hạn'' mà không
+có chứng minh trực tiếp bên ngoài hệ tiên đề vẫn là một giới hạn triết học
+cần biết.
+
+\subsection{Về mặt ứng dụng}
+
+Nếu gặp mọi bài đều viết đầy đủ giả thiết quy nạp, cơ sở và bước chuyển, ta
+có thể tự tạo thêm chi phí không cần thiết. Mục tiêu là dùng linh hoạt: khi
+cần chứng minh tham lam, dựng thuật toán, hoặc kiểm soát một bất biến khó,
+quy nạp phải xuất hiện đúng lúc; khi mô hình đã rõ, ta không cần hình thức hóa
+quá mức.
+
+\subsection{Các lớp bài không thuận lợi}
+
+Một số lớp bài không dễ tiếp cận bằng quy nạp, chẳng hạn quy hoạch tuyến tính,
+quy hoạch nguyên và các bài quy về chúng như một số mô hình luồng mạng; một
+số bài tối ưu hóa toàn cục; phần lớn thuật toán xấp xỉ hoặc không hoàn hảo;
+thuật toán số; và các bài dựa chủ yếu trên ma trận hoặc mô hình toán học khác.
+Danh sách này không tuyệt đối, vì kinh nghiệm của tác giả có hạn, nhưng nó
+nhắc ta rằng quy nạp là một công cụ mạnh chứ không phải chìa khóa vạn năng.
+
+\section{Lời cuối}
+
+Tác giả từng đọc sách nghiên cứu giải bài của thầy Shan Zun, trong đó nhấn
+mạnh rằng lời giải nên tự nhiên, đơn giản và đi vào lõi vấn đề. Bài viết ban
+đầu chỉ định trình bày một chuyên đề về quy nạp toán học, nhưng trong khi thử
+vén màn ``đạo giải bài'', nội dung đã mở rộng thành một thảo luận dài hơn.
+Tác giả hy vọng những ví dụ này có ích cho người đọc, đồng thời cảm ơn các
+thầy Wang Jinsheng, Ma Hongchun, Tang Wenbin, Hu Weidong và mọi người đã động
+viên, góp ý. Mọi trao đổi có thể gửi tới tác giả theo địa chỉ
+\texttt{aceeca.135531@gmail.com}.
+
+\section{Nguồn bài tập}
+
+Ngoài các bài kinh điển, một số ví dụ trong bài lấy từ Andrew Stankevich's
+Contest. Vì số lượng bài được nhắc tới khá nhiều, bản gốc chỉ giữ lại phần
+nội dung cốt lõi liên quan đến chủ đề của bài viết; người đọc quan tâm có thể
+tìm đề gốc, lời giải hoặc mã nguồn tương ứng.
+
+\end{document}

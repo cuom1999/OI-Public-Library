@@ -1,0 +1,386 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2002/俞玮.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,patterns}
+
+\title{Trò chơi Ulam và mã hóa}
+\author{Yu Wei}
+\date{}
+
+\definecolor{markgreen}{RGB}{143,207,0}
+\definecolor{lightblue}{RGB}{198,230,232}
+\definecolor{softgreen}{RGB}{178,205,91}
+\definecolor{badred}{RGB}{230,35,30}
+
+\newcommand{\yes}{\mathrm{Y}}
+\newcommand{\no}{\mathrm{N}}
+\newcommand{\xor}{\oplus}
+
+\begin{document}
+\maketitle
+
+\origtitle{Ulam's game and coding}
+\sourcepath{IOI China candidate team papers / 2002 / Yu Wei.pdf}
+
+\section{Trò chơi Ulam}
+
+Trong trò chơi Ulam có \(n\) số. Trong số đó có đúng một số khác với các số
+còn lại; đó là số mà người chơi đã chọn. Ta được đặt các câu hỏi dạng
+``số ấy có nằm trong tập \(X\) hay không?'' và mỗi câu hỏi chỉ nhận được câu
+trả lời ``có'' hoặc ``không''. Khó khăn nằm ở chỗ trong toàn bộ quá trình có
+thể xuất hiện một câu trả lời sai, nhưng số lần sai không vượt quá một.
+
+Mục tiêu là tìm ra số đã được chọn bằng càng ít câu hỏi càng tốt.
+
+\section{Bài toán gốc không có sai sót}
+
+Trước hết xét phiên bản đơn giản: vẫn có \(n\) số và một số được chọn, cách
+hỏi vẫn là hỏi số được chọn có thuộc một tập \(X\) hay không, nhưng mọi câu
+trả lời đều đúng.
+
+Lời giải quen thuộc là \term{binary search}. Mỗi lần ta chia tập các số còn
+có thể là đáp án thành hai phần có kích thước gần bằng nhau nhất, lấy một
+phần làm tập \(X\), rồi dựa vào câu trả lời để loại bỏ phần không thể chứa
+đáp án. Sau khoảng \(\lg n\) câu hỏi chỉ còn lại một số, và số đó là đáp án.
+
+Nhìn theo một cách khác, binary search chỉ là một phương pháp sàng lọc hơi
+tham lam: ở mỗi bước nó cố gắng loại bỏ nhiều số nhất trong trường hợp xấu
+nhất.
+
+\begin{center}
+\begin{tikzpicture}[x=0.75cm,y=0.42cm]
+  \tikzset{
+    cell/.style={draw=black!35,minimum width=0.75cm,minimum height=0.42cm,inner sep=0pt},
+    arr/.style={-{Latex[length=3mm]},line width=0.6pt,draw=black!65}
+  }
+  \foreach \stage/\x/\top/\bottom in {0/0/8/0,1/3.2/4/0,2/6.4/2/0,3/9.6/1/0} {
+    \foreach \r in {1,...,8} {
+      \pgfmathtruncatemacro{\keep}{\r>\bottom && \r<=\top}
+      \ifnum\keep=1
+        \node[cell,fill=markgreen] at (\x,\r) {};
+      \else
+        \node[cell,fill=lightblue] at (\x,\r) {};
+      \fi
+    }
+    \node[below=0.25cm] at (\x,0.5) {bước \(\stage\)};
+  }
+  \draw[arr] (0.6,4.5) -- (2.6,4.5);
+  \draw[arr] (3.8,4.5) -- (5.8,4.5);
+  \draw[arr] (7.0,4.5) -- (9.0,4.5);
+\end{tikzpicture}
+\end{center}
+
+Sơ đồ trên chỉ biểu diễn ý tưởng sàng lọc: phần xanh là tập còn có thể chứa
+đáp án, và sau mỗi câu hỏi ta giữ lại phần phù hợp với câu trả lời.
+
+\section{Binary search khi có một câu trả lời sai}
+
+Khi có thể có một câu trả lời sai, việc chia đôi theo số lượng không còn đủ.
+Nguyên tắc đúng hơn là chia đều \emph{khả năng} chứa số được chọn: hai phần
+sau khi hỏi phải có xác suất chứa đáp án như nhau, xét theo mọi kịch bản sai
+sót còn hợp lệ.
+
+Một cách hiện thực là phân loại các số theo số lần câu trả lời trước đó phải
+sai thì số ấy mới còn có thể là đáp án. Với giả thiết nhiều nhất một lỗi, ta
+có hai lớp:
+\begin{itemize}
+  \item lớp \(0\): các số còn phù hợp nếu chưa có câu trả lời sai nào;
+  \item lớp \(1\): các số chỉ còn phù hợp nếu đã có đúng một câu trả lời sai.
+\end{itemize}
+Trong cùng một lớp, các số có cùng mức khả dĩ. Vì vậy ở mỗi câu hỏi ta cố
+gắng chia đều từng lớp, lấy một phần của mỗi lớp đưa vào tập \(X\).
+
+\subsection{Một thao tác mẫu}
+
+Hình sau mô phỏng bốn trạng thái liên tiếp. Mỗi khối gồm hai cột: cột trái là
+lớp \(0\), cột phải là lớp \(1\). Các ô xanh là những số còn hợp lệ trong lớp
+tương ứng; phần gạch chéo là phần bị xác định là không chứa số được chọn sau
+câu trả lời hiện tại và sẽ chuyển sang lớp lỗi cao hơn hoặc bị loại.
+
+\begin{center}
+\begin{tikzpicture}[x=0.52cm,y=0.44cm]
+  \tikzset{
+    box/.style={draw=black,minimum width=0.52cm,minimum height=0.44cm,inner sep=0pt},
+    arrow/.style={-{Latex[length=3mm]},line width=0.6pt}
+  }
+  \newcommand{\stage}[4]{
+    \begin{scope}[shift={(#1,0)}]
+      \foreach \r in {1,...,8} {
+        \node[box] at (0,\r) {};
+        \node[box] at (1,\r) {};
+      }
+      #2
+      #3
+      \node[below] at (0.5,0.35) {#4};
+    \end{scope}
+  }
+  \stage{0}{
+    \foreach \r in {1,...,8} \node[box,fill=markgreen] at (0,\r) {};
+  }{
+    \foreach \r in {1,...,4} \node[box,pattern=north east lines,pattern color=markgreen!80!black] at (0,\r) {};
+  }{trước hỏi}
+  \stage{4.2}{
+    \foreach \r in {1,2,5,6} \node[box,fill=markgreen] at (0,\r) {};
+    \foreach \r in {3,4} \node[box,fill=markgreen] at (1,\r) {};
+  }{
+    \foreach \r in {5,6} \node[box,pattern=north east lines,pattern color=markgreen!80!black] at (0,\r) {};
+  }{sau hỏi 1}
+  \stage{8.4}{
+    \foreach \r in {2} \node[box,fill=markgreen] at (0,\r) {};
+    \foreach \r in {3,4,7} \node[box,fill=markgreen] at (1,\r) {};
+  }{
+    \foreach \r in {5,6,8} \node[box,pattern=north east lines,pattern color=markgreen!80!black] at (1,\r) {};
+  }{sau hỏi 2}
+  \stage{12.6}{
+    \foreach \r in {2} \node[box,fill=markgreen] at (0,\r) {};
+    \foreach \r in {3,4,7,8} \node[box,fill=markgreen] at (1,\r) {};
+  }{
+  }{sau hỏi 3}
+  \draw[arrow] (1.7,4.5) -- (3.3,4.5);
+  \draw[arrow] (5.9,4.5) -- (7.5,4.5);
+  \draw[arrow] (10.1,4.5) -- (11.7,4.5);
+\end{tikzpicture}
+\end{center}
+
+Điểm quan trọng của hình không phải là vị trí cụ thể của từng ô, mà là cách
+mỗi câu hỏi chia đều từng lớp lỗi rồi cập nhật lớp của các số theo câu trả lời.
+
+\subsection{Ước lượng số câu hỏi}
+
+Giả sử dùng cách sàng lọc trên. Sau \(k\) câu hỏi, số phần tử còn trong lớp
+\(0\) là
+\[
+  \frac{n}{2^k}.
+\]
+Gọi \(f(k)\) là số phần tử còn trong lớp \(1\). Mỗi bước giữ lại một nửa lớp
+\(1\) cũ, đồng thời một nửa phần không khớp của lớp \(0\) chuyển sang lớp
+\(1\). Do đó
+\[
+  f(k)=\frac{f(k-1)}{2}+\frac{n}{2^k}.
+\]
+Từ truy hồi này suy ra
+\[
+  f(k)=\frac{kn}{2^k}.
+\]
+
+Khi tổng số phần tử ở hai lớp không vượt quá \(1\), đáp án đã được xác định:
+\[
+  f(k)+\frac{n}{2^k}\le 1.
+\]
+Thay công thức của \(f(k)\), ta được điều kiện
+\[
+  2^k \ge kn+n.
+\]
+Vì vậy số câu hỏi của phương pháp sàng lọc là nghiệm nguyên nhỏ nhất \(k\)
+thỏa bất đẳng thức trên.
+
+\section{Phương pháp mới: mã hóa}
+
+Phương pháp sàng lọc có ba điểm bất tiện. Nó phải lưu trạng thái trung gian,
+phụ thuộc trực tiếp vào kết quả của bước trước, và cần xử lý cẩn thận các
+trường hợp biên.
+
+Ý tưởng mã hóa tránh các bất tiện ấy bằng cách gán trước cho mỗi số một mã
+nhị phân cố định. Câu hỏi thứ \(i\) sẽ hỏi tập các số có bit thứ \(i\) của mã
+bằng \(1\). Câu trả lời được đổi thành mã kết quả theo quy ước
+\[
+  \yes \leftrightarrow 1,\qquad \no \leftrightarrow 0.
+\]
+Nếu không có lỗi, đáp án chính là số có mã trùng với mã kết quả.
+
+\subsection{Ví dụ mã hóa}
+
+Với \(8\) số, dùng ba bit thông tin là đủ. Gán mã theo bảng sau:
+\[
+\begin{array}{c|ccc}
+\text{số} & X_1 & X_2 & X_3\\ \hline
+1 & 0 & 0 & 0\\
+2 & 0 & 0 & 1\\
+3 & 0 & 1 & 0\\
+4 & 0 & 1 & 1\\
+5 & 1 & 0 & 0\\
+6 & 1 & 0 & 1\\
+7 & 1 & 1 & 0\\
+8 & 1 & 1 & 1
+\end{array}
+\]
+
+Nếu ba câu trả lời là \(\yes,\yes,\no\), mã kết quả là \(110\). Khi đó hàng
+tương ứng với số \(7\) được đánh dấu ở cả ba cột phù hợp, nên số \(7\) là đáp
+án.
+
+\begin{center}
+\begin{tikzpicture}[x=0.55cm,y=0.45cm]
+  \tikzset{box/.style={draw=black,minimum width=0.55cm,minimum height=0.45cm,inner sep=0pt}}
+  \foreach \c/\lab in {1/\(X_1\),2/\(X_2\),3/\(X_3\)} {
+    \node at (\c,9) {\lab};
+  }
+  \foreach \r in {1,...,8} {
+    \node[left] at (0.55,9-\r) {\r};
+    \foreach \c in {1,2,3} {
+      \node[box] at (\c,9-\r) {};
+    }
+  }
+  \foreach \r/\c in {5/1,6/1,7/1,8/1,3/2,4/2,7/2,8/2,2/3,4/3,6/3,8/3} {
+    \node[box,fill=markgreen] at (\c,9-\r) {};
+  }
+  \draw[badred,line width=1pt] (0.7,2) rectangle (3.3,2.45);
+  \node[right,badred] at (3.65,2.22) {\(110\)};
+  \node[below] at (2,0.15) {hàng \(7\) trùng mã kết quả};
+\end{tikzpicture}
+\end{center}
+
+\section{Lỗi và mã sửa lỗi}
+
+Khi trong các câu trả lời có một lỗi, mã kết quả nhận được cũng sai đúng một
+bit. Vì thế các khả năng trả lời khác nhau có thể được xem như các mã lỗi
+khác nhau. Ta cần thiết kế \term{mã sửa lỗi} sao cho từ mã kết quả bị sai
+một bit vẫn suy ra được mã đúng.
+
+Một cách tự nhiên là dùng mã kiểm tra chẵn lẻ. Các bit kiểm tra được định
+nghĩa là tổng nhị phân, tức phép xor, của một số bit thông tin. Khi một bit
+bị sai, mọi đẳng thức kiểm tra liên quan đến bit ấy sẽ không còn đúng.
+
+Giả sử tạm thời các bit không phải bit kiểm tra đều đúng. Ta xét những bit
+kiểm tra bị ``sai'', tức những phương trình kiểm tra không thỏa:
+\begin{itemize}
+  \item nếu không có phương trình nào sai, thì không có lỗi;
+  \item nếu chỉ có một phương trình sai, lỗi nằm ở chính bit kiểm tra ấy;
+  \item nếu có nhiều phương trình sai, lỗi nằm ở bit thông tin xuất hiện
+  đúng trong các phương trình kiểm tra ấy.
+\end{itemize}
+
+\subsection{Cấu tạo bit kiểm tra}
+
+Giả sử có \(m=4\) bit thông tin \(X_1,X_2,X_3,X_4\). Ta cần thêm \(r\) bit
+kiểm tra sao cho mỗi vị trí bit, cùng với trường hợp không có lỗi, có một
+dấu hiệu phân biệt. Vì vậy phải có
+\[
+  2^r \ge m+r+1.
+\]
+Với \(m=4\), giá trị nhỏ nhất là \(r=3\). Đặt ba bit kiểm tra là
+\(X_5,X_6,X_7\) và chọn các phương trình
+\[
+\begin{aligned}
+  X_5 &= X_2 \xor X_3 \xor X_4,\\
+  X_6 &= X_1 \xor X_3 \xor X_4,\\
+  X_7 &= X_1 \xor X_2 \xor X_4.
+\end{aligned}
+\]
+
+Mỗi bit thông tin xuất hiện trong một tập phương trình khác nhau:
+\[
+\begin{array}{c|ccc}
+ & X_5 & X_6 & X_7\\ \hline
+X_1 & 0 & 1 & 1\\
+X_2 & 1 & 0 & 1\\
+X_3 & 1 & 1 & 0\\
+X_4 & 1 & 1 & 1
+\end{array}
+\]
+Các cột riêng \(100,010,001\) lần lượt nhận diện lỗi ở \(X_5,X_6,X_7\), còn
+\(000\) biểu thị không có lỗi. Như vậy mọi lỗi một bit đều có một dấu hiệu
+riêng.
+
+\subsection{Đối ứng với câu hỏi}
+
+Phép xor trên mã tương đương với phép xor trên chính các câu hỏi. Chẳng hạn
+từ
+\[
+  X_5 = X_2 \xor X_3 \xor X_4
+\]
+ta hiểu rằng câu hỏi thứ \(5\) hỏi tập đối xứng sai khác của ba tập trong
+các câu hỏi \(2,3,4\). Một số thuộc \(X_5\) khi và chỉ khi nó thuộc lẻ số
+trong ba tập \(X_2,X_3,X_4\).
+
+Vì vậy việc thêm bit kiểm tra vào mã không chỉ là thao tác trên ký hiệu nhị
+phân; nó còn cho ta cách tạo thêm các câu hỏi kiểm tra trong trò chơi Ulam.
+
+\section{Số câu hỏi}
+
+Kết quả đếm câu hỏi của phương pháp sàng lọc đã thu được ở trên: số câu hỏi
+là nghiệm nguyên nhỏ nhất \(k\) thỏa
+\[
+  2^k \ge kn+n.
+\]
+
+Với phương pháp mã hóa, đặt \(m=\lg n\) là số bit thông tin cần có khi không
+có lỗi, và đặt \(t\) là tổng số câu hỏi sau khi thêm bit kiểm tra. Ngoài
+\(m\) bit thông tin, mỗi khả năng lỗi phải ứng với một mã kiểm tra riêng.
+Do đó cần
+\[
+  2^{t-m}\ge t+1.
+\]
+Mặt khác, tất cả khả năng gồm giá trị thật và vị trí lỗi cũng phải có mã
+khác nhau, nên điều kiện tương đương là
+\[
+  2^t \ge 2^m(t+1).
+\]
+Kết quả là \(t\) là nghiệm nguyên nhỏ nhất thỏa
+\[
+  2^{t-m}\ge t+1.
+\]
+
+Hai công thức trùng nhau khi \(m=\lg n\):
+\[
+  2^t\ge tn+n
+  \quad\Longleftrightarrow\quad
+  2^t\ge t2^m+2^m
+  \quad\Longleftrightarrow\quad
+  2^{t-m}\ge t+1.
+\]
+Nói cách khác, theo số câu hỏi trong trường hợp một lỗi, cách sàng lọc và
+cách mã hóa đạt cùng ngưỡng.
+
+\section{Mở rộng}
+
+\subsection{Nhiều lỗi hơn}
+
+Khi số câu trả lời sai có thể lớn hơn một, việc mở rộng trực tiếp phương pháp
+mã hóa trở nên khó hơn nhiều, vì mã phải sửa được nhiều lỗi. Với hướng sàng
+lọc, ý tưởng lại khá trực tiếp: nếu có nhiều nhất \(e\) lỗi, ta chia các số
+thành \(e+1\) lớp, trong đó lớp \(i\) gồm các số còn hợp lệ nếu đã có đúng
+\(i\) câu trả lời sai. Mỗi lần hỏi, ta cố gắng chia đều từng lớp.
+
+\begin{center}
+\begin{tikzpicture}[x=0.5cm,y=0.42cm]
+  \tikzset{box/.style={draw=black!65,minimum width=0.5cm,minimum height=0.42cm,inner sep=0pt}}
+  \foreach \c in {0,...,3} {
+    \node[above] at (\c,8.8) {lớp \(\c\)};
+    \foreach \r in {1,...,8} \node[box] at (\c,9-\r) {};
+  }
+  \foreach \r in {1,2,3,4} \node[box,fill=markgreen] at (0,9-\r) {};
+  \foreach \r in {5,6} \node[box,fill=markgreen!70] at (1,9-\r) {};
+  \foreach \r in {7} \node[box,fill=softgreen] at (2,9-\r) {};
+  \foreach \r in {8} \node[box,fill=softgreen!50] at (3,9-\r) {};
+  \node[below] at (1.5,0.25) {mỗi câu hỏi chia từng lớp lỗi};
+\end{tikzpicture}
+\end{center}
+
+\subsection{Nhiều loại câu trả lời và bài toán cân bi}
+
+Nếu mỗi câu hỏi có nhiều hơn hai loại trả lời, phương pháp sàng lọc phải lưu
+nhiều nhóm trạng thái hơn. Còn với phương pháp mã hóa, ta thay mã nhị phân
+bằng mã trong cơ số lớn hơn và thiết kế mã sửa lỗi tương ứng.
+
+Bài toán cân bi là ví dụ điển hình. Mỗi lần cân có ba kết quả: đĩa trái
+nặng hơn, cân bằng, hoặc đĩa phải nặng hơn. Do đó biểu diễn tự nhiên là mã
+tam phân. Ngoài giá trị của viên bi đặc biệt, kiểu sai lệch cũng cần được mã
+hóa, rồi ta thiết kế mã sửa lỗi tam phân để nhận diện lỗi.
+
+\section{Kết luận}
+
+Trò chơi Ulam cho thấy cùng một bài toán hỏi đáp có thể được nhìn theo hai
+cách bổ sung nhau. Cách sàng lọc quản lý trực tiếp tập các ứng viên và các
+lớp lỗi; nó mở rộng tự nhiên sang nhiều lỗi bằng cách thêm lớp. Cách mã hóa
+gán trước biểu diễn cho từng số; trong trường hợp một lỗi, mã kiểm tra chẵn
+lẻ cho phép xác định vị trí lỗi và đạt cùng số câu hỏi tối ưu như phân tích
+sàng lọc.
+
+Các hướng mở rộng chính là sàng lọc khi có nhiều lỗi, lựa chọn biểu diễn mã,
+thiết kế mã sửa lỗi, và các hệ mã nhiều cơ số cho bài toán có nhiều loại câu
+trả lời.
+
+\end{document}

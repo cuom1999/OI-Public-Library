@@ -1,0 +1,541 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2007/day2/4.刘雨辰《对拟阵的初步研究》.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\rank}{\operatorname{rank}}
+
+\title{Nghiên cứu nhập môn về matroid}
+\author{Liu Yuchen\\Trường Trung học số 2 Hàng Châu, Chiết Giang}
+\date{2007}
+
+\begin{document}
+\maketitle
+
+\origtitle{An introductory study of matroids}
+\sourcepath{IOI China candidate team papers / 2007 / day 2 / Liu Yuchen}
+
+\section*{Tóm tắt}
+
+Matroid, còn được gọi theo nghĩa hẹp là một dạng trừu tượng hóa của độc lập
+tuyến tính, được Whitney đưa ra vào năm 1935. Matroid là một nội dung quan
+trọng trong tối ưu hóa tổ hợp và lý thuyết đồ thị; trong vài thập niên gần
+đây nó đã phát triển mạnh thành một lý thuyết rộng và sâu.
+
+Bài viết này giới thiệu sơ bộ về matroid. Phần thứ nhất đưa ra khái niệm hệ
+tập con và matroid. Phần thứ hai phát biểu bài toán tối ưu trên matroid và
+chứng minh tính đúng đắn của thuật toán tham lam; hai phần này luôn đi kèm
+hai ví dụ là ba lô phân số và cây khung nhỏ nhất. Phần thứ ba trình bày một
+ứng dụng tối ưu hóa trên matroid trong lập lịch. Phần thứ tư nêu thêm một số
+ví dụ, đặc biệt là matroid tuyến tính. Phần mở rộng bàn về trò chơi đóng ngắt
+của Shannon; các phụ lục tóm tắt nghịch lý Russell và cách cài đặt nhanh bài
+toán lập lịch bằng DSU.
+
+\paragraph{Từ khóa.}
+Matroid; thuật toán tham lam; trò chơi đóng ngắt Shannon.
+
+\section*{Dẫn nhập}
+
+Matroid xuất hiện khi Whitney nghiên cứu khái niệm độc lập tuyến tính. Về sau,
+người ta nhận ra rằng cùng một kiểu lập luận cũng xuất hiện trong nhiều bài
+toán đồ thị và tối ưu hóa tổ hợp. Khi một bài toán có cấu trúc matroid, các
+tính chất đã chứng minh cho matroid có thể được dùng trực tiếp cho bài toán
+đó, thay vì phải chứng minh lại từ đầu.
+
+Bài viết này đặt trọng tâm vào ba nội dung đầu: định nghĩa, bài toán tối ưu
+và một ứng dụng lập lịch. Hai ví dụ xuyên suốt là bài toán ba lô phân số, tức
+vật phẩm có thể chia nhỏ, và bài toán cây khung nhỏ nhất. Các phần sau khó
+hơn; mục đích chủ yếu là mở rộng tầm nhìn và cho thấy matroid không chỉ là một
+mẹo tham lam đơn lẻ.
+
+\section{Hệ tập con và khái niệm matroid}
+
+\paragraph{Định nghĩa.}
+Một \term{hệ tập con} là một cặp \(M=(S,L)\) thỏa mãn:
+\begin{enumerate}
+  \item \(S\) là một tập hữu hạn.
+  \item \(L\) là một tập hữu hạn, không rỗng, gồm một số tập con của \(S\).
+  \item Tính di truyền: với mọi \(B\in L\) và mọi \(A\subseteq B\), ta có
+        \(A\in L\). Do đó \(\varnothing\in L\).
+\end{enumerate}
+Một hệ tập con được gọi là \term{matroid} nếu nó còn thỏa mãn:
+\begin{enumerate}
+  \setcounter{enumi}{3}
+  \item Tính trao đổi: với mọi \(A,B\in L\) và \(|A|<|B|\), tồn tại
+        \(x\in B-A\) sao cho \(A\cup\{x\}\in L\).
+\end{enumerate}
+
+Có thể hình dung \(S\) là toàn bộ học sinh trong một lớp và \(L\) là tập các
+danh sách nhóm hợp lệ. Tính di truyền nói rằng nếu một nhóm hợp lệ thì mọi
+nhóm con của nó cũng hợp lệ. Tính trao đổi nói rằng nếu danh sách \(A\) ngắn
+hơn danh sách \(B\), ta luôn có thể lấy một người nằm trong \(B\) nhưng không
+nằm trong \(A\) để thêm vào \(A\), và danh sách mới vẫn hợp lệ. Người được thêm
+phải đến từ \(B-A\), không được là một phần tử ngoài hai danh sách.
+
+Hai tính chất di truyền và trao đổi là cốt lõi của matroid. Khi mô hình hóa
+một bài toán, hai điều kiện đầu thường hiển nhiên do cách chọn \(S\) và \(L\);
+phần khó là chứng minh hai tính chất này, đặc biệt là tính trao đổi.
+
+\subsection*{Ví dụ ba lô phân số}
+
+Trước hết biến đổi bài toán: một vật có thể tích \(V\) và giá trị đơn vị \(W\)
+được xem như \(V\) vật có thể tích \(1\), mỗi vật có giá trị \(W\). Khi đó mọi
+vật đều có thể tích đơn vị. Định nghĩa \(M=(S,L)\) như sau:
+\[
+  S=\{\text{tất cả các vật đơn vị}\},\qquad
+  L=\{X\subseteq S: |X|\le \mathrm{MAX}\},
+\]
+trong đó \(\mathrm{MAX}\) là dung tích ba lô.
+
+Hệ này có tính di truyền vì \(Y\subseteq X\) và \(|X|\le\mathrm{MAX}\) kéo theo
+\(|Y|\le\mathrm{MAX}\). Nếu \(A,B\in L\) và \(|A|<|B|\), chọn tùy ý
+\(x\in B-A\). Khi đó \(|A\cup\{x\}|=|A|+1\le |B|\le \mathrm{MAX}\), nên
+\(A\cup\{x\}\in L\). Vì vậy đây là một matroid; ta gọi nó là matroid của bài
+toán ba lô.
+
+\subsection*{Ví dụ đồ thị và cây khung nhỏ nhất}
+
+Với một đồ thị vô hướng \(G=(V,E)\), định nghĩa:
+\[
+  S=E,\qquad L=\{X\subseteq E: \text{đồ thị do } X \text{ tạo ra không có chu trình}\}.
+\]
+Tính di truyền là hiển nhiên: xóa bớt cạnh không thể tạo thêm chu trình.
+
+Ta chứng minh tính trao đổi. Lấy \(A,B\in L\) với \(|A|<|B|\). Gọi \(G_A\) và
+\(G_B\) là hai rừng do \(A\) và \(B\) tạo ra. Một rừng trên \(|V|\) đỉnh và
+\(k\) cạnh có \(|V|-k\) thành phần liên thông. Do \(|A|<|B|\), rừng \(G_B\) có
+ít thành phần liên thông hơn \(G_A\). Vì vậy tồn tại một thành phần liên thông
+\(T\) của \(G_B\) mà các đỉnh của nó không cùng nằm trong một thành phần liên
+thông của \(G_A\). Trong \(T\) có một cạnh \(x\in B\) nối hai thành phần liên
+thông khác nhau của \(G_A\). Khi thêm \(x\) vào \(A\), ta không tạo chu trình.
+Hơn nữa \(x\notin A\), nên \(x\in B-A\) và \(A\cup\{x\}\in L\). Do đó \(M\) là
+một matroid, gọi là matroid đồ thị của \(G\).
+
+\subsection*{Một số thuật ngữ}
+
+Với \(U\subseteq S\), nếu \(U\in L\) thì \(U\) được gọi là một \term{tập độc lập}.
+Một tập độc lập \(A\) được gọi là \term{mở rộng được} nếu tồn tại
+\(x\in S-A\) sao cho \(A\cup\{x\}\in L\). Tập độc lập không mở rộng được gọi là
+\term{tập độc lập cực đại}. Với \(U\subseteq S\), định nghĩa
+\[
+  r(U)=\max\{|X|: X\subseteq U,\ X\in L\}.
+\]
+Giá trị \(r(U)\) gọi là \term{hạng} của \(U\), và \(r\) là hàm hạng của
+matroid.
+
+\paragraph{Định lý 1.}
+Mọi tập độc lập cực đại của một matroid đều có cùng kích thước.
+
+\paragraph{Chứng minh.}
+Giả sử \(A\) và \(B\) là hai tập độc lập cực đại. Nếu \(|A|\ne |B|\), không mất
+tính tổng quát giả sử \(|A|<|B|\). Theo tính trao đổi, tồn tại \(x\in B-A\) sao
+cho \(A\cup\{x\}\in L\). Khi đó \(A\) mở rộng được, mâu thuẫn với tính cực đại.
+
+\section{Bài toán tối ưu trên matroid}
+
+Với một matroid \(M=(S,L)\), gán cho mỗi phần tử \(x\in S\) một trọng số nguyên
+dương \(w(x)\). Trọng số của tập con \(U\subseteq S\) là
+\[
+  w(U)=\sum_{x\in U}w(x).
+\]
+Bài toán tối ưu trên matroid yêu cầu tìm một tập độc lập có trọng số lớn nhất.
+Vì trọng số đều dương, một nghiệm tối ưu luôn là tập độc lập cực đại.
+
+Ở ví dụ ba lô, \(w(x)\) là giá trị của vật đơn vị \(x\). Bài toán trở thành tìm
+tập vật đơn vị độc lập có tổng giá trị lớn nhất, tức một phương án lấy đồ có
+giá trị tối đa.
+
+Ở ví dụ cây khung nhỏ nhất, mục tiêu ban đầu là tối thiểu hóa tổng trọng số
+cạnh. Ta chuyển nó thành tối đa hóa bằng cách đặt
+\[
+  w(x)=-g(x)+\Delta,\qquad \Delta=\max_{e\in E}g(e)+1,
+\]
+trong đó \(g(x)\) là trọng số cạnh gốc. Khi đó \(w(x)>0\). Vì mọi cây khung có
+cùng số cạnh, việc tối đa hóa tổng \(w\) tương đương với tối thiểu hóa tổng
+\(g\).
+
+\subsection*{Thuật toán tham lam}
+
+Thuật toán tham lam cho matroid có trọng số:
+\begin{verbatim}
+Greedy(M, w)
+    A := empty set
+    sort S[M] in nonincreasing order of w
+    for each x in S[M] in that order do
+        if A union {x} belongs to L[M] then
+            A := A union {x}
+    return A
+\end{verbatim}
+
+Với ba lô phân số, thuật toán chọn các vật đơn vị theo giá trị giảm dần và bỏ
+vào ba lô nếu còn chỗ. Với cây khung nhỏ nhất, vì trọng số đã đổi dấu và tịnh
+tiến, thuật toán xét các cạnh theo trọng số gốc tăng dần; nếu thêm cạnh không
+tạo chu trình thì nhận cạnh đó. Đây chính là tinh thần của thuật toán Kruskal.
+
+Nếu \(n=|S|\), bước sắp xếp tốn \(\Theta(n\log n)\). Bước tham lam thực hiện
+\(\Theta(n)\) lần kiểm tra độc lập. Nếu một lần kiểm tra tốn
+\(\Theta(f(n))\), tổng thời gian là
+\[
+  \Theta(n\log n+n f(n)).
+\]
+Nút thắt nằm ở cách kiểm tra tập độc lập. Các bài toán khác nhau có cùng cấu
+trúc matroid, nhưng phần kiểm tra độc lập thường mang đặc trưng riêng của từng
+bài.
+
+\subsection*{Tính đúng đắn}
+
+Ta chứng minh rằng sau mỗi bước, tập \(A\) do thuật toán xây dựng luôn là tập
+con của một nghiệm tối ưu nào đó. Ban đầu \(A=\varnothing\), điều này hiển
+nhiên đúng.
+
+\paragraph{Định lý 2.}
+Cho matroid \(M=(S,L)\). Giả sử \(A\in L\), \(A\subseteq T\), trong đó \(T\) là
+một tập độc lập tối ưu. Giả sử \(x\) thỏa mãn \(A\cup\{x\}\in L\), và trong số
+các phần tử \(y\) có thể mở rộng \(A\), không có phần tử nào có
+\(w(y)>w(x)\). Đặt \(A'=A\cup\{x\}\). Khi đó tồn tại một nghiệm tối ưu chứa
+\(A'\).
+
+\paragraph{Chứng minh.}
+Ta chứng minh bằng phản chứng và trao đổi. Nếu \(x\in T\) thì \(A'\subseteq T\)
+và không có gì phải chứng minh. Giả sử \(x\notin T\). Bắt đầu với
+\(T'=A'\). Khi \(|T'|<|T|\), áp dụng tính trao đổi cho \(T'\) và \(T\), ta có
+thể chọn một phần tử \(z\in T-T'\) sao cho \(T'\cup\{z\}\in L\), rồi thêm
+\(z\) vào \(T'\). Lặp lại đến khi \(|T'|=|T|\).
+
+Khi kết thúc, \(T'\) là một tập độc lập chứa \(A'\) và có cùng kích thước với
+\(T\). Nó có dạng
+\[
+  T'=(T-\{y\})\cup\{x\}
+\]
+với một phần tử \(y\in T-A\) không được thêm lại. Vì \(y\) cũng là một phần tử
+có thể mở rộng \(A\), cách chọn \(x\) cho ta \(w(y)\le w(x)\). Do đó
+\[
+  w(T')=w(T)-w(y)+w(x)\ge w(T).
+\]
+Nếu bất đẳng thức nghiêm, \(T\) không tối ưu, mâu thuẫn. Nếu bằng nhau, \(T'\)
+cũng là nghiệm tối ưu và chứa \(A'\), trái với giả thiết rằng không nghiệm tối
+ưu nào chứa \(A'\). Vậy luôn tồn tại nghiệm tối ưu chứa \(A'\).
+
+Chứng minh trên làm rõ vai trò của tính trao đổi. Nếu chỉ có một hệ tập con
+có tính di truyền thì chưa đủ để tham lam đúng; điều kiện trao đổi chính là
+phần giúp ta thay thế phần tử trong nghiệm tối ưu mà không làm giảm chất
+lượng nghiệm. Chứng minh quen thuộc của Kruskal cũng là một trường hợp cụ thể
+của lập luận này: thêm cạnh đang xét vào một cây khung tối ưu sẽ tạo chu trình,
+rồi bỏ khỏi chu trình một cạnh không tốt hơn cạnh vừa thêm.
+
+\section{Một bài toán lập lịch}
+
+Xét bài toán lập lịch một bộ xử lý cho các công việc thời gian đơn vị. Có tập
+công việc \(S=\{1,2,\ldots,n\}\). Mỗi công việc \(i\) có hạn chót
+\(d_i\), \(1\le d_i\le n\), và tiền phạt dương \(w_i\). Một lịch là một hoán
+vị của \(S\): công việc đầu chạy trong khoảng \([0,1]\), công việc thứ hai
+trong \([1,2]\), và cứ thế. Nếu công việc \(i\) kết thúc sau thời điểm \(d_i\),
+ta phải trả phạt \(w_i\). Mục tiêu là tối thiểu hóa tổng phạt.
+
+Với một lịch bất kỳ, ta chỉ cần quan tâm công việc nào hoàn thành đúng hạn.
+Các công việc trễ có thể đưa về cuối lịch mà không làm xấu hơn nghiệm. Vì vậy
+ta xét câu hỏi: với một tập \(A\subseteq S\), có tồn tại lịch sao cho mọi công
+việc trong \(A\) đều hoàn thành đúng hạn không? Nếu có, gọi \(A\) là
+\term{khả thi}.
+
+Với một tập khả thi \(A\) và số nguyên \(t\), đặt \(F(A,t)\) là số công việc
+trong \(A\) có hạn chót không vượt quá \(t\).
+
+\paragraph{Định lý 3.}
+Ba mệnh đề sau tương đương:
+\begin{enumerate}
+  \item \(A\) là khả thi.
+  \item Với mọi \(t=1,2,\ldots,n\), ta có \(F(A,t)\le t\).
+  \item Lịch sắp các công việc trong \(A\) theo hạn chót tăng dần hoàn thành
+        đúng hạn toàn bộ \(A\).
+\end{enumerate}
+
+\paragraph{Chứng minh.}
+Nếu \(A\) khả thi mà tồn tại \(t\) với \(F(A,t)>t\), thì hơn \(t\) công việc có
+hạn chót không quá \(t\) phải được hoàn thành trong \(t\) đơn vị thời gian đầu,
+điều không thể. Do đó mệnh đề 1 kéo theo mệnh đề 2.
+
+Nếu mệnh đề 2 đúng, xét lịch theo hạn chót tăng dần. Một công việc có hạn chót
+\(t\) hoàn thành không muộn hơn thời điểm \(F(A,t)\), mà \(F(A,t)\le t\). Vậy
+mệnh đề 2 kéo theo mệnh đề 3. Mệnh đề 3 hiển nhiên kéo theo mệnh đề 1.
+
+Định nghĩa \(M=(S,L)\), trong đó
+\[
+  L=\{X\subseteq S: X \text{ là khả thi}\}.
+\]
+Tính di truyền rõ ràng đúng: nếu một tập công việc làm đúng hạn được thì mọi
+tập con của nó cũng làm đúng hạn được.
+
+Ta chứng minh tính trao đổi. Lấy hai tập khả thi \(A,B\) với \(|A|<|B|\). Chọn
+\(k\) lớn nhất sao cho \(F(B,k)\le F(A,k)\). Vì
+\(F(B,n)=|B|>|A|=F(A,n)\), nên \(k<n\); vì \(F(B,0)=F(A,0)=0\), nên \(k\ge 0\).
+Từ \(F(B,k)\le F(A,k)\) và \(|B|>|A|\), số công việc trong \(B\) có hạn chót
+lớn hơn \(k\) nhiều hơn số công việc như vậy trong \(A\). Vì thế tồn tại
+\(x\in B-A\) có hạn chót \(t>k\). Đặt \(A'=A\cup\{x\}\).
+
+Với \(s<t\), ta có \(F(A',s)=F(A,s)\le s\). Với \(s\ge t\), do cách chọn \(k\),
+ta có \(F(B,s)>F(A,s)\), nên
+\[
+  F(A',s)=F(A,s)+1\le F(B,s)\le s.
+\]
+Theo Định lý 3, \(A'\) khả thi. Vậy \(M\) là một matroid.
+
+Bài toán tối thiểu hóa phạt tương đương với tối đa hóa tổng tiền phạt của các
+công việc được làm đúng hạn. Do \(M\) là matroid, ta sắp công việc theo
+\(w_i\) giảm dần và lần lượt nhận một công việc nếu tập đã nhận vẫn khả thi.
+Cài đặt thô kiểm tra điều kiện \(F(A,s)\le s\) trong \(\Theta(n)\), cho tổng
+thời gian \(\Theta(n^2)\) sau khi sắp xếp. Có thể cài đặt nhanh hơn bằng DSU,
+được tóm tắt ở Phụ lục II.
+
+\section{Một số ví dụ về matroid}
+
+\subsection*{Matroid tuyến tính}
+
+Cho một ma trận \(T\) kích thước \(m\times n\) trên một trường, chẳng hạn trên
+\(\mathbb{R}\). Đặt \(S\) là tập các cột của \(T\). Một tập con \(U\subseteq S\)
+được gọi là độc lập khi các cột trong \(U\) độc lập tuyến tính. Khi đó
+\(M=(S,L)\) là một matroid, gọi là \term{matroid tuyến tính}.
+
+Tính di truyền là tính chất cơ bản của độc lập tuyến tính: mọi tập con của một
+hệ vector độc lập tuyến tính vẫn độc lập tuyến tính. Với tính trao đổi, lấy
+hai tập độc lập \(X,Y\) và \(|Y|<|X|\). Gọi \(W\) là không gian vector sinh bởi
+\(X\cup Y\). Khi đó \(\dim W\ge |X|\). Nếu với mọi \(x\in X-Y\), tập
+\(Y\cup\{x\}\) đều phụ thuộc tuyến tính, thì mọi vector trong \(X-Y\) đều thuộc
+không gian sinh bởi \(Y\). Suy ra \(W\) cũng do \(Y\) sinh ra, nên
+\(\dim W\le |Y|\), mâu thuẫn với \(|X|>|Y|\). Do đó tồn tại \(x\in X-Y\) sao
+cho \(Y\cup\{x\}\) độc lập.
+
+Một bài toán tối ưu trên matroid tuyến tính cần kiểm tra liệu một hệ vector có
+độc lập tuyến tính hay không. Việc này tương đương với tính hạng ma trận, và
+thường được cài đặt bằng khử Gauss thay vì định thức trực tiếp.
+
+Matroid đồ thị cũng có thể xem là một matroid tuyến tính. Với đồ thị vô hướng
+\(G=(V,E)\), định nghĩa ma trận đỉnh-cạnh \(B\) kích thước \(|V|\times |E|\).
+Mỗi cột ứng với một cạnh, có đúng hai phần tử khác \(0\), một bằng \(1\) và
+một bằng \(-1\), ở hai hàng là hai đầu mút của cạnh. Một tập cạnh không tạo
+chu trình khi và chỉ khi các cột tương ứng độc lập tuyến tính. Vì vậy matroid
+đồ thị là một trường hợp của matroid tuyến tính. Chi tiết chứng minh khá dài
+nên bản gốc lược bỏ.
+
+\subsection*{Matroid đều}
+
+Với một tập hữu hạn \(S\), đặt \(I_k\) là tập tất cả tập con của \(S\) có kích
+thước không quá \(k\). Khi đó \(M=(S,I_k)\) là một matroid, thường gọi là
+matroid đều. Matroid của ví dụ ba lô sau khi tách vật phẩm về thể tích đơn vị
+chính là một matroid đều.
+
+\subsection*{Matroid đối ngẫu}
+
+Nếu \(M=(S,L)\) là một matroid, định nghĩa \(M'=(S,L')\) bởi
+\[
+  L'=\{A'\subseteq S:\text{ tồn tại một tập độc lập cực đại } A
+      \text{ của } M \text{ sao cho } A\subseteq S-A'\}.
+\]
+Ta gọi \(M'\) là \term{matroid đối ngẫu} của \(M\).
+
+Tính di truyền: nếu \(B'\in L'\) và \(A'\subseteq B'\), tồn tại một tập độc lập
+cực đại \(X\) của \(M\) sao cho \(X\subseteq S-B'\). Khi đó
+\(X\subseteq S-A'\), nên \(A'\in L'\).
+
+Với tính trao đổi, lấy \(A',B'\in L'\) và \(|A'|<|B'|\). Tồn tại các tập độc
+lập cực đại \(A,B\) của \(M\) sao cho \(A\subseteq S-A'\) và
+\(B\subseteq S-B'\). Chọn \(x\in B'-A'\), đặt \(C'=A'\cup\{x\}\). Nếu
+\(x\notin A\) thì \(A\subseteq S-C'\) và \(C'\in L'\). Trường hợp khó là
+\(x\in A\). Khi đó dùng tính trao đổi trong \(M\) để thay \(x\) trong \(A\) bởi
+một phần tử \(y\in B-A\), thu được một tập độc lập cực đại
+\(C=A-\{x\}\cup\{y\}\) vẫn nằm trong \(S-C'\). Vậy \(C'\in L'\), và \(M'\) là
+một matroid.
+
+\subsection*{Matroid ghép cặp}
+
+Với đồ thị vô hướng \(G=(V,E)\), đặt \(S=V\). Một tập đỉnh \(A\subseteq V\)
+được gọi là độc lập nếu tồn tại một matching của \(G\) phủ toàn bộ các đỉnh
+trong \(A\). Nếu \(G\) có matching hoàn hảo thì mọi tập con của \(V\) đều độc
+lập, nhưng đó chỉ là một trường hợp đặc biệt.
+
+Hệ này là một matroid. Tính di truyền rõ ràng: một matching phủ \(A\) cũng phủ
+mọi tập con của \(A\). Tính trao đổi là phần khó. Lấy hai tập độc lập \(A,B\)
+với \(|A|<|B|\), và hai matching \(P_A,P_B\) lần lượt phủ \(A,B\). Nếu \(P_A\)
+đã phủ một đỉnh trong \(B-A\), ta thêm ngay đỉnh đó vào \(A\). Nếu không, xét
+hiệu đối xứng \(P_A\triangle P_B\). Từ mỗi đỉnh trong \(B-A\) có một đường đi
+luân phiên theo cạnh của \(P_A\) và \(P_B\). Không phải mọi đường như vậy đều
+có thể kết thúc trong \(A-B\), vì \(|B-A|>|A-B|\). Do đó tồn tại một đường đi
+luân phiên bắt đầu ở một đỉnh của \(B-A\) và kết thúc ngoài \(A\). Đảo trạng
+thái các cạnh trên đường này tạo một matching mới phủ \(A\) và thêm một đỉnh
+thuộc \(B-A\). Đây chính là tính trao đổi. Bản gốc ghi chú rằng chứng minh này
+khá cô đọng và thực chất là lập luận đường tăng.
+
+\section{Mở rộng: trò chơi đóng ngắt Shannon}
+
+Trò chơi đóng ngắt Shannon do Claude Shannon đề xuất; lời giải đẹp được
+A. Lehman tìm ra. Bản gốc chỉ trích lược một phần vì các tài liệu mà tác giả
+tìm được khá rời rạc và chứng minh đầy đủ của một định lý nền tảng rất phức
+tạp.
+
+Trò chơi diễn ra trên một đồ thị vô hướng \(G=(V,E)\), có thể có cạnh song
+song. Có hai người chơi: người nối và người cắt. Mỗi lượt, người nối chọn một
+cạnh chưa được đánh dấu và đánh dấu \(+\); người cắt chọn một cạnh chưa được
+đánh dấu \(+\) và xóa nó. Người cắt đi trước, hai bên luân phiên cho đến khi
+không thể đi tiếp. Khi kết thúc, nếu đồ thị còn liên thông thì người nối
+thắng; nếu không thì người cắt thắng.
+
+Điều kiện cần và đủ để người nối, dù đi sau, vẫn thắng là: đồ thị chứa hai
+cây khung độc lập cạnh, tức hai cây khung không có cạnh chung. Nếu xét matroid
+đồ thị \(M=(S,L)\) với \(S=E\), điều kiện này có thể viết là tồn tại hai tập
+độc lập cực đại \(A,B\) sao cho \(A\cap B=\varnothing\).
+
+\subsection*{Một sự kiện về hợp matroid}
+
+Cho \(k\) matroid \(M_i=(S_i,L_i)\). Hợp của chúng là \(M=(S,L)\), trong đó
+\[
+  S=\bigcup_{i=1}^k S_i,\qquad
+  L=\{I_1\cup I_2\cup\cdots\cup I_k: I_i\in L_i\}.
+\]
+Hợp này cũng là một matroid. Chứng minh khá phức tạp nên bản gốc không trình
+bày. Nếu \(r_i\) là hàm hạng của \(M_i\), hàm hạng \(r\) của \(M\) thỏa mãn
+\[
+  r(U)=\min_{T\subseteq U}\left(|U-T|+\sum_{i=1}^k r_i(T\cap S_i)\right).
+\]
+
+Áp dụng cho \(k\) bản sao của cùng một matroid \(M=(S,L)\), gọi \(R\) là hàm
+hạng của hợp, còn \(r\) là hàm hạng gốc. Khi đó
+\[
+  R(U)=\min_{T\subseteq U}\bigl(|U-T|+k r(T)\bigr).
+\]
+Vì thế \(M\) có \(k\) tập độc lập đôi một rời nhau phủ đủ hạng khi và chỉ khi,
+với mọi \(T\subseteq S\),
+\[
+  |S-T|\ge k\bigl(r(S)-r(T)\bigr).
+\]
+Kết luận này được dùng trong chứng minh dưới đây.
+
+\subsection*{Điều kiện thắng}
+
+\paragraph{Tính cần thiết.}
+Nếu không tồn tại hai tập độc lập rời nhau, thì theo kết luận trên với \(k=2\),
+tồn tại \(T\subseteq S\) sao cho
+\[
+  |S-T|<2\bigl(r(S)-r(T)\bigr).
+\]
+Chiến lược của người cắt là luôn xóa một cạnh trong \(S-T\). Người cắt có thể
+xóa ít nhất \(\lceil |S-T|/2\rceil\) cạnh ở phần này, còn người nối cứu được
+nhiều nhất \(\lfloor |S-T|/2\rfloor\) cạnh ở phần này. Do bất đẳng thức trên,
+số cạnh hữu dụng mà người nối giữ được trong \(S-T\) nhỏ hơn \(r(S)-r(T)\);
+trong \(T\), người nối giữ được nhiều nhất \(r(T)\) cạnh hữu dụng. Tổng số
+cạnh hữu dụng được giữ nhỏ hơn \(r(S)=|V|-1\), nên cuối cùng đồ thị không liên
+thông. Vì vậy người nối thua.
+
+\paragraph{Tính đủ.}
+Giả sử đồ thị có hai cây khung rời cạnh \(T_1,T_2\). Ý tưởng là sau mỗi lượt
+của người cắt và lượt đáp lại của người nối, ta xây dựng lại một cặp cây
+khung mới có nhiều hơn trước một cạnh chung, và mọi cạnh chung đó đều đã được
+đánh dấu \(+\).
+
+Ban đầu đặt \(T_{10}=T_1\), \(T_{20}=T_2\). Ở lượt đầu, người cắt xóa một cạnh
+\(\beta\).
+
+Nếu \(\beta\) thuộc một trong hai cây, giả sử thuộc \(T_{10}\), thì vì
+\(T_{20}\) là cây khung, tồn tại một cạnh \(\alpha\in T_{20}\) sao cho thêm
+\(\alpha\) vào \(T_{10}\) rồi bỏ \(\beta\) vẫn thu được một cây khung \(T_{11}\).
+Người nối đánh dấu \(+\) trên \(\alpha\), và đặt \(T_{21}=T_{20}\). Khi đó hai
+cây mới có đúng một cạnh chung, là \(\alpha\), và cạnh đó đã được đánh dấu.
+
+Nếu \(\beta\) không thuộc cây nào, người nối chọn một cạnh \(\alpha\) bất kỳ
+trong \(T_{10}\cup T_{20}\), chẳng hạn \(\alpha\in T_{10}\), rồi đánh dấu nó.
+Vì \(T_{20}\) là cây khung, có một cạnh \(\gamma\in T_{20}\) sao cho thêm
+\(\alpha\) vào \(T_{20}\) rồi bỏ \(\gamma\) vẫn là cây khung. Đặt
+\(T_{11}=T_{10}\) và gọi cây mới là \(T_{21}\). Hai cây mới lại có đúng một
+cạnh chung đã đánh dấu.
+
+Các lượt sau lặp lại cùng ý tưởng. Sau lượt thứ \(k\), ta duy trì hai cây
+khung \(T_{1k},T_{2k}\) có đúng \(k\) cạnh chung và mọi cạnh chung đều mang
+dấu \(+\). Nếu đồ thị có \(m\) đỉnh, sau \(m-1\) lượt hai cây có \(m-1\) cạnh
+chung, tức chúng là cùng một cây khung. Các cạnh mang dấu \(+\) vì thế tạo
+thành một cây khung, nên đồ thị còn liên thông và người nối thắng.
+
+\section*{Tổng kết}
+
+Matroid là một cấu trúc tổ hợp có hai tính chất bản chất: di truyền và trao
+đổi. Khi chứng minh một cấu trúc là matroid, di truyền thường dễ, còn trao đổi
+mới là điểm mấu chốt. Trong các chứng minh ở trên, hai kỹ thuật xuất hiện liên
+tục là phản chứng và xây dựng đối tượng thay thế.
+
+Tính đúng đắn của thuật toán tham lam trên matroid đến từ chính tính trao đổi.
+Matroid ban đầu được phát hiện từ độc lập tuyến tính, và matroid đồ thị cũng
+có thể nhìn như một matroid tuyến tính. Trò chơi đóng ngắt Shannon cho thấy
+matroid còn liên hệ với các bài toán trò chơi và liên thông; một số nội dung
+bị lược chứng minh trong phần mở rộng liên quan đến các thuật toán sâu hơn
+trên matroid.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford
+        Stein, \textit{Introduction to Algorithms}.
+  \item MIT, \textit{Topics in Combinatorial Optimization}.
+  \item Richard A. Brualdi, \textit{Introductory Combinatorics}.
+  \item Liu Rujia, Huang Liang, \textit{The Art of Algorithms and Informatics
+        Competitions}.
+  \item James Oxley, \textit{What is a matroid?}
+  \item Richard Courant, Herbert Robbins, \textit{What Is Mathematics?}
+  \item Lai Hongjian, \textit{Matroid Theory}.
+  \item Course materials on linear algebra, Tongji University.
+  \item Richard Mansfield, \textit{Strategies for the Shannon switching game}.
+  \item Michael Artin, \textit{Algebra}.
+\end{enumerate}
+
+\appendix
+
+\section{Nghịch lý Russell}
+
+Phụ lục gốc dùng nghịch lý Russell để nhắc rằng không thể dùng khái niệm
+``tập hợp'' một cách hoàn toàn không ràng buộc. Phần tóm tắt như sau.
+
+Gọi một tập là ``thông thường'' nếu nó không chứa chính nó làm phần tử. Chẳng
+hạn tập các số nguyên chỉ chứa số nguyên, nên nó không chứa chính nó. Một số
+mô tả tập hợp tự quy có thể tạo ra tập chứa chính nó, và ta gọi chúng là
+``không thông thường''. Bây giờ xét \(C\), tập của tất cả các tập thông
+thường. Nếu \(C\) thông thường, theo định nghĩa của \(C\), nó phải chứa chính
+nó, vậy nó lại không thông thường. Nếu \(C\) không thông thường, tức \(C\) chứa
+chính nó, thì \(C\) chứa một tập không thông thường, trái với định nghĩa rằng
+nó chỉ chứa các tập thông thường. Hai khả năng đều mâu thuẫn. Vì vậy, chỉ
+riêng việc giả sử \(C\) tồn tại đã buộc ta phải công nhận các hạn chế và tiên
+đề chặt chẽ hơn trong lý thuyết tập hợp.
+
+\section{Cài đặt nhanh bài toán lập lịch}
+
+Thuật toán tham lam xét công việc theo tiền phạt giảm dần. Với công việc
+\(j\), nếu còn một ô thời gian trống kết thúc không muộn hơn \(d_j\), ta đặt
+\(j\) vào ô trống muộn nhất như vậy; nếu không còn ô trống, công việc này bị
+phạt.
+
+Ta duy trì các thời điểm bằng DSU. Hai thời điểm \(i,j\) thuộc cùng một lớp
+tương đương khi mọi ô thời gian giữa chúng đã bị lấp đầy. Đại diện của mỗi
+lớp được giữ là thời điểm nhỏ nhất trong lớp. Khi lấp ô \((k-1,k]\), ta hợp
+hai thời điểm \(k-1\) và \(k\). Với một công việc có hạn chót \(d_j\), nếu
+\(\mathrm{find}(d_j)=0\) thì mọi ô trước hạn chót đã đầy; ngược lại, ô trống
+muộn nhất là ô kết thúc tại \(\mathrm{find}(d_j)\).
+
+\begin{verbatim}
+fillchar(f, sizeof(f), 255)
+ret := 0
+for i := 1 to n do
+begin
+    k := find(d[i])
+    if k > 0 then
+        Union(k - 1, k)
+    else
+        ret := ret + w[i]
+end
+
+procedure Union(u, v: longint);
+begin
+    u := find(u); v := find(v)
+    if u > v then f[u] := v
+             else f[v] := u
+end
+\end{verbatim}
+
+\end{document}

@@ -1,0 +1,200 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 动态规划 DYNAMIC PROGRAMMING/动态规划中的提纯 - 陈启峰.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{``Tinh lọc'' trong quy hoạch động}
+\author{Trần Khải Phong}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Purification in Dynamic Programming}
+\sourcepath{Dynamic Programming / DP purification - Chen Qifeng.pdf}
+
+\section*{Khái quát}
+
+Trong quy hoạch động có rất nhiều phương pháp tối ưu. Nhìn tổng thể, chúng có
+thể chia thành hai loại: \term{giảm tính toán lặp} và \term{giảm dư thừa}. Hai
+cách ``tinh lọc'' này đều thể hiện bản chất của quy hoạch động. Giảm tính toán
+lặp thường bắt đầu từ chiến lược: trước hết tìm những giá trị bị tính đi tính
+lại, sau đó thêm trạng thái mới để lưu giá trị ấy. Còn giảm dư thừa thường có
+thể tối ưu từ trạng thái và chiến lược, bằng cách xóa các trạng thái và chiến
+lược vô dụng.
+
+Thông qua phần phân tích bài toán dưới đây, hy vọng có thể gợi mở thêm một số
+ý tưởng cho người đọc.
+
+\section*{Từ khóa}
+
+Giảm tính toán lặp; giảm dư thừa.
+
+\section{Mô tả bài toán}
+
+Ta cần tìm dãy con chung tăng dài nhất của hai dãy, tức bài toán LCIS.
+
+Cho hai dãy $A$ và $B$ có độ dài lần lượt là $n$ và $m$. Hãy tìm một dãy $C$
+dài nhất thỏa mãn:
+\[
+  C_1<C_2<C_3<\cdots<C_l;
+\]
+và $C$ vừa là dãy con của $A$, vừa là dãy con của $B$.
+
+\section{Phân tích bài toán}
+
+Khi nhìn thấy ba từ khóa của bài này: dài nhất, chung, tăng, ta rất dễ có cảm
+giác quen thuộc. Nếu bỏ yêu cầu ``chung'' hoặc bỏ yêu cầu ``tăng'', ta sẽ nhận
+được hai bài toán quen thuộc: dãy con chung dài nhất (LCS) và dãy con tăng dài
+nhất (LIS).
+
+Nhiệm vụ đầu tiên của quy hoạch động là xác định trạng thái. Nhìn lại cách
+biểu diễn trạng thái của LCS và LIS, rồi kết hợp một cách sáng tạo đặc trưng
+của hai cách biểu diễn ấy, ta thu được một dạng trạng thái cho bài này.
+
+Gọi $x_{i,j}$ là độ dài LCIS của $A_1,\ldots,A_i$ và $B_1,\ldots,B_j$, trong
+đó yêu cầu $A_i=B_j$ và bắt buộc chọn $A_i$ cùng $B_j$ làm một cặp khớp. Khi
+đó ta có phương trình chuyển trạng thái A:
+\[
+  x_{i,j}=
+  \max\left\{
+    1,\;
+    \max_{\substack{0<k<i,\;0<l<j\\ B_l<B_j\\ x_{k,l}\text{ có nghĩa}}}
+      \{x_{k,l}+1\}
+  \right\}.
+\]
+Nếu $A_i\ne B_j$, trạng thái $x_{i,j}$ không có nghĩa và không cần được xét.
+
+Độ phức tạp thời gian của quy hoạch động này là $O(n^4)$, rõ ràng chưa đạt yêu
+cầu; ta cần tiến hành ``tinh lọc''.
+
+\section{Cách tinh lọc 1: giảm tính toán lặp}
+
+Phân tích kỹ chiến lược của các trạng thái khác nhau, ta dễ thấy nhiều giá trị
+có cùng ý nghĩa bị tính nhiều lần. Chẳng hạn, với hai trạng thái bất kỳ
+$x_{i,j_1}$ và $x_{i,j_2}$, nếu tồn tại một chỉ số $l$ sao cho
+$B_l<B_{j_1}$, $B_l<B_{j_2}$, đồng thời $l<j_1$ và $l<j_2$, thì khi chọn
+chiến lược cho hai trạng thái này, tập trạng thái
+\[
+  \{x_{k,l}\mid k<i\}
+\]
+đều bị tính một lần.
+
+Tính một tập trạng thái, về bản chất, là tìm trạng thái có giá trị lớn nhất
+trong tập đó. Vì vậy ta chỉ cần biết giá trị lớn nhất của tập là đủ. Các tập
+có dạng $\{x_{k,l}\mid k<i\}$ xuất hiện nhiều lần, nghĩa là giá trị lớn nhất
+của chúng bị tính lặp. Do đó ta thêm một trạng thái:
+\[
+  f_{i,j}=\max\{x_{k,j}\mid k\le i\}.
+\]
+Từ đó thu được phương trình chuyển trạng thái hai lớp B:
+\[
+  x_{i,j}=
+  \max\left\{
+    1,\;
+    \max_{\substack{0<k<j\\ B_k<B_j}}\{f_{i-1,k}+1\}
+  \right\},
+\]
+\[
+  f_{i,j}=\max\{0,\;f_{i-1,j},\;x_{i,j}\}.
+\]
+
+Như vậy độ phức tạp thời gian tổng thể là $O(n^3)$. Nếu dùng cây tìm kiếm nhị
+phân, độ phức tạp còn có thể giảm xuống $O(n^2\log n)$. Rõ ràng bước ``tinh
+lọc'' này đã loại bỏ được rất nhiều tạp chất, nhưng đừng quên ta vẫn còn một
+lưỡi dao sắc khác.
+
+\section{Cách tinh lọc 2: giảm dư thừa}
+
+Dư thừa thường ẩn rất kín, khó phát hiện, nên cần dành thêm thời gian và công
+sức để đào sâu.
+
+Trong phương trình chuyển trạng thái B, nếu tập trung vào phạm vi chọn của tất
+cả chiến lược tối ưu và thử nghiệm nhiều lần, ta sẽ thấy một hiện tượng không
+khó nhận ra. Với một trạng thái bất kỳ $x_{i,j}$, nếu chiến lược tối ưu của nó
+nhỏ hơn một giá trị cố định
+\[
+  \operatorname{last}_j=\max\{0,\;w\mid w<j\text{ và }B_w=B_j\},
+\]
+thì
+\[
+  x_{i,j}=x_{i,\operatorname{last}_j}.
+\]
+Từ đó nảy sinh một phỏng đoán: phải chăng với mọi trạng thái $x_{i,j}$, nếu
+chiến lược tối ưu của nó nhỏ hơn $\operatorname{last}_j$, thì đều có
+$x_{i,j}=x_{i,\operatorname{last}_j}$? Ta chứng minh phỏng đoán này dưới đây.
+
+\paragraph{Chứng minh.}
+Với một trạng thái bất kỳ $x_{i,j}$, giá trị $x_{i,\operatorname{last}_j}$ là
+một lời giải khả thi. Thật vậy, từ phương án tối ưu của
+$x_{i,\operatorname{last}_j}$, ta chỉ cần thay cặp khớp
+$(i,\operatorname{last}_j)$ bằng $(i,j)$. Vì
+$B_{\operatorname{last}_j}=B_j$, phép thay này giữ nguyên giá trị được khớp và
+không phá vỡ tính tăng của dãy. Do đó
+\[
+  x_{i,j}\ge x_{i,\operatorname{last}_j}.
+\]
+
+Tiếp theo, với một $f_{i-1,k}$ bất kỳ trong đó $k<\operatorname{last}_j$, giả
+sử phương án tương ứng của $f_{i-1,k}$ có $g$ cặp khớp. Mỗi phương án như vậy
+tương ứng một-một với một phương án có $g+1$ cặp khớp của
+$x_{i,\operatorname{last}_j}$: chỉ cần thêm cặp khớp
+$(i,\operatorname{last}_j)$ vào cuối. Vì thế
+\[
+  x_{i,\operatorname{last}_j}\ge f_{i-1,k}+1
+  \qquad (k<\operatorname{last}_j).
+\]
+
+Tổng hợp hai kết luận trên, việc xét các giá trị $f_{i-1,k}+1$ với
+$k<\operatorname{last}_j$ là tương đương với việc xét
+$x_{i,\operatorname{last}_j}$. Nói cách khác, với mọi trạng thái $x_{i,j}$,
+nếu chiến lược tối ưu của nó nhỏ hơn $\operatorname{last}_j$, thì đều có
+\[
+  x_{i,j}=x_{i,\operatorname{last}_j}.
+\]
+
+Sau chứng minh trên, ta cải tiến phương trình chuyển trạng thái B để nhận được
+phương trình chuyển trạng thái tốt hơn, ký hiệu C. Quy ước
+$x_{i,0}=0$ khi $\operatorname{last}_j=0$:
+\[
+  x_{i,j}=
+  \max\left\{
+    1,\;
+    \max_{\substack{\operatorname{last}_j<k<j\\ B_k<B_j}}
+      \{f_{i-1,k}+1\},\;
+    x_{i,\operatorname{last}_j}
+  \right\},
+\]
+\[
+  f_{i,j}=\max\{0,\;f_{i-1,j},\;x_{i,j}\},
+\]
+\[
+  \operatorname{last}_j=\max\{0,\;w\mid w<j\text{ và }B_w=B_j\}.
+\]
+
+Độ phức tạp thời gian tổng thể của quy hoạch động này chỉ còn $O(n^2)$, thấp
+hơn rất nhiều so với trước.
+
+\section*{Tổng kết}
+
+Việc ``tinh lọc'' quy hoạch động không có một hình thức cố định; nó thường cần
+một kiểu linh cảm. Linh cảm ấy không phải lâu đài trên không, mà đến từ suy
+nghĩ và tích lũy hằng ngày. Chỉ cần thường xuyên tổng kết, thường xuyên suy
+nghĩ, thường xuyên đổi mới và kiên trì, ta nhất định có thể học tốt quy hoạch
+động.
+
+\section*{Lời cảm ơn}
+
+Xin cảm ơn thầy Tống Tân Ba và Quách Hoa Dương đã đưa ra nhiều ý kiến quý báu
+cho bài viết này.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item ``Tận dụng đầy đủ tính chất của bài toán: phân tích ví dụ về tối ưu
+  hóa `cá thể hóa' trong quy hoạch động'', Hạng Vinh Cảnh, luận văn năm 2003.
+  \item ``Giảm dư thừa và tối ưu hóa thuật toán'', Hồ Vĩ Đống, luận văn năm
+  2004.
+\end{enumerate}
+
+\end{document}

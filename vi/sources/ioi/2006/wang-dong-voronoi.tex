@@ -1,0 +1,188 @@
+% Vietnamese translation for OI Public Library
+% Source-File: IOI中国国家候选队论文/2006/王栋/王栋.doc
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\Vor}{\operatorname{Vor}}
+\newcommand{\CH}{\operatorname{CH}}
+\newcommand{\DT}{\operatorname{DT}}
+
+\title{Voronoi}
+\author{Wang Dong}
+\date{Đội tuyển quốc gia Trung Quốc, 2006}
+
+\begin{document}
+\maketitle
+
+\origtitle{Voronoi}
+\sourcepath{IOI China candidate team papers / 2006 / Wang Dong / Wang Dong.doc}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Tệp DOC nguồn bị hỏng phần đầu và không còn đọc được như một tài liệu Word
+chuẩn. Các đoạn văn, slide đi kèm và mã Pascal trong thư mục nguồn cho thấy
+nội dung chính là giới thiệu biểu đồ Voronoi, quan hệ với tam giác hóa
+Delaunay, và hai bài ứng dụng \textit{Run Away} cùng \textit{Fat Man}. Bản
+dịch này dựng lại phần có thể xác nhận được từ các mảnh văn bản và chương
+trình đi kèm, giữ cùng tinh thần trình bày thuật toán hình học tính toán.
+\end{abstract}
+
+\noindent\textbf{Từ khóa:} biểu đồ Voronoi; tam giác hóa Delaunay; hình học
+tính toán; điểm an toàn nhất.
+
+\section{Khái niệm Voronoi}
+
+Cho tập điểm
+\[
+  S=\{P_1,P_2,\ldots,P_n\}
+\]
+trên mặt phẳng. Với hai điểm \(P_i,P_j\), đường trung trực của đoạn
+\(P_iP_j\) chia mặt phẳng thành hai nửa mặt phẳng. Gọi
+\[
+  H(P_i,P_j)=\{X\mid |XP_i|<|XP_j|\}
+\]
+là nửa mặt phẳng gồm các điểm gần \(P_i\) hơn \(P_j\).
+
+Ô Voronoi của \(P_i\) là giao của tất cả các nửa mặt phẳng tương ứng:
+\[
+  V(P_i)=\bigcap_{j\ne i} H(P_i,P_j).
+\]
+Nói cách khác, \(V(P_i)\) gồm mọi điểm có điểm gần nhất trong \(S\) là
+\(P_i\). Tập các ô \(V(P_i)\) tạo thành biểu đồ Voronoi của \(S\), ký hiệu
+\(\Vor(S)\).
+
+Các cạnh của biểu đồ Voronoi nằm trên những đường trung trực. Một đỉnh
+Voronoi thường là tâm đường tròn đi qua ba điểm của \(S\); tại đó ba ô
+Voronoi gặp nhau. Nếu có bốn điểm đồng viên, biểu đồ có thể suy biến và cần
+xử lý cẩn thận trong cài đặt.
+
+\section{Quan hệ với Delaunay}
+
+Tam giác hóa Delaunay \(\DT(S)\) là đồ thị đối ngẫu của biểu đồ Voronoi:
+hai điểm \(P_i,P_j\) được nối bởi một cạnh Delaunay khi hai ô Voronoi
+\(V(P_i)\) và \(V(P_j)\) kề nhau. Tính chất hình học thường dùng là: một tam
+giác thuộc tam giác hóa Delaunay nếu đường tròn ngoại tiếp của nó không chứa
+điểm nào khác của \(S\) ở bên trong.
+
+Quan hệ đối ngẫu này làm Voronoi hữu ích trong nhiều bài toán:
+\begin{itemize}
+  \item tìm điểm xa nhất hoặc gần nhất theo một tập điểm chướng ngại;
+  \item dựng các vùng ảnh hưởng;
+  \item xử lý các bài toán khoảng cách cực trị trên mặt phẳng;
+  \item chuyển giữa bài toán ô Voronoi và bài toán cạnh Delaunay.
+\end{itemize}
+
+\section{Dựng biểu đồ}
+
+Các mảnh trong slide cho thấy hai cách tiếp cận chính: dựng trực tiếp bằng
+nửa mặt phẳng và dựng thông qua tam giác hóa Delaunay. Chương trình
+\texttt{voronoi.dpr} đi kèm sắp xếp điểm theo tọa độ, dùng các đường trung
+trực, tìm giao điểm đường thẳng, và duy trì cạnh kề giữa các điểm. Trong mã có
+các thủ tục như:
+\begin{itemize}
+  \item tìm đường trung trực của hai điểm;
+  \item tìm giao của hai đường thẳng;
+  \item xác định phía của một điểm đối với một đoạn có hướng;
+  \item tìm tiếp tuyến khi chia để trị tập điểm đã sắp xếp.
+\end{itemize}
+
+Một khung dựng chia để trị có thể mô tả như sau:
+\begin{enumerate}
+  \item sắp xếp các điểm theo hoành độ, rồi tung độ;
+  \item chia tập điểm thành hai nửa;
+  \item dựng biểu đồ Voronoi cho từng nửa;
+  \item tìm chuỗi cạnh phân cách hai biểu đồ bằng các tiếp tuyến giữa hai bao
+  lồi;
+  \item ghép hai biểu đồ và loại các phần cạnh không còn hợp lệ.
+\end{enumerate}
+
+Nếu cài đặt đầy đủ và xử lý suy biến tốt, độ phức tạp mục tiêu là
+\(\Oh(n\log n)\). Các slide cũng nhắc tới một cách thô hơn có thể lên tới
+\(\Oh(n^4)\), thường chỉ phù hợp để minh họa hoặc kiểm chứng dữ liệu nhỏ.
+
+\section{Ví dụ 1: Run Away}
+
+Đề \textit{Run Away} trong mảnh DOC mô tả một căn phòng lớn có nhiều lỗ nhỏ
+trên sàn; khi bẫy kích hoạt, ta muốn đứng tại vị trí an toàn nhất, tức vị trí
+có khoảng cách tới lỗ gần nhất là lớn nhất. Các dòng còn đọc được cho thấy ví
+dụ đầu ra dạng:
+\[
+  \text{The safest point is }(50.0,50.0).
+\]
+và một ví dụ khác gần \((1433.0,1669.8)\).
+
+Nếu miền cho phép là một hình chữ nhật và các lỗ là tập điểm \(S\), hàm cần
+tối đa hóa là
+\[
+  d(X)=\min_{P_i\in S}|XP_i|.
+\]
+Trong mỗi ô Voronoi, điểm gần nhất không đổi, nên cực đại toàn cục không cần
+xét ở mọi điểm của mặt phẳng. Ứng viên nằm trong các vị trí sau:
+\begin{itemize}
+  \item đỉnh Voronoi nằm trong miền;
+  \item giao của cạnh Voronoi với biên hình chữ nhật;
+  \item các góc của hình chữ nhật.
+\end{itemize}
+
+Do đó thuật toán là dựng \(\Vor(S)\), liệt kê các ứng viên hợp lệ, tính
+khoảng cách tới điểm gần nhất và chọn giá trị lớn nhất. Một nhận xét trong
+slide là nghiệm liên quan tới \(\CH(S)\), bao lồi của các điểm: cạnh không bị
+chặn của biểu đồ Voronoi xuất hiện tại các điểm thuộc bao lồi, còn miền hình
+chữ nhật giúp cắt các cạnh vô hạn thành đoạn hữu hạn cần kiểm tra.
+
+\section{Ví dụ 2: Fat Man}
+
+Mảnh DOC còn giữ được tên bài \textit{Fat Man}, nguồn Central Europe 1999 và
+UVA 295. Ví dụ đầu ra đọc được có dạng:
+\[
+  \text{Maximum size in test case 1 is }2.2361.
+\]
+Tệp \texttt{zju2009.dpr} đi kèm thêm bốn góc hình chữ nhật vào tập điểm và
+dựng cấu trúc Voronoi. Điều này phù hợp với mô hình: trong một miền hình chữ
+nhật có các chướng ngại điểm hoặc lỗ, cần tìm bán kính lớn nhất của một người
+hoặc vật thể có thể đi qua/đứng an toàn mà không va vào chướng ngại và biên.
+
+Cách dùng Voronoi giống ví dụ trước. Khoảng cách tới chướng ngại gần nhất chỉ
+thay đổi khi vượt qua cạnh Voronoi. Vì vậy các điểm cực trị đáng xét không
+nằm tùy ý trong miền mà nằm ở các đỉnh Voronoi, giao với biên, hoặc tại các
+điểm biên đặc biệt. Nếu phải xét khoảng cách tới biên hình chữ nhật, có thể
+đưa thêm các ràng buộc biên vào phép kiểm tra ứng viên.
+
+\section{Ghi chú cài đặt}
+
+Các chương trình Pascal trong thư mục nguồn cho thấy một hiện thực hình học
+tương đối trực tiếp:
+\begin{itemize}
+  \item dùng \texttt{double} và một hằng \(\varepsilon=10^{-7}\) để so sánh;
+  \item lưu điểm với tọa độ và chỉ số ban đầu;
+  \item tính đường trung trực bằng trung điểm và một điểm thứ hai trên đường;
+  \item biểu diễn đường thẳng dưới dạng \(ax+by+c=0\);
+  \item tìm giao điểm bằng giải hệ hai phương trình tuyến tính;
+  \item dùng tích có hướng để xác định phía và tìm tiếp tuyến.
+\end{itemize}
+
+Khi dịch sang một ngôn ngữ hiện đại, cần chú ý các trường hợp suy biến:
+điểm trùng nhau, ba điểm thẳng hàng, bốn điểm đồng viên, cạnh Voronoi song
+song, và sai số khi so sánh số thực. Với bài thi, nhiều lỗi không nằm ở ý
+tưởng Voronoi mà nằm ở các biên hình học này.
+
+\section{Kết luận}
+
+Biểu đồ Voronoi là một công cụ mạnh để xử lý các bài toán ``gần nhất'' và
+``xa nhất'' trên mặt phẳng. Nó chia mặt phẳng thành các vùng mà mỗi vùng có
+cùng điểm gần nhất, từ đó biến việc tìm cực trị liên tục thành kiểm tra một
+số hữu hạn ứng viên. Qua các ví dụ \textit{Run Away} và \textit{Fat Man}, ta
+thấy một mẫu quen thuộc: dựng Voronoi cho các điểm nguy hiểm, cắt với miền
+hợp lệ, rồi chọn ứng viên có khoảng cách tới điểm gần nhất lớn nhất.
+
+\section*{Ghi chú về nguồn}
+
+Tệp DOC gốc bắt đầu bằng dữ liệu hỏng và không có chữ ký tệp Word hợp lệ.
+Các phần còn đọc được chỉ gồm mảnh văn bản, tên hình, trường nhúng và tên
+chương trình. Bản dịch này dựa trên các mảnh còn đọc được trong DOC, slide
+\texttt{Wang Dong.ppt}, và hai chương trình \texttt{voronoi.dpr},
+\texttt{zju2009.dpr}. Các hình WMF và phương trình nhúng trong tài liệu gốc
+không được trích xuất; nội dung hình được diễn giải bằng lời.
+
+\end{document}

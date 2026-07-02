@@ -1,0 +1,683 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 图论 GRAPH THEORY/经典网络流教程.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Giáo trình kinh điển về luồng mạng}
+\author{Comzyh Blog}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Classic network-flow tutorial}
+\sourcepath{Graph Theory / Classic network-flow tutorial.pdf}
+
+\section*{Lời dẫn}
+
+Bản gốc là một bộ slide nhập môn về luồng mạng. Phần dưới đây giữ nguyên nội
+dung toán học và các ví dụ chính, nhưng viết lại thành ghi chú dạng bài giảng.
+Những hình trong slide được thay bằng mô tả, danh sách cạnh, bảng hoặc công
+thức tương đương.
+
+\section{Một bài toán luồng mạng}
+
+Do con người tiêu hao tài nguyên tự nhiên, người ta nhận ra rằng khoảng sau năm
+2300 Trái Đất sẽ không còn thích hợp để cư trú. Vì vậy một khu định cư mới được
+xây trên Mặt Trăng để chuẩn bị di dân khi cần. Bất ngờ thay, vào mùa đông năm
+2177, do nguyên nhân chưa biết, môi trường Trái Đất sụp đổ dây chuyền; loài
+người phải chuyển lên Mặt Trăng trong thời gian ngắn nhất.
+
+Giữa Trái Đất và Mặt Trăng có $n$ trạm vũ trụ, và có $m$ tàu vận tải công cộng
+qua lại giữa các trạm đó. Mỗi trạm vũ trụ chứa được vô hạn người, còn tàu thứ
+$i$ chỉ chứa được $H_i$ người. Mỗi tàu dừng tuần hoàn tại một dãy trạm. Chẳng
+hạn dãy $(1,3,4)$ nghĩa là tàu sẽ dừng theo chu kỳ
+$1,3,4,1,3,4,\ldots$. Một tàu đi từ một trạm trong chu kỳ sang trạm kế tiếp
+luôn mất $1$ đơn vị thời gian. Người chỉ có thể lên hoặc xuống tàu vào các thời
+điểm tàu dừng tại trạm, tại Trái Đất hoặc tại Mặt Trăng. Ban đầu mọi người đều
+ở Trái Đất, và mọi tàu đều ở trạm xuất phát. Hãy thiết kế thuật toán tìm phương
+án vận chuyển tất cả mọi người lên Mặt Trăng nhanh nhất.
+
+Dữ liệu vào nằm trong \texttt{input.txt}. Dòng đầu gồm ba số nguyên dương
+$n,m,k$, lần lượt là số trạm vũ trụ, số tàu và số người cần vận chuyển từ Trái
+Đất. Ràng buộc là
+\[
+  1\le m\le 13,\qquad 1\le n\le 20,\qquad 1\le k\le 50.
+\]
+Mỗi dòng mô tả một tàu $p_i$: số đầu tiên là sức chứa $H_{p_i}$; số thứ hai là
+số trạm trong một chu kỳ dừng $r$, với $1\le r\le n+2$; tiếp theo là
+$r$ số hiệu trạm $(S_{i1},S_{i2},\ldots,S_{ir})$. Trái Đất được ký hiệu bằng
+$0$, Mặt Trăng bằng $-1$. Tại thời điểm $0$, tất cả các tàu đang ở trạm đầu
+tiên của chu kỳ; sau đó tại các thời điểm nguyên $1,2,3,\ldots$ chúng dừng ở
+các trạm kế tiếp. Chỉ tại các thời điểm nguyên $0,1,2,\ldots$ mới được lên
+hoặc xuống tàu.
+
+Cần ghi ra \texttt{output.txt} thời gian ít nhất để chuyển toàn bộ người đi an
+toàn. Nếu bài toán vô nghiệm thì ghi $0$.
+
+\section{Ví dụ đơn giản: luồng cực đại}
+
+Có thể hình dung mạng như một hệ thống ống nước. Trong slide, mỗi cạnh được
+ghi dưới dạng $(f,c)$: số bên trái là lưu lượng hiện tại, số bên phải là dung
+lượng. Ví dụ mở đầu có nguồn $s$, đích $t$ và bốn đỉnh trung gian
+$a,b,c,d$. Lượng luồng hiện tại đi ra khỏi $s$ là $3+2=5$, nên ví dụ đặt câu
+hỏi: luồng cực đại có phải bằng $5$ hay không?
+
+\section{Ký hiệu và định nghĩa}
+
+\begin{itemize}
+  \item $V$ là tập tất cả các đỉnh trong đồ thị.
+  \item $E$ là tập tất cả các cạnh trong đồ thị.
+  \item $G=(V,E)$ là toàn bộ đồ thị.
+  \item $s$ là nguồn của mạng, $t$ là đích của mạng.
+  \item Mỗi cạnh $(u,v)$ có dung lượng $c(u,v)$, trong đó $c(u,v)\ge 0$.
+  \item Nếu $c(u,v)=0$ thì xem như cạnh $(u,v)$ không tồn tại trong mạng.
+  \item Nếu mạng ban đầu không có cạnh $(u,v)$ thì đặt $c(u,v)=0$.
+  \item Mỗi cạnh $(u,v)$ có một lưu lượng $f(u,v)$.
+\end{itemize}
+
+\subsection{Ba tính chất của luồng mạng}
+
+Một luồng hợp lệ phải thỏa ba tính chất.
+
+\begin{enumerate}
+  \item \term{Giới hạn dung lượng:}
+  \[
+    f(u,v)\le c(u,v).
+  \]
+  \item \term{Phản đối xứng:}
+  \[
+    f(u,v)=-f(v,u).
+  \]
+  \item \term{Bảo toàn luồng:} với mọi đỉnh không phải nguồn và cũng không
+  phải đích, tổng lưu lượng đi vào bằng tổng lưu lượng đi ra.
+\end{enumerate}
+
+Kết hợp với phản đối xứng, điều kiện bảo toàn luồng có thể viết là
+\[
+  \sum_{u\in V} f(v,u)=0
+\]
+với mọi $v\ne s,t$. Chỉ cần thỏa ba tính chất trên thì ta có một luồng mạng
+hợp lệ, còn gọi là \term{luồng khả thi}. Luồng khả thi luôn tồn tại ít nhất là
+luồng không.
+
+\subsection{Bài toán luồng cực đại}
+
+Giá trị của một luồng, ký hiệu $|f|$, được định nghĩa là tổng lưu lượng đi ra
+từ nguồn:
+\[
+  |f|=\sum_{v\in V} f(s,v).
+\]
+Bài toán luồng cực đại yêu cầu cực đại hóa $|f|$ trong khi vẫn thỏa các tính
+chất của luồng mạng.
+
+\section{Phân loại cung và mạng dư}
+
+Cho một luồng khả thi $F=(F_{ij})$. Nếu $F_{ij}=C_{ij}$ thì cung đó là
+\term{cung bão hòa}; nếu $F_{ij}<C_{ij}$ thì là \term{cung chưa bão hòa}; nếu
+$F_{ij}=0$ thì là \term{cung luồng không}; nếu $F_{ij}>0$ thì là
+\term{cung có luồng khác không}.
+
+Nếu $P$ là một đường nối nguồn $s$ với đích $t$ trong mạng, không xét hướng của
+cạnh, ta quy ước hướng của đường là từ $s$ đến $t$. Khi đó các cung trên
+đường chia thành hai loại: cung cùng hướng với đường gọi là \term{cung tiến},
+cung ngược hướng với đường gọi là \term{cung lùi}.
+
+\subsection{Mạng dư}
+
+Để cài đặt thuận tiện, ta thường định nghĩa \term{mạng dư} từ mạng ban đầu.
+Gọi $r(u,v)$ là dung lượng trong mạng dư, khi đó
+\[
+  r(u,v)=c(u,v)-f(u,v).
+\]
+Nói cách khác, $r(u,v)$ là lượng lưu lượng còn có thể đẩy thêm qua cung
+$(u,v)$. Nếu dung lượng của một cạnh trong mạng dư bằng $0$, ta xem như cạnh
+đó không có trong mạng dư.
+
+Ví dụ, nếu trên cạnh $s\to v_1$ có $(f,c)=(4,4)$, thì
+$r(s,v_1)=0$ nên cạnh này không được vẽ trong mạng dư. Ngược lại, cạnh lùi
+$v_1\to s$ có
+\[
+  r(v_1,s)=c(v_1,s)-f(v_1,s)=0-(-f(s,v_1))=4.
+\]
+Từ mạng dư ta đọc được ngay các khả năng tăng luồng: nếu có cạnh dư
+$(s,v_2)$ dung lượng $3$, thì từ $s$ đến $v_2$ còn có thể tăng $3$ đơn vị;
+nếu có cạnh dư $(v_1,t)$ dung lượng $2$, thì từ $v_1$ đến $t$ còn có thể tăng
+$2$ đơn vị.
+
+\subsection{Vì sao cần cung lùi?}
+
+Cạnh như $(v_1,s)$ được gọi là cung lùi; nó biểu diễn rằng ta có thể tăng
+$4$ đơn vị trên hướng $v_1\to s$ trong mạng dư. Thoạt nhìn, phát biểu ``từ
+$v_1$ về $s$ còn có thể tăng $4$ đơn vị'' có vẻ vô nghĩa vì nó ngược hướng
+cạnh trong mạng ban đầu. Tuy nhiên cung lùi chính là cơ chế cho phép thuật
+toán sửa sai.
+
+Trong ví dụ của slide, luồng đang vẽ chưa phải luồng cực đại. Nếu tăng thêm
+$2$ đơn vị theo đường trong mạng dư
+\[
+  s\to v_2\to v_1\to t,
+\]
+ta thu được luồng cực đại. Đường này đi qua cung lùi $(v_2,v_1)$. Nếu không
+tạo cung lùi, thuật toán sẽ không thể phát hiện đường tăng này. Về bản chất,
+cung lùi cho phép thuật toán hủy một lựa chọn trước đó, ví dụ hủy việc đã cho
+$2$ đơn vị luồng đi từ $v_1$ sang $v_2$.
+
+\section{Đường tăng và thuật toán đường tăng}
+
+\term{Đường cải thiện}, hay \term{đường tăng}, là một đường từ $s$ đến $t$ trong
+mạng dư sao cho mọi cung $(u,v)$ trên đường đều có $r(u,v)>0$. Tương đương,
+mọi cung tiến trên đường chưa bão hòa, và mọi cung lùi trên đường có luồng
+khác không.
+
+Thuật toán đường tăng làm như sau: mỗi lần dùng BFS tìm một đường tăng, rồi
+điều chỉnh lưu lượng trên đường đó, thực tế là điều chỉnh dung lượng các cạnh
+trong mạng dư, để tổng giá trị luồng tăng lên. Cách điều chỉnh là:
+
+\begin{enumerate}
+  \item Các cung không thuộc đường tăng $P$ giữ nguyên.
+  \item Với mọi cung tiến trên $P$, cộng thêm $a$; với mọi cung lùi trên $P$,
+  trừ đi $a$. Đại lượng $a$ là lượng tăng, được chọn lớn nhất có thể nhưng vẫn
+  bảo đảm sau điều chỉnh
+  \[
+    0\le F_{ij}\le C_{ij}.
+  \]
+  Vì vậy
+  \[
+    a=\min\left(
+      \min_{(i,j)\in P^+}(C_{ij}-F_{ij}),
+      \min_{(i,j)\in P^-}F_{ij}
+    \right),
+  \]
+  trong đó $P^+$ là tập cung tiến và $P^-$ là tập cung lùi.
+\end{enumerate}
+
+Nếu không còn đường tăng từ $s$ đến $t$, thuật toán dừng; khi đó luồng hiện
+tại là luồng cực đại.
+
+Quy trình tổng quát là: bắt đầu với $F_{ij}=0$ cho mọi cạnh; trong khi luồng
+hiện tại còn đường tăng, thay nó bằng một luồng tốt hơn theo cách trên; nếu
+không còn đường tăng thì kết luận $F$ là luồng cực đại. Câu hỏi còn lại là:
+làm sao tìm đường tăng nhanh?
+
+\section{Lát cắt và định lý luồng cực đại--lát cắt nhỏ nhất}
+
+\subsection{Định nghĩa lát cắt}
+
+Một lát cắt $(S,T)$ gồm hai tập đỉnh $S,T$ sao cho
+\[
+  S\cup T=V,\qquad s\in S,\qquad t\in T.
+\]
+Một cách xây dựng tập $S$ là bắt đầu từ $s\in S$ rồi mở rộng:
+\begin{itemize}
+  \item nếu $V_i\in S$ và $F_{ij}<C_{ij}$ thì đưa $V_j$ vào $S$;
+  \item nếu $V_i\in S$ và $F_{ji}>0$ thì đưa $V_j$ vào $S$.
+\end{itemize}
+Một khi $t$ được đưa vào $S$, ta đã tìm thấy một đường tăng. Nếu $S$ không thể
+mở rộng nữa mà $t$ vẫn chưa vào $S$, thì không tồn tại đường tăng; mọi đỉnh
+ngoài $S$ được đưa vào $T$.
+
+Với lát cắt $(S,T)$, lưu lượng qua lát cắt là
+\[
+  f(S,T)=\sum_{x\in S}\sum_{y\in T} f(x,y).
+\]
+Các hàm $c$ và $r$ cũng được định nghĩa tương tự, lần lượt là dung lượng của
+lát cắt và dung lượng dư qua lát cắt.
+
+\term{Định lý luồng cực đại--lát cắt nhỏ nhất.} Trong một mạng $D$, giá trị
+luồng cực đại từ $s$ đến $t$ bằng dung lượng nhỏ nhất của một lát cắt tách
+$s$ khỏi $t$.
+
+\subsection{Ba điều kiện tương đương}
+
+Trong một mạng luồng, ba điều kiện sau là tương đương tại cùng một thời điểm:
+
+\begin{enumerate}
+  \item $f$ là luồng cực đại.
+  \item Trong mạng dư không còn đường tăng.
+  \item Tồn tại lát cắt $(S,T)$ sao cho $|f|=c(S,T)$.
+\end{enumerate}
+
+Ta dùng một số kết luận phụ.
+
+\begin{enumerate}
+  \item $f(X,X)=0$, do phản đối xứng.
+  \item $f(X,Y)=-f(Y,X)$, do phản đối xứng.
+  \item $f(X\cup Y,Z)=f(X,Z)+f(Y,Z)$.
+  \item $f(X,Y\cup Z)=f(X,Y)+f(X,Z)$.
+\end{enumerate}
+
+\term{Chứng minh $1\Rightarrow 2$.} Điều này hiển nhiên: nếu còn đường tăng,
+vì dung lượng tăng ít nhất là dương, sau khi tăng theo đường đó ta thu được
+một luồng có giá trị lớn hơn $f$, mâu thuẫn với việc $f$ là luồng cực đại.
+
+\term{Kết luận phụ: tổng lưu lượng của một tập đỉnh bằng không.} Nếu $X$ không
+chứa $s$ và $t$, thì tổng lưu lượng trên các cạnh liên thuộc với $X$ bằng
+$0$:
+\[
+  f(X,V)=\sum_{x\in X}\left[\sum_{v\in V} f(x,v)\right]
+        =\sum_{x\in X}0=0,
+\]
+do điều kiện bảo toàn luồng.
+
+\term{Kết luận phụ: lưu lượng qua mọi lát cắt bằng giá trị luồng.} Với một lát
+cắt $(S,T)$,
+\[
+\begin{aligned}
+  f(S,T)
+    &=f(S,V)-f(S,S)\\
+    &=f(S,V)\\
+    &=f(\{s\},V)+f(S\setminus\{s\},V)\\
+    &=f(s,V)=|f|.
+\end{aligned}
+\]
+
+\term{Kết luận phụ: giá trị luồng không vượt quá dung lượng của bất kỳ lát
+cắt nào.} Cụ thể,
+\[
+\begin{aligned}
+  |f|
+    &=f(S,T)
+      =\sum_{x\in S}\sum_{y\in T} f(x,y)\\
+    &\le \sum_{x\in S}\sum_{y\in T} c(x,y)
+      =c(S,T).
+\end{aligned}
+\]
+
+\term{Chứng minh $2\Rightarrow 3$.} Đặt
+\[
+  S=\{s\}\cup\{v\mid \text{trong mạng dư có đường đi từ }s\text{ đến }v\},
+  \qquad T=V\setminus S.
+\]
+Khi đó $(S,T)$ là một lát cắt. Theo kết luận phụ, $|f|=f(S,T)$. Hơn nữa
+$r(S,T)=0$: nếu không, trong mạng dư sẽ có một cạnh từ một đỉnh $v\in S$ đến
+một đỉnh $u\in T$, suy ra $s$ đi được đến $u$ qua $v$, trái với định nghĩa
+của $S$. Do đó
+\[
+  |f|=f(S,T)=c(S,T)-r(S,T)=c(S,T).
+\]
+
+\term{Chứng minh $3\Rightarrow 1$.} Với mọi lát cắt ta luôn có
+$|f|\le c(S,T)$. Nếu đã có $|f|=c(S,T)$ mà vẫn tồn tại luồng lớn hơn
+$|f|+d$ với $d>0$, thì luồng đó sẽ vi phạm bất đẳng thức trên đối với cùng lát
+cắt. Vì vậy $f$ là luồng cực đại.
+
+\section{Phương pháp gán nhãn tìm đường tăng}
+
+Phương pháp gán nhãn, tức thuật toán Ford--Fulkerson ở dạng cổ điển, bắt đầu
+từ một luồng khả thi $F$; có thể lấy luồng không. Mỗi vòng gồm hai giai đoạn:
+gán nhãn và điều chỉnh.
+
+\subsection{Giai đoạn gán nhãn}
+
+Mỗi đỉnh của mạng hoặc là đỉnh đã gán nhãn, hoặc chưa gán nhãn. Trong các đỉnh
+đã gán nhãn lại chia thành đã kiểm tra và chưa kiểm tra. Nhãn của một đỉnh có
+hai phần: đỉnh mà từ đó nhãn được truyền sang, và lượng tăng chắc chắn còn có
+thể đưa tới đỉnh này.
+
+Bắt đầu bằng cách gán cho nguồn $V_s$ nhãn $(0,+\infty)$; khi đó $V_s$ đã gán
+nhãn nhưng chưa kiểm tra, còn mọi đỉnh khác chưa có nhãn. Lấy một đỉnh
+$V_i$ đã gán nhãn nhưng chưa kiểm tra, rồi xét mọi đỉnh $V_j$ chưa gán nhãn:
+
+\begin{enumerate}
+  \item Nếu có cung tiến $(V_i,V_j)$ và $F_{ij}<C_{ij}$, gán cho $V_j$ nhãn
+  \[
+    (V_i,L(V_j)),\qquad
+    L(V_j)=\min\{L(V_i),\,C_{ij}-F_{ij}\}.
+  \]
+  Khi đó $V_j$ trở thành đỉnh đã gán nhãn nhưng chưa kiểm tra.
+
+  \item Nếu có cung lùi tương ứng với $(V_j,V_i)$ và $F_{ji}>0$, gán cho
+  $V_j$ nhãn
+  \[
+    (-V_i,L(V_j)),\qquad
+    L(V_j)=\min\{L(V_i),\,F_{ji}\}.
+  \]
+  Dấu trừ cho biết bước này đi qua một cung lùi.
+\end{enumerate}
+
+Sau khi mọi đỉnh kề $V_i$ đều đã được xử lý, $V_i$ trở thành đỉnh đã kiểm tra.
+Lặp lại quá trình trên. Một khi $V_t$ được gán nhãn, ta đã tìm được một đường
+tăng từ $V_s$ đến $V_t$ và chuyển sang giai đoạn điều chỉnh.
+
+\subsection{Giai đoạn điều chỉnh}
+
+Ta truy ngược từ $V_t$ theo phần đầu của nhãn để lấy đường tăng $P$. Nếu nhãn
+đầu của $V_t$ là $V_k$ hoặc $-V_k$, thì cung tương ứng trên $P$ là
+$(V_k,V_t)$ hoặc cung lùi của $(V_t,V_k)$. Sau đó tiếp tục xem nhãn của
+$V_k$, cứ thế cho đến khi truy ngược về $V_s$.
+
+Lượng tăng là
+\[
+  a=L(V_t).
+\]
+Luồng được cập nhật theo công thức
+\[
+  F'_{ij}=
+  \begin{cases}
+    F_{ij}+a, & (V_i,V_j)\in P^+,\\
+    F_{ij}-a, & (V_i,V_j)\in P^-,\\
+    F_{ij},   & (V_i,V_j)\notin P.
+  \end{cases}
+\]
+Xóa toàn bộ nhãn rồi lặp lại giai đoạn gán nhãn với luồng mới $F'$. Thuật toán
+dừng khi gán nhãn không thể tiếp tục.
+
+\subsection{Ví dụ gán nhãn}
+
+Ví dụ trong slide có các đỉnh $V_s,V_1,V_2,V_3,V_4,V_t$. Mỗi cạnh dưới đây
+được ghi dưới dạng $(f,c)$:
+\[
+\begin{array}{c|c}
+\text{Cạnh} & (f,c)\\ \hline
+V_s\to V_2 & (3,3)\\
+V_s\to V_1 & (1,5)\\
+V_2\to V_4 & (3,4)\\
+V_2\to V_1 & (1,1)\\
+V_2\to V_3 & (1,1)\\
+V_1\to V_3 & (2,2)\\
+V_4\to V_t & (3,5)\\
+V_3\to V_t & (1,2)\\
+V_3\to V_4 & (0,3)
+\end{array}
+\]
+
+Quá trình gán nhãn:
+\begin{enumerate}
+  \item Đầu tiên gán cho $V_s$ nhãn $(0,+\infty)$.
+  \item Kiểm tra $V_s$. Trên cung $V_s\to V_2$ có $F_{s2}=C_{s2}=3$, nên
+  không thể gán nhãn qua cung này. Trên cung $V_s\to V_1$ có
+  $F_{s1}=1<C_{s1}=5$, nên gán cho $V_1$ nhãn
+  \[
+    (V_s,L(V_1)),\qquad L(V_1)=\min\{+\infty,5-1\}=4.
+  \]
+  \item Kiểm tra $V_1$. Cung $V_1\to V_3$ đã bão hòa vì $F_{13}=C_{13}=2$.
+  Nhưng trên cung $V_2\to V_1$ có $F_{21}=1>0$, nên có thể đi lùi từ $V_1$
+  tới $V_2$ và gán cho $V_2$ nhãn
+  \[
+    (-V_1,L(V_2)),\qquad L(V_2)=\min\{4,1\}=1.
+  \]
+  \item Kiểm tra $V_2$. Vì $F_{24}=3<C_{24}=4$, gán cho $V_4$ nhãn
+  \[
+    (V_2,L(V_4)),\qquad L(V_4)=\min\{1,1\}=1.
+  \]
+  Tương tự, qua cung lùi liên quan tới $V_3$ ta gán được cho $V_3$ nhãn
+  $(-V_2,1)$.
+  \item Chọn một trong hai đỉnh $V_3,V_4$ để kiểm tra, chẳng hạn $V_4$. Trên
+  cung $V_4\to V_t$ có $F_{4t}=3<C_{4t}=5$, nên gán cho $V_t$ nhãn
+  \[
+    (V_4,L(V_t)),\qquad L(V_t)=\min\{1,2\}=1.
+  \]
+\end{enumerate}
+
+Vì $V_t$ đã có nhãn, ta điều chỉnh. Đường tăng tìm được bằng truy ngược nhãn
+có các cung tiến
+\[
+  P^+=\{(V_s,V_1),(V_3,V_t)\}
+\]
+và các cung lùi
+\[
+  P^-=\{(V_2,V_1),(V_3,V_2)\}.
+\]
+Với $a=1$, cập nhật
+\[
+  F'_{s1}=F_{s1}+1=2,\qquad F'_{3t}=F_{3t}+1=2,
+\]
+\[
+  F'_{21}=F_{21}-1=0,\qquad F'_{32}=F_{32}-1=0.
+\]
+
+Sau khi gán nhãn lại, khi kiểm tra đến $V_1$ thì $F_{21}=0$ và
+$F_{13}=C_{13}$ đều không thỏa điều kiện gán nhãn, nên quá trình không thể
+tiếp tục. Luồng khả thi khi đó có giá trị cực đại bằng $5$. Đồng thời ta tìm
+được lát cắt nhỏ nhất
+\[
+  S=\{V_s,V_1\},\qquad T=\{V_2,V_3,V_4,V_t\},
+\]
+với
+\[
+  C(S,T)=5.
+\]
+Điều này kiểm chứng định lý luồng cực đại--lát cắt nhỏ nhất.
+
+\section{Mạng nhiều nguồn, nhiều đích}
+
+Mạng nhiều nguồn, nhiều đích có thể chuyển về bài toán một nguồn, một đích.
+Thêm một siêu nguồn nối tới mọi nguồn ban đầu bằng cạnh dung lượng đủ lớn, và
+thêm một siêu đích nhận cạnh từ mọi đích ban đầu, cũng với dung lượng đủ lớn.
+Sau đó giải bài toán luồng cực đại thông thường giữa siêu nguồn và siêu đích.
+
+\section{Luồng cực đại với cận dưới và cận trên}
+
+Trong mạng có cận dưới và cận trên, mỗi cung $e$ đi kèm hai số $B(e)$ và
+$C(e)$, lần lượt là cận dưới và cận trên của lưu lượng. Ta cần tìm luồng cực
+đại thỏa
+\[
+  B(e)\le F(e)\le C(e).
+\]
+Mạng trong phương pháp gán nhãn ở trên là trường hợp đặc biệt với $B(e)=0$.
+Khi có cạnh với $B(e)>0$, mạng chưa chắc có luồng khả thi. Vì vậy trước hết
+phải biết cách kiểm tra sự tồn tại của luồng khả thi.
+
+\subsection{Chuyển thành mạng phụ}
+
+Ý tưởng là biến mạng ban đầu thành một mạng phụ.
+
+\begin{enumerate}
+  \item Thêm hai đỉnh mới $s^*$ và $t^*$, gọi là nguồn phụ và đích phụ.
+  \item Với mỗi đỉnh $U$ của mạng ban đầu, thêm cung $U\to t^*$ có dung lượng
+  bằng tổng các cận dưới của những cung đi ra khỏi $U$.
+  \item Với mỗi đỉnh $U$ của mạng ban đầu, thêm cung $s^*\to U$ có dung lượng
+  bằng tổng các cận dưới của những cung đi vào $U$.
+  \item Giữ các cung của mạng ban đầu, nhưng đổi dung lượng của cung $e$ thành
+  $C(e)-B(e)$.
+  \item Thêm hai cung giữa nguồn và đích ban đầu theo hai chiều, dung lượng
+  đều là $+\infty$.
+  \item Dùng phương pháp gán nhãn tìm luồng cực đại trong mạng mới. Nếu mọi
+  cung đi ra khỏi $s^*$ đều bão hòa, thì mạng ban đầu có luồng khả thi; khi đó
+  khôi phục bằng
+  \[
+    F(e)=F'(e)+B(e).
+  \]
+  Nếu không, mạng ban đầu vô nghiệm.
+  \item Trên mạng ban đầu, tiếp tục dùng phương pháp gán nhãn để tăng luồng
+  khả thi vừa tìm được, từ đó thu được luồng cực đại.
+\end{enumerate}
+
+Trong ví dụ của slide, mạng ban đầu ghi mỗi cạnh bằng cặp $(B(e),C(e))$:
+\[
+\begin{array}{c|c}
+\text{Cạnh} & (B(e),C(e))\\ \hline
+s\to w & (1,3)\\
+s\to y & (0,10)\\
+w\to x & (5,7)\\
+x\to t & (3,5)\\
+y\to z & (2,8)\\
+z\to t & (2,6)\\
+x\to y & (1,3)\\
+z\to w & (2,4)
+\end{array}
+\]
+Theo thuật toán trên, ta dựng mạng phụ và chạy gán nhãn. Kết quả cho thấy mọi
+cung đi ra khỏi nguồn phụ đều bão hòa, nên tồn tại luồng khả thi. Sau khi khôi
+phục theo công thức $F(e)=F'(e)+B(e)$ và tiếp tục tăng luồng khả thi trên mạng
+ban đầu, ta thu được luồng cực đại có giá trị $10$.
+
+\subsection{Luồng nhỏ nhất với cận dưới và cận trên}
+
+Để tìm luồng nhỏ nhất, trước hết cũng dùng phương pháp mạng phụ để tìm một
+luồng khả thi. Khác biệt nằm ở bước tăng luồng: thay vì tiếp tục tăng từ
+nguồn ban đầu $s$ đến đích ban đầu $t$, ta lấy $t$ làm nguồn và $s$ làm đích
+để tìm luồng cực đại theo chiều ngược. Lượng luồng đẩy ngược được trừ khỏi
+luồng khả thi ban đầu; kết quả là luồng nhỏ nhất từ $s$ đến $t$.
+
+\section{Luồng cực đại chi phí nhỏ nhất}
+
+Bài toán luồng cực đại chi phí nhỏ nhất yêu cầu tìm phương án vận chuyển có
+lượng vận chuyển lớn nhất, và trong các phương án đó có tổng chi phí nhỏ nhất.
+Nếu $b_{ij}$ là chi phí đơn vị trên cung $(i,j)$, tổng chi phí của luồng là
+\[
+  B(F)=\sum b_{ij}F_{ij}.
+\]
+Ta cần tìm một luồng cực đại làm biểu thức này nhỏ nhất.
+
+\subsection{Tư tưởng thuật toán}
+
+Nếu $F$ là luồng có chi phí nhỏ nhất trong tất cả các luồng khả thi có cùng
+giá trị hiện tại, và $P$ là đường tăng có chi phí nhỏ nhất đối với $F$, thì
+sau khi tăng luồng tối đa dọc theo $P$, luồng mới vẫn là luồng có chi phí nhỏ
+nhất trong lớp giá trị mới. Lặp lại quá trình này cho tới khi không còn đường
+tăng sẽ thu được luồng cực đại chi phí nhỏ nhất.
+
+\subsection{Các bước}
+
+\begin{enumerate}
+  \item Lấy $F^{(0)}=0$.
+  \item Giả sử sau bước $k-1$ ta đã có luồng chi phí nhỏ nhất $F^{(k-1)}$.
+  Dựng đồ thị có trọng số $W(F^{(k-1)})$, rồi tìm đường ngắn nhất từ $V_s$ đến
+  $V_t$ trong đồ thị này. Nếu không tồn tại đường ngắn nhất, tức khoảng cách
+  là $+\infty$, thì $F^{(k-1)}$ là luồng cực đại chi phí nhỏ nhất. Nếu tồn tại,
+  đường ngắn nhất đó là đường tăng $P$, và ta điều chỉnh $F^{(k-1)}$ trên $P$.
+  \item Cách dựng $W(F)$: tập đỉnh giữ nguyên như mạng ban đầu. Mỗi cung
+  $(V_i,V_j)$ của mạng ban đầu được xem xét theo hai hướng. Trọng số hướng
+  thuận là
+  \[
+    W_{ij}=
+    \begin{cases}
+      b_{ij}, & F_{ij}<C_{ij},\\
+      +\infty, & F_{ij}=C_{ij},
+    \end{cases}
+  \]
+  còn trọng số hướng ngược là
+  \[
+    W_{ji}=
+    \begin{cases}
+      -b_{ij}, & F_{ij}>0,\\
+      +\infty, & F_{ij}=0.
+    \end{cases}
+  \]
+  Các cạnh có độ dài $+\infty$ có thể bỏ khỏi $W(F)$.
+  \item Nếu $P^+$ là tập cung thuận và $P^-$ là tập cung lùi trên đường tăng,
+  lượng tăng là
+  \[
+    a=\min\left[
+      \min_{(i,j)\in P^+}\bigl(C_{ij}-F_{ij}^{(k-1)}\bigr),
+      \min_{(i,j)\in P^-}F_{ij}^{(k-1)}
+    \right].
+  \]
+  Cập nhật
+  \[
+    F_{ij}^{(k)}=
+    \begin{cases}
+      F_{ij}^{(k-1)}+a, & (V_i,V_j)\in P^+,\\
+      F_{ij}^{(k-1)}-a, & (V_i,V_j)\in P^-,\\
+      F_{ij}^{(k-1)}, & (V_i,V_j)\notin P.
+    \end{cases}
+  \]
+  \item Với luồng mới $F^{(k)}$, lặp lại các bước trên cho tới khi không còn
+  đường ngắn nhất từ nguồn đến đích.
+\end{enumerate}
+
+\subsection{Ví dụ}
+
+Ví dụ trong slide dùng cặp $(C,b)$, trong đó $C$ là dung lượng và $b$ là chi
+phí đơn vị:
+\[
+\begin{array}{c|c}
+\text{Cạnh} & (C,b)\\ \hline
+V_s\to V_1 & (10,4)\\
+V_s\to V_2 & (8,1)\\
+V_2\to V_1 & (5,2)\\
+V_1\to V_t & (7,1)\\
+V_2\to V_3 & (10,3)\\
+V_1\to V_3 & (2,6)\\
+V_3\to V_t & (4,2)
+\end{array}
+\]
+
+Với $F^{(0)}=0$, đồ thị $W(F^{(0)})$ chỉ có các cạnh thuận có chi phí
+$4,1,2,1,3,6,2$ tương ứng với bảng trên. Đường ngắn nhất đầu tiên là
+\[
+  V_s\to V_2\to V_1\to V_t,
+\]
+có lượng tăng $5$. Ta thu được $F^{(1)}$ với giá trị luồng $v(F^{(1)})=5$:
+\[
+\begin{array}{c|c}
+\text{Cạnh} & F^{(1)}\\ \hline
+V_s\to V_1 & 0\\
+V_s\to V_2 & 5\\
+V_2\to V_1 & 5\\
+V_1\to V_t & 5\\
+V_2\to V_3 & 0\\
+V_1\to V_3 & 0\\
+V_3\to V_t & 0
+\end{array}
+\]
+
+Trong $W(F^{(1)})$, các cạnh đã có luồng sinh ra cạnh ngược chi phí âm. Đường
+ngắn nhất kế tiếp là $V_s\to V_1\to V_t$, tăng được $2$ đơn vị, nên
+$v(F^{(2)})=7$:
+\[
+\begin{array}{c|c}
+\text{Cạnh} & F^{(2)}\\ \hline
+V_s\to V_1 & 2\\
+V_s\to V_2 & 5\\
+V_2\to V_1 & 5\\
+V_1\to V_t & 7\\
+V_2\to V_3 & 0\\
+V_1\to V_3 & 0\\
+V_3\to V_t & 0
+\end{array}
+\]
+
+Lần tiếp theo, đường ngắn nhất là
+\[
+  V_s\to V_2\to V_3\to V_t,
+\]
+tăng được $3$ đơn vị và cho $v(F^{(3)})=10$:
+\[
+\begin{array}{c|c}
+\text{Cạnh} & F^{(3)}\\ \hline
+V_s\to V_1 & 2\\
+V_s\to V_2 & 8\\
+V_2\to V_1 & 5\\
+V_1\to V_t & 7\\
+V_2\to V_3 & 3\\
+V_1\to V_3 & 0\\
+V_3\to V_t & 3
+\end{array}
+\]
+
+Cuối cùng, thuật toán dùng một đường có cung lùi:
+\[
+  V_s\to V_1\to V_2\to V_3\to V_t,
+\]
+trong đó bước $V_1\to V_2$ là cạnh ngược của cung $V_2\to V_1$. Lượng tăng là
+$1$, thu được $v(F^{(4)})=11$:
+\[
+\begin{array}{c|c}
+\text{Cạnh} & F^{(4)}\\ \hline
+V_s\to V_1 & 3\\
+V_s\to V_2 & 8\\
+V_2\to V_1 & 4\\
+V_1\to V_t & 7\\
+V_2\to V_3 & 4\\
+V_1\to V_3 & 0\\
+V_3\to V_t & 4
+\end{array}
+\]
+Vì tổng dung lượng vào đích là $7+4=11$, đây đã là luồng cực đại. Do mỗi bước
+đều chọn đường tăng ngắn nhất theo chi phí trong mạng dư, luồng cực đại này
+cũng có chi phí nhỏ nhất.
+
+\section{Bài tập}
+
+\begin{itemize}
+  \item Cài đặt các thuật toán trong bài.
+  \item Phương pháp gán nhãn.
+  \item Luồng cực đại trong mạng có cận dưới và cận trên.
+  \item Luồng nhỏ nhất trong mạng có cận dưới và cận trên.
+  \item Luồng cực đại chi phí nhỏ nhất.
+\end{itemize}
+
+\end{document}

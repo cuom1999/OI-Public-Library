@@ -1,0 +1,211 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 英文资料 ENGLISH MATERIALS/Longest Path on DAG.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Đường đi ngắn nhất nguồn đơn trong đồ thị có hướng không chu trình}
+\author{Lecture Notes \#17}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{Single-Source Shortest Paths in Directed Acyclic Graphs}
+\sourcepath{English Materials / Longest Path on DAG.pdf}
+
+\section{Đồ thị DAG và thứ tự tô-pô}
+
+Trong một đồ thị có hướng không chu trình, gọi tắt là DAG, không tồn tại chu
+trình. Vì vậy, chu trình âm không thể tồn tại trong DAG, và bài toán đường đi
+ngắn nhất được định nghĩa tốt.
+
+Bài toán đường đi ngắn nhất nguồn đơn trên DAG có thể giải hiệu quả hơn nhờ
+sắp xếp tô-pô.
+
+Một thứ tự tô-pô của DAG $G=(V,E)$ là một thứ tự tuyến tính của toàn bộ các
+đỉnh sao cho nếu $G$ có cạnh $(u,v)$ thì $u$ xuất hiện trước $v$ trong thứ
+tự. Có thể nhìn thứ tự tô-pô như cách đặt các đỉnh trên một đường ngang sao
+cho mọi cạnh có hướng đều đi từ trái sang phải.
+
+\section{Thuật toán sắp xếp tô-pô}
+
+Sắp xếp tô-pô là một ứng dụng của tìm kiếm theo chiều sâu.
+
+\paragraph{Thủ tục \textsc{Topsort}$(G)$.}
+\begin{enumerate}
+  \item Đánh dấu mọi đỉnh $v\in G$ là \emph{chưa thăm}.
+  \item Khi còn tồn tại một đỉnh $v$ chưa thăm, gọi
+  \textsc{Sort}$(G,v)$.
+\end{enumerate}
+
+\paragraph{Thủ tục \textsc{Sort}$(G,v)$.}
+\begin{enumerate}
+  \item Đánh dấu $v$ là \emph{đã thăm}.
+  \item In $v$.
+  \item Với mỗi $u\in \operatorname{Adj}[v]$, nếu $u$ chưa thăm thì gọi
+  \textsc{Sort}$(G,u)$.
+\end{enumerate}
+
+Hình trong bản gốc minh họa một DAG và cùng đồ thị đó sau khi các đỉnh được
+đặt theo thứ tự tô-pô. Độ phức tạp thời gian của \textsc{Topsort} là
+\[
+  O(|V|+|E|).
+\]
+
+\section{Đường đi ngắn nhất trên DAG}
+
+Thuật toán sau giải bài toán đường đi ngắn nhất nguồn đơn trên DAG có trọng
+số.
+
+\paragraph{Thủ tục \textsc{DAG-Shortest-Paths}$(G,s,w)$.}
+\begin{enumerate}
+  \item Gọi \textsc{Topsort}$(G)$.
+  \item Gọi \textsc{Initialize-Single-Source}$(G,s)$.
+  \item Đặt $S:=\varnothing$.
+  \item Xét từng đỉnh $u$ theo thứ tự tô-pô. Với mỗi $v\in\operatorname{Adj}[u]$,
+  thực hiện \textsc{Relax}$(u,v,w)$, rồi đưa $u$ vào $S$.
+\end{enumerate}
+
+Hai thủ tục con giống như trong thuật toán Bellman--Ford.
+
+\paragraph{Thủ tục \textsc{Initialize-Single-Source}$(G,s)$.}
+\begin{enumerate}
+  \item Với mỗi đỉnh $v\in V$, đặt $d[v]:=\infty$ và $\pi[v]:=\mathrm{nil}$.
+  \item Đặt $d[s]:=0$.
+\end{enumerate}
+
+\paragraph{Thủ tục \textsc{Relax}$(u,v,w)$.}
+Nếu
+\[
+  d[v]>d[u]+w(u,v),
+\]
+thì cập nhật
+\[
+  d[v]:=d[u]+w(u,v),\qquad \pi[v]:=u.
+\]
+
+Ví dụ trong bản gốc chạy thuật toán trên đồ thị có các đỉnh
+$r,s,t,x,y,z$. Sau khi sắp theo thứ tự tô-pô, thuật toán thư giãn các cạnh từ
+trái sang phải. Các giá trị cuối cùng trong ví dụ là độ dài đường đi ngắn
+nhất từ nguồn $s$.
+
+\section{Tính đúng đắn}
+
+Định nghĩa $\delta(s,v)$ như thường lệ:
+\[
+  \delta(s,v)=
+  \begin{cases}
+    \min\{w(p): s\overset{p}{\to} v\},
+      & \text{nếu tồn tại đường đi từ }s\text{ đến }v,\\
+    \infty, & \text{ngược lại.}
+  \end{cases}
+\]
+
+Cho một đường đi
+\[
+  P=v_1\to v_2\to v_3\to\cdots\to v_m.
+\]
+Các đỉnh trong $\{v_1,v_2,\ldots,v_{j-1}\}$ được gọi là các tiền nhiệm của
+$v_j$ trên $P$.
+
+Gọi một đường đi ngắn nhất $P$ từ $s$ đến $v$ sao cho mọi tiền nhiệm của $v$
+đều nằm trong $S$ là \emph{đường đi ngắn nhất từ $s$ đến $v$ tương ứng với
+$S$}.
+
+\paragraph{Bổ đề 1.}
+Gọi
+\[
+  (u_1,u_2,\ldots,u_n)
+\]
+là danh sách đỉnh theo thứ tự tô-pô, với $n=|V|$ và $u_i=s$. Ngay sau vòng
+lặp ngoài thứ $j$ của \textsc{DAG-Shortest-Paths}, với mọi $k>j$, giá trị
+$d[u_k]$ là trọng số đường đi ngắn nhất từ $s$ đến $u_k$ tương ứng với $S$.
+Hơn nữa,
+\[
+  d[u_{j+1}]=\delta(s,u_{j+1}).
+\]
+
+\paragraph{Chứng minh.}
+\emph{Cơ sở:} $j=i$. Sau vòng lặp thứ $i$, $S=\{s\}$ và
+$d[u_k]=w(s,u_k)$; bổ đề đúng.
+
+\emph{Giả thiết quy nạp:} giả sử bổ đề đúng với $j=m<n-1$.
+
+\emph{Bước quy nạp:} xét $j=m+1$. Ở vòng lặp thứ $m+1$, đỉnh $u_{m+1}$ được
+đưa vào $S$, và \textsc{Relax}$(u_{m+1},v,w)$ được gọi cho mọi
+$v\in\operatorname{Adj}[u_{m+1}]$. Do thứ tự tô-pô, các đỉnh này đều nằm bên
+phải $u_{m+1}$.
+
+Nếu $u_{m+1}$ không đạt được từ $s$, thì mọi $v$ được xét ở đây cũng không
+đạt được từ $s$ qua $u_{m+1}$, và giá trị $d[v]$ vẫn là $\infty$ khi không có
+đường khác.
+
+Nếu $u_{m+1}$ đạt được từ $s$, thì với cạnh $(u_{m+1},v)$, phép thư giãn kiểm
+tra liệu đường đi qua $u_{m+1}$ có tốt hơn đường đi ngắn nhất hiện tại tương
+ứng với tập tiền nhiệm cũ hay không. Khi
+\[
+  d[v]>d[u_{m+1}]+w(u_{m+1},v),
+\]
+ta cập nhật
+\[
+  d[v]:=d[u_{m+1}]+w(u_{m+1},v).
+\]
+Theo giả thiết quy nạp, giá trị mới này là trọng số của đường đi ngắn nhất từ
+$s$ đến $v$ tương ứng với tập mới
+\[
+  S=\{u_i,u_{i+1},\ldots,u_{m+1}\}.
+\]
+
+Ngoài ra, nếu $v=u_{m+2}$ thì không có đỉnh nào trong
+\[
+  \{u_{m+3},u_{m+4},\ldots,u_n\}
+\]
+có thể đi đến $u_{m+2}$, vì thứ tự tô-pô đặt mọi cạnh từ trái sang phải. Do
+đó
+\[
+  d[v]=\delta(s,v).
+\]
+Bổ đề đúng cho vòng lặp thứ $m+1$, hoàn tất quy nạp.
+
+\paragraph{Định lý 1.}
+Thuật toán \textsc{DAG-Shortest-Paths}, chạy trên DAG có trọng số
+$G=(V,E)$ với nguồn $s$, kết thúc với
+\[
+  d[v]=\delta(s,v)
+\]
+cho mọi đỉnh $v\in V$.
+
+\paragraph{Chứng minh.}
+Theo Bổ đề 1, sau vòng lặp thứ $j$, giá trị
+\[
+  d[u_{j+1}]=\delta(s,u_{j+1})
+\]
+đã được chốt. Sau $n-1$ vòng lặp, mọi đỉnh đều có giá trị đúng. Vòng lặp
+ngoài thật ra chạy $n$ lần; vòng cuối cùng là dư thừa nhưng không làm thay
+đổi tính đúng đắn.
+
+\section{Phân tích độ phức tạp}
+
+\begin{itemize}
+  \item \textsc{Topsort} tốn $O(|V|+|E|)$ thời gian.
+  \item \textsc{Initialize-Single-Source} tốn $O(|V|)$ thời gian.
+  \item Vòng lặp ngoài chạy $|V|$ lần. Tuy vậy, xét tổng toàn bộ vòng lặp
+  trong, mỗi cạnh chỉ được duyệt đúng một lần từ trái sang phải, nên tổng số
+  lần lặp bên trong là $|E|$. Mỗi lần lặp bên trong tốn $O(1)$.
+\end{itemize}
+
+Vì vậy tổng thời gian chạy là
+\[
+  O(|V|+|E|).
+\]
+
+\section{Ghi chú về đường đi dài nhất}
+
+Với DAG, bài toán đường đi dài nhất cũng có thể xử lý bằng cùng ý tưởng thứ
+tự tô-pô, vì không có chu trình để làm đường đi tăng vô hạn. Một cách nhìn
+đơn giản là đổi dấu trọng số cạnh rồi chạy thuật toán đường đi ngắn nhất trên
+DAG; hoặc trực tiếp thay phép thư giãn nhỏ nhất bằng phép thư giãn lớn nhất.
+Thứ tự tô-pô vẫn bảo đảm khi xét một đỉnh, mọi tiền nhiệm của nó đã được xử
+lý.
+
+\end{document}

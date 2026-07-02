@@ -1,0 +1,430 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2002/金恺.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Bàn về ứng dụng của thuật toán luồng mạng}
+\author{Jin Kai}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{A discussion of applications of network-flow algorithms}
+\sourcepath{IOI China candidate team papers / 2002 / Jin Kai.pdf}
+
+\paragraph{Từ khóa.}
+Luồng mạng; xây dựng mô hình; tối ưu hóa.
+
+\tableofcontents
+
+\section{Dẫn nhập}
+
+Thuật toán đồ thị giữ vai trò rất quan trọng trong các kỳ thi tin học. Số
+nhánh của nó rất nhiều, phạm vi ứng dụng rất rộng, đến mức các nhóm thuật
+toán khác khó sánh kịp. Thuật toán luồng mạng là một nhánh quan trọng trong
+thuật toán đồ thị; nó có đặc điểm rõ rệt và tác dụng nổi bật, nên phạm vi ứng
+dụng rất rộng. Trong các kỳ thi tin học ở nhiều cấp những năm gần đây, các
+bài toán dùng luồng mạng xuất hiện liên tiếp, và vị trí của nó sẽ còn ngày
+càng quan trọng hơn.
+
+Mục đích của bài viết này là thông qua việc phân tích một số ví dụ ứng dụng,
+từng bước trình bày cách xây dựng mô hình, nguyên tắc tối ưu hóa và phương
+pháp tối ưu hóa cho thuật toán luồng mạng, từ đó giúp ta hiểu thuật toán này
+sâu hơn và triệt để hơn.
+
+Ở đây giả thiết người đọc đã quen thuộc với khung cơ bản và cách giải các
+bài toán luồng mạng. Nội dung sau chủ yếu ghi lại một số kinh nghiệm trong
+quá trình giải bài, tập trung vào phạm vi ứng dụng, cách áp dụng cụ thể và
+nhiều kỹ thuật tối ưu hóa thường gặp.
+
+\section{Ví dụ 1: bài toán đua xe}
+
+\subsection{Phát biểu bài toán}
+
+P và Q đều là cao thủ xe đua bốn bánh. Mỗi người có \(N\) chiếc xe. Để phân
+cao thấp, họ hẹn nhau tổ chức một cuộc thi.
+
+Cuộc thi có \(M\) chặng. Người thắng nhiều chặng hơn sẽ giành chức vô địch
+chung cuộc. Trong mỗi chặng, mỗi người chọn một chiếc xe của mình để thi đấu.
+Thắng thua của một chặng phần lớn phụ thuộc vào tính năng của hai xe, nhưng
+vì nhiều nguyên nhân, chẳng hạn sự cản trở giữa hai xe, tính năng không phải
+là chỉ tiêu quyết định duy nhất. Có thể xuất hiện tình huống \(A\) thắng
+\(B\), \(B\) thắng \(C\), \(C\) thắng \(D\), nhưng \(D\) lại thắng \(A\).
+May mắn là có một máy thông minh: chỉ cần đưa vào hai chiếc xe, nó lập tức
+phán đoán được xe nào thắng. Trước cuộc thi, máy đã kiểm tra từng cặp gồm một
+xe của P và một xe của Q, rồi đưa bảng thắng thua vào máy tính.
+
+Ngoài ra, do hao mòn khi thi đấu, mỗi chiếc xe có tuổi thọ riêng, tức số
+chặng mà nó có thể tham gia. Tuổi thọ của các xe có thể khác nhau, nhưng
+không vượt quá \(50\) chặng. Hai chiếc xe bất kỳ nhiều nhất chỉ được đối đầu
+một lần.
+
+Cho \(N,M\), với \(1\le N\le 100\), \(1\le M\le 1000\), một bảng thắng thua
+\(N\times N\), tuổi thọ của từng chiếc xe, và giả thiết rằng ở mỗi chặng cả
+hai người đều còn xe có thể chọn. Hãy tính số chặng nhiều nhất mà P có thể
+thắng.
+
+\subsection{Xây dựng mạng}
+
+Ta xây dựng một mạng như sau.
+
+\begin{enumerate}
+  \item Tạo \(N\) đỉnh biểu diễn \(N\) chiếc xe của P, đánh số từ \(1\) đến
+  \(N\).
+  \item Tạo \(N\) đỉnh biểu diễn \(N\) chiếc xe của Q, đánh số từ \(N+1\)
+  đến \(2N\).
+  \item Nếu xe thứ \(i\) của P có thể thắng xe thứ \(j\) của Q, thêm cung
+  \(i\to N+j\) có dung lượng \(1\). Dung lượng này biểu diễn điều kiện hai
+  chiếc xe nhiều nhất chỉ gặp nhau một lần.
+  \item Thêm nguồn \(S\). Với mỗi \(i\in\{1,\ldots,N\}\), nối
+  \(S\to i\), dung lượng bằng tuổi thọ của xe thứ \(i\) của P.
+  \item Thêm đích \(T\). Với mỗi \(j\in\{1,\ldots,N\}\), nối
+  \(N+j\to T\), dung lượng bằng tuổi thọ của xe thứ \(j\) của Q.
+  \item Thêm một nguồn mới \(S_2\), nối \(S_2\to S\) với dung lượng \(M\),
+  biểu diễn tổng cộng nhiều nhất \(M\) chặng.
+\end{enumerate}
+
+Khi đó mỗi đơn vị luồng trên một đường
+\[
+  S_2\to S\to i\to N+j\to T
+\]
+tương ứng với việc chọn xe \(i\) của P thắng xe \(j\) của Q trong một chặng.
+Giá trị luồng cực đại chính là số chặng thắng nhiều nhất của P.
+
+Có thể xem cấu trúc mạng gồm bốn loại cung:
+\[
+\begin{array}{c|l|l}
+\text{Loại} & \text{Cung} & \text{Dung lượng}\\ \hline
+1 & S_2\to S & M\\
+2 & S\to i,\quad 1\le i\le N & \text{tuổi thọ xe }i\text{ của P}\\
+3 & i\to N+j & 1,\text{ nếu P}_i\text{ thắng Q}_j\\
+4 & N+j\to T,\quad 1\le j\le N & \text{tuổi thọ xe }j\text{ của Q}
+\end{array}
+\]
+
+\subsection{Tối ưu hóa}
+
+Nếu dùng cách thông thường, chỉ riêng việc lưu cả lưu lượng và dung lượng đã
+cần \((2N+3)(2N+3)\cdot 2\) bit. Nhưng mạng ở đây chỉ có bốn loại cung như
+trên; số cung nhiều nhất chỉ là
+\[
+  1+N+N+N^2=(N+1)^2.
+\]
+Vì vậy ta không cần lưu cả ma trận đầy đủ.
+
+Hơn nữa, nguồn \(S_2\) và cung \(S_2\to S\) cũng có thể bỏ. Chỉ cần quy định
+thuật toán tăng luồng nhiều nhất \(M\) lần; điều này tương đương với giới hạn
+tổng số chặng.
+
+\section{Ví dụ 2: điều độ tàu hỏa}
+
+\subsection{Phát biểu bài toán}
+
+Một ga hàng hóa có \(n\) đường ray, \(n\le 20\). Do chiều dài đường ray có
+hạn, tại một thời điểm mỗi đường ray nhiều nhất chỉ đỗ được một đoàn tàu
+hàng. Sau khi ga vận hành bình thường, mỗi ngày có \(m\) đoàn tàu hàng đi qua
+ga, \(m\le 100\). Đoàn tàu thứ \(i\) đến ga tại thời điểm \(\mathrm{Reach}[i]\)
+và chở hàng có giá trị \(\mathrm{Cost}[i]\).
+
+Nếu cho phép tàu \(i\) vào ga, ga BackStreet nhận được lợi nhuận
+\(1\%\cdot \mathrm{Cost}[i]\). Nhưng do cần thời gian bốc dỡ, tàu này sẽ dừng
+ở ga trong \(\mathrm{Stay}[i]\) đơn vị thời gian, và trong khoảng thời gian đó
+nó chiếm một đường ray. Nếu không cho vào ga, tàu đi thẳng ra ngoài và ga
+không thu được gì.
+
+Nhiệm vụ là sắp xếp hợp lý việc tàu vào ga hoặc ra thẳng sao cho tổng lợi
+nhuận của ga lớn nhất. Nếu tàu \(a\) vừa rời đường ray thứ \(i\) đúng lúc
+tàu \(b\) đến, tức
+\[
+  \mathrm{Reach}[a]+\mathrm{Stay}[a]=\mathrm{Reach}[b],
+\]
+thì tàu \(b\) không được vào đường ray thứ \(i\). Do đó một tàu có thể đứng
+sau tàu \(i\) trên cùng một đường ray chỉ khi
+\[
+  \mathrm{Reach}[i]+\mathrm{Stay}[i]<\mathrm{Reach}[j].
+\]
+
+\paragraph{Ví dụ.}
+Với \(2\) đường ray và \(5\) đoàn tàu, dữ liệu sau cho lợi nhuận lớn nhất
+\(0.18\). Một cách đạt được là đưa tàu \(1,3\) vào đường ray thứ nhất và tàu
+\(2,5\) vào đường ray thứ hai.
+
+\[
+\begin{array}{c|ccccc}
+\text{Số hiệu tàu} & 1 & 2 & 3 & 4 & 5\\ \hline
+\text{Thời điểm vào ga} & 2 & 3 & 5 & 2 & 6\\
+\text{Giá trị hàng} & 5 & 4 & 6 & 2 & 3\\
+\text{Thời gian dừng} & 2 & 2 & 3 & 2 & 2
+\end{array}
+\]
+
+\subsection{Xây dựng mạng chi phí}
+
+Bài toán là bài toán luồng cực đại chi phí lớn nhất với dung lượng đơn vị.
+Xây dựng mạng như sau.
+
+\begin{enumerate}
+  \item Tách mỗi đoàn tàu thành hai đỉnh. Tàu \(i\) được tách thành \(i\) và
+  \(i'\). Nối \(i\to i'\) với dung lượng \(1\), chi phí
+  \(1\%\cdot \mathrm{Cost}[i]\). Nếu cung này có lưu lượng \(1\), nghĩa là
+  tàu \(i\) được cho vào ga và sinh lợi nhuận tương ứng.
+  \item Thêm nguồn \(S\). Với mỗi đỉnh \(i\), nối \(S\to i\), dung lượng
+  \(1\), chi phí \(0\). Nếu cung này có lưu lượng \(1\), tàu \(i\) là đoàn
+  tàu đầu tiên được đưa vào một đường ray nào đó.
+  \item Thêm nguồn phụ \(S'\). Nối \(S'\to S\) với dung lượng \(n\), biểu
+  diễn có \(n\) đường ray.
+  \item Thêm đích \(T\). Với mỗi đỉnh \(i'\), nối \(i'\to T\), dung lượng
+  \(1\), chi phí \(0\). Nếu cung này có lưu lượng \(1\), tàu \(i\) là đoàn
+  tàu cuối cùng được đưa vào một đường ray nào đó.
+  \item Với mọi \(i\ne j\), nếu
+  \[
+    \mathrm{Reach}[i]+\mathrm{Stay}[i]<\mathrm{Reach}[j],
+  \]
+  nối \(i'\to j\) với dung lượng \(1\), chi phí \(0\). Cung này biểu diễn
+  việc sau khi tàu \(i\) rời ga, tàu \(j\) có thể dùng tiếp cùng đường ray.
+\end{enumerate}
+
+Một đường đi từ \(S'\) đến \(T\) tương ứng với chuỗi tàu dùng chung một đường
+ray. Tổng số đường đi được chọn không vượt quá \(n\), và tổng chi phí của
+luồng là tổng lợi nhuận của các đoàn tàu được đưa vào ga.
+
+\subsection{Tối ưu hóa}
+
+Thực ra không nhất thiết phải thêm nguồn phụ \(S'\) và cung \(S'\to S\). Mỗi
+lần sửa lưu lượng trên đường tăng, lượng sửa đều bằng \(1\). Vì vậy chỉ cần
+quy định tìm nhiều nhất \(n\) đường tăng là bảo đảm số đường ray bị chiếm
+không vượt quá \(n\).
+
+Sau tối ưu hóa thứ nhất, mọi cung đều có dung lượng \(1\), rất tiện xử lý.
+Có thể dùng một biến kiểu byte để lưu cả dung lượng và lưu lượng của mỗi
+cung:
+\[
+\begin{array}{c|l}
+0 & \text{dung lượng }0,\ \text{lưu lượng }0,\\
+1 & \text{dung lượng }1,\ \text{lưu lượng }0,\\
+2 & \text{dung lượng }1,\ \text{lưu lượng }1.
+\end{array}
+\]
+
+\section{Ví dụ 3: bài toán nhà hàng}
+
+\subsection{Phát biểu bài toán}
+
+Trong \(n\) ngày liên tiếp, mỗi ngày công ty có một nhu cầu khăn nhất định.
+Ngày thứ \(i\) cần \(A_i\) chiếc khăn. Khăn phải được khử trùng trước mỗi lần
+sử dụng; khăn mới mua đã được khử trùng.
+
+Có hai cách khử trùng. Cách \(A\) cần \(a\) ngày, cách \(B\) cần \(b\) ngày,
+với \(b>a\). Chi phí của hai cách lần lượt là \(f_a\) và \(f_b\). Giá mua một
+chiếc khăn mới là \(f\), với \(f>f_a>f_b\). Hãy tìm chi phí nhỏ nhất để đáp
+ứng nhu cầu mỗi ngày.
+
+\subsection{Cách xây dựng thứ nhất}
+
+Theo cách thông thường, ta tách mỗi ngày thành hai đỉnh: ngày thứ \(i\) gồm
+đỉnh \(i\) và đỉnh \(i'\), lần lượt xem như thời điểm bắt đầu và kết thúc
+ngày đó. Ngoài ra thêm nguồn \(S\) và đích \(T\).
+
+Các cung được nối như sau.
+
+\begin{enumerate}
+  \item Nối nguồn \(S\) đến đỉnh \(1\), dung lượng từ \(0\) đến
+  \(\infty\), chi phí \(f\). Lưu lượng trên cung này biểu diễn tổng số khăn
+  mới được mua. Vì mua khăn mới vào bất kỳ ngày nào cũng tương đương với mua
+  ngay từ ngày đầu, ta có thể mua toàn bộ khăn mới cần dùng ở ngày thứ nhất.
+  \item Với \(i\le n-1\), nối \(i\to i+1\), dung lượng từ \(0\) đến
+  \(\infty\), chi phí \(0\). Cung này biểu diễn khăn mới hoặc khăn đã khử
+  trùng có ở đầu ngày \(i\) có thể để lại cho ngày kế tiếp.
+  \item Nối \(i\to i'\). Cung này có cận dưới \(A_i\), cận trên \(A_i\), chi
+  phí \(0\). Cận dưới \(A_i\) biểu diễn ngày đó ít nhất cần \(A_i\) khăn; vì
+  dùng quá \(A_i\) khăn là không cần thiết, cận trên cũng đặt là \(A_i\).
+  \item Nối \(i'\to T\), dung lượng từ \(0\) đến \(\infty\), chi phí \(0\).
+  Cung này biểu diễn khăn đã dùng trong ngày \(i\) có thể không đem khử trùng
+  nữa mà vứt bỏ trực tiếp.
+  \item Với \(i<n-a\), nối \(i'\to i+a+1\), dung lượng từ \(0\) đến
+  \(\infty\), chi phí \(f_a\). Cung này biểu diễn khăn đã dùng ở ngày \(i\)
+  được khử trùng theo cách \(A\), và sau \(a\) ngày có thể dùng lại.
+  \item Với \(i<n-b\), nối \(i'\to i+b+1\), dung lượng từ \(0\) đến
+  \(\infty\), chi phí \(f_b\). Cung này biểu diễn khăn đã dùng ở ngày \(i\)
+  được khử trùng theo cách \(B\), và sau \(b\) ngày có thể dùng lại.
+\end{enumerate}
+
+Sơ đồ của mạng có thể hiểu theo ba tầng ý nghĩa: cung mua khăn đi từ cửa
+hàng đến đầu ngày \(1\); các cung giữ khăn nối đầu ngày này sang đầu ngày
+kế tiếp; các cung khử trùng nối cuối ngày \(i\) đến đầu ngày \(i+a+1\) hoặc
+\(i+b+1\); các cung bỏ khăn nối cuối mỗi ngày đến đích.
+
+\subsection{Tối ưu hóa}
+
+\paragraph{1. Xây dựng luồng ban đầu.}
+Mạng trên là mạng có cận dưới và cận trên trên dung lượng, nên luồng ban đầu
+không thể đặt là luồng \(0\). Nếu dùng cách trong sách giáo khoa về đồ thị,
+tức xây thêm mạng phụ để tìm luồng khả thi ban đầu, ta phải viết thêm nhiều
+mã, tốn thời gian lập trình, đồng thời không gian và thời gian chạy đều bị
+lãng phí. Ở đây nên tùy bài mà xử lý.
+
+Ý tưởng cốt lõi của luồng ban đầu là: không khử trùng, mọi nhu cầu khăn đều
+được đáp ứng bằng cách mua mới. Đánh số đỉnh cuối ngày \(i\) là \(i+n\). Khi
+đó có thể đặt:
+\[
+\begin{aligned}
+  f(i,i+n)&=A_i, && 1\le i\le n,\\
+  f(n-1,n)&=A_n,\\
+  f(i,i+1)&=f(i+1,i+2)+f(i+1,i+n+1), && 1\le i\le n-2,\\
+  f(S,1)&=f(1,2)+f(1,n+1),\\
+  f(i+n,T)&=A_i, && 1\le i\le n.
+\end{aligned}
+\]
+Các cung khử trùng ban đầu có thể đặt lưu lượng \(0\). Luồng này đúng với
+kịch bản mua đủ khăn mới và sau khi dùng thì vứt bỏ.
+
+\paragraph{2. Lưu trữ không gian.}
+Trước đây, các thuật toán luồng mạng thường dùng ma trận kề hoặc danh sách
+kề để lưu mạng. Với bài này, \(n\) có thể đến \(1000\), nên chắc chắn không
+thể dùng ma trận kề. Nếu dùng danh sách kề, độ phức tạp lập trình lại tăng.
+Quan sát cấu trúc mạng, mọi cung chỉ thuộc năm loại:
+\[
+\begin{array}{c|l}
+1 & i-1\to i,\quad 1\le i\le n;\quad 0\to 1\text{ biểu diễn }S\to 1,\\
+2 & i\to i+n,\quad 1\le i\le n,\\
+3 & i+n\to T,\quad 1\le i\le n,\\
+4 & i+n\to i+a+1,\quad 1\le i<n-a,\\
+5 & i+n\to i+b+1,\quad 1\le i<n-b.
+\end{array}
+\]
+Dung lượng, chi phí, và lưu lượng của cung loại \(2\) đều cố định. Vì vậy chỉ
+cần dùng bốn mảng kích thước \(1..n\) để lưu lưu lượng của bốn loại cung còn
+lại. Nếu mỗi giá trị dùng \(2\) byte, không gian chỉ khoảng
+\[
+  \frac{4\cdot 1000\cdot 2}{1024}\approx 8\text{ KB}.
+\]
+
+\section{Ví dụ 4: mạng tình báo cuối cùng}
+
+\subsection{Phát biểu bài toán}
+
+Bài này được dẫn chiếu là bài thứ nhất của vòng thi CTSC 2001, tên
+\textit{Agent}. Các slide không chép lại toàn bộ đề, mà tập trung vào mô
+hình luồng mạng và cách chuyển hàm mục tiêu dạng tích thành bài toán chi phí
+luồng.
+
+\subsection{Xây dựng mạng}
+
+Các ký hiệu dùng trong mô hình gồm:
+\begin{itemize}
+  \item \(K\): giới hạn tổng thể từ tổng bộ đồng minh;
+  \item \(AM_i\): lượng liên hệ mà tổng bộ đồng minh có thể thực hiện với
+  điệp viên \(i\);
+  \item \(AS_i\): hệ số an toàn của liên hệ từ tổng bộ đồng minh đến điệp
+  viên \(i\);
+  \item \(M_{i,j}\): số lượng thông tin mà điệp viên \(i\) có thể truyền cho
+  điệp viên \(j\);
+  \item \(S_{i,j}\): hệ số an toàn của cung truyền tin từ \(i\) đến \(j\).
+\end{itemize}
+
+Gọi \(C_{u,v}\) là dung lượng và \(W_{u,v}\) là trọng số an toàn trên cung
+\((u,v)\). Các bước chính để lập mạng là:
+
+\begin{enumerate}
+  \item Thêm nguồn \(p\).
+  \item Thêm đỉnh phụ \(p'\), đặt
+  \[
+    C_{p,p'}=K,\qquad W_{p,p'}=1.
+  \]
+  Nếu tổng bộ đồng minh có thể liên hệ với điệp viên \(i\), tức \(AM_i>0\),
+  thì đặt
+  \[
+    C_{p',i}=AM_i,\qquad W_{p',i}=AS_i,
+    \qquad i=1,2,\ldots,n.
+  \]
+  \item Nếu điệp viên \(i\) có thể truyền tin cho điệp viên \(j\), tức
+  \(M_{i,j}>0\), thì đặt
+  \[
+    C_{i,j}=M_{i,j},\qquad W_{i,j}=S_{i,j},
+    \qquad i,j=1,2,\ldots,n.
+  \]
+  \item Thêm đích \(q\). Nếu điệp viên \(i\) có thể liên hệ với bộ phận tình
+  báo của đối phương, thì đặt
+  \[
+    C_{i,q}=K,\qquad W_{i,q}=1,
+    \qquad i=1,2,\ldots,n.
+  \]
+\end{enumerate}
+
+\subsection{Phân tích hàm mục tiêu}
+
+Bài toán luồng cực đại chi phí nhỏ nhất tìm cách làm nhỏ nhất tổng
+\[
+  \sum_{(u,v)} \text{chi phí}(u,v)\cdot \text{lưu lượng}(u,v).
+\]
+Trong bài này, mục tiêu lại là làm lớn nhất tích các lũy thừa của hệ số an
+toàn theo lưu lượng. Nếu \(F_{i,j}\) là lượng thông tin thực sự truyền từ
+\(i\) đến \(j\), thì một dạng mục tiêu của bài là
+\[
+  \max\left\{
+    \prod_{i=1}^{n}\prod_{j=1}^{n} S_{i,j}^{F_{i,j}}
+    \cdot
+    \prod_{i=1}^{n} AS_i^{F_{p',i}}
+  \right\}.
+\]
+Lấy đối số logarit và đổi dấu, mục tiêu trên chuyển thành
+\[
+  \min\left\{
+    \sum_{i=1}^{n}\sum_{j=1}^{n}
+      \bigl(-F_{i,j}\ln S_{i,j}\bigr)
+    +
+    \sum_{i=1}^{n}
+      \bigl(-F_{p',i}\ln AS_i\bigr)
+  \right\}.
+\]
+Từ đây có thể thấy bài toán đã chuyển từ ``tìm tích'' thành ``tìm tổng'', phù
+hợp với mô hình luồng cực đại chi phí nhỏ nhất. Vì thế ta có thể dùng thuật
+toán chi phí luồng để giải.
+
+Cụ thể, với mỗi cung \((a,b)\) trong mạng, đặt chi phí mới
+\[
+  W'_{a,b}=-\ln W_{a,b}.
+\]
+Mặt khác, chỉ cần \(M_{i,j}>0\) thì \(0<S_{i,j}\le 1\), do đó
+\(\ln S_{i,j}\le 0\) và \(W'_{i,j}\ge 0\). Vì vậy khi tìm đường tăng có chi
+phí nhỏ nhất, ta vẫn có thể dùng các phương pháp thường dùng cho bài toán
+chi phí luồng.
+
+Nếu \(F\) là luồng cuối cùng và \(C\) là dung lượng, mục tiêu cuối có thể
+viết dưới dạng
+\[
+  \prod_{i=1}^{n}\prod_{j=1}^{n}
+    e^{W_{i,j}(F_{i,j}-C_{i,j})}
+  \cdot
+  \prod_{i=1}^{n}
+    e^{W_{p',i}(F_{p',i}-C_{p',i})}.
+\]
+Công thức này tương ứng với việc khôi phục giá trị mục tiêu sau khi đã giải
+bài toán trên thang logarit.
+
+\section{Kết luận}
+
+So với các thuật toán đồ thị khác, mô hình luồng mạng phức tạp hơn, độ phức
+tạp lập trình cao hơn, và hệ số hằng của thuật toán cũng lớn hơn.
+
+Ưu điểm của mô hình luồng mạng là nó chứa được rất nhiều yếu tố, đặc biệt là
+nhiều loại trọng số: không chỉ có trọng số biểu diễn dung lượng và lưu lượng,
+mà còn có trọng số biểu diễn chi phí; dung lượng không chỉ có cận trên mà còn
+có thể có cận dưới. Chính các yếu tố biến hóa này làm cho mô hình luồng mạng
+có phạm vi ứng dụng rất rộng trong việc giải quyết các bài toán thực tế và
+nghiên cứu bài toán đồ thị. Nó thường giải quyết tốt một số bài toán mà tìm
+kiếm hoặc quy hoạch động khó xử lý, trông giống như các bài toán NP.
+
+Khó khăn lớn nhất khi áp dụng luồng mạng vào một bài cụ thể là xây dựng mô
+hình; khó khăn tiếp theo là tối ưu hóa thuật toán.
+
+Việc xây dựng mô hình không có khuôn mẫu sẵn. Ta phải phân tích theo điều
+kiện cụ thể của đề bài. Điều này đòi hỏi hiểu rõ các tính chất của nhiều dạng
+luồng mạng, biết đúc kết kinh nghiệm, và phát huy tính sáng tạo. Nói chung,
+phương pháp được dùng nhiều nhất là tách đỉnh.
+
+Tối ưu hóa là một khâu quan trọng của thuật toán. Nó không thể tiến bộ trong
+một sớm một chiều, mà phải dựa vào tích lũy kinh nghiệm.
+
+\end{document}

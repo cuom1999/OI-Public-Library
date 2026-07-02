@@ -1,0 +1,122 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: IOI中国国家候选队论文/2008/Day1/10.俞华程《矩阵乘法在信息学中的应用》/slide.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\title{Ứng dụng của phép nhân ma trận trong tin học}
+\author{Du Hoa Trình}
+\date{}
+
+\begin{document}
+\maketitle
+\sourcepath{IOI 2008 / Yu Huacheng / Matrix multiplication applications}
+
+\section{Các hướng ứng dụng}
+
+Phép nhân ma trận thường xuất hiện khi cần:
+\begin{itemize}
+  \item tối ưu quy hoạch động hoặc tăng tốc mô phỏng;
+  \item đếm đường đi thông qua ma trận kề của đồ thị;
+  \item kết hợp với chia đôi hoặc chia để trị.
+\end{itemize}
+
+Tài liệu này tập trung vào cách dùng ma trận kề và lũy thừa ma trận để
+biểu diễn số đường đi trong đồ thị, rồi áp dụng vào một bài toán có
+trạng thái biến đổi theo thời gian.
+
+\section{Lũy thừa của ma trận kề}
+
+Xét đồ thị có $N$ đỉnh và ma trận kề $G$. Với đồ thị không trọng số,
+$G[a,b]=1$ khi có cạnh từ $a$ đến $b$, ngược lại bằng $0$. Theo định
+nghĩa phép nhân ma trận,
+\[
+  G^2[a,b]=\sum_{i=1}^{N}G[a,i]G[i,b].
+\]
+Tích $G[a,i]G[i,b]$ bằng $1$ khi và chỉ khi có đường đi
+$a\to i\to b$. Vì vậy $G^2[a,b]$ chính là số đường đi độ dài $2$ từ
+$a$ đến $b$.
+
+Tương tự,
+\[
+\begin{aligned}
+G^3[a,b]
+  &=\sum_{i=1}^{N}G[a,i]G^2[i,b] \\
+  &=\sum_{i=1}^{N}G[a,i]\left(\sum_{j=1}^{N}G[i,j]G[j,b]\right) \\
+  &=\sum_{i=1}^{N}\sum_{j=1}^{N}G[a,i]G[i,j]G[j,b].
+\end{aligned}
+\]
+Mỗi tích khác $0$ tương ứng với một đường đi
+$a\to i\to j\to b$, nên $G^3[a,b]$ là số đường đi độ dài $3$.
+
+Suy rộng, $G^k[a,b]$ là số đường đi độ dài $k$ từ $a$ đến $b$. Kết luận
+này không cần xử lý riêng cạnh song song hay vòng tự khép; chúng đều
+được tính đúng trong ma trận kề tương ứng.
+
+\section{Bài toán mô phỏng trên đồ thị}
+
+Cho một đồ thị vô hướng có không quá $50$ đỉnh, một đỉnh bắt đầu $s$ và
+một đỉnh kết thúc $t$. Mỗi đơn vị thời gian người chơi di chuyển một
+lần theo cạnh. Một số kẻ săn mồi di chuyển tuần hoàn, chu kỳ không quá
+$4$. Người chơi không được đi vào vị trí có kẻ săn mồi. Cần tính số
+cách đi từ $s$ đến $t$ tại thời điểm $u$, với $u\le 2\cdot 10^9$.
+
+Nếu không có kẻ săn mồi, lời giải trực tiếp là dùng $G^u$: số cách từ
+$s$ đến $t$ là $G^u[s,t]$. Khi có kẻ săn mồi, ma trận chuyển trạng thái
+phụ thuộc vào thời gian, vì ở mỗi thời điểm một số đỉnh bị cấm.
+
+Gọi $A_u[a,b]$ là số cách để ở đỉnh $a$ tại thời điểm $0$ và ở đỉnh
+$b$ tại thời điểm $u$. Nếu không có cấm đỉnh thì $A_u=G^u$. Khi có cấm
+đỉnh, đặt $G_u$ là ma trận chuyển trạng thái tại bước thời gian $u$:
+các cạnh đi vào đỉnh bị kẻ săn mồi chiếm tại thời điểm đó được xóa khỏi
+ma trận. Khi đó
+\[
+  A_u=A_{u-1}G_u=G_1G_2\cdots G_u.
+\]
+
+\section{Khai thác tính chu kỳ}
+
+Chu kỳ của mỗi kẻ săn mồi không quá $4$, nên trạng thái cấm đỉnh lặp
+lại với chu kỳ
+\[
+  \operatorname{lcm}(1,2,3,4)=12.
+\]
+Do đó $G_i=G_{i+12}$. Đặt
+\[
+  G'=G_1G_2\cdots G_{12},\qquad u=12p+q,\qquad 0\le q<12.
+\]
+Ta có
+\[
+  G_1G_2\cdots G_u=(G')^pG_1G_2\cdots G_q.
+\]
+Vì vậy chỉ cần tính trước tích một chu kỳ $G'$ và tích tiền tố
+$G_1\cdots G_q$, rồi dùng lũy thừa nhanh cho $(G')^p$.
+
+\section{Độ phức tạp}
+
+Với phép nhân ma trận thường, nhân hai ma trận $N\times N$ mất
+$O(N^3)$. Các bước của thuật toán gồm:
+\begin{itemize}
+  \item tính $G_1G_2\cdots G_{12}$ trong $O(N^3)$ vì $12$ là hằng số;
+  \item tính tiền tố $G_1\cdots G_q$ trong $O(N^3)$;
+  \item lũy thừa nhanh $(G')^p$ trong $O(N^3\log p)=O(N^3\log u)$;
+  \item nhân các ma trận cuối để lấy đáp án trong $O(N^3)$.
+\end{itemize}
+Tổng độ phức tạp là $O(N^3\log u)$, phù hợp với $N\le 50$ và
+$u\le 2\cdot 10^9$.
+
+\section{Tổng kết}
+
+Phép nhân ma trận xử lý được nhiều dạng bài toán đếm đường đi:
+\begin{itemize}
+  \item số đường đi có số cạnh cố định giữa hai đỉnh;
+  \item số đường đi có số cạnh nằm trong một khoảng;
+  \item số đường đi có số cạnh cố định giữa mọi cặp đỉnh;
+  \item số đường đi có số cạnh nằm trong một khoảng giữa mọi cặp đỉnh.
+\end{itemize}
+
+Ý tưởng chung là biểu diễn một bước chuyển bằng ma trận, sau đó dùng
+phép nhân và lũy thừa nhanh để ghép nhiều bước chuyển. Khi ma trận thay
+đổi tuần hoàn theo thời gian, ta nhóm cả chu kỳ thành một khối chuyển
+trạng thái rồi tiếp tục dùng lũy thừa ma trận.
+
+\end{document}

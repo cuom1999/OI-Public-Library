@@ -1,0 +1,24 @@
+# Thư viện OI Public Library tiếng Việt
+
+Thư mục này chứa lớp bản dịch tiếng Việt cho
+`enkerewpo/OI-Public-Library`. Các tệp gốc được giữ nguyên ở các thư mục
+thượng nguồn; bản dịch LaTeX mới được đặt trong `vi/sources/` và dùng chung
+gói định dạng `vi/oipl-vn.sty`.
+
+## Biên dịch
+
+Can LuaLaTeX. Tu thu muc `vi/`, chay:
+
+```sh
+make
+```
+
+Makefile tự động tìm mọi tệp `sources/**/*.tex` và biên dịch mỗi tệp thành PDF
+tương ứng trong `build/`.
+
+## Cách tổ chức
+
+- `sources/`: nguồn LaTeX tiếng Việt.
+- `build/`: PDF sinh ra khi biên dịch, không viết tay.
+- `oipl-vn.sty`: định dạng chung cho tất cả bản dịch.
+- `TRANSLATION.md`: quy ước dịch thuật và quy trình xử lý PDF-only.

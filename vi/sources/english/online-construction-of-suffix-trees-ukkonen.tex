@@ -1,0 +1,742 @@
+% Vietnamese translation for OI Public Library
+% Source-PDF: 英文资料 ENGLISH MATERIALS/Suffix Tree with Figs.pdf
+\documentclass[11pt]{article}
+\usepackage{oipl-vn}
+
+\newtheorem{theorem}{Định lý}
+\newtheorem{lemma}{Bổ đề}
+\newenvironment{proof}{\paragraph{Chứng minh.}}{\hfill$\dashv$\par}
+
+\newcommand{\eps}{\epsilon}
+\newcommand{\STrie}{\operatorname{STrie}}
+\newcommand{\STree}{\operatorname{STree}}
+\newcommand{\SA}{\operatorname{SA}}
+
+\title{Xây dựng trực tuyến cây hậu tố}
+\author{Esko Ukkonen}
+\date{}
+
+\begin{document}
+\maketitle
+
+\origtitle{On-line construction of suffix trees}
+\sourcepath{English Materials/Suffix Tree with Figs.pdf}
+
+\begin{abstract}
+Bài viết trình bày một thuật toán trực tuyến để xây dựng cây hậu tố của một
+xâu cho trước trong thời gian tuyến tính theo độ dài xâu. Thuật toán mới có
+tính chất mong muốn là xử lý xâu từng ký hiệu một từ trái sang phải, và tại
+mọi thời điểm luôn có sẵn cây hậu tố của phần xâu đã quét. Phương pháp được
+phát triển như một phiên bản thời gian tuyến tính của một thuật toán rất đơn
+giản cho trie hậu tố, vốn có kích thước bậc hai. Dù thuật toán trie này có
+trường hợp xấu nhất bậc hai, nó vẫn có thể là một phương pháp thực tế tốt khi
+xâu không quá dài. Một biến thể khác của phương pháp cũng dẫn một cách tự
+nhiên tới các thuật toán đã biết để xây dựng ô-tô-mát hậu tố, hay DAWG.
+\end{abstract}
+
+\noindent\textbf{Từ khóa:} thuật toán thời gian tuyến tính, cây hậu tố, trie
+hậu tố, ô-tô-mát hậu tố, DAWG.
+
+\section{Giới thiệu}
+
+Cây hậu tố là một cấu trúc dữ liệu giống trie biểu diễn tất cả hậu tố của một
+xâu. Cây hậu tố đóng vai trò trung tâm trong nhiều thuật toán trên xâu, chẳng
+hạn \cite{apostolico,galil-giancarlo,amir-farach}. Tuy nhiên, các thuật toán
+xây dựng cây hậu tố thời gian tuyến tính trong tài liệu thường bị xem là khá
+khó nắm bắt.
+
+Mục đích chính của bài viết này là phát triển một cách xây dựng cây hậu tố dễ
+hiểu, dựa trên một ý tưởng tự nhiên giúp hoàn thiện bức tranh về cây hậu tố.
+Thuật toán mới có tính chất quan trọng là trực tuyến: nó xử lý xâu từng ký
+hiệu một từ trái sang phải, và luôn duy trì cây hậu tố của phần đã quét. Thuật
+toán dựa trên quan sát đơn giản rằng các hậu tố của xâu
+\[
+  T^i=t_1\cdots t_i
+\]
+có thể thu được từ các hậu tố của
+\[
+  T^{i-1}=t_1\cdots t_{i-1}
+\]
+bằng cách nối ký hiệu $t_i$ vào cuối mỗi hậu tố của $T^{i-1}$, rồi thêm hậu tố
+rỗng. Các hậu tố của toàn bộ xâu $T=T^n=t_1t_2\cdots t_n$ vì vậy có thể thu
+được bằng cách lần lượt mở rộng hậu tố của $T^0$ thành hậu tố của $T^1$, rồi
+tiếp tục cho tới khi hậu tố của $T$ được tạo từ hậu tố của $T^{n-1}$.
+
+Cách nhìn này khác với phương pháp của Weiner \cite{weiner}, vốn đi từ phải
+sang trái và thêm các hậu tố vào cây theo thứ tự tăng dần của độ dài, bắt đầu
+từ hậu tố ngắn nhất; nó cũng khác với phương pháp của McCreight
+\cite{mccreight}, vốn thêm các hậu tố theo thứ tự giảm dần của độ dài. Tuy
+nhiên, dù trực giác ban đầu khác nhau rõ rệt, thuật toán ở đây và thuật toán
+của McCreight trong dạng cuối cùng lại khá gần nhau về mặt chức năng.
+
+Thuật toán của chúng ta được hiểu tốt nhất như một phiên bản thời gian tuyến
+tính của một thuật toán khác trong \cite{ukkonen-wood} cho trie hậu tố có kích
+thước bậc hai. Thuật toán rất cơ bản đó, giống thuật toán cây vị trí trong
+\cite{kempf}, được trình bày ở Mục 2. Nó không chạy trong thời gian tuyến tính:
+thời gian tỷ lệ với kích thước trie hậu tố, vốn có thể là bậc hai. Tuy nhiên,
+một sửa đổi khá trong suốt, được mô tả ở Mục 4, cho ta phương pháp trực tuyến
+thời gian tuyến tính cho cây hậu tố, đồng thời đem lại một góc nhìn tự nhiên
+giúp hiểu phép xây dựng này.
+
+Mục 5 chỉ ra thêm rằng trie hậu tố được bổ sung các liên kết hậu tố cho ta một
+đặc trưng cơ bản của ô-tô-mát hậu tố, còn gọi là đồ thị từ phi chu trình có
+hướng, hay DAWG. Điều này lập tức dẫn tới một thuật toán xây dựng các ô-tô-mát
+đó. Phương pháp thu được về bản chất trùng với các thuật toán đã biết trong
+\cite{blumer,crochemore-transducers,crochemore-constraints}. Một lần nữa,
+cách nhìn mới là tự nhiên và giúp hiểu rõ các phép xây dựng ô-tô-mát hậu tố.
+
+\section{Xây dựng trie hậu tố}
+
+Cho $T=t_1t_2\cdots t_n$ là một xâu trên bảng chữ cái $\Sigma$. Một xâu $x$
+được gọi là xâu con của $T$ nếu $T=uxv$ với một số xâu, có thể rỗng, $u$ và
+$v$. Một xâu
+\[
+  T_i=t_i\cdots t_n,\qquad 1\le i\le n+1,
+\]
+là một hậu tố của $T$; đặc biệt, $T_{n+1}=\eps$ là hậu tố rỗng. Tập mọi hậu
+tố của $T$ được ký hiệu là $\sigma(T)$. Trie hậu tố của $T$ là trie biểu diễn
+$\sigma(T)$.
+
+Chính xác hơn, ta ký hiệu trie hậu tố của $T$ là
+\[
+  \STrie(T)=(Q\cup\{\bot\},\mathit{root},F,g,f).
+\]
+Đây là một ô-tô-mát hữu hạn đơn định được tăng cường: đồ thị chuyển trạng thái
+của nó có dạng cây và biểu diễn trie của $\sigma(T)$, còn phần tăng cường là
+hàm hậu tố $f$ và trạng thái phụ $\bot$. Tập trạng thái $Q$ của $\STrie(T)$ có
+thể đặt tương ứng một-một với các xâu con của $T$. Trạng thái ứng với xâu con
+$x$ được ký hiệu là $\bar{x}$.
+
+Trạng thái đầu $\mathit{root}$ ứng với xâu rỗng $\eps$, và tập trạng thái kết
+thúc $F$ ứng với $\sigma(T)$. Hàm chuyển $g$ được định nghĩa bởi
+\[
+  g(\bar{x},a)=\bar{y}
+\]
+với mọi $\bar{x},\bar{y}\in Q$ sao cho $y=xa$, trong đó $a\in\Sigma$.
+
+Hàm hậu tố $f$ được định nghĩa cho mỗi trạng thái $\bar{x}\in Q$ như sau. Nếu
+$\bar{x}\ne\mathit{root}$ thì $x=ay$ với một ký hiệu $a\in\Sigma$, và ta đặt
+\[
+  f(\bar{x})=\bar{y}.
+\]
+Ngoài ra, $f(\mathit{root})=\bot$.
+
+Trạng thái phụ $\bot$ cho phép ta viết các thuật toán phía sau mà không cần
+tách riêng hậu tố rỗng và hậu tố không rỗng, hay tách riêng $\mathit{root}$
+và các trạng thái khác. Trạng thái $\bot$ được nối với trie bởi
+\[
+  g(\bot,a)=\mathit{root}
+\]
+với mọi $a\in\Sigma$. Ta không định nghĩa $f(\bot)$. Có thể xem các chuyển từ
+$\bot$ tới $\mathit{root}$ là nhất quán với các chuyển còn lại: trạng thái
+$\bot$ ứng với nghịch đảo $a^{-1}$ của mọi ký hiệu $a\in\Sigma$; vì
+$a^{-1}a=\eps$, ta đặt $g(\bot,a)=\mathit{root}$ do $\mathit{root}$ ứng với
+$\eps$.
+
+Theo thuật ngữ của McCreight \cite{mccreight}, $f(r)$ được gọi là
+\term{liên kết hậu tố} của trạng thái $r$. Các liên kết hậu tố sẽ được dùng
+trong quá trình xây dựng cây hậu tố; chúng cũng có nhiều ứng dụng khác
+\cite{ukkonen-cpm,ukkonen-wood}.
+
+Ô-tô-mát $\STrie(T)$ trùng với ô-tô-mát khớp xâu Aho--Corasick
+\cite{aho-corasick} cho tập từ khóa $\{T_i\mid 1\le i\le n+1\}$; trong
+\cite{aho-corasick}, liên kết hậu tố được gọi là chuyển thất bại.
+
+Hình 1 của bài gốc minh họa quá trình xây dựng $\STrie(\texttt{cacao})$:
+các cung chuyển trạng thái được vẽ đậm, còn các chuyển thất bại, tức liên kết
+hậu tố, được vẽ mảnh. Để hình dễ đọc, chỉ hai lớp cuối của các liên kết hậu tố
+được vẽ tường minh.
+
+Dễ xây dựng $\STrie(T)$ trực tuyến bằng một lượt quét trái sang phải trên
+$T$. Ký hiệu $T^i=t_1\cdots t_i$ là tiền tố của $T$, với $0\le i\le n$. Các
+kết quả trung gian của phép xây dựng là $\STrie(T^i)$ với
+$i=0,1,\ldots,n$.
+
+Quan sát then chốt để nhận $\STrie(T^i)$ từ $\STrie(T^{i-1})$ là các hậu tố
+của $T^i$ có thể thu được bằng cách nối $t_i$ vào cuối mỗi hậu tố của
+$T^{i-1}$, rồi thêm một hậu tố rỗng:
+\[
+  \sigma(T^i)=\sigma(T^{i-1})t_i\cup\{\eps\}.
+\]
+Theo định nghĩa, $\STrie(T^{i-1})$ chấp nhận $\sigma(T^{i-1})$. Để nó chấp
+nhận $\sigma(T^i)$, ta xét tập trạng thái kết thúc $F_{i-1}$ của
+$\STrie(T^{i-1})$. Nếu $r\in F_{i-1}$ chưa có chuyển theo $t_i$, ta thêm một
+chuyển như vậy từ $r$ tới một trạng thái mới, trạng thái này trở thành lá mới
+của trie. Các trạng thái mà một chuyển cũ hoặc mới theo $t_i$ từ một trạng
+thái trong $F_{i-1}$ đi tới, cùng với $\mathit{root}$, tạo thành tập trạng
+thái kết thúc $F_i$ của $\STrie(T^i)$.
+
+Các trạng thái $r\in F_{i-1}$ cần nhận chuyển mới có thể được tìm bằng liên
+kết hậu tố. Định nghĩa của hàm hậu tố cho thấy $r\in F_{i-1}$ khi và chỉ khi
+\[
+  r=f^j(\overline{t_1\cdots t_{i-1}})
+\]
+với một $0\le j\le i-1$. Vì vậy mọi trạng thái trong $F_{i-1}$ nằm trên đường
+đi liên kết hậu tố bắt đầu từ trạng thái sâu nhất $\overline{t_1\cdots
+t_{i-1}}$ của $\STrie(T^{i-1})$ và kết thúc ở $\bot$. Ta gọi đường đi quan
+trọng này là \term{đường biên} của $\STrie(T^{i-1})$.
+
+Ta duyệt đường biên. Nếu một trạng thái $\bar{z}$ trên đường biên chưa có
+chuyển theo $t_i$, ta thêm trạng thái mới $\overline{zt_i}$ và chuyển mới
+\[
+  g(\bar{z},t_i)=\overline{zt_i}.
+\]
+Như vậy $g$ được cập nhật. Để cập nhật $f$, các trạng thái mới
+$\overline{zt_i}$ được nối với nhau bằng các liên kết hậu tố mới, tạo thành
+một đường đi bắt đầu từ trạng thái $\overline{t_1\cdots t_i}$. Rõ ràng đây
+chính là đường biên của $\STrie(T^i)$.
+
+Việc duyệt $F_{i-1}$ dọc theo đường biên có thể dừng ngay khi gặp trạng thái
+đầu tiên $\bar{z}$ sao cho trạng thái $\overline{zt_i}$, và do đó chuyển
+$g(\bar{z},t_i)=\overline{zt_i}$, đã tồn tại. Thật vậy, nếu
+$\overline{zt_i}$ đã là một trạng thái thì $\STrie(T^{i-1})$ phải chứa trạng
+thái $\overline{z't_i}$ và chuyển $g(\bar{z'},t_i)=\overline{z't_i}$ với mọi
+$z'=f^j(\bar{z})$, $j\ge 1$. Nói cách khác, nếu $zt_i$ là xâu con của
+$T^{i-1}$ thì mọi hậu tố của $zt_i$ cũng là xâu con của $T^{i-1}$. Chú ý rằng
+trạng thái $\bar{z}$ như vậy luôn tồn tại, vì $\bot$ là trạng thái cuối của
+đường biên và $\bot$ có chuyển cho mọi ký hiệu $t_i$.
+
+Khi phép duyệt dừng như vậy, thủ tục tạo một trạng thái mới cho mỗi liên kết
+hậu tố đã xét trong lúc duyệt. Do đó toàn bộ thủ tục tốn thời gian tỷ lệ với
+kích thước ô-tô-mát thu được.
+
+\paragraph{Thuật toán 1.}
+Xây dựng $\STrie(T^i)$ từ $\STrie(T^{i-1})$. Ở đây \texttt{top} là trạng thái
+$\overline{t_1\cdots t_{i-1}}$.
+\begin{verbatim}
+r <- top;
+while g(r, ti) is undefined do
+    create new state r' and new transition g(r, ti) = r';
+    if r != top then create new suffix link f(oldr') = r';
+    oldr' <- r';
+    r <- f(r);
+create new suffix link f(oldr') = g(r, ti);
+top <- g(top, ti).
+\end{verbatim}
+
+Bắt đầu từ $\STrie(\eps)$, gồm chỉ $\mathit{root}$, $\bot$ và các liên kết
+giữa chúng, rồi lặp Thuật toán 1 cho $t_i=t_1,t_2,\ldots,t_n$, ta thu được
+$\STrie(T)$. Thuật toán là tối ưu theo nghĩa thời gian chạy tỷ lệ với kích
+thước kết quả cuối cùng $\STrie(T)$. Kích thước này lại tỷ lệ với $|Q|$, tức
+số xâu con khác nhau của $T$. Đáng tiếc, số đó có thể là bậc hai theo $|T|$,
+chẳng hạn khi $T=a^nb^n$.
+
+\begin{theorem}
+Trie hậu tố $\STrie(T)$ có thể được xây dựng trong thời gian tỷ lệ với kích
+thước của $\STrie(T)$; trong trường hợp xấu nhất, kích thước này là
+$O(|T|^2)$.
+\end{theorem}
+
+\section{Cây hậu tố}
+
+Cây hậu tố $\STree(T)$ của $T$ là cấu trúc dữ liệu biểu diễn $\STrie(T)$ trong
+không gian tuyến tính theo độ dài $|T|$. Điều này đạt được bằng cách chỉ biểu
+diễn một tập con $Q'\cup\{\bot\}$ của các trạng thái trong $\STrie(T)$. Ta gọi
+các trạng thái trong $Q'\cup\{\bot\}$ là \term{trạng thái tường minh}. Tập
+$Q'$ gồm mọi trạng thái rẽ nhánh, tức các trạng thái có ít nhất hai chuyển đi
+ra, và mọi lá, tức các trạng thái không có chuyển đi ra, của $\STrie(T)$. Theo
+định nghĩa, $\mathit{root}$ được xem là trạng thái rẽ nhánh. Các trạng thái
+còn lại của $\STrie(T)$, tức các trạng thái khác $\mathit{root}$ và $\bot$ có
+đúng một chuyển đi ra, được gọi là \term{trạng thái ngầm} khi xét như trạng
+thái của $\STree(T)$; chúng không xuất hiện tường minh trong $\STree(T)$.
+
+Giả sử xâu $w$ được đọc trên đường chuyển trong $\STrie(T)$ giữa hai trạng
+thái tường minh $s$ và $r$. Trong $\STree(T)$, đường đó được biểu diễn bởi một
+chuyển tổng quát
+\[
+  g'(s,w)=r.
+\]
+Để tiết kiệm không gian, xâu $w$ thật ra được biểu diễn bởi một cặp con trỏ
+$(k,p)$ vào $T$, gọi là con trỏ trái và con trỏ phải, sao cho
+$t_k\cdots t_p=w$. Vì vậy chuyển tổng quát có dạng
+\[
+  g'(s,(k,p))=r.
+\]
+
+Các con trỏ như vậy tồn tại vì phải có một hậu tố $T_i$ sao cho đường chuyển
+của $T_i$ trong $\STrie(T)$ đi qua $s$ và $r$. Ta có thể chọn $i$ nhỏ nhất như
+vậy, rồi cho $k$ và $p$ trỏ tới đoạn con của $T_i$ được đọc trên đường từ $s$
+tới $r$. Một chuyển $g'(s,(k,p))=r$ được gọi là chuyển theo $a$ nếu $t_k=a$.
+Mỗi $s$ có nhiều nhất một chuyển theo $a$ với mỗi $a\in\Sigma$.
+
+Các chuyển $g(\bot,a)=\mathit{root}$ được biểu diễn tương tự. Nếu
+$\Sigma=\{a_1,a_2,\ldots,a_m\}$ thì $g(\bot,a_j)=\mathit{root}$ được biểu diễn
+bởi
+\[
+  g'(\bot,(-j,-j))=\mathit{root},\qquad j=1,\ldots,m.
+\]
+
+Do đó cây hậu tố $\STree(T)$ có hai thành phần: bản thân cây và xâu $T$. Cấu
+trúc này có kích thước tuyến tính theo $|T|$, vì $Q'$ có nhiều nhất $|T|$ lá,
+mỗi hậu tố không rỗng cho nhiều nhất một lá, và do đó có nhiều nhất $|T|-1$
+trạng thái rẽ nhánh khi $|T|>1$. Số chuyển giữa các trạng thái trong $Q'$ vì
+thế nhiều nhất là $2|T|-2$, và mỗi chuyển chiếm không gian hằng số nhờ dùng
+con trỏ thay vì lưu xâu tường minh. Ở đây ta giả sử mô hình RAM chuẩn, trong
+đó một con trỏ chiếm không gian hằng số.
+
+Ta lại tăng cường cấu trúc bằng hàm hậu tố $f'$, lần này chỉ định nghĩa cho
+các trạng thái rẽ nhánh $\bar{x}\ne\mathit{root}$ bởi
+\[
+  f'(\bar{x})=\bar{y},
+\]
+trong đó $y$ là một trạng thái rẽ nhánh và $x=ay$ với một $a\in\Sigma$; ngoài
+ra $f'(\mathit{root})=\bot$. Hàm $f'$ là xác định tốt: nếu $\bar{x}$ là trạng
+thái rẽ nhánh thì $f'(\bar{x})$ cũng là trạng thái rẽ nhánh. Các liên kết hậu
+tố này được biểu diễn tường minh. Đôi khi ta cũng sẽ nói tới liên kết hậu tố
+ngầm, tức các liên kết tưởng tượng giữa các trạng thái ngầm.
+
+Ta ký hiệu cây hậu tố của $T$ là
+\[
+  \STree(T)=(Q'\cup\{\bot\},\mathit{root},g',f').
+\]
+Một trạng thái tường minh hoặc ngầm $r$ của cây hậu tố được tham chiếu bằng
+một \term{cặp tham chiếu} $(s,w)$, trong đó $s$ là một trạng thái tường minh
+tổ tiên của $r$, còn $w$ là xâu đọc được trên các chuyển từ $s$ tới $r$ trong
+trie hậu tố tương ứng. Cặp tham chiếu là \term{chuẩn tắc} nếu $s$ là tổ tiên
+tường minh gần nhất của $r$, và vì vậy $w$ ngắn nhất có thể. Với một trạng
+thái tường minh $r$, cặp tham chiếu chuẩn tắc hiển nhiên là $(r,\eps)$. Như
+trên, xâu $w$ được biểu diễn bởi cặp con trỏ $(k,p)$ sao cho
+$t_k\cdots t_p=w$. Nhờ vậy cặp tham chiếu $(s,w)$ có dạng $(s,(k,p))$. Cặp
+$(s,\eps)$ được biểu diễn là $(s,(p+1,p))$.
+
+Về mặt kỹ thuật, sẽ tiện hơn nếu bỏ các trạng thái kết thúc khỏi định nghĩa
+cây hậu tố. Khi một ứng dụng cần trạng thái kết thúc tường minh, ta nhận chúng
+miễn phí bằng cách thêm vào $T$ một ký hiệu kết thúc không xuất hiện ở nơi nào
+khác trong $T$. Các lá của cây hậu tố cho xâu như vậy tương ứng một-một với
+các hậu tố của $T$ và tạo thành tập trạng thái kết thúc. Một cách khác là
+duyệt đường liên kết hậu tố từ lá $\bar{T}$ tới $\mathit{root}$ và làm mọi
+trạng thái trên đường đó trở thành tường minh; đó chính là các trạng thái kết
+thúc của $\STree(T)$. Trong nhiều ứng dụng của $\STree(T)$, vị trí bắt đầu của
+mỗi hậu tố được lưu cùng trạng thái tương ứng. Cây tăng cường như vậy có thể
+dùng làm chỉ mục để tìm bất kỳ xâu con nào của $T$.
+
+\section{Xây dựng trực tuyến cây hậu tố}
+
+Thuật toán xây dựng $\STree(T)$ sẽ mô phỏng Thuật toán 1. Phần lớn việc cần
+làm là rõ ràng. Hình 2 của bài gốc minh họa các pha xây dựng
+$\STree(\texttt{cacao})$; để đơn giản, hình vẽ ghi tường minh xâu gắn với mỗi
+chuyển. Tuy nhiên, để nhận được thuật toán thời gian tuyến tính, một số chi
+tiết cần được xem xét cẩn thận hơn.
+
+Trước hết ta mô tả chính xác hơn Thuật toán 1 làm gì. Gọi
+\[
+  s_1=\overline{t_1\cdots t_{i-1}},\quad s_2,s_3,\ldots,s_i=\mathit{root},
+  \quad s_{i+1}=\bot
+\]
+là các trạng thái của $\STrie(T^{i-1})$ trên đường biên. Gọi $j$ là chỉ số nhỏ
+nhất sao cho $s_j$ không phải lá, và gọi $j'$ là chỉ số nhỏ nhất sao cho
+$s_{j'}$ có chuyển theo $t_i$. Vì $s_1$ là lá còn $\bot$ là trạng thái không
+phải lá có chuyển theo $t_i$, cả $j$ và $j'$ đều xác định tốt và $j\le j'$.
+
+\begin{lemma}
+Thuật toán 1 thêm vào $\STrie(T^{i-1})$ một chuyển theo $t_i$ cho mỗi trạng
+thái $s_h$, $1\le h<j'$, sao cho với $1\le h<j$, chuyển mới mở rộng một nhánh
+cũ của trie đang kết thúc ở lá $s_h$, còn với $j\le h<j'$, chuyển mới khởi đầu
+một nhánh mới từ $s_h$. Thuật toán 1 không tạo chuyển nào khác.
+\end{lemma}
+
+Ta gọi trạng thái $s_j$ là \term{điểm hoạt động} và $s_{j'}$ là
+\term{điểm kết thúc} của $\STrie(T^{i-1})$. Các trạng thái này cũng hiện diện,
+tường minh hoặc ngầm, trong $\STree(T^{i-1})$. Ví dụ, trong ba cây cuối của
+Hình 2 bài gốc cho xâu \texttt{cacao}, các điểm hoạt động lần lượt là
+$(\mathit{root},\texttt{c})$, $(\mathit{root},\texttt{ca})$ và
+$(\mathit{root},\eps)$.
+
+Bổ đề 1 nói rằng Thuật toán 1 chèn hai nhóm chuyển theo $t_i$ vào
+$\STrie(T^{i-1})$:
+\begin{enumerate}
+  \item Các trạng thái trên đường biên đứng trước điểm hoạt động $s_j$ nhận
+  một chuyển. Chúng là lá, nên mỗi chuyển như vậy chỉ mở rộng một nhánh đã có
+  của trie.
+  \item Các trạng thái từ điểm hoạt động $s_j$ tới điểm kết thúc $s_{j'}$,
+  không kể điểm kết thúc, nhận một chuyển mới. Chúng không phải lá, nên mỗi
+  chuyển mới khởi đầu một nhánh mới.
+\end{enumerate}
+
+Ta diễn giải điều này trên cây hậu tố $\STree(T^{i-1})$. Nhóm chuyển thứ nhất,
+những chuyển mở rộng nhánh đã có, có thể được cài đặt bằng cách cập nhật con
+trỏ phải của mỗi chuyển biểu diễn nhánh đó. Giả sử
+\[
+  g'(s,(k,i-1))=r
+\]
+là một chuyển như vậy. Con trỏ phải phải trỏ tới vị trí cuối $i-1$ của
+$T^{i-1}$, vì $r$ là lá và do đó đường đi tới $r$ phải đọc ra một hậu tố của
+$T^{i-1}$ không xuất hiện ở nơi khác trong $T^{i-1}$. Chuyển sau cập nhật là
+$g'(s,(k,i))=r$. Việc này chỉ làm xâu trên chuyển dài hơn, không thay đổi các
+trạng thái $s$ và $r$. Nếu cập nhật tường minh mọi chuyển như vậy thì tốn quá
+nhiều thời gian, nên ta dùng mẹo sau.
+
+Mọi chuyển của $\STree(T^{i-1})$ đi tới một lá được gọi là \term{chuyển mở}.
+Chuyển như vậy có dạng $g'(s,(k,i-1))=r$, trong đó con trỏ phải buộc phải trỏ
+tới vị trí cuối $i-1$ của $T^{i-1}$. Vì vậy không cần biểu diễn giá trị thật
+của con trỏ phải. Thay vào đó, chuyển mở được biểu diễn là
+\[
+  g'(s,(k,\infty))=r,
+\]
+trong đó $\infty$ cho biết chuyển này ``mở để lớn lên''. Thực chất,
+$g'(s,(k,\infty))=r$ biểu diễn một nhánh có độ dài bất kỳ từ trạng thái $s$
+tới trạng thái tưởng tượng $r$ ở vô cực. Khi chèn $t_i$ vào nhánh này, ta
+không cần cập nhật tường minh con trỏ phải. Sau khi hoàn tất $\STree(T)$, các
+ký hiệu $\infty$ có thể được thay bằng $n=|T|$. Như vậy nhóm chuyển thứ nhất
+được cài đặt mà không gây thay đổi tường minh nào trên $\STree(T^{i-1})$.
+
+Còn lại là cách thêm nhóm chuyển thứ hai vào $\STree(T^{i-1})$. Chúng tạo các
+nhánh hoàn toàn mới bắt đầu từ các trạng thái $s_h$, $j\le h<j'$. Việc tìm
+các trạng thái $s_h$ cần cẩn thận, vì ở thời điểm đó chúng không nhất thiết là
+trạng thái tường minh. Chúng sẽ được tìm dọc đường biên của $\STree(T^{i-1})$
+bằng cặp tham chiếu và liên kết hậu tố.
+
+Đặt $h=j$ và giả sử $(s,w)$ là cặp tham chiếu chuẩn tắc cho $s_h$, tức điểm
+hoạt động. Vì $s_h$ nằm trên đường biên của $\STrie(T^{i-1})$, $w$ phải là
+một hậu tố của $T^{i-1}$. Do đó
+\[
+  (s,w)=(s,(k,i-1))
+\]
+với một $k\le i$.
+
+Ta muốn tạo một nhánh mới bắt đầu từ trạng thái được biểu diễn bởi
+$(s,(k,i-1))$. Tuy nhiên, trước hết phải kiểm tra liệu $(s,(k,i-1))$ đã tham
+chiếu tới điểm kết thúc $s_{j'}$ hay chưa. Nếu có thì đã xong. Nếu chưa, cần
+tạo một nhánh mới. Khi đó trạng thái $s_h$ được tham chiếu bởi $(s,(k,i-1))$
+phải trở thành tường minh. Nếu nó chưa tường minh, ta tạo một trạng thái
+tường minh, vẫn ký hiệu là $s_h$, bằng cách tách chuyển chứa trạng thái ngầm
+tương ứng. Sau đó tạo một chuyển theo $t_i$ từ $s_h$. Chuyển này phải là
+chuyển mở
+\[
+  g'(s_h,(i,\infty))=s'_h,
+\]
+trong đó $s'_h$ là một lá mới. Ngoài ra, liên kết hậu tố $f'(s_h)$ được thêm
+nếu $s_h$ vừa được tạo bằng cách tách chuyển.
+
+Tiếp theo phép xây dựng chuyển sang $s_{h+1}$. Nếu cặp tham chiếu cho $s_h$ là
+$(s,(k,i-1))$, thì cặp tham chiếu chuẩn tắc cho $s_{h+1}$ là
+\[
+  \operatorname{canonize}(f'(s),(k,i-1)).
+\]
+Ở đây \textsc{canonize} làm cặp tham chiếu trở thành chuẩn tắc bằng cách cập
+nhật trạng thái và con trỏ trái; con trỏ phải $i-1$ không đổi trong quá trình
+chuẩn tắc hóa. Các thao tác trên được lặp lại cho $s_{h+1}$, rồi tiếp tục cho
+tới khi tìm thấy điểm kết thúc $s_{j'}$.
+
+Ta thu được thủ tục \textsc{update} dưới đây, biến $\STree(T^{i-1})$ thành
+$\STree(T^i)$ bằng cách chèn các chuyển theo $t_i$ thuộc nhóm thứ hai. Thủ tục
+dùng \textsc{canonize} vừa nêu, và thủ tục \textsc{test-and-split} để kiểm tra
+một cặp tham chiếu có chỉ tới điểm kết thúc hay không. Nếu không, thủ tục tạo
+và trả về một trạng thái tường minh cho cặp tham chiếu đó, trừ khi cặp đã biểu
+diễn một trạng thái tường minh. Thủ tục \textsc{update} trả về một cặp tham
+chiếu cho điểm kết thúc $s_{j'}$; trên thực tế chỉ trả về trạng thái và con
+trỏ trái, vì con trỏ phải vẫn là $i-1$ cho mọi trạng thái trên đường biên.
+
+\paragraph{Thủ tục \textsc{update}$(s,(k,i))$.}
+Giả sử $(s,(k,i-1))$ là cặp tham chiếu chuẩn tắc cho điểm hoạt động.
+\begin{verbatim}
+oldr <- root;
+(end-point, r) <- test-and-split(s, (k, i - 1), ti);
+while not end-point do
+    create new transition g'(r, (i, infinity)) = r',
+        where r' is a new state;
+    if oldr != root then create new suffix link f'(oldr) = r;
+    oldr <- r;
+    (s, k) <- canonize(f'(s), (k, i - 1));
+    (end-point, r) <- test-and-split(s, (k, i - 1), ti);
+if oldr != root then create new suffix link f'(oldr) = s;
+return (s, k).
+\end{verbatim}
+
+Thủ tục \textsc{test-and-split} kiểm tra trạng thái có cặp tham chiếu chuẩn
+tắc $(s,(k,p))$ có phải điểm kết thúc hay không, tức trong $\STrie(T^{i-1})$
+nó đã có chuyển theo $t_i$ hay chưa. Ký hiệu $t_i$ được truyền vào dưới tên
+$t$. Kết quả kiểm tra được trả về ở tham số thứ nhất. Nếu $(s,(k,p))$ không
+phải điểm kết thúc, trạng thái đó được làm tường minh, nếu cần bằng cách tách
+một chuyển, và trạng thái tường minh được trả về ở tham số thứ hai.
+
+\paragraph{Thủ tục \textsc{test-and-split}$(s,(k,p),t)$.}
+\begin{verbatim}
+if k <= p then
+    let g'(s, (k', p')) = s' be the tk-transition from s;
+    if t = t_{k' + p - k + 1} then return (true, s)
+    else
+        replace the tk-transition above by transitions
+            g'(s, (k', k' + p - k)) = r
+            g'(r, (k' + p - k + 1, p')) = s',
+        where r is a new state;
+        return (false, r)
+else
+    if there is no t-transition from s then return (false, s)
+    else return (true, s).
+\end{verbatim}
+
+Thủ tục này tận dụng việc $(s,(k,p))$ là chuẩn tắc: câu trả lời cho phép kiểm
+tra điểm kết thúc có thể tìm trong thời gian hằng số bằng cách chỉ xét một
+chuyển từ $s$.
+
+Thủ tục \textsc{canonize} như sau. Với một cặp tham chiếu $(s,(k,p))$ cho một
+trạng thái $r$, thủ tục tìm và trả về trạng thái $s'$ cùng con trỏ trái $k'$
+sao cho $(s',(k',p))$ là cặp tham chiếu chuẩn tắc cho $r$. Trạng thái $s'$ là
+tổ tiên tường minh gần nhất của $r$, hoặc chính $r$ nếu $r$ tường minh. Vì
+vậy xâu đi từ $s'$ tới $r$ phải là một hậu tố của xâu $t_k\cdots t_p$ đi từ
+$s$ tới $r$. Do đó con trỏ phải $p$ không đổi, còn con trỏ trái $k$ có thể
+trở thành $k'\ge k$.
+
+\paragraph{Thủ tục \textsc{canonize}$(s,(k,p))$.}
+\begin{verbatim}
+if p < k then return (s, k)
+else
+    find the tk-transition g'(s, (k', p')) = s' from s;
+    while p' - k' <= p - k do
+        k <- k + p' - k' + 1;
+        s <- s';
+        if k <= p then
+            find the tk-transition g'(s, (k', p')) = s' from s;
+    return (s, k).
+\end{verbatim}
+
+Để tiếp tục xây dựng cho ký hiệu văn bản kế tiếp $t_{i+1}$, cần tìm điểm hoạt
+động của $\STree(T^i)$. Trước hết, $s_j$ là điểm hoạt động của
+$\STree(T^{i-1})$ khi và chỉ khi $s_j=\overline{t_j\cdots t_{i-1}}$, trong đó
+$t_j\cdots t_{i-1}$ là hậu tố dài nhất của $T^{i-1}$ xuất hiện ít nhất hai
+lần trong $T^{i-1}$. Tiếp theo, $s_{j'}$ là điểm kết thúc của
+$\STree(T^{i-1})$ khi và chỉ khi $s_{j'}=\overline{t_{j'}\cdots t_{i-1}}$,
+trong đó $t_{j'}\cdots t_{i-1}$ là hậu tố dài nhất của $T^{i-1}$ sao cho
+$t_{j'}\cdots t_{i-1}t_i$ là xâu con của $T^{i-1}$. Nhưng điều này nghĩa là
+nếu $s_{j'}$ là điểm kết thúc của $\STree(T^{i-1})$ thì
+$t_{j'}\cdots t_{i-1}t_i$ là hậu tố dài nhất của $T^i$ xuất hiện ít nhất hai
+lần trong $T^i$, tức trạng thái $g(s_{j'},t_i)$ là điểm hoạt động của
+$\STree(T^i)$.
+
+\begin{lemma}
+Giả sử $(s,(k,i-1))$ là một cặp tham chiếu của điểm kết thúc $s_{j'}$ của
+$\STree(T^{i-1})$. Khi đó $(s,(k,i))$ là một cặp tham chiếu của điểm hoạt động
+của $\STree(T^i)$.
+\end{lemma}
+
+Thuật toán tổng thể để xây dựng $\STree(T)$ như sau. Xâu $T$ được xử lý từng
+ký hiệu một trong một lượt quét trái sang phải. Viết
+$\Sigma=\{t_{-1},\ldots,t_{-m}\}$ giúp trình bày các chuyển từ $\bot$ giống
+các chuyển khác.
+
+\paragraph{Thuật toán 2.}
+Xây dựng $\STree(T)$ cho xâu $T=t_1t_2\cdots t_n]$ trên bảng chữ cái
+$\Sigma=\{t_{-1},\ldots,t_{-m}\}$, trong đó $]$ là ký hiệu kết thúc không xuất
+hiện ở nơi khác trong $T$.
+\begin{verbatim}
+create states root and bottom;
+for j <- 1, ..., m do
+    create transition g'(bottom, (-j, -j)) = root;
+create suffix link f'(root) = bottom;
+s <- root; k <- 1; i <- 0;
+while t_{i+1} != ] do
+    i <- i + 1;
+    (s, k) <- update(s, (k, i));
+    (s, k) <- canonize(s, (k, i)).
+\end{verbatim}
+
+Bước cuối trong mỗi vòng dựa trên Bổ đề 2: sau lời gọi \textsc{update}, cặp
+$(s,(k,i-1))$ tham chiếu tới điểm kết thúc của $\STree(T^{i-1})$, và do đó
+$(s,(k,i))$ tham chiếu tới điểm hoạt động của $\STree(T^i)$.
+
+\begin{theorem}
+Thuật toán 2 xây dựng trực tuyến cây hậu tố $\STree(T)$ cho xâu
+$T=t_1\cdots t_n$ trong thời gian $O(n)$.
+\end{theorem}
+
+\begin{proof}
+Thuật toán xây dựng $\STree(T)$ qua các cây trung gian
+\[
+  \STree(T^0),\STree(T^1),\ldots,\STree(T^n)=\STree(T).
+\]
+Nó là trực tuyến vì để xây dựng $\STree(T^i)$, thuật toán chỉ cần truy cập
+$i$ ký hiệu đầu tiên của $T$.
+
+Để phân tích thời gian chạy, ta chia chi phí thành hai phần, và cả hai đều là
+$O(n)$. Phần thứ nhất là tổng thời gian của thủ tục \textsc{canonize}. Phần
+thứ hai gồm phần còn lại: thời gian lặp lại việc đi theo đường liên kết hậu tố
+từ điểm hoạt động hiện tại tới điểm kết thúc, tạo các nhánh mới bằng
+\textsc{update}, rồi tìm điểm hoạt động kế tiếp bằng cách đi một chuyển từ
+điểm kết thúc, tức bước cuối của Thuật toán 2. Ta gọi các trạng thái, hay các
+cặp tham chiếu, trên các đường này là \term{trạng thái được thăm}.
+
+Phần thứ hai tốn thời gian tỷ lệ với tổng số trạng thái được thăm, vì các thao
+tác tại mỗi trạng thái như tạo một trạng thái tường minh và nhánh mới, đi theo
+một liên kết hậu tố tường minh hoặc ngầm, và kiểm tra điểm kết thúc đều có thể
+cài đặt trong thời gian hằng số khi loại trừ \textsc{canonize}. Nói chính xác
+hơn, điều này cũng cần giả thiết $|\Sigma|$ bị chặn độc lập với $n$. Gọi
+$r_i$ là điểm hoạt động của $\STree(T^i)$ với $0\le i\le n$. Các trạng thái
+được thăm giữa $r_{i-1}$ và $r_i$ nằm trên một đường gồm một số liên kết hậu
+tố và một chuyển theo $t_i$. Đi theo một liên kết hậu tố làm giảm độ sâu, tức
+độ dài xâu đọc được trên đường từ $\mathit{root}$, đi một đơn vị; còn đi theo
+chuyển $t_i$ làm tăng nó một đơn vị. Do đó số trạng thái được thăm trên đường,
+tính cả $r_{i-1}$ nhưng không tính $r_i$, là
+\[
+  \operatorname{depth}(r_{i-1})-\operatorname{depth}(r_i)+2.
+\]
+Tổng số trạng thái được thăm là
+\[
+  \sum_{i=1}^n
+  \bigl(\operatorname{depth}(r_{i-1})-\operatorname{depth}(r_i)+2\bigr)
+  =\operatorname{depth}(r_0)-\operatorname{depth}(r_n)+2n\le 2n.
+\]
+Vì vậy phần thời gian thứ hai là $O(n)$.
+
+Thời gian của mỗi lần gọi \textsc{canonize} bị chặn bởi $a+bq$, với $a,b$ là
+hằng số và $q$ là số lần thực hiện thân vòng lặp trong \textsc{canonize}. Tổng
+thời gian của \textsc{canonize} vì vậy bị chặn tỷ lệ với tổng số lời gọi
+\textsc{canonize} cộng với tổng số lần thực hiện thân vòng lặp trong mọi lời
+gọi. Có $O(n)$ lời gọi, vì mỗi trạng thái được thăm gây ra một lời gọi, hoặc
+ở trong \textsc{update}, hoặc trực tiếp ở bước cuối của Thuật toán 2. Mỗi lần
+thực hiện thân vòng lặp xóa một xâu không rỗng khỏi đầu trái của xâu
+$w=t_k\cdots t_p$ được biểu diễn bởi các con trỏ trong cặp tham chiếu
+$(s,(k,p))$. Trong toàn bộ quá trình, $w$ chỉ có thể tăng ở bước cuối của
+Thuật toán 2, nơi nối $t_i$ với $i=1,\ldots,n$ vào đầu phải của $w$. Do đó
+việc xóa một đoạn không rỗng chỉ có thể xảy ra nhiều nhất $n$ lần. Tổng thời
+gian cho thân vòng lặp là $O(n)$, và toàn bộ phần \textsc{canonize}, tức phần
+thời gian thứ nhất, cũng là $O(n)$.
+\end{proof}
+
+\paragraph{Nhận xét 1.}
+Theo J. Karkkainen, trong dạng cuối cùng, thuật toán này là họ hàng khá gần
+của phương pháp McCreight \cite{mccreight}. Khác biệt kỹ thuật chính dường
+như là: mỗi lần thực hiện thân vòng lặp chính của Thuật toán 2 tiêu thụ một
+ký hiệu văn bản $t_i$, trong khi mỗi lần thực hiện thân vòng lặp chính của
+thuật toán McCreight đi qua một liên kết hậu tố và tiêu thụ không hoặc nhiều
+ký hiệu văn bản.
+
+\paragraph{Nhận xét 2.}
+Không khó tổng quát hóa Thuật toán 2 cho phiên bản động sau của bài toán cây
+hậu tố, tương tự bài toán khớp từ điển thích nghi trong \cite{amir-farach}:
+duy trì một cây hậu tố tổng quát có kích thước tuyến tính biểu diễn mọi hậu tố
+của các xâu $T_i$ trong tập $\{T_1,\ldots,T_k\}$ dưới các phép chèn hoặc xóa
+một xâu $T_i$. Thuật toán thu được thực hiện mỗi cập nhật trong thời gian
+$O(|T_i|)$.
+
+\section{Xây dựng ô-tô-mát hậu tố}
+
+Ô-tô-mát hậu tố $\SA(T)$ của một xâu $T=t_1\cdots t_n$ là DFA tối tiểu chấp
+nhận tất cả hậu tố của $T$.
+
+Vì $\STrie(T)$ là một DFA cho các hậu tố của $T$, ta có thể thu được
+$\SA(T)$ bằng cách tối tiểu hóa $\STrie(T)$ theo cách chuẩn. Tối tiểu hóa hoạt
+động bằng cách gộp các trạng thái tương đương, tức các trạng thái mà từ đó
+$\STrie(T)$ chấp nhận cùng một tập xâu. Dùng liên kết hậu tố, ta nhận được một
+đặc trưng tự nhiên cho các trạng thái tương đương như sau.
+
+Một trạng thái $s$ của $\STrie(T)$ được gọi là \term{thiết yếu} nếu có ít nhất
+hai liên kết hậu tố khác nhau trỏ tới $s$, hoặc nếu
+$s=\overline{t_1\cdots t_k}$ với một $k$ nào đó.
+
+\begin{theorem}
+Cho $s$ và $r$ là hai trạng thái của $\STrie(T)$. Tập xâu được chấp nhận từ
+$s$ bằng tập xâu được chấp nhận từ $r$ khi và chỉ khi đường liên kết hậu tố
+bắt đầu từ $s$ chứa $r$, hoặc đường bắt đầu từ $r$ chứa $s$, và đường con từ
+$s$ tới $r$, hoặc từ $r$ tới $s$, không chứa trạng thái thiết yếu nào khác
+ngoài, có thể, chính $s$ hoặc chính $r$.
+\end{theorem}
+
+\begin{proof}
+Định lý suy ra từ các quan sát sau.
+
+Tập xâu được chấp nhận từ một trạng thái của $\STrie(T)$ là một tập con của
+các hậu tố của $T$, nên mỗi xâu được chấp nhận có độ dài khác nhau.
+
+Một xâu độ dài $i$ được chấp nhận từ trạng thái $s$ của $\STrie(T)$ khi và
+chỉ khi đường liên kết hậu tố bắt đầu từ trạng thái
+$\overline{t_1\cdots t_{n-i}}$ chứa $s$.
+
+Các liên kết hậu tố tạo thành một cây có hướng về gốc $\mathit{root}$.
+\end{proof}
+
+Điều này gợi ý một phương pháp xây dựng $\SA(T)$ bằng một Thuật toán 1 đã sửa
+đổi. Điểm mới là phép xây dựng chỉ nên tạo một trạng thái mới nếu trạng thái
+đó là thiết yếu. Một trạng thái không thiết yếu $s$ được gộp với trạng thái
+thiết yếu đầu tiên đứng trước $s$ trên đường liên kết hậu tố đi qua $s$. Theo
+Định lý 3, các trạng thái đó là tương đương, nên việc gộp là đúng.
+
+Vì chỉ có $O(|T|)$ trạng thái thiết yếu, thuật toán thu được có thể được cài
+đặt để chạy trong thời gian tuyến tính. Thuật toán này hóa ra tương tự các
+thuật toán trong \cite{blumer,crochemore-transducers,crochemore-constraints},
+nên bài viết gốc không trình bày chi tiết.
+
+\section*{Lời cảm ơn}
+
+J. Karkkainen đã chỉ ra một số điểm thiếu chính xác trong phiên bản trước của
+công trình này \cite{ukkonen-ip92}. Tác giả cũng cảm ơn E. Sutinen, D. Wood,
+và đặc biệt là S. Kurtz cùng G. A. Stephen vì nhiều nhận xét hữu ích.
+
+\begin{thebibliography}{13}
+
+\bibitem{aho-corasick}
+A. Aho and M. Corasick.
+Efficient string matching: An aid to bibliographic search.
+\textit{Communications of the ACM}, 18:333--340, 1975.
+
+\bibitem{amir-farach}
+A. Amir and M. Farach.
+Adaptive dictionary matching.
+In \textit{Proc. 32nd IEEE Annual Symposium on Foundations of Computer
+Science}, pages 760--766, 1991.
+
+\bibitem{apostolico}
+A. Apostolico.
+The myriad virtues of subword trees.
+In A. Apostolico and Z. Galil, editors, \textit{Combinatorial Algorithms on
+Words}, pages 85--95. Springer-Verlag, 1985.
+
+\bibitem{blumer}
+A. Blumer et al.
+The smallest automaton recognizing the subwords of a text.
+\textit{Theoretical Computer Science}, 40:31--55, 1985.
+
+\bibitem{crochemore-transducers}
+M. Crochemore.
+Transducers and repetitions.
+\textit{Theoretical Computer Science}, 45:63--86, 1986.
+
+\bibitem{crochemore-constraints}
+M. Crochemore.
+String matching with constraints.
+In M. P. Chytil, L. Janiga, and V. Koubek, editors,
+\textit{Mathematical Foundations of Computer Science 1988}, Lecture Notes in
+Computer Science 324, pages 44--58. Springer-Verlag, 1988.
+
+\bibitem{galil-giancarlo}
+Z. Galil and R. Giancarlo.
+Data structures and algorithms for approximate string matching.
+\textit{Journal of Complexity}, 4:33--72, 1988.
+
+\bibitem{kempf}
+M. Kempf, R. Bayer, and U. Guntzer.
+Time optimal left to right construction of position trees.
+\textit{Acta Informatica}, 24:461--474, 1987.
+
+\bibitem{mccreight}
+E. McCreight.
+A space-economical suffix tree construction algorithm.
+\textit{Journal of the ACM}, 23:262--272, 1976.
+
+\bibitem{ukkonen-ip92}
+E. Ukkonen.
+Constructing suffix trees on-line in linear time.
+In J. van Leeuwen, editor, \textit{Algorithms, Software, Architecture:
+Information Processing 92}, volume I, pages 484--492. Elsevier, 1992.
+
+\bibitem{ukkonen-cpm}
+E. Ukkonen.
+Approximate string-matching over suffix trees.
+In A. Apostolico, M. Crochemore, Z. Galil, and U. Manber, editors,
+\textit{Combinatorial Pattern Matching, CPM'93}, Lecture Notes in Computer
+Science 684, pages 228--242. Springer-Verlag, 1993.
+
+\bibitem{ukkonen-wood}
+E. Ukkonen and D. Wood.
+Approximate string matching with suffix automata.
+\textit{Algorithmica}, 10:353--364, 1993.
+
+\bibitem{weiner}
+P. Weiner.
+Linear pattern matching algorithms.
+In \textit{IEEE 14th Annual Symposium on Switching and Automata Theory},
+pages 1--11, 1973.
+
+\end{thebibliography}
+
+\end{document}
