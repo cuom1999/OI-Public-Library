@@ -21,8 +21,8 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2023. Tệp được
 tạo bằng LaTeX với lớp văn bản Unicode đọc được; mục lục và các trang thân bài
 đã kiểm tra đều trích xuất tốt bằng \texttt{pdftotext}. Bản LaTeX này chuyển
-ngữ phần nhận diện tập sách và toàn bộ mục lục, đồng thời ghi lại các chủ đề
-chính để phục vụ bản dịch chi tiết hơn.
+ngữ phần nhận diện tập sách, toàn bộ mục lục và ba bài đầu tiên, đồng thời ghi
+lại các chủ đề chính để phục vụ bản dịch chi tiết hơn.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -2749,6 +2749,537 @@ xây dựng dữ liệu.
   \item ``Chơi với xương rồng'', \url{https://vfleaking.blog.uoj.ac/blog/89}.
   \item M.D. Atkinson and J.-R. Sack, ``Generating binary trees at random'',
   \url{http://www.cs.otago.ac.nz/staffpriv/mike/Papers/RandomGeneration/RandomBinaryTrees.pdf}.
+\end{enumerate}
+
+\section{Bàn về một lớp bài toán có treewidth bị chặn}
+
+\begin{center}
+Trường Thập Nhất Bắc Kinh\\
+Wu Chang
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết giới thiệu các khái niệm liên quan tới treewidth, cách phân rã cây của
+đồ thị có treewidth bị chặn, và một số thuật toán tốt cho các bài toán kinh
+điển trên lớp đồ thị này. Nội dung đi từ định nghĩa, tính chất cơ bản và các
+đồ thị đặc biệt, tới ý nghĩa thuật toán của treewidth bị chặn và phác thảo
+thuật toán tuyến tính của Bodlaender để tìm phân rã cây khi treewidth là hằng
+số.
+
+\subsection{Mở đầu}
+
+Treewidth là một khái niệm quan trọng trong khoa học máy tính. Độ phức tạp của
+nhiều bài toán trên đồ thị tăng rất nhanh theo treewidth, trong khi nhiều đồ
+thị phát sinh trong thực tế, chẳng hạn mạng đường, lại thường có treewidth nhỏ.
+Vì vậy, việc tìm phân rã cây có độ rộng nhỏ và giải các bài toán trên đồ thị có
+treewidth nhỏ đã trở thành một hướng nghiên cứu được quan tâm.
+
+Trong thi tin học cũng từng xuất hiện các bài toán trên đồ thị đặc biệt có
+treewidth nhỏ, nhưng khái niệm và thuật toán liên quan chưa phổ biến. Bài viết
+trình bày các định nghĩa cần dùng, một số quy ước và tính chất cơ bản, phân
+tích treewidth của vài lớp đồ thị đặc biệt, nhấn mạnh quá trình thu gọn của đồ
+thị nối tiếp-song song tổng quát, rồi giới thiệu ý nghĩa của treewidth bị chặn
+và một số thuật toán cổ điển trên lớp đồ thị này.
+
+\subsection{Định nghĩa}
+
+\paragraph{Định nghĩa 2.1 (phân rã cây).}
+Với đồ thị vô hướng $G=(V,E)$, nếu một cây $T=(I,F)$ và một họ tập đỉnh
+\[
+  \{X_i\subseteq V\mid i\in I\}
+\]
+đồng thời thỏa ba điều kiện sau, thì $(X,T)$ được gọi là một phân rã cây của
+$G$:
+\begin{itemize}
+  \item $\bigcup_{i\in I}X_i=V$;
+  \item với mọi cạnh $(u,v)\in E$, tồn tại $i\in I$ sao cho $u,v\in X_i$;
+  \item với mọi $i,j,k\in I$, nếu $j$ nằm trên đường đi giữa $i$ và $k$ trong
+  $T$, thì $X_i\cap X_k\subseteq X_j$.
+\end{itemize}
+Các tập $X_i$ thường được gọi là các \emph{bag}.
+
+\paragraph{Định nghĩa 2.2 (độ rộng).}
+Độ rộng của phân rã cây $(X,T)$ là $\max_{i\in I}|X_i|-1$.
+
+\paragraph{Định nghĩa 2.3 (treewidth).}
+Treewidth của $G$, ký hiệu $\operatorname{tw}(G)$, là độ rộng nhỏ nhất trong
+tất cả các phân rã cây của $G$.
+
+\paragraph{Định nghĩa 2.4 ($k$-tree).}
+Một $k$-tree bắt đầu từ đồ thị đầy đủ trên $k+1$ đỉnh. Sau đó lặp lại thao tác
+thêm một đỉnh mới, sao cho đỉnh mới nối đúng với $k$ đỉnh cũ và $k$ đỉnh này
+đôi một kề nhau.
+
+\paragraph{Định nghĩa 2.5 (partial $k$-tree).}
+Một partial $k$-tree là đồ thị con bất kỳ của một $k$-tree.
+
+\subsection{Quy ước và tính chất cơ bản}
+
+\paragraph{Định lý 3.1.}
+$\operatorname{tw}(G)\le k$ khi và chỉ khi $G$ là một partial $k$-tree. Chứng
+minh của định lý này khá dài nên bài viết lược bỏ.
+
+Nếu không nói thêm, các phần sau xét đồ thị $G$ không rỗng, không có cạnh bội
+và không có khuyên. Với cây $T$ có gốc, lấy tùy ý $r\in I$ làm gốc. Ký hiệu
+$\operatorname{dep}_i$ là độ sâu của nút $i$ trong $T$, và
+$\operatorname{subtree}(i)$ là tập nút trong cây con của $i$.
+
+Với $u\in V$, đặt
+\[
+  S_u=\{i\in I\mid u\in X_i\}.
+\]
+Ký hiệu $N_G(u)=\{v\mid (u,v)\in E\}$ và $d_G(u)=|N_G(u)|$. Gọi
+$\operatorname{top}_u$ là nút nông nhất trong $S_u$, và đặt
+$\operatorname{lev}_u=\operatorname{dep}_{\operatorname{top}_u}$.
+
+\paragraph{Bổ đề 3.0.1.}
+Với mọi cạnh $(u,v)\in E$, giả sử không mất tổng quát rằng
+$\operatorname{lev}_u\ge \operatorname{lev}_v$. Khi đó
+$v\in X_{\operatorname{top}_u}$.
+
+\paragraph{Chứng minh.}
+Vì $S_u\subseteq \operatorname{subtree}(\operatorname{top}_u)$ và
+$S_u\cap S_v\ne\emptyset$, nếu $\operatorname{top}_u\notin S_v$ thì toàn bộ
+$S_v$ cũng nằm trong cây con của $\operatorname{top}_u$, mâu thuẫn với
+$\operatorname{lev}_u\ge \operatorname{lev}_v$.
+
+\paragraph{Bổ đề 3.0.2.}
+Nếu $G$ là partial $k$-tree và $k<|V|$, thì
+\[
+  |E|\le k|V|-\frac{k(k+1)}2.
+\]
+
+\paragraph{Chứng minh.}
+Lấy đỉnh $u$ có $\operatorname{lev}$ lớn nhất trong $V$. Theo bổ đề trước,
+$d_G(u)\le k$. Xóa $u$ rồi quy nạp.
+
+Thu gọn cạnh $(u,v)\in E$ nghĩa là xóa cạnh này, hợp nhất $u,v$ thành một đỉnh
+mới và để đỉnh mới thừa hưởng các cạnh kề ban đầu.
+
+\paragraph{Bổ đề 3.0.3.}
+Nếu thu gọn cạnh của $G$ được $G'$, thì
+$\operatorname{tw}(G')\le\operatorname{tw}(G)$.
+
+\paragraph{Chứng minh.}
+Giả sử đỉnh mới là $w$. Với một phân rã cây $(X,T)$ của $G$, nếu
+$X_i$ chứa ít nhất một trong hai đỉnh $u,v$, thay chúng bằng $w$; nếu không,
+giữ nguyên $X_i$. Họ bag thu được là một phân rã cây của $G'$ và độ rộng không
+tăng.
+
+\subsection{Các đồ thị đặc biệt}
+
+\subsubsection{Partial 1-tree}
+
+\paragraph{Định lý 4.1.}
+Partial $1$-tree chính là rừng.
+
+\paragraph{Chứng minh.}
+Nếu $G$ là partial $1$-tree thì mỗi thành phần liên thông của nó cũng vậy. Theo
+bổ đề cạnh, mỗi thành phần liên thông là cây, nên $G$ là rừng.
+
+Ngược lại, nếu $G=(V,E)$ là rừng, ta có thể xây phân rã cây độ rộng $1$ như
+sau. Tập nút $I$ có một nút cho mỗi đỉnh của $G$ và một nút cho mỗi cạnh của
+$G$. Với cạnh $(u,v)$, nối nút đại diện cạnh này với hai nút đại diện $u$ và
+$v$, rồi nối thêm tùy ý để $T$ liên thông. Bag của nút đại diện đỉnh $u$ là
+$\{u\}$, còn bag của nút đại diện cạnh $(u,v)$ là $\{u,v\}$.
+
+\subsubsection{Thu gọn partial 2-tree}
+
+Xét ba thao tác trên đồ thị $G$:
+\begin{itemize}
+  \item gộp cạnh bội;
+  \item xóa đỉnh bậc $0$ hoặc bậc $1$;
+  \item thu gọn đỉnh bậc $2$: nối hai láng giềng của nó bằng một cạnh rồi xóa
+  nó.
+\end{itemize}
+Mỗi lần thực hiện một thao tác gọi là một lần thu gọn.
+
+\paragraph{Bổ đề 4.2.1.}
+Nếu $G'$ thu được từ $G$ bằng một lần thu gọn, thì $G$ là partial $2$-tree khi
+và chỉ khi $G'$ là partial $2$-tree.
+
+Hai thao tác đầu hiển nhiên. Với thao tác thứ ba, giả sử xóa $u$ và hai láng
+giềng là $v,w$. Nếu $G$ có phân rã cây độ rộng $2$, xóa $u$ khỏi các bag chứa
+nó và thêm $v$ khi cần sẽ cho phân rã của $G'$. Ngược lại, từ phân rã của $G'$,
+lấy một bag chứa $v,w$, thêm một nút con mới có bag $\{u,v,w\}$, ta được phân
+rã cây độ rộng $2$ của $G$.
+
+\paragraph{Bổ đề 4.2.2.}
+Nếu $G=(V,E)$ là partial $2$-tree thì tồn tại $u\in V$ sao cho $d_G(u)\le 2$.
+Chọn đỉnh có $\operatorname{lev}$ lớn nhất và dùng Bổ đề 3.0.1.
+
+Một quá trình thu gọn cực đại là quá trình thực hiện liên tiếp các thao tác trên
+cho tới khi không còn thao tác nào làm được.
+
+\paragraph{Định lý 4.2.}
+Mọi quá trình thu gọn cực đại trên một partial $2$-tree đều xóa sạch đồ thị.
+
+Tính chất này gần trùng với khái niệm đồ thị nối tiếp-song song tổng quát; khác
+biệt là định nghĩa nối tiếp-song song tổng quát không cần xét thao tác xóa đỉnh
+bậc $0$. Nói cách khác, đồ thị nối tiếp-song song tổng quát là partial
+$2$-tree liên thông.
+
+\subsubsection{Cây nối tiếp-song song}
+
+Quá trình thu gọn trên có thể được mô tả bằng một cây ba nhánh có gốc. Mỗi lá
+đại diện cho một đỉnh hoặc cạnh ban đầu. Tại mọi thời điểm, mỗi đỉnh hoặc cạnh
+hiện có trong đồ thị ứng với một nút hiện tại trên cây này. Mỗi lần thu gọn
+tạo một nút mới $x$:
+\begin{itemize}
+  \item gộp cạnh bội: hai nút hiện tại của hai cạnh bội trở thành con của $x$,
+  và cạnh mới hiện tại là $x$;
+  \item xóa đỉnh bậc $1$: nếu xóa $u$ kề $v$, thì các nút hiện tại của $u$,
+  $v$ và $(u,v)$ trở thành con của $x$, còn $v$ hiện tại là $x$;
+  \item thu gọn đỉnh bậc $2$: nếu xóa $u$ kề $v,w$, thì các nút hiện tại của
+  $u$, $(u,v)$ và $(u,w)$ trở thành con của $x$, còn cạnh mới hiện tại là $x$.
+\end{itemize}
+
+\subsubsection{Quy hoạch động dựa trên thu gọn}
+
+Nhiều bài khó trên đồ thị tổng quát có thể giải tốt trên partial $2$-tree nhờ
+DP theo quá trình thu gọn. Ví dụ, xét bài SNOI2020 \emph{Cây khung}: cho đồ thị
+vô hướng liên thông $n$ đỉnh, $m$ cạnh; biết rằng xóa một cạnh sẽ được cactus;
+cần đếm số cây khung modulo $998244353$.
+
+Có thể chứng minh đồ thị thỏa điều kiện là đồ thị nối tiếp-song song tổng quát.
+Với một cạnh hiện tại $e=(u,v)$, ghi $f_e$ là số phương án trong phần đã thu
+gọn thành $e$ sao cho $u,v$ liên thông, và $g_e$ là số phương án sao cho
+$u,v$ không liên thông; các đỉnh bị xóa trong phần đó vẫn phải liên thông với
+ít nhất một trong $u,v$.
+
+Với xóa đỉnh bậc $1$, cạnh kề của đỉnh đó bắt buộc nằm trong cây khung, nên
+nhân đáp án với $f_e$. Với gộp hai cạnh bội $e_1,e_2$ thành $e_0$, hai cạnh
+không thể đồng thời liên thông:
+\[
+  f_{e_0}=f_{e_1}g_{e_2}+f_{e_2}g_{e_1},\qquad
+  g_{e_0}=g_{e_1}g_{e_2}.
+\]
+Với thu gọn đỉnh bậc $2$, hai cạnh kề không thể đồng thời không liên thông:
+\[
+  f_{e_0}=f_{e_1}f_{e_2},\qquad
+  g_{e_0}=f_{e_1}g_{e_2}+f_{e_2}g_{e_1}.
+\]
+Độ phức tạp là $O(n+m)$; bản chất thuật toán là DP từ dưới lên trên cây
+nối tiếp-song song.
+
+\subsubsection{Một số đồ thị khác}
+
+Đồ thị đầy đủ $K_n$ có treewidth $n-1$. Đồ thị phẳng có treewidth cỡ căn bậc
+hai. Cactus và đồ thị ngoài phẳng có treewidth không quá $2$. Halin graph và
+Apollonian network có treewidth không quá $3$. Với đồ thị chordal, treewidth
+bằng kích thước clique lớn nhất trừ $1$ và có thể tính trong thời gian đa thức.
+Một định nghĩa tương đương khác của treewidth là: trong các đồ thị chordal chứa
+đồ thị gốc, lấy kích thước clique lớn nhất nhỏ nhất rồi trừ $1$.
+
+\subsection{Treewidth bị chặn}
+
+\subsubsection{Tìm phân rã cây độ rộng nhỏ}
+
+Tính treewidth của đồ thị tổng quát đã được chứng minh là NP-complete. Dù vậy,
+có nhiều thuật toán tham số theo treewidth:
+\begin{itemize}
+  \item với đồ thị $n$ đỉnh có treewidth $k$, có thuật toán tìm phân rã cây độ
+  rộng $k$ trong thời gian $n^{k+O(1)}$;
+  \item có thuật toán thời gian $2^{\tilde O(k^3)}n$;
+  \item có thuật toán cho phân rã độ rộng không quá $5k+4$ trong thời gian
+  $2^{O(k)}n$;
+  \item có thuật toán xấp xỉ độ rộng $O(k\sqrt{\log k})$ trong thời gian đa
+  thức.
+\end{itemize}
+Điểm đáng chú ý là nhiều thuật toán có độ phức tạp tăng rất nhanh theo $k$,
+nhưng tuyến tính hoặc gần tuyến tính theo $n$ khi $k$ được xem là hằng số.
+
+\subsubsection{Ý nghĩa của treewidth bị chặn}
+
+Với mọi hằng số $k$, việc kiểm tra một đồ thị có phân rã cây độ rộng $k$ hay
+không, và dựng nó nếu có, có thể làm tuyến tính theo số đỉnh. Ngoài ra, khi
+giới hạn đồ thị đầu vào có treewidth không vượt quá một hằng số, nhiều bài toán
+NP có thể giải trong thời gian đa thức. Với một lớp lớn các bài dễ trên cây, ta
+có thể làm DP trên phân rã cây để đạt độ phức tạp tốt.
+
+\paragraph{Định lý 5.5 (Courcelle).}
+Nếu một bài toán đồ thị biểu diễn được bằng logic bậc hai đơn nguyên, thì trên
+đồ thị treewidth bị chặn, bài toán đó giải được trong thời gian tuyến tính.
+
+Ví dụ gồm tô màu đồ thị, chu trình Hamilton, clique lớn nhất và tập độc lập lớn
+nhất. Phần sau minh họa bằng bài tập độc lập lớn nhất.
+
+\subsubsection{Phân rã cây hoàn hảo}
+
+DP trên phân rã cây tổng quát thường khá rườm rà. Nếu phân rã cây có thêm cấu
+trúc, DP sẽ dễ viết hơn.
+
+\paragraph{Định nghĩa 5.1 (phân rã cây hoàn hảo).}
+Một phân rã cây $(X,T)$ của $G=(V,E)$ gọi là hoàn hảo nếu $T$ là cây nhị phân
+có gốc và mỗi nút $i\in I$ thuộc đúng một trong bốn loại sau:
+\begin{itemize}
+  \item lá: không có con và $|X_i|=1$;
+  \item nút đưa vào: có một con $j$ và $X_i=X_j\cup\{v\}$;
+  \item nút quên: có một con $j$ và $X_j=X_i\cup\{v\}$;
+  \item nút hợp: có hai con $j,k$ và $X_i=X_j=X_k$.
+\end{itemize}
+
+\paragraph{Định lý 5.6.}
+Cho một phân rã cây độ rộng bị chặn của $G$, có thuật toán tuyến tính biến nó
+thành một phân rã cây hoàn hảo cùng độ rộng.
+
+Ý tưởng chuyển đổi như sau. Nếu một nút lá có bag chứa hơn một đỉnh, thêm nút
+con và mỗi lần bỏ một đỉnh khỏi bag. Nếu một nút có một con nhưng hai bag khác
+nhau quá nhiều, chèn các nút trung gian để mỗi bước chỉ đưa vào hoặc quên một
+đỉnh. Nếu một nút có hai con nhưng bag của con chưa bằng bag của nó, chèn nút
+trung gian có bag bằng bag của cha. Nếu một nút có nhiều hơn hai con, tách dần
+thành cây nhị phân bằng các nút trung gian.
+
+\subsubsection{Tập độc lập lớn nhất}
+
+Cho đồ thị vô hướng $G=(V,E)$, một tập $I\subseteq V$ gọi là độc lập nếu mọi
+$u,v\in I$ đều không có cạnh nối. Biết một phân rã cây hoàn hảo độ rộng $w$ là
+hằng số, ta giải tập độc lập lớn nhất bằng DP từ dưới lên.
+
+Với mỗi nút $i$ và mỗi $S\subseteq X_i$, đặt $\operatorname{dp}_{i,S}$ là kích
+thước tập độc lập lớn nhất trong phần cây con của $i$, với điều kiện các đỉnh
+được chọn trong bag $X_i$ đúng là $S$. Nếu $S$ không độc lập thì trạng thái vô
+hiệu.
+
+Các chuyển tiếp:
+\begin{itemize}
+  \item nút lá: $\operatorname{dp}_{i,\emptyset}=0$ và
+  $\operatorname{dp}_{i,X_i}=1$;
+  \item nút đưa vào, với đỉnh đưa vào là $v$ và con $j$:
+  \[
+    \operatorname{dp}_{i,S}=
+    \operatorname{dp}_{j,S\setminus\{v\}}+[v\in S];
+  \]
+  \item nút quên, với đỉnh bị quên là $v$ và con $j$:
+  \[
+    \operatorname{dp}_{i,S}=
+    \max(\operatorname{dp}_{j,S},\operatorname{dp}_{j,S\cup\{v\}});
+  \]
+  \item nút hợp, với hai con $j,k$:
+  \[
+    \operatorname{dp}_{i,S}=
+    \operatorname{dp}_{j,S}+\operatorname{dp}_{k,S}-|S|.
+  \]
+\end{itemize}
+Độ phức tạp là $O(2^w w^2 n)$.
+
+\subsubsection{Đường đi ngắn nhất}
+
+Xét đồ thị vô hướng không trọng số và nhiều truy vấn đường đi ngắn nhất giữa
+$s,t$. Với phân rã cây $(X,T)$, gọi $m$ là LCA của
+$\operatorname{top}_s$ và $\operatorname{top}_t$ trong $T$.
+
+\paragraph{Định lý 5.7.}
+Nếu xóa mọi đỉnh trong $X_m$ khỏi $G$, thì $s,t$ không còn liên thông.
+
+Do đó mọi đường đi ngắn nhất từ $s$ tới $t$ phải đi qua ít nhất một đỉnh trong
+$X_m$, và
+\[
+  \operatorname{dist}(s,t)=
+  \min_{i\in X_m}\operatorname{dist}(s,i)+\operatorname{dist}(i,t).
+\]
+Nếu cây phân rã có chiều cao $h$ và độ rộng $w$, ta có thể BFS để tiền xử lý
+khoảng cách cho các cặp có quan hệ tổ tiên trong $O(hn)$, rồi trả lời mỗi truy
+vấn trong $O(w)$.
+
+\subsection{Thuật toán phân rã cây của Bodlaender}
+
+Phần này phác thảo thuật toán tuyến tính của Bodlaender năm 1996 cho đồ thị có
+treewidth bị chặn. Thuật toán đầy đủ khá dài; bài viết chỉ nêu các ý tưởng và
+sản phẩm phụ quan trọng.
+
+\paragraph{Bổ đề 6.1.1.}
+Với hai hằng số bị chặn $k,l$, nếu đã có phân rã cây độ rộng $l$ của $G$, thì
+có thể kiểm tra $\operatorname{tw}(G)\le k$ hay không và nếu có thì dựng phân
+rã cây độ rộng không quá $k$, trong thời gian tuyến tính.
+
+Dựa trên bổ đề này, cần chứng minh rằng với hằng số $k$, ta có thể hoặc kết
+luận $\operatorname{tw}(G)>k$, hoặc tuyến tính thu nhỏ đồ thị theo một tỉ lệ
+cố định rồi đệ quy. Thuật toán xét hai trường hợp:
+\begin{enumerate}
+  \item Nếu có đủ nhiều ``đỉnh xanh'', cực đại matching của $G$ đủ lớn; thu
+  gọn các cạnh trong matching rồi đệ quy.
+  \item Nếu không, sau khi thêm một số cạnh không làm đổi treewidth, sẽ có đủ
+  nhiều ``đỉnh I-simplex''; xóa các đỉnh này rồi đệ quy.
+\end{enumerate}
+
+\subsubsection{Chuẩn bị}
+
+\paragraph{Bổ đề 6.2.1.}
+Với một phân rã cây $(X,T)$ của $G=(V,E)$:
+\begin{enumerate}
+  \item nếu $W\subseteq V$ tạo thành clique trong $G$, thì tồn tại $i\in I$ sao
+  cho $W\subseteq X_i$;
+  \item nếu $W_1,W_2\subseteq V$ tạo thành đồ thị hai phía đầy đủ, thì tồn tại
+  $i\in I$ sao cho $W_1\subseteq X_i$ hoặc $W_2\subseteq X_i$.
+\end{enumerate}
+
+\paragraph{Bổ đề 6.2.2.}
+Nếu tồn tại bag chứa cả $u$ và $v$, thì $(X,T)$ cũng là phân rã cây của đồ thị
+$G+(u,v)$.
+
+\paragraph{Bổ đề 6.2.3.}
+Nếu $|N_G(u)\cap N_G(v)|>k$, thì
+\[
+  \operatorname{tw}(G)\le k \Longleftrightarrow
+  \operatorname{tw}(G+(u,v))\le k.
+\]
+Lý do là nếu hai đỉnh có quá nhiều láng giềng chung, trong mọi phân rã cây độ
+rộng $k$ hoặc phải có bag chứa $u,v$, hoặc tạo ra clique quá lớn.
+
+\paragraph{Định nghĩa 6.2.1 (phân rã cây đều).}
+Một phân rã cây $(X,T)$ của $G=(V,E)$ gọi là đều nếu với mọi $i\in I$,
+$|X_i|=k+1$, và với mọi cạnh cây $(i,j)\in F$, $|X_i\cap X_j|=k$.
+
+Từ một phân rã cây độ rộng bị chặn, có thể biến đổi tuyến tính thành phân rã
+cây đều cùng độ rộng.
+
+\subsubsection{Đỉnh xanh}
+
+Chọn hai hằng số $0<c_1,c_2<1$. Đặt
+\[
+  d=\max\left(k^2+4k+4,\left\lceil\frac{2k}{c_1}\right\rceil\right).
+\]
+Đỉnh có bậc không quá $d$ gọi là đỉnh bậc thấp; đỉnh có bậc lớn hơn $d$ gọi là
+đỉnh bậc cao. Một đỉnh bậc thấp kề với ít nhất một đỉnh bậc thấp khác gọi là
+đỉnh xanh.
+
+\paragraph{Bổ đề 6.3.1.}
+Số đỉnh bậc cao nhỏ hơn $c_1|V|$. Điều này suy từ cận số cạnh của partial
+$k$-tree.
+
+\paragraph{Bổ đề 6.3.2.}
+Nếu $G$ có $n_f$ đỉnh xanh, thì mọi cực đại matching của $G$ chứa ít nhất
+$n_f/(2d)$ cạnh.
+
+\paragraph{Chứng minh.}
+Với một cực đại matching $M$, mỗi đỉnh xanh hoặc đã là đầu mút của cạnh trong
+$M$, hoặc kề với một đỉnh xanh nằm trên $M$; nếu không, matching chưa cực đại.
+Gán đóng góp của đỉnh xanh chưa ghép cho một đỉnh xanh đã ghép kề nó. Mỗi đỉnh
+như vậy nhận nhiều nhất $d$ đóng góp, nên $M$ có ít nhất $n_f/d$ đỉnh xanh và
+ít nhất $n_f/(2d)$ cạnh.
+
+Thu gọn mọi cạnh trong một matching $M$ được $G'$. Thu gọn cạnh không tăng
+treewidth; ngược lại, từ phân rã cây độ rộng $k$ của $G'$ có thể phục hồi phân
+rã cây độ rộng $2k+1$ của $G$ bằng cách thay mỗi đỉnh thu gọn bằng hai đầu mút
+cũ. Sau đó dùng Bổ đề 6.1.1 để giảm độ rộng về $k$. Vì vậy khi có đủ nhiều
+đỉnh xanh, ta thu gọn matching và đệ quy.
+
+\subsubsection{Đỉnh I-simplex}
+
+\paragraph{Định nghĩa 6.4.1 (đồ thị bổ sung).}
+Với mọi cặp $u,v$ có ít nhất $k+1$ láng giềng chung bậc thấp, thêm cạnh
+$(u,v)$. Đồ thị thu được gọi là đồ thị bổ sung $G'$. Theo Bổ đề 6.2.3,
+$\operatorname{tw}(G)\le k$ khi và chỉ khi $\operatorname{tw}(G')\le k$.
+
+\paragraph{Định nghĩa 6.4.2.}
+Một đỉnh $v$ gọi là I-simplex nếu trong đồ thị bổ sung, các láng giềng của nó
+tạo thành clique, và trong đồ thị gốc nó là đỉnh bậc thấp nhưng không phải đỉnh
+xanh.
+
+\paragraph{Định nghĩa 6.4.3.}
+Với một phân rã cây $(X,T)$ của $G$, một đỉnh bậc thấp không xanh $v$ gọi là
+đỉnh đỏ nếu tồn tại $i\in I$ sao cho $N_G(v)\subseteq X_i$. Đỉnh đỏ chỉ dùng
+trong phân tích, thuật toán không cần tính chúng trực tiếp.
+
+Bài viết chứng minh một chuỗi bổ đề: trong phân rã cây đều, mỗi lá của $T$ và
+mỗi đường dài đủ lớn gồm các nút bậc $2$ đều bảo đảm tồn tại một đỉnh xanh hoặc
+đỏ xuất hiện cục bộ; mọi cây có nhiều lá hoặc nhiều đường như vậy; số tập quan
+trọng tạo bởi các đỉnh bậc cao không vượt quá số đỉnh bậc cao. Từ đó suy ra
+nếu đỉnh xanh không đủ nhiều, thì phải có đủ nhiều đỉnh I-simplex.
+
+Cụ thể, nếu $G=(V,E)$ có $\operatorname{tw}(G)\le k$, có $n_f$ đỉnh xanh và
+$n_h$ đỉnh bậc cao, thì số đỉnh I-simplex ít nhất là
+\[
+  \frac{|V|}{2k^2+6k+8}-1-n_f-\frac12 k^2(k+1)n_h.
+\]
+
+\paragraph{Bổ đề 6.4.5.}
+Giả sử xóa mọi đỉnh I-simplex khỏi đồ thị bổ sung được $G'$, và $(X,T)$ là một
+phân rã cây của $G'$. Với mỗi đỉnh I-simplex bị xóa $v$, tồn tại bag $X_i$ sao
+cho $N_G(v)\subseteq X_i$.
+
+Do đó từ phân rã cây của đồ thị đã xóa các đỉnh I-simplex, ta phục hồi nhanh
+phân rã cây cùng độ rộng của đồ thị ban đầu bằng cách thêm cho mỗi $v$ một bag
+$\{v\}\cup N_G(v)$ gắn vào bag chứa $N_G(v)$.
+
+\subsubsection{Luồng thuật toán}
+
+Bài toán cần giải là: cho đồ thị vô hướng $G=(V,E)$ và hằng số $k$, hãy dựng
+phân rã cây độ rộng không quá $k$, hoặc báo rằng $\operatorname{tw}(G)>k$.
+Nếu $|V|$ nhỏ hơn một hằng số đủ lớn, dùng tìm kiếm trực tiếp.
+
+Trước hết kiểm tra
+\[
+  |E|\le k|V|-\frac12 k(k+1).
+\]
+Nếu không thỏa, chắc chắn vô nghiệm.
+
+Nếu số đỉnh xanh ít nhất $|V|/(4k^2+12k+16)$:
+\begin{itemize}
+  \item tìm một cực đại matching $M$;
+  \item thu gọn các cạnh trong $M$ để được $G'$;
+  \item đệ quy trên $G'$, nếu vô nghiệm thì $G$ cũng vô nghiệm;
+  \item phục hồi phân rã cây độ rộng $2k+1$ của $G$;
+  \item dùng Bổ đề 6.1.1 để giảm về độ rộng $k$.
+\end{itemize}
+
+Ngược lại:
+\begin{itemize}
+  \item dựng đồ thị bổ sung $G'$;
+  \item nếu tồn tại đỉnh I-simplex có bậc lớn hơn $k$, báo vô nghiệm;
+  \item lấy tập $S$ gồm mọi đỉnh I-simplex; nếu $|S|<c_2|V|$, báo vô nghiệm;
+  \item đệ quy trên đồ thị xóa $S$;
+  \item với mỗi $v\in S$, thêm một bag $\{v\}\cup N_G(v)$ nối vào bag chứa
+  $N_G(v)$.
+\end{itemize}
+
+Trong trường hợp thứ nhất, ta xóa được ít nhất một tỉ lệ cố định số đỉnh nhờ
+matching. Trong trường hợp thứ hai, ta xóa được ít nhất $c_2|V|$ đỉnh. Vì mỗi
+lần đệ quy đều thu nhỏ kích thước xuống còn nhiều nhất $c_4 n$ với $c_4<1$, độ
+phức tạp thỏa $T(n)=T(c_4n)+O(n)$, tức là tuyến tính.
+
+\subsection{Tổng kết}
+
+Bài viết xuất phát từ một số đồ thị đặc biệt, phân tích đặc trưng và tính chất
+của treewidth, giới thiệu ý nghĩa của treewidth bị chặn trong việc giải các bài
+toán kinh điển, rồi trình bày tư tưởng cốt lõi của một thuật toán phân rã cây
+mạnh. Nội dung chỉ mang tính bán phổ biến kiến thức; các liên hệ rộng hơn và
+những phương pháp phân rã mạnh hơn vẫn còn chờ độc giả tiếp tục tìm hiểu. Tác
+giả hy vọng treewidth sẽ được ứng dụng nhiều hơn trong thi tin học.
+
+\subsection{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+đổi; cảm ơn thầy Wang Xingming của Trường Thập Nhất Bắc Kinh đã quan tâm và chỉ
+dẫn; cảm ơn gia đình đã ủng hộ; và cảm ơn các bạn đã trao đổi, thảo luận cùng
+tác giả.
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}[label={[\arabic*]}]
+  \item Stefan Arnborg, Derek G. Corneil, and Andrzej Proskurowski.
+  \emph{Complexity of finding embeddings in a k-tree}. SIAM Journal on
+  Algebraic and Discrete Methods, 8:277--284, 1987.
+  \item Hans L. Bodlaender. \emph{A linear-time algorithm for finding
+  tree-decompositions of small treewidth}. SIAM Journal on Computing,
+  25(6):1305--1317, 1996.
+  \item Hans L. Bodlaender, Pal Gronas Drange, Markus S. Dregi, Fedor V. Fomin,
+  Daniel Lokshtanov, and Michal Pilipczuk. \emph{An $O(c^k n)$ 5-approximation
+  algorithm for treewidth}. FOCS, 2013.
+  \item Uriel Feige, Mohammad Taghi Hajiaghayi, and James R. Lee.
+  \emph{Improved approximation algorithms for minimum-weight vertex
+  separators}. STOC, 2005.
+  \item Bruno Courcelle. \emph{The monadic second-order logic of graphs I:
+  recognizable sets of finite graphs}. Information and Computation,
+  85(1):12--75, 1990.
+  \item Hans L. Bodlaender and Ton Kloks. \emph{Better algorithms for the
+  pathwidth and treewidth of graphs}. ICALP, 1991.
+  \item Dian Ouyang, Lu Qin, Lijun Chang, Xuemin Lin, Ying Zhang, and Qing Zhu.
+  \emph{When hierarchy meets 2-hop-labeling: Efficient shortest distance
+  queries on road networks}. SIGMOD, 2018.
+  \item Wikipedia. \emph{Treewidth}.
 \end{enumerate}
 
 \end{document}
