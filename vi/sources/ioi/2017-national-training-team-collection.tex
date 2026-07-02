@@ -2,6 +2,7 @@
 % Source-PDF: IOI中国国家候选队论文/国家集训队2017论文集.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
 
 \newcommand{\Oh}{\mathcal{O}}
 \newcommand{\Base}{\operatorname{Base}}
@@ -10,6 +11,9 @@
 \newcommand{\num}{\operatorname{num}}
 \newcommand{\last}{\operatorname{last}}
 \newcommand{\append}{\operatorname{append}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\adj}{\operatorname{adj}}
+\newcommand{\sgn}{\operatorname{sgn}}
 \newcommand{\qedmark}{\hfill\rule{0.7ex}{0.7ex}}
 
 \title{Tập luận văn đội tuyển quốc gia Trung Quốc năm 2017}
@@ -27,7 +31,9 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2017. Khác với
 một số tập trước đó, lớp văn bản của tập này trích xuất khá tốt bằng
 \texttt{pdftotext}. Bản LaTeX này chuyển ngữ phần nhận diện tập sách, toàn bộ
-mục lục, và bài đầu tiên của Mao Xiao về công thức truy hồi của dãy số.
+mục lục, bài đầu tiên của Mao Xiao về công thức truy hồi của dãy số, và bài
+thứ hai của Yang Jiaqi về matching trên đồ thị tổng quát bằng đại số tuyến
+tính.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -638,6 +644,957 @@ thể gợi ý cho độc giả và dẫn ra một số ứng dụng hấp dẫn
   \url{https://en.wikipedia.org/wiki/Berlekamp%E2%80%93Massey_algorithm}
 \end{enumerate}
 
+\section{Matching trên đồ thị tổng quát dựa trên đại số tuyến tính}
+
+\begin{center}
+Yang Jiaqi, Trường Trung học Tưởng niệm Trung Sơn, thành phố Trung Sơn
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Bài toán matching trên đồ thị là một bài toán kinh điển của lý thuyết đồ thị,
+có vị trí quan trọng cả trong học thuật lẫn trong thi thuật toán. Bài viết này
+chủ yếu giới thiệu một thuật toán matching trên đồ thị tổng quát dựa trên đại
+số tuyến tính, đồng thời đưa ra một số ứng dụng đơn giản của nó. Thuật toán
+này rất khác với các phương pháp tổ hợp truyền thống để giải bài toán này; hy
+vọng bản thân thuật toán và những tư tưởng dùng trong quá trình thu được thuật
+toán có thể gợi mở cho độc giả.
+\end{abstract}
+
+\subsection*{Dẫn nhập}
+
+Bài toán matching trên đồ thị có thể được chia theo tính chất của đồ thị thành
+hai loại: matching trên đồ thị hai phía và matching trên đồ thị tổng quát.
+Trong đó, matching hai phía đã xuất hiện nhiều năm trong giới thi thuật toán
+và là một điểm kiến thức thường gặp. Vì thuật toán của nó tương đối đơn giản,
+nó đã được phổ cập rất tốt: hiện nay phần lớn thí sinh đều đã nắm vững và có
+thể vận dụng thành thạo thuật toán matching hai phía.
+
+Ngược lại, matching trên đồ thị tổng quát là một điểm kiến thức mới nổi. Vài
+năm gần đây, nó đã xuất hiện trong bài tập đội tuyển, kỳ thi mùa đông và các
+kỳ thi giao lưu đội tuyển. Nhưng các kỳ thi ấy đều ở cấp trên NOI; trong các
+kỳ thi dưới NOI, đề về matching tổng quát còn hiếm gặp, và hiện nay số thí
+sinh nắm được thuật toán matching tổng quát cũng tương đối ít. Tác giả cho
+rằng một nguyên nhân quan trọng khiến thuật toán này chưa phổ biến là thuật
+toán cây hoa, cách thường dùng hiện nay để giải loại bài toán này, khá phức
+tạp và có ngưỡng học tập cao. Vì vậy bài viết này sẽ giới thiệu một thuật toán
+matching dễ nhớ, dễ cài đặt, với hy vọng thúc đẩy việc phổ cập thuật toán
+matching trên đồ thị tổng quát.
+
+Như tiêu đề bài viết đã nói, thuật toán được giới thiệu ở đây là một phương
+pháp đại số. Dù trong thi thuật toán, phương pháp tổ hợp thường gặp hơn, phương
+pháp đại số cũng là một công cụ mạnh để giải các bài toán đồ thị. Ví dụ nổi
+tiếng nhất có lẽ là định lý Matrix-Tree để đếm cây khung. Phương pháp đại số
+đem lại một góc nhìn hoàn toàn mới khi giải quyết vấn đề; hy vọng bài viết này
+có thể giúp độc giả cảm nhận sức hấp dẫn riêng của phương pháp đại số.
+
+Bài viết trước hết sẽ bắt đầu từ bài toán matching hoàn hảo, giải bài toán
+quyết định tương ứng, sau đó thu được một thuật toán xây dựng phương án
+matching hoàn hảo và từng bước tối ưu nó bằng một số kiến thức đại số tuyến
+tính. Tiếp theo, bài viết chuyển bài toán matching cực đại về matching hoàn
+hảo, rồi cuối cùng trình bày một số ứng dụng và mở rộng của thuật toán này.
+
+\subsection{Kiến thức chuẩn bị}
+
+\subsubsection{Lý thuyết đồ thị}
+
+Nếu không nói gì thêm, các đồ thị trong bài đều là đồ thị vô hướng.
+
+Ta dùng \(G=(V,E)\) để biểu diễn một đồ thị, trong đó \(V\) là tập đỉnh và
+\(E\) là tập cạnh. Ta thường dùng \(n\) để biểu diễn kích thước \(|V|\) của
+tập đỉnh, dùng \(m\) để biểu diễn kích thước \(|E|\) của tập cạnh, và thường
+xem \(V=\{v_1,v_2,\ldots,v_n\}\).
+
+Khi không gây nhập nhằng, ta dùng \(uv\) để biểu diễn cạnh \((u,v)\).
+
+Một \term{matching} \(M\) của đồ thị \(G=(V,E)\) là một tập con của tập cạnh
+\(E\), thỏa mãn hai cạnh bất kỳ trong \(M\) không có đỉnh chung. Nếu đỉnh \(v\)
+là đầu mút của một cạnh nào đó trong \(M\), ta nói \(v\) nằm trong matching
+\(M\). Giá trị lớn nhất của kích thước mọi matching của đồ thị \(G\) được ký
+hiệu là \(\nu(G)\); nếu \(|M|=\nu(G)\), ta gọi \(M\) là một \term{matching cực
+đại} của \(G\). Đặc biệt, nếu mọi đỉnh của \(G\) đều nằm trong matching \(M\),
+ta gọi \(M\) là một \term{matching hoàn hảo} của \(G\). Rõ ràng \(G\) chỉ có
+thể có matching hoàn hảo khi \(|V|\) là số chẵn.
+
+Với một đồ thị \(G=(V,E)\) và một tập đỉnh \(U\subseteq V\), ta ký hiệu đồ thị
+thu được bằng cách xóa mọi đỉnh trong \(U\) khỏi \(G\) là \(G-U\), tức là
+\[
+  G-U=(V\setminus U, E\cap\{uv\mid u,v\in V\setminus U\});
+\]
+đồ thị con cảm sinh của \(G\) theo \(U\) được ký hiệu là \(G[U]\), tức là
+\[
+  G[U]=G-(V\setminus U).
+\]
+
+\subsubsection{Đại số tuyến tính}
+
+Với một ma trận \(A\) có \(m\) hàng và \(n\) cột, ta đặt tập chỉ số hàng là
+\(\{1,\ldots,m\}\), tập chỉ số cột là \(\{1,\ldots,n\}\). Phần tử ở hàng \(i\),
+cột \(j\) của ma trận \(A\) được ký hiệu là \(A_{i,j}\).
+
+Với một ma trận \(m\times n\) \(A\) và các tập bất kỳ
+\(I\subseteq\{1,\ldots,m\}, J\subseteq\{1,\ldots,n\}\), ta ký hiệu ma trận con
+thu được bằng cách giữ lại mọi hàng trong \(I\) và mọi cột trong \(J\) là
+\(A_{I,J}\). Ta viết tắt \(A_{I,\{1,\ldots,n\}}\) thành \(A_{I,\cdot}\), và
+\(A_{\{1,\ldots,m\},J}\) thành \(A_{\cdot,J}\).
+
+Tương tự, ta ký hiệu \(A^{I,J}\) là ma trận con thu được bằng cách xóa khỏi
+\(A\) mọi hàng trong \(I\) và mọi cột trong \(J\).
+
+Với một ma trận vuông \(n\times n\) \(A\), định thức của nó được ký hiệu là
+\(\det A\), và
+\[
+  \det A=
+  \sum_{\pi\in\Sigma_n}(-1)^{\sgn\pi}
+  \prod_{k=1}^{n} A_{k,\pi(k)}.
+\]
+Trong đó \(\Sigma_n\) biểu diễn tập mọi hoán vị của \(\{1,\ldots,n\}\), còn
+\(\sgn\pi\) biểu diễn dấu của hoán vị \(\pi\). Nếu số cặp nghịch thế của dãy
+\(\{\pi(1),\ldots,\pi(n)\}\) là \(x\), thì \(\sgn\pi=(-1)^x\).
+
+Cho \(m\) vector \(n\) chiều \(\{v_1,\ldots,v_m\}\). Nếu tồn tại
+\(\lambda_1,\lambda_2,\ldots,\lambda_m\) sao cho
+\[
+  v=\sum_{i=1}^{m}\lambda_i v_i,
+\]
+thì gọi \(v\) là một tổ hợp tuyến tính của \(\{v_1,\ldots,v_m\}\). Nếu không
+vector nào trong \(m\) vector này có thể được biểu diễn thành tổ hợp tuyến
+tính của các vector còn lại, ta nói \(m\) vector này độc lập tuyến tính; ngược
+lại, chúng phụ thuộc tuyến tính.
+
+Với một ma trận \(A\), nếu xem mỗi hàng của nó là một vector, thì số lượng cực
+đại các vector độc lập tuyến tính có thể chọn ra được gọi là \term{hạng hàng};
+nếu xem mỗi cột là một vector, số lượng cực đại các vector cột độc lập tuyến
+tính được gọi là \term{hạng cột}. Hạng hàng và hạng cột của một ma trận luôn
+bằng nhau, nên ta gọi chung là \term{hạng} của ma trận \(A\), ký hiệu
+\(\rank A\).
+
+Cuối cùng, ta nêu một kết luận mà không chứng minh.
+
+\paragraph{Định lý 1.1.}
+Bốn bài toán sau có cùng độ phức tạp:
+\begin{enumerate}
+  \item tính định thức của ma trận;
+  \item nhân hai ma trận;
+  \item tìm ma trận nghịch đảo;
+  \item khử Gauss trên ma trận, tức phân rã LU.
+\end{enumerate}
+
+Ta đặt độ phức tạp của cả bốn bài toán này là
+\(\Oh(n^\omega)\)\footnote{Trong học thuật, người ta thường cho rằng
+\(2\le\omega<2.373\).}.
+
+\subsection{Sự tồn tại của matching hoàn hảo}
+
+\subsubsection{Ma trận Tutte}
+
+\paragraph{Định nghĩa 2.1 (Ma trận Tutte).}
+Với một đồ thị vô hướng \(G=(V,E)\), định nghĩa ma trận Tutte của \(G\) là một
+ma trận \(n\times n\) \(\tilde A(G)\), trong đó
+\[
+  \tilde A(G)_{i,j}=
+  \begin{cases}
+    x_{i,j}, & \text{nếu } v_i v_j\in E \text{ và } i<j,\\
+    -x_{j,i}, & \text{nếu } v_i v_j\in E \text{ và } i>j,\\
+    0, & \text{trong các trường hợp khác.}
+  \end{cases}
+\]
+Ở đây, \(x_{i,j}\) là một biến duy nhất gắn với cạnh \(v_i v_j\).
+
+Ta xét ví dụ sau.
+
+\begin{center}
+\begin{minipage}{0.42\linewidth}
+\centering
+\begin{tikzpicture}[scale=0.9, every node/.style={inner sep=1pt}]
+  \node (v1) at (0,2) {\(v_1\)};
+  \node (v2) at (3,2) {\(v_2\)};
+  \node (v3) at (3,0) {\(v_3\)};
+  \node (v4) at (0,0) {\(v_4\)};
+  \draw (v1) -- node[above] {\(x_{1,2}\)} (v2);
+  \draw (v2) -- node[right] {\(x_{2,3}\)} (v3);
+  \draw (v3) -- node[below] {\(x_{3,4}\)} (v4);
+  \draw (v4) -- node[left] {\(x_{1,4}\)} (v1);
+  \draw (v1) -- node[sloped,above] {\(x_{1,3}\)} (v3);
+\end{tikzpicture}
+\end{minipage}
+\begin{minipage}{0.52\linewidth}
+\[
+\begin{pmatrix}
+0 & x_{1,2} & x_{1,3} & x_{1,4}\\
+-x_{1,2} & 0 & x_{2,3} & 0\\
+-x_{1,3} & -x_{2,3} & 0 & x_{3,4}\\
+-x_{1,4} & 0 & -x_{3,4} & 0
+\end{pmatrix}
+\]
+\end{minipage}
+
+\smallskip
+Hình 1: Đồ thị \(G\) và ma trận Tutte của nó
+\end{center}
+
+Nửa trái của Hình 1 cho một đồ thị \(G\), còn nửa phải cho ma trận Tutte
+\(\tilde A(G)\) tương ứng với \(G\). Có thể thấy mỗi cạnh của \(G\) đều tương
+ứng với một biến, nên \(\tilde A(G)\) dùng tổng cộng \(|E|\) biến.
+
+\subsubsection{Định lý Tutte}
+
+Ma trận Tutte có liên hệ mật thiết với sự tồn tại của matching hoàn hảo trong
+đồ thị. Thật vậy, ta có định lý sau.
+
+\paragraph{Định lý 2.1 (Tutte).}
+Đồ thị \(G\) có matching hoàn hảo khi và chỉ khi
+\(\det\tilde A(G)\ne 0\).
+
+Để chứng minh định lý này, trước hết ta cần dùng khái niệm ``phủ chu trình
+chẵn'' để đặc trưng một đồ thị có matching hoàn hảo.
+
+\paragraph{Định nghĩa 2.2.}
+Một \term{phủ chu trình} của đồ thị \(G=(V,E)\) là việc dùng một số chu trình
+để phủ mọi đỉnh của \(G\), sao cho mỗi đỉnh của \(G\) nằm đúng trong một chu
+trình.
+
+Nói một cách hình thức, mỗi phủ chu trình của \(G\) tương ứng với một hoán vị
+\(\pi\) từ \(1\) đến \(n\), thỏa mãn \(v_i v_{\pi(i)}\in E\).
+
+Nếu mọi chu trình trong phủ chu trình này đều có độ dài chẵn, ta gọi nó là một
+\term{phủ chu trình chẵn}; ngược lại, ta gọi nó là một \term{phủ chu trình
+lẻ}.
+
+Chú ý rằng Định nghĩa 2.2 không yêu cầu các cạnh \(v_i v_{\pi(i)}\) đôi một
+khác nhau, nghĩa là trong một phủ chu trình có thể xuất hiện cạnh lặp.
+
+\paragraph{Bổ đề 2.2.}
+Đồ thị \(G=(V,E)\) có matching hoàn hảo khi và chỉ khi \(G\) có một phủ chu
+trình chẵn.
+
+\paragraph{Chứng minh.}
+Nếu \(G\) có một matching hoàn hảo, ta trực tiếp dùng chu trình độ dài hai do
+mỗi cặp đỉnh trong matching tạo thành để phủ \(G\).
+
+Nếu \(G\) có một phủ chu trình chẵn, thì trong mỗi chu trình chẵn, lấy cách
+một cạnh một cạnh, ta sẽ thu được một matching hoàn hảo của \(G\). \qedmark
+
+Hình 2 dưới đây minh họa cách thu được một matching hoàn hảo từ một phủ chu
+trình chẵn của \(G\).
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9, every node/.style={inner sep=1pt}]
+  \node (a1) at (0,2) {\(v_1\)};
+  \node (a2) at (3,2) {\(v_2\)};
+  \node (a3) at (3,0) {\(v_3\)};
+  \node (a4) at (0,0) {\(v_4\)};
+  \draw (a1) -- (a2) -- (a3) -- (a4) -- (a1);
+  \node at (4.4,1) {\(\Longrightarrow\)};
+  \node (b1) at (6,2) {\(v_1\)};
+  \node (b2) at (9,2) {\(v_2\)};
+  \node (b3) at (9,0) {\(v_3\)};
+  \node (b4) at (6,0) {\(v_4\)};
+  \draw (b1) -- (b2);
+  \draw (b4) -- (b3);
+\end{tikzpicture}
+
+\smallskip
+Hình 2: Phủ chu trình chẵn và matching hoàn hảo
+\end{center}
+
+Có Bổ đề 2.2, ta có thể chứng minh định lý Tutte, tức Định lý 2.1.
+
+\paragraph{Chứng minh định lý Tutte.}
+Ta có
+\[
+  \det\tilde A(G)=
+  \sum_{\pi\in\Sigma_n}(-1)^{\sgn(\pi)}
+  \prod_{k=1}^{n}\tilde A(G)_{k,\pi(k)}.
+  \tag{2.1}
+\]
+
+Các hạng tử khác \(0\) ở vế phải của đẳng thức có dạng
+\[
+  (-1)^{\sgn(\pi)}\prod_{k=1}^{n}\pm x_{k,\pi(k)},
+\]
+trong đó \(v_1v_{\pi(1)},\ldots,v_nv_{\pi(n)}\) là các cạnh của \(G\). Những
+cạnh này tạo thành một phủ chu trình của \(G\), tương ứng với phân rã thành
+chu trình của \(\pi\).
+
+Tiếp theo, nếu ta đảo chiều một chu trình bất kỳ có độ dài lớn hơn \(2\) trong
+\(\pi\), ta sẽ thu được cùng một phủ chu trình. Bây giờ xét dấu của nó thay đổi
+ra sao. Gọi \(\pi'\) là hoán vị thu được sau khi đảo chiều một chu trình trong
+\(\pi\). Việc đảo chiều một chu trình không làm đổi dấu của hoán vị \(\pi\),
+tức \(\sgn(\pi)=\sgn(\pi')\), nhưng làm đổi dấu mọi biến \(x_{i,\pi(i)}\) trên
+chu trình đó.
+
+Vì vậy, nếu ta đảo chiều một chu trình chẵn trong \(\pi\), dấu của hạng tử thu
+được giống với dấu của hạng tử tương ứng với \(\pi\); nếu không, dấu ngược
+lại.
+
+Do đó mọi phủ chu trình chứa chu trình lẻ đều bị triệt tiêu từng cặp một bởi
+một hạng tử dương và một hạng tử âm. Vì \(\det\tilde A(G)\ne 0\), điều này có
+nghĩa là đồ thị \(G\) tồn tại một phủ chu trình chẵn, nên \(G\) có matching
+hoàn hảo. \qedmark
+
+Để hiểu trực quan hơn chứng minh này, ta lấy một chu trình ba đỉnh làm ví dụ
+để giải thích vì sao phủ chu trình lẻ sẽ không xuất hiện trong
+\(\det\tilde A(G)\).
+
+\begin{center}
+\begin{tikzpicture}[scale=0.92, every node/.style={inner sep=1pt}]
+  \node (a1) at (0,2) {\(v_1\)};
+  \node (a2) at (-1,0) {\(v_2\)};
+  \node (a3) at (1,0) {\(v_3\)};
+  \draw (a1) -- node[left] {\(x_{1,2}\)} (a2);
+  \draw (a2) -- node[below] {\(x_{2,3}\)} (a3);
+  \draw (a1) -- node[right] {\(x_{1,3}\)} (a3);
+  \node at (0,-0.7) {(a) Đồ thị \(G\)};
+
+  \node (b1) at (4,2) {\(v_1\)};
+  \node (b2) at (3,0) {\(v_2\)};
+  \node (b3) at (5,0) {\(v_3\)};
+  \draw[->] (b1) -- node[left] {\(x_{1,2}\)} (b2);
+  \draw[->] (b2) -- node[below] {\(x_{2,3}\)} (b3);
+  \draw[->] (b3) -- node[right] {\(-x_{1,3}\)} (b1);
+  \node at (4,-0.7) {(b) Một phủ chu trình lẻ};
+
+  \node (c1) at (8,2) {\(v_1\)};
+  \node (c2) at (7,0) {\(v_2\)};
+  \node (c3) at (9,0) {\(v_3\)};
+  \draw[->] (c1) -- node[right] {\(x_{1,3}\)} (c3);
+  \draw[->] (c3) -- node[below] {\(-x_{2,3}\)} (c2);
+  \draw[->] (c2) -- node[left] {\(-x_{1,2}\)} (c1);
+  \node at (8,-0.7) {(c) Phủ lẻ sau khi đảo chiều};
+\end{tikzpicture}
+
+\smallskip
+Hình 3: Chu trình ba đỉnh \(G\)
+\end{center}
+
+Ta lấy một phủ chu trình lẻ của \(G\) để phân tích. Như Hình 3(b), giả sử phủ
+chu trình ta chọn tương ứng với hoán vị \(\pi=(2\ 3\ 1)\). Khi đó đóng góp của
+hạng tử này vào \(\det\tilde A(G)\) là
+\(\sgn(\pi)x_{1,2}x_{2,3}(-x_{1,3})\). Bây giờ đảo chiều \(\pi\), ta thu được
+Hình 3(c), tương ứng với hoán vị \(\pi'=\pi^{-1}=(3\ 1\ 2)\), và đóng góp của
+nó vào \(\det\tilde A(G)\) là
+\(\sgn(\pi')(-x_{1,2})(-x_{2,3})x_{1,3}\).
+
+Rõ ràng \(\sgn(\pi)=\sgn(\pi')\); đồng thời có thể thấy đóng góp của
+\(\pi'\) chính là đóng góp của \(\pi\) sau khi nhân biến tương ứng với mỗi
+cạnh trên chu trình với \(-1\). Vì vậy hai hạng tử này trái dấu nhau, và tổng
+đóng góp của chúng là \(0\).
+
+\subsubsection{Ngẫu nhiên hóa}
+
+Định lý Tutte, tức Định lý 2.1, cho ta một thuật toán quyết định rất tốt để
+kiểm tra đồ thị \(G\) có matching hoàn hảo hay không: chỉ cần xét
+\(\det\tilde A(G)\) có bằng không hay không. Nhưng cách làm này có một vấn đề
+đáng kể: mỗi hạng tử của ma trận Tutte đều là một biến, và tổng số biến lên
+tới \(|E|\), nên việc tính trực tiếp định thức rất khó, thậm chí cần thời gian
+mũ.
+
+Tuy nhiên, ta không nhất thiết phải tính ra \(\det\tilde A(G)\); việc ta cần
+làm chỉ là phán đoán \(\det\tilde A(G)\) có đồng nhất bằng \(0\) hay không.
+
+Quyết định một đa thức có đồng nhất bằng \(0\) hay không là một bài toán kinh
+điển. Giả sử hiện tại ta có một đa thức \(n\) biến
+\(P(x_1,x_2,\ldots,x_n)\), và muốn quyết định nó có đồng nhất bằng \(0\) hay
+không. Ta nên làm gì?
+
+Trước hết có thể quan sát rằng nếu \(P(x_1,x_2,\ldots,x_n)=0\), thì bất kể ta
+thay giá trị nào vào đa thức \(P\), kết quả thu được chắc chắn đều là \(0\).
+Vậy liệu ta có thể chọn \(n\) số ngẫu nhiên \(r_1,r_2,\ldots,r_n\), rồi dựa
+vào việc \(P(r_1,r_2,\ldots,r_n)\) có bằng \(0\) hay không để suy ra
+\(P(x_1,x_2,\ldots,x_n)\) có đồng nhất bằng \(0\) hay không? Bổ đề
+Schwartz--Zippel dưới đây cho ta biết cách làm trông có vẻ không đáng tin này
+thực ra có xác suất cao cho kết quả đúng.
+
+\paragraph{Bổ đề 2.3 (Schwartz, Zippel).}
+Với một đa thức \(n\) biến bậc \(d\) \(P(x_1,x_2,\ldots,x_n)\) trên trường
+\(F\), không đồng nhất bằng \(0\), giả sử \(r_1,r_2,\ldots,r_n\) là \(n\) số
+ngẫu nhiên trong \(F\) được chọn độc lập, khi đó
+\[
+  \Pr[P(r_1,r_2,\ldots,r_n)=0]\le \frac{d}{|F|}.
+\]
+
+\paragraph{Chứng minh.}
+Ta thử chứng minh định lý này bằng quy nạp.
+
+Xét trường hợp một biến: khi đó \(P\) có nhiều nhất \(d\) nghiệm, nên xác suất
+ta vừa đúng chọn vào một nghiệm không vượt quá \(d/|F|\).
+
+Bây giờ giả sử định lý đúng cho trường hợp \(n-1\) biến. Ta xét cách phân loại
+mọi hạng tử của \(P\) theo bậc của \(x_1\):
+\[
+  P(x_1,x_2,\ldots,x_n)
+  =\sum_{i=0}^{d}x_1^iP_i(x_2,\ldots,x_n).
+\]
+
+Vì \(P\not\equiv 0\), tồn tại một \(i\) sao cho \(P_i\not\equiv 0\). Xét \(i\)
+lớn nhất thỏa điều kiện đó, khi ấy \(\deg P_i\le d-i\).
+
+Theo giả thiết quy nạp,
+\[
+  \Pr[P_i(r_2,\ldots,r_n)=0]\le \frac{d-i}{|F|}.
+\]
+Nếu \(P_i(r_2,\ldots,r_n)\ne 0\), thì \(P(x_1,r_2,\ldots,r_n)\) là một đa thức
+một biến bậc \(i\), nên
+\[
+  \Pr[P(r_1,r_2,\ldots,r_n)=0
+  \mid P_i(r_2,\ldots,r_n)\ne 0]\le \frac{i}{|F|}.
+\]
+Đặt sự kiện \(P(r_1,r_2,\ldots,r_n)=0\) là \(A\), và sự kiện
+\(P_i(r_2,\ldots,r_n)=0\) là \(B\). Khi đó
+\[
+\begin{aligned}
+  \Pr[A]
+  &=\Pr[A\cap B]+\Pr[A\cap B^c]\\
+  &=\Pr[B]\Pr[A\mid B]+\Pr[B^c]\Pr[A\mid B^c]\\
+  &\le \Pr[B]+\Pr[A\mid B^c]\\
+  &\le \frac{d-i}{|F|}+\frac{i}{|F|}
+   = \frac{d}{|F|}.
+\end{aligned}
+\]
+\qedmark
+
+Ta biết rằng với một đồ thị \(G\) cho trước, bậc của đa thức
+\(\det\tilde A(G)\) là cấp \(\Oh(n)\). Vì vậy ta có thể chọn một số nguyên tố
+\(p\) cấp \(n^2\), rồi trên trường modulo \(p\), tức \(F_p\), gán ngẫu nhiên
+một giá trị cho biến \(x_{i,j}\) tương ứng với mỗi cạnh \(v_iv_j\). Sau đó ta
+kiểm tra\footnote{Từ đây trở đi, khi cần tính định thức, ma trận nghịch đảo,
+hoặc khử ma trận \(\tilde A(G)\), ta đều hiểu là sau khi đã gán ngẫu nhiên các
+biến thì thực hiện phép toán tương ứng trên \(F_p\).} \(\det\tilde A(G)\) có
+bằng \(0\) hay không để phán đoán \(G\) có matching hoàn hảo hay không. Theo bổ
+đề Schwartz--Zippel, xác suất phán đoán sai không vượt quá
+\(\frac{n}{p}=\Oh(1/n)\); xác suất này chấp nhận được đối với chúng ta. Hơn
+nữa, ta có thể giảm xác suất sai bằng cách điều chỉnh kích thước của \(p\),
+hoặc ngẫu nhiên nhiều lần.
+
+Từ đó, ta có thuật toán quyết định sau.
+
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.78\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 1} Lovasz's testing algorithm}\\
+1: & \textbf{if} \(\det\tilde A(G)\ne 0\) \textbf{then}\\
+2: & \quad print ``YES''\\
+3: & \textbf{else}\\
+4: & \quad print ``NO''\\
+5: & \textbf{end if}=0
+\end{tabular}
+\end{center}
+
+\paragraph{Định lý 2.4.}
+Độ phức tạp thời gian của Thuật toán 1 là \(\Oh(n^\omega)\).
+
+\subsection{Xây dựng phương án matching hoàn hảo}
+
+\subsubsection{Một thuật toán vét cạn}
+
+Theo Thuật toán 1, hiện tại ta đã có thể quyết định đồ thị \(G\) có matching
+hoàn hảo hay không. Từ đó ta lập tức thu được một thuật toán vét cạn để xây
+dựng matching: duyệt từng cạnh, xóa hai đầu mút của nó, rồi kiểm tra đồ thị
+còn lại có matching hoàn hảo hay không.
+
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.78\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 2} A naive matching algorithm}\\
+1: & \(M\gets\varnothing\)\\
+2: & \textbf{for} \(i\gets 1\) \textbf{to} \(n\) \textbf{do}\\
+3: & \quad \textbf{for} \(j\gets 1\) \textbf{to} \(n\) \textbf{do}\\
+4: & \qquad \textbf{if} \(v_iv_j\in E(G)\) and
+      \(\det\tilde A(G-\{v_i,v_j\})\ne 0\) \textbf{then}\\
+5: & \qquad\quad \(G\gets G-\{v_i,v_j\}\)\\
+6: & \qquad\quad \(M\gets M\cup\{v_iv_j\}\)\\
+7: & \qquad \textbf{end if}\\
+8: & \quad \textbf{end for}\\
+9: & \textbf{end for}\\
+10: & \textbf{return} \(M=0\)
+\end{tabular}
+\end{center}
+
+Thuật toán 2 cần thực hiện \(\Oh(n^2)\) vòng lặp; trong mỗi vòng lặp cần tính
+định thức của một ma trận vuông cấp \(\Oh(n)\). Do đó:
+
+\paragraph{Định lý 3.1.}
+Độ phức tạp thời gian của Thuật toán 2 là \(\Oh(n^{\omega+2})\).
+
+\subsubsection{Một số kiến thức đại số tuyến tính}
+
+Nút thắt của Thuật toán 2 nằm ở việc cần phán đoán mỗi cạnh có thể nằm trong
+matching hoàn hảo hay không. Nếu ta có thể tăng tốc quá trình phán đoán này,
+ta sẽ giảm được độ phức tạp của thuật toán.
+
+Để đạt mục tiêu đó, trước hết ta cần biết một số kiến thức đại số tuyến tính.
+
+\paragraph{Định nghĩa 3.1.}
+Phần phụ của ma trận \(A\) theo hàng \(i\) và cột \(j\), ký hiệu \(M_{i,j}\),
+là \(\det A^{\{i\},\{j\}}\).
+
+\paragraph{Định nghĩa 3.2.}
+Đại số phụ của ma trận \(A\) theo hàng \(i\) và cột \(j\), ký hiệu \(C_{i,j}\),
+là \((-1)^{i+j}M_{i,j}\).
+
+Ma trận các đại số phụ của \(A\) là một ma trận \(n\times n\) \(C\), thỏa mãn
+phần tử ở hàng \(i\), cột \(j\) của nó là đại số phụ của \(A\) theo hàng \(i\)
+và cột \(j\).
+
+\paragraph{Định nghĩa 3.3.}
+Ma trận phụ hợp \(\adj A\) của ma trận \(A\) là chuyển vị của ma trận các đại
+số phụ của \(A\), tức \(\adj A=C^T\).
+
+\paragraph{Định lý 3.2 (Khai triển Laplace).}
+Giả sử \(A\) là một ma trận \(n\times n\). Khi đó với một hàng bất kỳ
+\(i\in\{1,\ldots,n\}\), ta có
+\[
+  \det A=\sum_{j=1}^{n}A_{i,j}C_{i,j}
+        =\sum_{j=1}^{n}A_{i,j}(\adj A)_{j,i}.
+\]
+Tương tự, với một cột bất kỳ \(j\in\{1,\ldots,n\}\), ta có
+\[
+  \det A=\sum_{i=1}^{n}A_{i,j}(\adj A)_{j,i}.
+\]
+
+\paragraph{Định lý 3.3.}
+Nếu ma trận \(A\) khả nghịch, thì
+\[
+  A^{-1}=\adj A/\det A.
+\]
+
+\paragraph{Chứng minh.}
+Theo Định nghĩa 3.2 và Định nghĩa 3.3, hệ số ở hàng \(i\), cột \(i\) của
+\(A\times\adj A\) là \(\sum_{j=1}^{n}A_{i,j}C_{i,j}\). Theo Định lý 3.2, hệ số
+này bằng \(\det A\).
+
+Nếu \(i\ne j\), thì hệ số ở hàng \(i\), cột \(j\) của \(A\times\adj A\) là
+\(\sum_{k=1}^{n}A_{i,k}C_{j,k}\). Thực ra, điều này tương đương với việc thay
+các phần tử hàng \(j\) của \(A\) bằng các phần tử hàng \(i\), rồi lấy định
+thức. Vì có hai hàng giống nhau, định thức bằng \(0\).
+
+Vì vậy ta có
+\[
+  A\times\adj A=\adj A\times A=\det A\times I_n,
+\]
+tức là
+\[
+  A^{-1}=\adj A/\det A.
+\]
+\qedmark
+
+\subsubsection{Tính chất của ma trận phản đối xứng}
+
+Trước hết ta định nghĩa khái niệm ma trận phản đối xứng.
+
+\paragraph{Định nghĩa 3.4.}
+Với một ma trận \(n\times n\) \(A\), nếu \(A^T=-A\), tức
+\(A_{i,j}=-A_{j,i}\), thì ta gọi \(A\) là một ma trận phản đối xứng.
+
+Ma trận Tutte trong Định nghĩa 2.1 chính là một ma trận phản đối xứng. Có thể
+thấy các thuật toán phía trước của ta đều xoay quanh việc tính định thức của
+ma trận Tutte; đây chính là lý do ta nghiên cứu tính chất của ma trận phản đối
+xứng.
+
+\paragraph{Bổ đề 3.4.}
+Với một ma trận phản đối xứng \(n\times n\) \(A\), nếu \(n\) lẻ thì
+\(\det A=0\).
+
+\paragraph{Chứng minh.}
+Từ kiến thức về định thức, ta biết \(\det A=\det A^T\). Lại vì \(A^T=-A\), nên
+\(\det A=\det(-A)=(-1)^n\det A\).
+
+Khi \(n\) lẻ, \((-1)^n=-1\), tức \(\det A=-\det A\), do đó \(\det A=0\).
+\qedmark
+
+\paragraph{Định lý 3.5.}
+Với một ma trận phản đối xứng \(n\times n\) \(A\) và một tập chỉ số hàng
+\(I=\{i_1,i_2,\ldots,i_k\}\), nếu
+\(A_{i_1,\cdot},A_{i_2,\cdot},\ldots,A_{i_k,\cdot}\) là một nhóm độc lập tuyến
+tính cực đại theo hàng của \(A\), thì \(\det A_{I,I}\ne 0\).
+
+\paragraph{Chứng minh.}
+Không mất tính tổng quát, giả sử \(I=\{1,2,\ldots,k\}\).
+
+Vì \(A_{1,\cdot},A_{2,\cdot},\ldots,A_{k,\cdot}\) là một nhóm độc lập tuyến
+tính cực đại theo hàng của \(A\), từ tính phản đối xứng của \(A\), ta có
+\(A_{\cdot,1},A_{\cdot,2},\ldots,A_{\cdot,k}\) là một nhóm độc lập tuyến tính
+cực đại theo cột của \(A\).
+
+Do đó với mọi \(k<i\le n\), \(A_{\cdot,i}\) đều có thể được biểu diễn tuyến
+tính bởi \(A_{\cdot,1},A_{\cdot,2},\ldots,A_{\cdot,k}\). Vì vậy
+\[
+  \rank A_{I,I}=\rank A_{I,\cdot}=k,
+\]
+tức \(\det A_{I,I}\ne 0\). \qedmark
+
+\paragraph{Hệ quả 3.6.}
+Với một ma trận phản đối xứng \(A\), tồn tại một tập chỉ số hàng
+\(I=\{i_1,i_2,\ldots,i_k\}\) sao cho
+\[
+  \rank A=\rank A_{I,I}=k.
+\]
+
+\paragraph{Định lý 3.7.}
+Hạng của một ma trận phản đối xứng là số chẵn.
+
+\paragraph{Chứng minh.}
+Theo Hệ quả 3.6, một ma trận phản đối xứng tồn tại một định thức con chính đầy
+hạng có hạng bằng hạng của chính nó. Vì định thức con chính của ma trận phản
+đối xứng cũng là phản đối xứng, kết hợp với Bổ đề 3.4 ta biết hạng của định
+thức con chính này là số chẵn. Do đó hạng của một ma trận phản đối xứng là số
+chẵn. \qedmark
+
+\paragraph{Bổ đề 3.8.}
+Với một ma trận phản đối xứng khả nghịch \(n\times n\) \(A\), và hai chỉ số
+bất kỳ \(i,j\in\{1,\ldots,n\}, i\ne j\), ta có
+\[
+  \det A^{\{i\},\{j\}}\ne 0
+  \quad\Longleftrightarrow\quad
+  \det A^{\{i,j\},\{i,j\}}\ne 0.
+\]
+
+\paragraph{Chứng minh.}
+Nếu \(\det A^{\{i\},\{j\}}\ne 0\), thì
+\(\rank A^{\{i\},\{j\}}=n-1\). Vì
+\(A^{\{i,j\},\{i,j\}}\) thu được từ \(A^{\{i\},\{j\}}\) bằng cách xóa thêm một
+hàng và một cột, nên \(\rank A^{\{i,j\},\{i,j\}}\ge n-3\). Lại vì
+\(A^{\{i,j\},\{i,j\}}\) là ma trận phản đối xứng, theo Định lý 3.7, hạng của
+nó là số chẵn, nên \(\rank A^{\{i,j\},\{i,j\}}\) nhất định bằng \(n-2\). Do đó
+\(\det A^{\{i,j\},\{i,j\}}\ne 0\).
+
+Ngược lại, nếu \(\det A^{\{i,j\},\{i,j\}}\ne 0\), thì
+\(\rank A^{\{i,j\},\{i,j\}}=n-2\); đồng thời
+\(\rank A^{\{i\},\{i,j\}}=n-2\). Theo Định lý 3.7,
+\[
+  \rank A^{\{i\},\{i,j\}}=\rank A^{\{i\},\{i\}}=n-2.
+\]
+Điều này cho thấy cột thứ \(j\) của \(A^{\{i\},\varnothing}\) là tổ hợp tuyến
+tính của các cột khác. Vì vậy
+\(\rank A^{\{i\},\{j\}}=\rank A^{\{i\},\varnothing}=n-1\), suy ra
+\(\det A^{\{i\},\{j\}}\ne 0\). \qedmark
+
+\subsubsection{Thuật toán Rabin--Vazirani}
+
+Bây giờ ta thử thu được một thuật toán xây dựng phương án matching tốt hơn
+Thuật toán 2.
+
+\paragraph{Định lý 3.9 (Rabin, Vazirani).}
+Giả sử \(G=(V,E)\) là một đồ thị có matching hoàn hảo, và
+\(\tilde A=\tilde A(G)\) là ma trận Tutte tương ứng của \(G\). Khi đó
+\[
+  (\tilde A^{-1})_{i,j}\ne 0
+  \quad\Longleftrightarrow\quad
+  G-\{v_i,v_j\}\text{ có matching hoàn hảo.}
+\]
+
+\paragraph{Chứng minh.}
+Định lý này có thể được suy ra từ Định lý 3.3, Bổ đề 3.8 và định lý Tutte,
+tức Định lý 2.1. \qedmark
+
+Dựa trên Định lý 3.9, ta thu được thuật toán sau.
+
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.78\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 3} Matching algorithm of Rabin and Vazirani}\\
+1: & \(M\gets\varnothing\)\\
+2: & \textbf{for} \(i\gets 1\) \textbf{to} \(n\) \textbf{do}\\
+3: & \quad \textbf{if} \(v_i\) is not yet matched \textbf{then}\\
+4: & \qquad compute \(\tilde A(G)^{-1}\)\\
+5: & \qquad find \(j\), such that \(v_iv_j\in E(G)\) and
+      \((\tilde A(G)^{-1})_{j,i}\ne 0\)\\
+6: & \qquad \(G\gets G-\{v_i,v_j\}\)\\
+7: & \qquad \(M\gets M\cup\{v_iv_j\}\)\\
+8: & \quad \textbf{end if}\\
+9: & \textbf{end for}\\
+10: & \textbf{return} \(M=0\)
+\end{tabular}
+\end{center}
+
+Thuật toán 3 cần thực hiện tổng cộng \(\Oh(n)\) vòng lặp; trong mỗi vòng lặp
+cần tìm nghịch đảo của một ma trận vuông cấp \(\Oh(n)\). Do đó:
+
+\paragraph{Định lý 3.10.}
+Độ phức tạp của Thuật toán 3 là \(\Oh(n^{\omega+1})\).
+
+\subsubsection{Phương pháp xây dựng dựa trên khử Gauss}
+
+Nút thắt của Thuật toán 3 nằm ở việc tính nghịch đảo của ma trận Tutte
+\(\tilde A(G)\). Thực ra, trong mỗi vòng lặp ta chỉ xóa hai hàng và hai cột
+của \(\tilde A(G)\), nhưng lại cần tính lại ma trận nghịch đảo từ đầu. Nếu mỗi
+lần không cần tính lại nghịch đảo từ đầu, mà có thể dùng một phương pháp hiệu
+quả để duy trì ma trận nghịch đảo, ta sẽ giảm được độ phức tạp của thuật toán
+này.
+
+Thuật toán của ta dựa trên định lý sau.
+
+\paragraph{Định lý 3.11.}
+Nếu
+\[
+  A=
+  \begin{pmatrix}
+    a_{1,1} & v^T\\
+    u & B
+  \end{pmatrix},
+  \qquad
+  A^{-1}=
+  \begin{pmatrix}
+    \hat a_{1,1} & \hat v^T\\
+    \hat u & \hat B
+  \end{pmatrix},
+\]
+trong đó \(\hat a_{1,1}\ne 0\), thì
+\[
+  B^{-1}=\hat B-\hat u\hat v^T/\hat a_{1,1}.
+\]
+
+\paragraph{Chứng minh.}
+Vì \(AA^{-1}=I\), ta có
+\[
+  \begin{pmatrix}
+    a_{1,1}\hat a_{1,1}+v^T\hat u &
+    a_{1,1}\hat v^T+v^T\hat B\\
+    u\hat a_{1,1}+B\hat u &
+    u\hat v^T+B\hat B
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    1 & 0\\
+    0 & I_{n-1}
+  \end{pmatrix}.
+\]
+Từ đó,
+\[
+\begin{aligned}
+  B(\hat B-\hat u\hat v^T/\hat a_{1,1})
+  &= I_{n-1}-u\hat v^T-B\hat u\hat v^T/\hat a_{1,1}\\
+  &= I_{n-1}-u\hat v^T+u\hat a_{1,1}\hat v^T/\hat a_{1,1}\\
+  &= I_{n-1}-u\hat v^T+u\hat v^T\\
+  &= I_{n-1}.
+\end{aligned}
+\]
+\qedmark
+
+Chú ý rằng trong định lý trên, thao tác sửa \(\hat B\) đúng là một thao tác
+khử trong khử Gauss. Trong định lý, ta chứng minh với ví dụ khử hàng thứ nhất
+và cột thứ nhất.
+
+Là một ứng dụng trực tiếp của Định lý 3.11, ta thu được thuật toán sau.
+
+\begin{center}
+\small
+\begin{tabular}{r@{\quad}p{0.78\linewidth}}
+\multicolumn{2}{l}{\textbf{Thuật toán 4} Simple matching algorithm}\\
+1: & \(M\gets\varnothing\)\\
+2: & compute \(\tilde A(G)^{-1}\)\\
+3: & \textbf{for} \(i\gets 1\) \textbf{to} \(n\) \textbf{do}\\
+4: & \quad \textbf{if} the \(i\)-th row is not yet eliminated \textbf{then}\\
+5: & \qquad find \(j\) such that \(v_iv_j\in E(G)\) and
+      \((\tilde A(G)^{-1})_{j,i}\ne 0\)\\
+6: & \qquad \(G\gets G-\{v_i,v_j\}\)\\
+7: & \qquad \(M\gets M\cup\{v_iv_j\}\)\\
+8: & \qquad update \(\tilde A(G)^{-1}\) by eliminating the \(i\)-th row
+      and the \(j\)-th column and then the \(j\)-th row and the \(i\)-th column\\
+9: & \quad \textbf{end if}\\
+10: & \textbf{end for}\\
+11: & \textbf{return} \(M=0\)
+\end{tabular}
+\end{center}
+
+Thuật toán 4 cần lặp \(\Oh(n)\) lần; trong mỗi vòng lặp cần thực hiện hai thao
+tác khử. Độ phức tạp thời gian của một thao tác khử là \(\Oh(n^2)\). Vì vậy:
+
+\paragraph{Định lý 3.12.}
+Độ phức tạp thời gian của Thuật toán 4 là \(\Oh(n^3)\).
+
+\subsection{Matching cực đại}
+
+\subsubsection{Kích thước của matching cực đại}
+
+Đến đây, mọi thuật toán của ta đều dùng để giải matching hoàn hảo, nhưng trong
+ứng dụng thực tế, bài toán ta cần giải thường là matching cực đại.
+
+Tương tự ý tưởng giải bài toán matching hoàn hảo phía trước, trước hết ta bắt
+đầu từ bài toán đơn giản nhất: với một đồ thị cho trước \(G=(V,E)\), làm thế
+nào tìm được kích thước matching cực đại \(\nu(G)\) của \(G\)? Với bài toán
+này, ta có định lý sau.
+
+\paragraph{Định lý 4.1.}
+Kích thước matching cực đại \(\nu(G)\) của đồ thị \(G\) là
+\[
+  \frac{1}{2}\rank\tilde A(G).
+\]
+
+\paragraph{Chứng minh.}
+Đặt \(k=\rank\tilde A(G)\). Theo Hệ quả 3.6, ta có thể chọn một tập chỉ số
+hàng \(I=\{i_1,i_2,\ldots,i_k\}\) của \(\tilde A(G)\) sao cho
+\[
+  \rank\tilde A(G)=\rank\tilde A(G)_{I,I}=k.
+\]
+Đặt \(U=\{v_{i_1},v_{i_2},\ldots,v_{i_k}\}\). Khi đó
+\(\tilde A(G)_{I,I}=\tilde A(G[U])\). Vì
+\(\rank\tilde A(G[U])=|U|\), đồ thị \(G[U]\) tồn tại matching hoàn hảo; điều
+này cho thấy \(\nu(G)\ge k/2\).
+
+Nếu \(\nu(G)>k/2\), ta xét lấy ra mọi đỉnh nằm trong một matching cực đại. Khi
+đó nhất định tồn tại một tập chỉ số hàng \(I\) sao cho \(|I|>k\) và
+\(\det\tilde A(G)_{I,I}\ne 0\). Điều này có nghĩa là hạng của một ma trận con
+của \(\tilde A(G)\) lớn hơn hạng của chính nó, hiển nhiên là không thể.
+
+Tổng hợp lại, \(\nu(G)=k/2\). \qedmark
+
+\subsubsection{Chuyển hóa thứ nhất}
+
+Tiếp theo ta thử chuyển bài toán matching cực đại về bài toán matching hoàn
+hảo quen thuộc. Nếu với một đồ thị \(G\), ta đã tìm được kích thước matching
+cực đại \(\nu(G)\) của nó, thì ta có thể thêm \(n-2\nu(G)\) đỉnh mới vào
+\(G\), rồi nối cạnh từ mỗi đỉnh mới đến từng đỉnh trong \(n\) đỉnh ban đầu.
+Đồ thị mới thu được khi đó là một đồ thị có matching hoàn hảo, và matching
+hoàn hảo của đồ thị mới tương ứng với matching cực đại của đồ thị ban đầu.
+
+Như vậy ta đã giải được bài toán matching cực đại. Chuyển hóa này có tính tổng
+quát rất tốt, nhưng có một nhược điểm: trong trường hợp xấu nhất, ta có thể
+phải thêm \(n\) đỉnh mới, làm kích thước dữ liệu, tức số đỉnh, tăng gấp đôi,
+nên hằng số của thuật toán sẽ tăng đáng kể.
+
+\subsubsection{Chuyển hóa thứ hai}
+
+Ta xét một cách làm khác, cũng chuyển bài toán matching cực đại về bài toán
+matching hoàn hảo, nhưng lần này thực hiện bằng cách xóa đỉnh. Với một đồ thị
+\(G=(V,E)\) và một matching cực đại \(M\) của nó, xét tập đỉnh \(U\) gồm mọi
+đỉnh nằm trong matching \(M\). Rõ ràng \(G[U]\) có matching hoàn hảo, và
+matching hoàn hảo của \(G[U]\) chính là matching cực đại của \(G\). Ý tưởng
+của ta là tìm một tập đỉnh \(U\) như vậy, rồi áp dụng thuật toán giải matching
+hoàn hảo phía trước cho \(G[U]\).
+
+Thực ra, quá trình chứng minh Định lý 4.1 đã chỉ đường cho ta. Từ Bổ đề 3.5
+và Hệ quả 3.6, ta chỉ cần tìm một nhóm độc lập tuyến tính cực đại theo hàng
+của \(\tilde A(G)\). Điều này có thể được tìm bằng một lượt khử Gauss. Vì vậy,
+ta có thể chuyển bài toán matching cực đại về matching hoàn hảo trong độ phức
+tạp \(\Oh(n^\omega)\), và nó không làm tăng hằng số của thuật toán.
+
+\subsection{Ứng dụng}
+
+Thuật toán được trình bày trong bài là thuật toán tổng quát để giải bài toán
+matching cực đại trên đồ thị tổng quát, nên tất nhiên nó có thể giải mọi bài
+cần dùng matching tổng quát.
+
+Ngoài ra, nó còn có một số ứng dụng khá đặc sắc. Dưới đây ta xét hai ví dụ.
+
+\subsubsection{Vertex Geography\texorpdfstring{\protect\footnote{Bài toán
+kinh điển này có tên tiếng Anh là Undirected Vertex Geography (UVG).}}{}}
+
+\paragraph{Mô tả bài toán.}
+Alice và Bob chơi một trò chơi trên một đồ thị vô hướng \(G=(V,E)\). Hai người
+luân phiên thao tác, Alice đi trước.
+
+Ban đầu có một quân cờ đặt trên một đỉnh nào đó. Sau đó, trong mỗi lượt, người
+chơi có thể di chuyển quân cờ này sang một đỉnh kề và chưa từng đi tới trước
+đó, tính cả điểm xuất phát. Người không thể thao tác sẽ thua. Hỏi những đỉnh
+nào là đỉnh thắng cho người đi trước?
+
+\paragraph{Giới thiệu thuật toán.}
+Trước hết ta có một kết luận: một đỉnh \(v_i\) là trạng thái thắng khi và chỉ
+khi nó nhất định nằm trong matching cực đại của đồ thị
+\(G\).\footnote{Chứng minh kết luận này không phải trọng tâm của bài viết, nên
+được lược bỏ ở đây; độc giả quan tâm có thể tham khảo các tài liệu liên quan.}
+
+Vì vậy bài toán chuyển thành phán đoán một đỉnh nào đó có nhất định nằm trong
+matching cực đại của \(G\) hay không. Ta làm theo Mục 4.2: thêm
+\(k=n-2\nu(G)\) đỉnh mới và nối các cạnh tương ứng. Gọi đồ thị mới thu được là
+\(G'\), các đỉnh mới có chỉ số lần lượt là
+\(n+1,n+2,\ldots,n+k\). Sau đó tùy ý chọn một đỉnh mới \(v_j\)
+\((n+1\le j\le n+k)\). Khi đó với mỗi đỉnh \(v_i\) của đồ thị ban đầu
+\((1\le i\le n)\), nếu \(v_iv_j\) có thể xuất hiện trong một matching hoàn hảo
+của \(G'\), thì \(v_i\) không nhất định nằm trong matching cực đại của \(G\).
+
+Theo Định lý 3.9, ta chỉ cần kiểm tra \((\tilde A(G')^{-1})_{i,j}\) có bằng
+không hay không.
+
+Có thể thấy thuật toán matching được giới thiệu trong bài có ưu thế trong các
+bài toán kiểu ``một đỉnh có nhất định nằm trong matching cực đại hay không''
+và ``một cạnh có nhất định nằm trong matching cực đại hay không''. Lý do là
+thuật toán này tránh được việc phân tích đường tăng, mà chỉ cần kiểm tra một
+vị trí nào đó của ma trận nghịch đảo có bằng không hay không.
+
+\subsubsection{Matching trọng số cực đại}
+
+\paragraph{Mô tả bài toán.}
+Matching trọng số cực đại là bài toán trong đó mỗi cạnh \(v_iv_j\) của đồ thị
+\(G\) mang một trọng số \(w_{i,j}\), và mục tiêu hiện tại của ta là tìm một
+matching \(M\) có tổng trọng số cạnh lớn nhất. Matching cực đại tương đương
+với matching trọng số cực đại khi mọi trọng số cạnh đều bằng \(1\).
+
+\paragraph{Giới thiệu thuật toán.}
+Ta có thể nối cạnh trọng số \(0\) giữa mọi cặp đỉnh; khi \(n\) lẻ, thêm một
+đỉnh mới và nối nó với mọi đỉnh. Vì vậy mỗi matching có trọng số của đồ thị
+ban đầu sẽ tương ứng với ít nhất một matching hoàn hảo có trọng số của đồ thị
+mới; và một matching hoàn hảo có trọng số của đồ thị mới tương ứng với một
+matching có trọng số của đồ thị ban đầu.
+
+Bây giờ ta chuyển thành bài toán tìm matching hoàn hảo có trọng số của đồ thị
+mới \(G'\). Ta thêm một biến \(y\). Đặt
+\[
+  \tilde A'(G')_{i,j}=\tilde A(G')_{i,j}\times y^{w_{i,j}}.
+\]
+Như vậy, điều ta cần tìm tương đương với bậc cao nhất của \(y\) trong
+\(\det\tilde A'(G')\); giá trị này chia cho \(2\) chính là matching trọng số
+cực đại.
+
+Trước hết, ta gán một giá trị ngẫu nhiên cho mọi \(x_{i,j}\). Sau đó giả sử
+tổng trọng số của mọi cạnh không vượt quá \(W\). Ta có thể lần lượt thay mọi
+giá trị từ \(0\) đến \(W\) vào \(y\), tính một lần định thức, rồi dùng
+\(W+1\) kết quả này để nội suy một đa thức theo \(y\). Khi đó bậc cao nhất của
+đa thức này là thứ ta cần tìm.
+
+Độ phức tạp thời gian của thuật toán này là \(\Oh(Wn^\omega+W^2)\); khi cả
+\(W\) và \(n\) đều nhỏ, nó có giá trị nhất định.
+
+\subsection{Tổng kết}
+
+Đến đây, ta đã có thể tìm kích thước matching cực đại trên đồ thị tổng quát
+trong độ phức tạp \(\Oh(n^\omega)\), và xây dựng một phương án matching trong
+độ phức tạp \(\Oh(n^3)\).
+
+Thuật toán được giới thiệu trong bài vẫn còn tiềm năng rất lớn đang chờ chúng
+ta khám phá, và các ứng dụng được giới thiệu trong bài còn khá cơ bản. Vì vậy
+tôi hy vọng bài viết này có thể đóng vai trò gợi mở, mong rằng có độc giả sẽ
+mở rộng thuật toán trong bài, phát triển nó hơn nữa và thu được những ứng dụng
+thú vị hơn.
+
+\subsection*{Lời cảm ơn}
+
+\begin{itemize}
+  \item Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+  đổi.
+  \item Cảm ơn thầy Song Xinbo và thầy Zhuo Mingcong đã quan tâm và chỉ dẫn
+  trong nhiều năm.
+  \item Cảm ơn huấn luyện viên đội tuyển quốc gia Zhang Ruizhe và Yu Linyun đã
+  chỉ dẫn.
+  \item Cảm ơn bạn Zhou Zixin đã chia sẻ thuật toán này với tôi.
+  \item Cảm ơn các bạn Gao Wenyuan và Wu Hongxun đã đọc duyệt bài viết này.
+  \item Cảm ơn cha mẹ đã quan tâm và chăm sóc tôi.
+\end{itemize}
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}[label={[\arabic*]}]
+  \item Mucha M, Sankowski P. Maximum matchings via Gaussian
+  elimination[C]//Foundations of Computer Science, 2004. Proceedings. 45th
+  Annual IEEE Symposium on. IEEE, 2004: 248--255.
+
+  \item Ivan I, Virza M, Yuen H. Algebraic Algorithms for Matching[J]. 2011.
+
+  \item Cheung H Y. Algebraic algorithms in combinatorial optimization[D]. The
+  Chinese University of Hong Kong, 2011.
+
+  \item Huang C C, Kavitha T. Efficient algorithms for maximum weight
+  matchings in general graphs with small edge weights[C]//Proceedings of the
+  twenty-third annual ACM-SIAM symposium on Discrete Algorithms. Society for
+  Industrial and Applied Mathematics, 2012: 1400--1412.
+
+  \item Chen Yinbo. Bàn sơ về thuật toán matching trên đồ thị và ứng dụng
+  của nó[C]//Tập luận văn ứng viên đội tuyển quốc gia Trung Quốc Olympic Tin
+  học năm 2015. 2015.
+\end{enumerate}
+
 \section*{Ghi chú về trích xuất}
 
 Nội dung bài đầu được trích bằng \texttt{pdftotext} từ trang vật lý 3 đến 13
@@ -645,5 +1602,11 @@ của PDF, tương ứng trang bài viết 1 đến 11; trang vật lý 14 là b
 Không cần OCR. Hai dòng kết thúc vòng lặp trong mã giả của nguồn in là
 \(\text{\textbf{end for}}=0\); bản dịch giữ nguyên ký hiệu này như một dị biệt
 của nguồn.
+
+Bài thứ hai được trích bằng \texttt{pdftotext} từ trang vật lý 14 đến 26 của
+PDF, tương ứng trang bài viết 12 đến 26. Các hình minh họa nhỏ được dựng lại
+bằng \texttt{tikz}; ký hiệu ma trận con xóa hàng/cột \(A^{I,J}\) và các phân
+số trong chứng minh Định lý 4.1 được kiểm tra lại bằng trang render vì lớp văn
+bản của PDF làm mất chi tiết này.
 
 \end{document}

@@ -26,8 +26,9 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2019. Tệp được
 tạo bằng XeTeX và có lớp văn bản đọc được; tuy nhiên các trang có watermark
 chéo, nên kết quả trích xuất xen thêm chữ từ watermark vào nội dung chính. Bản
-LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và bài viết đầu tiên,
-``Tính chất và ứng dụng của hai loại dãy truy hồi'' của Zhong Ziqian.
+LaTeX này chuyển ngữ phần nhận diện tập sách, mục lục và hai bài viết đầu
+tiên: ``Tính chất và ứng dụng của hai loại dãy truy hồi'' của Zhong Ziqian và
+``Bàn về bài toán bước đi ngẫu nhiên trên mô hình đồ thị'' của Wang Xiuhan.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -762,6 +763,586 @@ Cheng'ao, Zeng Yaohui, Zhang Qingchuan, Wu Hang đã kiểm tra bản thảo. Xi
         \url{https://min-25.hatenablog.com/entry/2018/05/10/21280}.
   \item Jin Ce. Phép toán và ứng dụng của hàm sinh. Trao đổi học viên WC2015,
         2015.
+\end{enumerate}
+
+\clearpage
+\section*{Bàn về bài toán bước đi ngẫu nhiên trên mô hình đồ thị}
+
+\begin{center}
+Wang Xiuhan, Trường Trung học số 7 Thành Đô
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài toán bước đi ngẫu nhiên là một lớp bài toán thường gặp trong thi tin học,
+và cũng có ứng dụng rộng rãi trong đời sống thực tế, chẳng hạn thuật toán xếp
+hạng trang web của Google. Bài viết này xoay quanh bài toán ấy, lần lượt khảo
+sát từ ba góc độ: đồ thị lưới, đồ thị thưa và đồ thị tổng quát. Bài viết giới
+thiệu vài phương pháp thường dùng để giải lớp bài toán này, đồng thời so sánh
+ưu nhược điểm của chúng khi xử lý các kiểu bài khác nhau, với hy vọng giúp
+người đọc có đường hướng khi gặp bài toán dạng này.
+
+\section*{1. Dẫn nhập}
+
+Trong các cuộc thi thuật toán những năm gần đây, số bài về bước đi ngẫu nhiên
+dần tăng lên. Lớp bài toán này biến hóa rất nhiều, cách giải tùy từng đề, nên
+thường khiến người giải khó bắt đầu.
+
+Bài viết chủ yếu khảo sát từ ba góc độ: đồ thị lưới, đồ thị thưa và đồ thị
+tổng quát. Ta sẽ giới thiệu nhiều phương pháp giải các bài toán này và so sánh
+ưu nhược điểm của chúng trên các kiểu bài khác nhau, với hy vọng giúp người
+đọc có đường hướng khi gặp bài toán dạng này.
+
+Mục 2 giới thiệu định nghĩa của bài toán bước đi ngẫu nhiên. Mục 3 giới thiệu
+hai phương pháp cho bài toán bước đi ngẫu nhiên trên đồ thị lưới, có độ phức
+tạp lần lượt là \(O(n\sqrt n)\) và \(O(n^2)\). Mục 4 giới thiệu một phương pháp
+giải bài toán bước đi ngẫu nhiên trên đồ thị thưa với một cặp đỉnh xuất phát
+và kết thúc cố định, độ phức tạp \(O(n^2)\). Mục 5 giới thiệu phương pháp giải
+bài toán trên đồ thị tổng quát cho mọi cặp đỉnh xuất phát và kết thúc, độ phức
+tạp \(O(n^3)\). Mục 6 so sánh ưu nhược điểm của các phương pháp này, và mục 7
+tổng kết toàn văn.
+
+\section*{2. Định nghĩa}
+
+Cho một đồ thị đơn có hướng \(G=(V,E)\), trong đó
+\(V=\{v_1,v_2,\ldots,v_{|V|}\}\), một đỉnh xuất phát \(v_s\in V\) và một đỉnh
+kết thúc \(v_t\in V\). Mỗi cạnh \(e=(v_x,v_y)\) có trọng số dương \(w_e\), thỏa
+\[
+  \forall v_x\in V\setminus\{v_t\},\qquad
+  \sum_{(v_x,v_y)\in E}w_{(v_x,v_y)}=1,
+\]
+và từ mọi đỉnh \(v_x\) đều tồn tại một đường đi tới \(v_t\). Một quân cờ bắt
+đầu từ đỉnh xuất phát; mỗi giây, nếu hiện đang ở \(v_x\), nó chọn cạnh ra
+\((v_x,v_y)\) với xác suất \(w_{(v_x,v_y)}\) rồi đi tới \(v_y\); khi tới đỉnh
+kết thúc thì dừng. Cần tính kỳ vọng thời gian cần dùng\footnote{Nếu trọng số
+bằng \(0\), có thể coi cạnh ấy không tồn tại.}\footnote{Để tiện mô tả, định
+nghĩa trong bài viết này hơi khác định nghĩa của bài toán bước đi ngẫu nhiên
+thực tế.}.
+
+Thật ra bài toán này cũng có thể viết dưới dạng ma trận. Định nghĩa ma trận
+\(P\) bởi
+\[
+  P_{x,y}=
+  \begin{cases}
+    w_{(v_x,v_y)}, & (v_x,v_y)\in E\text{ và }x\ne t,\\
+    0, & (v_x,v_y)\notin E\text{ hoặc }x=t.
+  \end{cases}
+\]
+Đáp án cần tìm là
+\[
+  \sum_{k\ge0} k\times (P^k)_{s,t},
+\]
+trong đó \((P^k)_{s,t}\) biểu thị xác suất lần đầu tới đỉnh kết thúc sau khi
+đi \(k\) bước. Khi đồ thị hữu hạn và mọi đỉnh đều tới được đỉnh kết thúc, từ
+định nghĩa của \(P\) có thể chứng minh mọi trị riêng của nó đều nhỏ hơn \(1\),
+nên đáp án chắc chắn hội tụ.
+
+Để tiện mô tả, nếu không nói khác, trong bài này \(n\) luôn chỉ \(|V|\), còn
+\(m\) chỉ \(|E|\).
+
+Ngoài ra, trong bài này, đồ thị thưa là đồ thị có số cạnh cùng bậc với số
+đỉnh.
+
+\section*{3. Đồ thị lưới}
+
+\paragraph{\term{Ví dụ 1. Circles of Waiting.}}
+Nguồn: Tinkoff Internship Warmup Round 2018 and Codeforces Round \#475
+(Div. 1), Problem E.
+
+Một quân cờ ban đầu được đặt tại điểm \((0,0)\) trên mặt phẳng tọa độ vuông
+góc. Mỗi giây quân cờ di chuyển ngẫu nhiên. Giả sử nó hiện ở \((x,y)\); giây
+tiếp theo, nó có xác suất \(p_1\) đi tới \((x-1,y)\), xác suất \(p_2\) đi tới
+\((x,y-1)\), xác suất \(p_3\) đi tới \((x+1,y)\), và xác suất \(p_4\) đi tới
+\((x,y+1)\). Bảo đảm \(p_1+p_2+p_3+p_4=1\). Cần tính kỳ vọng thời gian cho tới
+khi nó đi tới một vị trí có khoảng cách Euclid tới gốc tọa độ lớn hơn \(R\).
+
+\[
+  0\le R\le50,\qquad p_1,p_2,p_3,p_4>0,
+\]
+đáp án lấy modulo \(10^9+7\).
+
+\subsection*{3.1. Cách làm đơn giản}
+
+Gọi \(f(i,j)\) là kỳ vọng thời gian để quân cờ, khi đang ở \((i,j)\), đi tới
+một vị trí có khoảng cách Euclid tới gốc tọa độ lớn hơn \(R\). Phương trình
+chuyển là
+\[
+  f(i,j)=
+  \begin{cases}
+    p_1f(i-1,j)+p_2f(i,j-1)+p_3f(i+1,j)+p_4f(i,j+1)+1,
+      & i^2+j^2\le R,\\
+    0, & i^2+j^2>R.
+  \end{cases}
+\]
+Do phép chuyển không có thứ tự tô-pô, cần dùng khử Gauss để giải. Độ phức tạp
+thời gian là \(O(R^6)\), không thể qua bài này.
+
+\subsection*{3.2. Khử trực tiếp}
+
+Chú ý rằng đa số hệ số trong các phương trình cần khử đều bằng \(0\). Khi khử
+chỉ tính trên những vị trí có giá trị khác \(0\) thì có thể giảm độ phức tạp
+\([1]\).
+
+Xét quá trình khử. Ta khử các phương trình theo thứ tự từ trên xuống dưới
+trong hệ tọa độ, và trong cùng một lớp thì từ trái sang phải. Những phương
+trình đã khử được tô vàng, các điểm kề với điểm vàng được tô xanh, các điểm
+còn lại được tô đen, như sơ đồ sau:
+\[
+\begin{array}{ccccccccc}
+&&&&\textcolor{yellow!70!black}{\bullet}&&&&\\
+&&&\textcolor{yellow!70!black}{\bullet}&\textcolor{yellow!70!black}{\bullet}&
+\textcolor{yellow!70!black}{\bullet}&\textcolor{yellow!70!black}{\bullet}&
+\textcolor{yellow!70!black}{\bullet}&\\
+&&\textcolor{yellow!70!black}{\bullet}&\textcolor{yellow!70!black}{\bullet}&
+\textcolor{yellow!70!black}{\bullet}&\textcolor{yellow!70!black}{\bullet}&
+\textcolor{yellow!70!black}{\bullet}&\textcolor{yellow!70!black}{\bullet}&\\
+&\textcolor{yellow!70!black}{\bullet}&\textcolor{yellow!70!black}{\bullet}&
+\textcolor{yellow!70!black}{\bullet}&\textcolor{yellow!70!black}{\bullet}&
+\textcolor{yellow!70!black}{\bullet}&\textcolor{green!55!black}{\bullet}&
+\textcolor{green!55!black}{\bullet}&\textcolor{green!55!black}{\bullet}\\
+&&\textcolor{green!55!black}{\bullet}&\textcolor{green!55!black}{\bullet}&
+\bullet&\bullet&\bullet&\bullet&\\
+&&\bullet&\bullet&\bullet&\bullet&\bullet&&\\
+&&&\bullet&\bullet&\bullet&\bullet&\bullet&\\
+&&&&\bullet&&&&
+\end{array}
+\]
+
+Tiếp theo ta cần khử phương trình tương ứng với ô xanh kế tiếp. Trong phương
+trình này, chỉ các hệ số của biến tương ứng với ô xanh và ô đen đầu tiên bên
+dưới nó là có thể khác \(0\); đồng thời, chỉ trong các phương trình tương ứng
+với ô xanh và ô đen đầu tiên bên dưới nó, hệ số của biến tương ứng với ô hiện
+tại mới có thể khác \(0\).
+
+Chú ý rằng chỉ có \(O(R)\) ô xanh, nên thời gian khử một phương trình là
+\(O(R^2)\). Tổng cộng chỉ có \(O(R^2)\) phương trình, vì vậy độ phức tạp thời
+gian giảm còn \(O(R^4)\), đủ qua bài này.
+
+\subsection*{3.3. Phương pháp ẩn chính}
+
+Số phương trình và số biến đều là \(O(R^2)\). Nếu có thể thu nhỏ quy mô xuống
+\(O(R)\), thì khử Gauss đơn giản là đủ.
+
+Đặt biến tương ứng với ô đầu tiên từ trái sang phải trên mỗi hàng làm ẩn
+chính; tổng cộng có \(2R+1\) ẩn chính. Ta tìm cách biểu diễn các biến tương
+ứng với những ô còn lại thành hàm tuyến tính theo các ẩn chính này. Xét từng
+cột từ trái sang phải. Với mỗi ô \((i,j)\) trong cột hiện tại, chú ý rằng
+\(f(i,j),f(i-1,j),f(i,j-1),f(i,j+1)\) đều đã là hàm tuyến tính theo các ẩn
+chính. Chuyển vế phương trình truy hồi, ta được
+\[
+  f(i+1,j)=
+  \frac{f(i,j)-p_1f(i-1,j)-p_2f(i,j-1)-p_4f(i,j+1)-1}{p_3}.
+\]
+Như vậy ta có biểu diễn tuyến tính của \(f(i+1,j)\) theo các ẩn chính. Nếu
+\((i+1,j)\) đã có khoảng cách Euclid tới gốc tọa độ lớn hơn \(R\), thì ta thu
+được một phương trình \(f(i+1,j)=0\). Cuối cùng, ta sẽ có \(2R+1\) phương
+trình, rồi chỉ cần khử Gauss trên các phương trình ấy.
+
+Trong giai đoạn truy đẩy các hàm tuyến tính theo ẩn chính, có \(O(R^2)\) biến;
+truy đẩy một biến tốn \(O(R)\) thời gian. Sau đó, quy mô bài toán đã được rút
+xuống \(O(R)\). Hai phần đều có độ phức tạp \(O(R^3)\), nên tổng độ phức tạp
+thời gian cũng là \(O(R^3)\), đủ qua bài này.
+
+\subsection*{3.4. So sánh hai cách làm}
+
+Ta so sánh hai cách làm ở nhiều khía cạnh.
+
+Về độ phức tạp thời gian, phương pháp ẩn chính trên đồ thị lưới có độ phức tạp
+xấu nhất \(O(n\sqrt n)\) (đạt lớn nhất khi chiều dài và chiều rộng của lưới đều
+cùng bậc \(O(\sqrt n)\)); phương pháp khử trực tiếp trên đồ thị lưới có độ
+phức tạp xấu nhất \(O(n^2)\), nên phương pháp ẩn chính tốt hơn.
+
+Về độ chính xác, với một số bài cần tính trên số thực thay vì lấy modulo, khử
+trực tiếp chính xác hơn phương pháp ẩn chính.
+
+Về phạm vi áp dụng, hai cách làm phù hợp với những tình huống khác nhau.
+
+Khi trong đồ thị lưới có chướng ngại, hoặc xác suất đi qua một số cạnh bằng
+\(0\), phương pháp ẩn chính cần thêm một ẩn chính cho mỗi chướng ngại hoặc mỗi
+cạnh xác suất \(0\). Khi số lượng chướng ngại hoặc cạnh xác suất \(0\) nhiều
+hơn \(O(R)\), độ phức tạp của phương pháp ẩn chính sẽ tăng, trong khi độ phức
+tạp của khử trực tiếp vẫn không đổi.
+
+Nhưng phương pháp ẩn chính còn có thể khử những phương trình chuyển tương tự
+trên đồ thị lưới, chẳng hạn
+\[
+  f(i,j)=p_1f(i+1,j)+p_2f(i,j+1)+p_3f(\operatorname{pre}(i,j))+1,
+\]
+trong đó \(\operatorname{pre}(i,j)=(x,y)\), \(x\le i\), \(y\le j\), là giá trị
+do đề bài cho. Phân tích độ phức tạp của khử trực tiếp không áp dụng được cho
+mô hình này.
+
+Ngoài ra, việc tính định thức của ma trận kề của đồ thị lưới cũng không thể
+dùng phương pháp ẩn chính, mà chỉ có thể dùng khử trực tiếp để tối ưu độ phức
+tạp thời gian.
+
+Tóm lại, hai cách làm đều có sở trường riêng; cần phân tích bài cụ thể để chọn
+cách thích hợp.
+
+\section*{4. Đồ thị thưa}
+
+\paragraph{\term{Ví dụ 2. Expected Value.}}
+Nguồn: Ildar Gainullin Contest 1, Problem E, có chỉnh sửa.
+
+Cho một đồ thị đơn vô hướng liên thông phẳng \(G=(V,E)\). Một quân cờ ban đầu
+được đặt tại \(v_1\); mỗi giây quân cờ chọn đều một cạnh nối với đỉnh hiện tại
+rồi đi tới đỉnh ở đầu kia. Cần tính kỳ vọng thời gian để tới \(v_n\).
+
+\[
+  n\le2000,
+\]
+đáp án lấy modulo \(p\), trong đó \(p\) là một số nguyên tố được sinh ngẫu
+nhiên trong khoảng \([10^9,1.01\times10^9]\).
+
+Một kết luận là số cạnh của đồ thị phẳng cùng bậc với số đỉnh. Cụ thể, ta có:
+
+\paragraph{\term{Định lý 4.1.}}
+Một đồ thị phẳng có \(n\) đỉnh \((n\ge3)\) thì số cạnh \(m\) không vượt quá
+\(3n-6\) \([2]\).
+
+Vì cách làm của bài này có thể mở rộng sang mọi đồ thị thưa, nên phần thảo
+luận sau chỉ dựa trên điều kiện số cạnh và số đỉnh cùng bậc, không cần các
+tính chất khác của đồ thị phẳng.
+
+\subsection*{4.1. Kiến thức cơ sở}
+
+\paragraph{\term{Định nghĩa 4.1.}}
+Mọi đa thức \(p(\lambda)\) thỏa \(p(A)=0\) được gọi là đa thức triệt tiêu của
+ma trận \(A\).
+
+\paragraph{\term{Định nghĩa 4.2.}}
+Ký hiệu \(I_n\) là ma trận đơn vị cấp \(n\). Định nghĩa đa thức đặc trưng của
+một ma trận \(n\times n\) là
+\[
+  p(\lambda)=\det(\lambda I_n-A),
+\]
+trong đó \(\det\) là định thức của ma trận.
+
+Dễ thấy đa thức đặc trưng của một ma trận cấp \(n\) có bậc không vượt quá
+\(n\).
+
+\paragraph{\term{Định lý 4.2 (Cayley--Hamilton \([3]\)).}}
+Đa thức đặc trưng của mọi ma trận đều là đa thức triệt tiêu của nó.
+
+Vì vậy, đa thức triệt tiêu có bậc nhỏ nhất của một ma trận cấp \(n\) cũng có
+bậc không vượt quá \(n\).
+
+\subsection*{4.2. Giải bài toán ban đầu}
+
+Chú ý rằng kỳ vọng thời gian đi được là
+\[
+  E(t)=\sum_{i\ge0}\Pr[t>i].
+\]
+Nếu ta tính được xác suất sau khi đi \(i\) bước mà vẫn chưa kết thúc, thì cộng
+trên mọi \(i\ge0\) sẽ được đáp án.
+
+Gọi \(f(i,j)\) là xác suất sau khi đi \(i\) bước, quân cờ đang dừng ở \(v_j\)
+và chưa từng đi tới \(v_n\). Khi đó
+\[
+  f(i,j)=\sum_{(v_k,v_j)\in E}\frac{f(i-1,k)}{\deg_k}\qquad(j\ne n),
+\]
+trong đó \(\deg_k\) là bậc của \(v_k\).
+
+Chú ý rằng phép chuyển của \(f\) không phụ thuộc vào \(i\), nên có thể xem mỗi
+lần chuyển là nhân thêm một ma trận, tức \(f_{i+1}=f_iM\). Vì đa thức triệt
+tiêu nhỏ nhất của \(M\) có bậc không vượt quá \(n\), nên công thức truy hồi
+ngắn nhất của \(f\) cũng có độ dài không vượt quá \(n\). Do đó
+\[
+  \Pr[t>i]=\sum_{j=1}^{n-1}f(i,j)
+\]
+cũng có công thức truy hồi ngắn nhất dài không vượt quá \(n\). Ta có thể tính
+\(\Pr[t>0],\Pr[t>1],\ldots,\Pr[t>3n]\) trong \(O(nm)\) thời gian, rồi dùng
+thuật toán Berlekamp--Massey \([4]\) để tìm công thức truy hồi ngắn nhất của
+\(\Pr[t>i]\) trong \(O(n^2)\) thời gian.
+
+Xét cách tính hàm sinh của một dãy truy hồi tuyến tính bậc \(k\). Không mất
+tính tổng quát, giả sử với \(i\ge i_0\) ta có
+\[
+  a_i=\sum_{j=1}^{k}c_j a_{i-j}.
+\]
+Gọi hàm sinh của \(a\) và \(c\) lần lượt là \(A(x)\) và \(C(x)\). Khi đó
+\[
+  A(x)=A(x)C(x)+A_0(x),
+\]
+trong đó \(A_0(x)\) do các hạng \(i<i_0\) quyết định.
+
+Quay lại bài toán ban đầu. Vì ta tìm được công thức truy hồi ngắn nhất của
+\(\Pr[t>i]\), nên có thể tìm \(C(x)\) và \(A_0(x)\) (định nghĩa như đoạn
+trước). Chuyển vế được
+\[
+  A(x)=\frac{A_0(x)}{1-C(x)}.
+\]
+Giá trị cần tìm là \(\sum_{i\ge0}[x^i]A(x)\); dễ thấy giá trị này chính là
+\(A(1)\). Thay \(x=1\) vào rồi giải là xong. Vì modulo là số nguyên tố ngẫu
+nhiên, có thể coi mẫu số sẽ không bằng \(0\).
+
+Như vậy, ta giải được bài này trong \(O(nm+n^2)\) thời gian. Do số đỉnh và số
+cạnh cùng bậc, trong bài này độ phức tạp có thể coi là \(O(n^2)\).
+
+Ngoài ra, bài này còn có một cách làm khác; xem tài liệu tham khảo \([5]\).
+
+\section*{5. Đồ thị tổng quát}
+
+\paragraph{\term{Ví dụ 3. Frank.}}
+Nguồn: 2018 ACM-ICPC Asia Nanjing Regional Contest, Problem F, có chỉnh sửa.
+
+Cho một đồ thị đơn có hướng liên thông mạnh \(G=(V,E)\). Với mọi
+\(1\le s\le n\), \(1\le t\le n\), \(s\ne t\), hãy trả lời bài toán sau.
+
+Một quân cờ ban đầu được đặt tại \(v_s\); mỗi giây quân cờ chọn đều một cạnh
+ra của đỉnh hiện tại rồi đi tới đỉnh mà cạnh ấy trỏ tới. Cần tính kỳ vọng thời
+gian để tới \(v_t\).
+
+\[
+  3\le n\le400.
+\]
+
+\subsection*{5.1. Phân tích và chuyển hóa}
+
+Gọi \(p_{i,j}\) là xác suất quân cờ, khi ở \(v_i\), chọn cạnh ra \((v_i,v_j)\)
+để đi tới \(v_j\); đặc biệt, nếu cạnh ra không tồn tại thì xác suất bằng
+\(0\). Gọi \(f_{i,j}\) là kỳ vọng thời gian để đi ngẫu nhiên từ \(v_i\) tới
+\(v_j\); đặc biệt, \(f_{i,i}=0\). Khi \(i\ne j\), phương trình chuyển là
+\[
+  f_{i,j}=1+\sum_{1\le k\le n}p_{i,k}f_{k,j}.
+\]
+Khi \(i=j\), gọi \(g_i\) là kỳ vọng thời gian để bắt đầu từ \(v_i\), đi ngẫu
+nhiên và lần đầu quay lại \(v_i\). Khi đó
+\[
+  f_{i,i}=1-g_i+\sum_{1\le k\le n}p_{i,k}f_{k,i}.
+\]
+
+Để dễ quan sát, ta viết phương trình chuyển dưới dạng ma trận. Gọi \(P\) là ma
+trận chuyển của đồ thị, \(F\) là ma trận đáp án, \(I\) là ma trận đơn vị cấp
+\(n\), \(J\) là ma trận toàn \(1\) cấp \(n\), và \(G\) là ma trận cấp \(n\) thỏa
+\(G_{i,i}=g_i\), các vị trí khác bằng \(0\). Khi đó
+\[
+  F=J-G+PF.
+\]
+Nếu tính được \(G\), ta chỉ cần giải phương trình \([6]\)
+\[
+  (I-P)F=J-G.
+\]
+
+\subsection*{5.2. Cách tính \(G\)}
+
+\paragraph{\term{Định nghĩa 5.1.}}
+Định nghĩa phân bố dừng \([7]\) của một ma trận chuyển cấp \(n\) là một vectơ
+\(n\) chiều \(\pi\), thỏa
+\[
+  \sum_{i=1}^{n}\pi_i=1,\qquad \pi P=\pi.
+\]
+Giá trị ở mỗi chiều của \(\pi\) đều nằm trong đoạn \([0,1]\).
+
+Ta rất dễ tìm được ý nghĩa thực tế của phân bố dừng. Nếu tại một thời điểm nào
+đó quân cờ dừng ở \(v_i\) với xác suất \(\pi_i\), thì ở mọi thời điểm về sau
+quân cờ vẫn thỏa phân bố xác suất này. Ta có thể dùng khử Gauss để giải hệ và
+tìm \(\pi\) trong \(O(n^3)\) thời gian. Vậy \(\pi\) có quan hệ gì với \(G\)?
+
+\paragraph{\term{Định lý 5.1.}}
+Với mọi \(1\le i\le n\), ta có
+\[
+  \pi_i g_i=1.
+\]
+
+\paragraph{\term{Chứng minh.}}
+Từ \(F=J-G+PF\), chuyển vế được
+\[
+  G=PF+J-F.
+\]
+Nhân đồng thời hai vế với \(\pi\) ở bên trái:
+\[
+  \pi G=\pi PF+\pi J-\pi F.
+\]
+Theo định nghĩa của \(\pi\), ta có \(\pi P=\pi\), do đó
+\[
+  \pi G=\pi J.
+\]
+Vì vậy
+\[
+  \pi_i g_i=\sum_{j=1}^{n}\pi_j=1.
+\]
+Mệnh đề được chứng minh. \(\square\)
+
+Vậy bằng cách đưa vào phân bố dừng, ta có thể tính \(G\) trong \(O(n^3)\) thời
+gian.
+
+\subsection*{5.3. Giải bài toán ban đầu}
+
+Trong quá trình giải phương trình, ta gặp một vấn đề: \(I-P\) không đầy hạng,
+nên không thể giải bằng cách nhân ma trận nghịch đảo.
+
+\paragraph{\term{Định nghĩa 5.2.}}
+Định nghĩa một cây khung có hướng gốc \(v_r\in V\) của đồ thị có hướng
+\(G=(V,E)\) là một đồ thị con \(T=(V,A)\) của \(G\) thỏa:
+\begin{enumerate}
+  \item Với mọi \(v_i\ne v_r\), bậc ra của \(v_i\) bằng \(1\).
+  \item Bậc ra của \(v_r\) bằng \(0\).
+  \item Trong \(T\) không tồn tại chu trình.
+\end{enumerate}
+
+\paragraph{\term{Bổ đề 5.1 (Định lý cây ma trận trên đồ thị có hướng
+\([8]\)).}}
+Với một đồ thị có hướng \(G\), gọi \(D\) là ma trận bậc ra của nó, tức
+\[
+  D_{i,i}=d_i,\qquad D_{i,j}=0\quad(i\ne j),
+\]
+trong đó \(d_i\) là bậc ra của \(v_i\); gọi \(A\) là ma trận kề của nó. Khi đó
+số cây khung có hướng gốc \(v_r\) bằng định thức của \(D-A\) sau khi bỏ hàng
+\(r\) và cột \(r\).
+
+\paragraph{\term{Định lý 5.2.}}
+Với ma trận chuyển \(P\) của một đồ thị liên thông mạnh \(G=(V,E)\), hạng của
+\(I-P\) bằng \(n-1\).
+
+\paragraph{\term{Chứng minh.}}
+Vì nhân một hàng của ma trận với một hằng số khác \(0\) không làm đổi hạng, ta
+nhân hàng thứ \(i\) của \(I-P\) với bậc ra của \(v_i\), thu được một ma trận
+mới \(L\). Chỉ cần chứng minh hạng của \(L\) bằng \(n-1\).
+
+Do tổng trên mỗi hàng của \(L\) đều bằng \(0\), cộng tất cả các vectơ cột của
+\(L\) sẽ thu được vectơ không; tức các vectơ này phụ thuộc tuyến tính. Vì thế
+hạng của \(L\) không phải \(n\).
+
+Dễ thấy \(L\) bằng ma trận bậc ra của \(G\) trừ đi ma trận kề của nó. Theo bổ
+đề 5.1, định thức của \(L\) sau khi bỏ hàng \(i\) và cột \(i\) biểu thị số cây
+khung có hướng gốc \(v_i\).
+
+Vì \(G\) liên thông mạnh, với mọi đỉnh được chọn làm gốc, số cây khung có
+hướng đều khác \(0\). Tức là sau khi bỏ hàng \(i\) và cột \(i\), \(L\) vẫn đầy
+hạng.
+
+Vì thêm một cột không làm hạng giảm, mọi vectơ hàng của \(L\) sau khi bỏ hàng
+\(i\) là độc lập tuyến tính. Do đó hạng của \(L\) là \(n-1\). \(\square\)
+
+Quay lại bài toán ban đầu, xét cách giải phương trình trong bài. Để tiện, ta
+viết phương trình dưới dạng \(AX=B\), trong đó \(A,B\) đã biết, cần tìm \(X\).
+Do \(A\) không đầy hạng, nghiệm có vô số; trước hết ta tìm một nghiệm riêng.
+
+Khử Gauss đồng thời trên \(A\) và \(B\). Khử \(n-1\) hàng đầu của \(A\) về
+dạng chỉ còn đường chéo chính và cột thứ \(n\) có giá trị, còn hàng cuối cùng
+toàn \(0\), tức dạng sau:
+\[
+\begin{bmatrix}
+1 & 0 & 0 & \cdots & 0 & a_1\\
+0 & 1 & 0 & \cdots & 0 & a_2\\
+0 & 0 & 1 & \cdots & 0 & a_3\\
+\vdots & \vdots & \vdots & \ddots & \vdots & \vdots\\
+0 & 0 & 0 & \cdots & 1 & a_{n-1}\\
+0 & 0 & 0 & \cdots & 0 & 0
+\end{bmatrix}X=
+\begin{bmatrix}
+b_{1,1} & b_{1,2} & b_{1,3} & \cdots & b_{1,n-1} & b_{1,n}\\
+b_{2,1} & b_{2,2} & b_{2,3} & \cdots & b_{2,n-1} & b_{2,n}\\
+b_{3,1} & b_{3,2} & b_{3,3} & \cdots & b_{3,n-1} & b_{3,n}\\
+\vdots & \vdots & \vdots & \ddots & \vdots & \vdots\\
+b_{n-1,1} & b_{n-1,2} & b_{n-1,3} & \cdots &
+  b_{n-1,n-1} & b_{n-1,n}\\
+0 & 0 & 0 & \cdots & 0 & 0
+\end{bmatrix}.
+\]
+Đặt \(X_{n,i}=0\), ta giải được một nghiệm riêng, ký hiệu là \(Y\). Tiếp theo
+ta cần điều chỉnh nghiệm riêng thành nghiệm thật sự.
+
+Chú ý rằng \(X_{i,i}=0\). Xét theo ý nghĩa tổ hợp, ta có
+\[
+  Y_{i,j}=1+Y_{j,j}+\sum_{k=1}^{n}P_{i,k}X_{k,j},
+\]
+và dễ suy ra
+\[
+  X_{i,j}=Y_{i,j}-Y_{j,j}.
+\]
+Cuối cùng, ta giải được bài toán này trong \(O(n^3)\) thời gian.
+
+\section*{6. So sánh và thảo luận}
+
+Về độ phức tạp thời gian, trên đồ thị lưới có phương pháp ẩn chính
+\(O(n\sqrt n)\); thuật toán trên đồ thị thưa là \(O(n^2)\); còn trên đồ thị
+tổng quát, độ phức tạp cao hơn, là \(O(n^3)\).
+
+Về góc độ bài toán được giải, thuật toán trên đồ thị lưới có thể giải cho
+trường hợp mọi đỉnh trong đồ thị đều làm đỉnh xuất phát; thuật toán trên đồ
+thị thưa chỉ có thể giải nhanh cho một đỉnh xuất phát và một đỉnh kết thúc;
+thuật toán trên đồ thị tổng quát thì giải cho mọi cặp đỉnh làm xuất phát và
+kết thúc. Nếu các thuật toán trên đồ thị lưới, đồ thị thưa phải giải cho nhiều
+đỉnh kết thúc, hoặc thuật toán trên đồ thị thưa phải giải cho nhiều đỉnh xuất
+phát, thì cần thêm thời gian.
+
+Về phạm vi áp dụng, vì đồ thị lưới là tập con của đồ thị thưa, còn đồ thị thưa
+là tập con của đồ thị tổng quát, nên thuật toán trên đồ thị lưới có phạm vi áp
+dụng nhỏ nhất, còn thuật toán trên đồ thị tổng quát có phạm vi áp dụng lớn
+nhất.
+
+Về độ chính xác, do thuật toán Berlekamp--Massey có độ chính xác rất kém, nên
+trong các bài cần tính trên số thực, thông thường không thể dùng thuật toán
+trên đồ thị thưa; còn thuật toán trên đồ thị lưới và đồ thị tổng quát đều có
+thể chọn dùng.
+
+Tóm lại, vài thuật toán này đều có ưu nhược điểm riêng. Việc dùng thuật toán
+nào thường tùy bài; khi giải lớp bài này, thí sinh nên phân tích tính chất của
+đề rồi chọn phương pháp phù hợp nhất.
+
+\section*{7. Tổng kết}
+
+Bài viết đã nghiên cứu bài toán bước đi ngẫu nhiên trên mô hình đồ thị, lần
+lượt giới thiệu vài thuật toán khác nhau trên đồ thị lưới, đồ thị thưa và đồ
+thị tổng quát. Chú ý rằng phần lớn các thuật toán này được thảo luận trên nền
+tảng ma trận; điều đó cho thấy ma trận là một công cụ mạnh để giải bài toán
+bước đi ngẫu nhiên. Với bài toán bước đi ngẫu nhiên, sau khi chuyển thành dạng
+ma trận, ta thường sẽ dễ bắt tay giải hơn.
+
+Đồng thời, các thuật toán được nhắc tới trong bài không chỉ dùng được cho bước
+đi ngẫu nhiên, mà còn có thể gợi mở cho những bài toán khác: khử trực tiếp
+trong đồ thị lưới gợi ý rằng với một số ma trận thưa có tính chất đặc biệt, ta
+có thể dùng một số cắt tỉa để giảm độ phức tạp; phương pháp ẩn chính có thể
+dùng cho một lớp bài toán giải hệ phương trình; thuật toán trong phần đồ thị
+thưa gợi ý cách dùng truy hồi tuyến tính để giải một số bài toán liên quan tới
+ma trận; phân bố dừng trong phần đồ thị tổng quát là công cụ mạnh để xử lý các
+bài toán liên quan tới xích Markov, và nó còn nhiều tính chất đáng khai thác.
+
+Thật ra bài toán bước đi ngẫu nhiên còn rất nhiều điểm đáng nghiên cứu. Mong
+rằng bài viết có thể đóng vai trò gợi mở và thu hút thêm nhiều độc giả nghiên
+cứu lớp bài toán này.
+
+\section*{8. Lời cảm ơn}
+
+Xin cảm ơn Hội Máy tính Trung Quốc đã cung cấp nền tảng học tập và trao đổi.
+
+Xin cảm ơn thầy Lin Yang và thầy Zhang Junliang của Trường Trung học số 7
+Thành Đô đã quan tâm và hướng dẫn tôi.
+
+Xin cảm ơn huấn luyện viên Zhang Ruizhe của đội tuyển tập huấn quốc gia đã
+hướng dẫn.
+
+Xin cảm ơn đàn anh Yang Jingqin đã giúp đỡ tôi.
+
+Xin cảm ơn các tiền bối Chen Songyang, Tang Jingzhe và Du Yuhao đã truyền cảm
+hứng và giúp đỡ tôi trong quá trình viết bài.
+
+Xin cảm ơn tiền bối Chen Songyang, tiền bối Tang Jingzhe và bạn Fang Lixing đã
+kiểm tra bản thảo.
+
+\section*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Romanov, V. Editorial Tinkoff Internship Warmup Round 2018 and
+        Codeforces Round \#475 (Div. 1 + Div. 2). Codeforces,
+        \url{https://codeforces.com/blog/entry/58991}.
+  \item Wikipedia contributors. Planar graph. Wikipedia,
+        \url{https://en.wikipedia.org/wiki/Planar_graph}.
+  \item Hamilton, W. R. Lectures on Quaternions. Dublin, 1853.
+  \item Massey, J. L. Shift-register synthesis and BCH decoding. IEEE
+        Transactions on Information Theory, IT-15(1): 122--127, 1969.
+        doi:10.1109/TIT.1969.1054260.
+  \item Zhong Ziqian. Tính chất và ứng dụng của hai loại dãy truy hồi. Tập
+        luận văn ứng viên đội tuyển quốc gia IOI Trung Quốc 2019, 2019.
+  \item Tang, J. 2018-2019 ACM-ICPC, Asia Nanjing Regional Contest (Online
+        Mirror on Gym). Codeforces, \url{https://codeforces.com/blog/entry/63057}.
+  \item Wikipedia contributors. Stationary Distribution. Wikipedia,
+        \url{https://en.wikipedia.org/wiki/Stationary_Distribution}.
+  \item Chaiken, S.; Kleitman, D. Matrix Tree Theorems. Journal of
+        Combinatorial Theory, Series A, 24(3): 377--381, 1978.
+        doi:10.1016/0097-3165(78)90067-5, ISSN 0097-3165.
 \end{enumerate}
 
 \end{document}

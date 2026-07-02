@@ -2,6 +2,12 @@
 % Source-PDF: IOI中国国家候选队论文/国家集训队2020论文集.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+\newcommand{\proofbox}{\ensuremath{\vcenter{\hrule height 0.45pt
+  \hbox{\vrule width 0.45pt height 6pt\kern 6pt\vrule width 0.45pt}
+  \hrule height 0.45pt}}}
 
 \title{Tập luận văn đội tuyển quốc gia Trung Quốc năm 2020}
 \author{Tập luận văn đội tuyển quốc gia Olympic Tin học}
@@ -555,6 +561,662 @@ Xin cảm ơn cha mẹ đã thấu hiểu và ủng hộ tôi.
   \item Blog CSDN của Baimafujinji:
   \href{https://blog.csdn.net/baimafujinji/article/details/52956605}
   {\texttt{blog.csdn.net/baimafujinji/.../52956605}}.
+\end{enumerate}
+
+\section{Bàn về cây thống trị và ứng dụng}
+
+\begin{center}
+Chen Sunli, Trường Ngoại ngữ Nam Kinh
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết này chủ yếu giới thiệu thuật toán tìm cây thống trị và các ứng dụng
+của nó.
+
+Mục 2 giới thiệu một số ký hiệu và định nghĩa. Mục 3 tập trung trình bày thuật
+toán tìm cây thống trị. Mục 4 giới thiệu một số ứng dụng của cây thống trị. Mục
+5 là phần tổng kết.
+
+\subsection{Mở đầu}
+
+Khái niệm cây thống trị thường xuất hiện trong lý thuyết đồ thị và lý thuyết
+thiết kế máy tính; với tư cách một thuật toán, nó cũng thỉnh thoảng xuất hiện
+trong các kỳ thi thuật toán. Tuy nhiên, tài liệu tiếng Trung giới thiệu có hệ
+thống về nó còn tương đối ít. Tác giả hy vọng bài viết này có thể giúp nhiều
+bạn học sinh hiểu cây thống trị hơn, cũng như hiểu một vài ứng dụng của nó.
+
+\subsection{Định nghĩa}
+
+Trong bài viết này ta xét một đồ thị có hướng \(G=(V,E)\) gồm \(n\) đỉnh và
+\(m\) cạnh, trong đó \(V\) là tập đỉnh, \(E\) là tập cạnh, và
+\(|V|=n, |E|=m\). Bài viết giả sử người đọc đã quen với các khái niệm cơ bản
+trong lý thuyết đồ thị như đường đi, chu trình, tìm kiếm theo chiều sâu (DFS),
+thứ tự topo, thứ tự DFS, v.v.
+
+Khi đã cho một nguồn \(s\in V\), nếu với hai đỉnh \(x,y\), mọi đường đi bắt
+đầu từ \(s\) và kết thúc ở \(y\) đều đi qua \(x\), thì ta nói \(x\) thống trị
+(\emph{dominates}) \(y\). Vì khi không tồn tại đường đi từ \(s\) đến \(x\), các
+quan hệ thống trị liên quan tới \(x\) đều không có ý nghĩa, nên trong bài viết
+này ta luôn giả sử từ \(s\) có thể tới được mọi đỉnh khác. Với đồ thị tổng quát,
+chỉ cần trước hết duyệt sâu từ \(s\) và chỉ giữ lại các đỉnh được thăm.
+
+Trước hết quan sát rằng ta chỉ cần xét các đường đi đơn. Lý do là nếu một
+đường đi xuất hiện đỉnh lặp lại, ta có thể xóa các đỉnh giữa hai lần xuất hiện
+lặp đó; phép sửa này không ảnh hưởng tới điều kiện thống trị. Một tính chất
+hiển nhiên là \(s\) thống trị mọi đỉnh. Ngoài ra, quan hệ thống trị còn thỏa
+các tính chất dưới đây, nhờ đó có thể dùng một cấu trúc cây để mô tả đầy đủ
+chúng.
+
+\paragraph{\term{Tính chất 1.}}
+Nếu \(x\) thống trị \(y\) và \(y\) thống trị \(z\), thì \(x\) thống trị \(z\).
+Nói cách khác, quan hệ thống trị có tính bắc cầu.
+
+Tính chất này khá hiển nhiên.
+
+\paragraph{\term{Tính chất 2.}}
+Nếu \(x\) thống trị \(y\) và \(y\) thống trị \(x\), thì \(x=y\).
+
+\paragraph{\term{Chứng minh.}}
+Giả sử \(x\ne y\). Khi đó mọi đường đi đơn từ \(s\) đến \(x\) đều đi qua \(y\),
+và trước khi đi qua \(y\) lại bắt buộc phải đi qua \(x\). Vì vậy đường đi có
+dạng \(s,\ldots,x,\ldots,y,\ldots,x\), mâu thuẫn với tính đơn. Suy ra bắt buộc
+có \(x=y\). \proofbox
+
+\paragraph{\term{Tính chất 3.}}
+Nếu \(x,y,z\) đôi một khác nhau, và cả \(x\) lẫn \(y\) đều thống trị \(z\), thì
+hoặc \(x\) thống trị \(y\), hoặc \(y\) thống trị \(x\).
+
+\paragraph{\term{Chứng minh.}}
+Xét một đường đi đơn bất kỳ từ \(s\) đến \(z\). Đường đi này chắc chắn chứa cả
+\(x\) lẫn \(y\). Không mất tính tổng quát, giả sử đường đi có dạng
+\(s,\ldots,x,\ldots,y,\ldots,z\). Nếu \(x\) không thống trị \(y\), thì tồn tại
+một đường đi từ \(s\) đến \(y\) không qua \(x\). Khi đó thay phần từ \(s\) đến
+\(y\) của đường đi nói trên bằng đường đi không qua \(x\) này, ta thu được một
+đường đi từ \(s\) đến \(z\) không qua \(x\), mâu thuẫn với việc \(x\) thống trị
+\(z\). \proofbox
+
+Các tính chất trên cho thấy: với một đỉnh \(x\ne s\), xét tập
+\[
+S=\{y\mid y\text{ thống trị }x\}.
+\]
+Các đỉnh trong \(S\) tạo thành một tập được sắp toàn phần theo quan hệ thống
+trị, và \(S\) có ít nhất hai phần tử. Do đó chắc chắn tồn tại một đỉnh \(z\)
+thỏa: nếu \(y\ne x\) thống trị \(x\), thì \(y\) cũng thống trị \(z\). Ta gọi
+\(z\) là điểm thống trị trực tiếp (\emph{immediate dominator}) của \(x\), ký
+hiệu \(z=\operatorname{idom}(x)\).
+
+Bây giờ, với mọi đỉnh \(x\) khác \(s\), nối một cạnh
+\(\operatorname{idom}(x)\to x\). Đồ thị thu được có bậc vào của mỗi đỉnh không
+quá \(1\). Kết hợp Tính chất 1 và Tính chất 2, đồ thị này không có chu trình,
+vì thế nó chắc chắn là một cây có hướng gốc \(s\), gọi là cây thống trị
+(\emph{Dominator Tree}), ký hiệu \(\operatorname{DT}(G,s)\). Nó thỏa: với hai
+đỉnh \(x,y\), \(x\) thống trị \(y\) khi và chỉ khi trên cây thống trị \(x\) là
+tổ tiên của \(y\) (trong bài viết này, tổ tiên bao gồm chính đỉnh đó). Vì vậy,
+chỉ cần tìm được cây thống trị, ta tìm được toàn bộ các quan hệ thống trị.
+
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  every node/.style={circle,draw,thick,inner sep=1.2pt,minimum size=1.55em,
+    font=\small},
+  edge/.style={->,thick,shorten >=2pt,shorten <=2pt}
+]
+  \node (a1) at (0,3) {1};
+  \node (a2) at (0,2) {2};
+  \node (a3) at (-1.15,1) {3};
+  \node (a4) at (0,1) {4};
+  \node (a5) at (0,0) {5};
+  \node (a6) at (1.25,1.35) {6};
+  \draw[edge] (a1) -- (a2);
+  \draw[edge] (a2) -- (a3);
+  \draw[edge] (a2) -- (a4);
+  \draw[edge] (a3) -- (a5);
+  \draw[edge] (a4) -- (a5);
+  \draw[edge] (a5) -- (a6);
+  \draw[edge] (a1) -- (a6);
+  \draw[edge] (a6) -- (a2);
+
+  \node (b1) at (5.1,3) {1};
+  \node (b2) at (4.45,1.7) {2};
+  \node (b6) at (5.9,1.7) {6};
+  \node (b3) at (3.65,0.35) {3};
+  \node (b4) at (4.45,0.35) {4};
+  \node (b5) at (5.25,0.35) {5};
+  \draw[edge] (b1) -- (b2);
+  \draw[edge] (b1) -- (b6);
+  \draw[edge] (b2) -- (b3);
+  \draw[edge] (b2) -- (b4);
+  \draw[edge] (b2) -- (b5);
+\end{tikzpicture}
+
+Hình 2: hình bên phải là cây thống trị của hình bên trái khi \(s=1\).
+\end{center}
+
+\subsection{Thuật toán tìm cây thống trị}
+
+\subsubsection{Trường hợp đặc biệt: đồ thị có hướng không chu trình}
+
+Với đồ thị có hướng không chu trình \(G=(V,E)\), do các đỉnh đứng sau trong thứ
+tự topo không ảnh hưởng tới quan hệ thống trị của các đỉnh đứng trước, ta có
+thể lần lượt tìm điểm thống trị trực tiếp của từng đỉnh \(x\) theo thứ tự topo.
+Giả sử điểm thống trị trực tiếp của mọi đỉnh đứng trước \(x\) trong thứ tự topo
+đã được tìm. Khi đó ta có một cây thống trị chưa hoàn chỉnh, chắc chắn là một
+phần của cây thống trị cuối cùng; tạm gọi nó là ``cây thống trị hiện tại''. Giả
+sử các cạnh kết thúc ở \(x\) là \((c_1,x),\ldots,(c_k,x)\), khi đó
+\(\operatorname{idom}(c_i)\) đều đã được tìm.
+
+\paragraph{\term{Bổ đề 1.}}
+Đỉnh \(y\) thống trị \(x\) khi và chỉ khi \(y=x\), hoặc \(y\) thống trị tất cả
+\(c_1,\ldots,c_k\).
+
+\paragraph{\term{Chứng minh.}}
+Khi \(y=x\), kết luận hiển nhiên. Sau đây giả sử \(y\ne x\). Trước hết chứng
+minh nếu \(y\) thống trị tất cả \(c_1,\ldots,c_k\) thì \(y\) chắc chắn thống
+trị \(x\): xét một đường đi bất kỳ từ \(s\) đến \(x\), đỉnh ngay trước \(x\)
+chắc chắn là một trong \(c_1,\ldots,c_k\), nên đường đi này bắt buộc đi qua
+\(y\).
+
+Tiếp theo chứng minh mệnh đề phản đảo của chiều trên: không mất tính tổng quát,
+giả sử \(y\) không thống trị \(c_1\). Khi đó tồn tại đường đi từ \(s\) đến
+\(c_1\) không qua \(y\); đi tiếp theo cạnh \((c_1,x)\), ta thu được một đường
+đi từ \(s\) đến \(x\) không qua \(y\). Vì vậy \(y\) không thống trị \(x\).
+\proofbox
+
+Các đỉnh thỏa tính chất trên chính là tổ tiên chung của \(c_1,\ldots,c_k\) trên
+``cây thống trị hiện tại''. Vì vậy
+\[
+\operatorname{idom}(x)=
+\operatorname{LCA}(\operatorname{idom}(c_1),\ldots,\operatorname{idom}(c_k)),
+\]
+trong đó LCA là tổ tiên chung gần nhất. Điều này tương đương với việc thêm một
+lá và một cạnh vào ``cây thống trị hiện tại''. Nếu dùng thuật toán LCA bằng
+nhảy bậc hai, chỉ cần sửa nhẹ là có thể hỗ trợ mỗi lần thêm một lá. Độ phức tạp
+thời gian và không gian của cách làm này đều là \(O((n+m)\log n)\).
+
+\subsubsection{Định nghĩa và tính chất của điểm bán thống trị}
+
+Trong thuật toán sau đây, ta cần xét cây DFS của đồ thị tùy ý \(G\) xuất phát
+từ \(s\), tức cấu trúc cây do các cạnh được đi qua trong quá trình duyệt sâu
+tạo thành; đồng thời gán thứ tự cho các đỉnh theo thứ tự duyệt (thứ tự DFS).
+Cụ thể, với hai đỉnh \(x,y\), nếu \(x\) được thăm sớm hơn \(y\) trong quá trình
+duyệt, ta viết \(x<y\); tương tự có thể định nghĩa \(x>y\), giá trị lớn nhất và
+nhỏ nhất của một tập đỉnh, v.v. Cây DFS của đồ thị có hướng không tồn tại cạnh
+\((x,y)\) thỏa \(x<y\) và \(x\) không phải tổ tiên của \(y\). Một phát biểu hữu
+ích hơn là:
+
+\paragraph{\term{Định lý 1.}}
+Nếu \(x\le y\), thì mọi đường đi từ \(x\) đến \(y\) bắt buộc đi qua một tổ tiên
+chung nào đó của \(x\) và \(y\) trên cây DFS.
+
+\paragraph{\term{Chứng minh.}}
+Nếu \(x\) là tổ tiên của \(y\), kết luận hiển nhiên, vì vậy có thể coi \(x\)
+không phải tổ tiên của \(y\). Giả sử tồn tại một đường đi
+\[
+x=v_0,v_1,\ldots,v_k=y
+\]
+trên đó không có tổ tiên chung nào của \(x\) và \(y\) trong cây DFS. Gọi \(z\)
+là tổ tiên chung gần nhất của \(x\) và \(y\) trên cây DFS; trong các con của
+\(z\), chắc chắn có đúng một đỉnh \(y'\) là tổ tiên của \(y\).
+
+Xét đường đi bất kỳ \(x=v_0,v_1,\ldots,v_k=y\). Đặt
+\[
+p=\max\{i\mid v_i<y'\},
+\]
+và giả sử \(v_p\) không phải tổ tiên của \(z\). Khi đó \(v_p\) cũng chắc chắn
+không phải tổ tiên của \(v_{p+1}\). Điều này suy ra từ tính chất của thứ tự DFS:
+nếu \(x\) là tổ tiên của \(y\), thì \(x\) cũng là tổ tiên của mọi \(z\) thỏa
+\(x\le z\le y\). Từ đó có cạnh \((v_p,v_{p+1})\), \(v_p<v_{p+1}\), và \(v_p\)
+không phải tổ tiên của \(v_{p+1}\). Nhưng cạnh này không thể tồn tại trong cây
+DFS, nếu không khi duyệt tới \(v_p\) ta sẽ đi trực tiếp theo cạnh đó để thăm
+\(v_{p+1}\). Mâu thuẫn này cho thấy \(v_p\) chắc chắn là tổ tiên của \(z\).
+\proofbox
+
+Sau đây là định nghĩa điểm bán thống trị (\emph{semi-dominator}).
+
+\paragraph{\term{Định nghĩa.}}
+Điểm bán thống trị của đỉnh \(x\) là
+\[
+\operatorname{sdom}(x)=\min\{y\mid \text{tồn tại đường đi }
+y=v_0,v_1,\ldots,v_k=x\text{ sao cho với mọi }1\le i\le k-1,\ v_i>x\}.
+\]
+Ta gọi sự tồn tại của đường đi trong định nghĩa này là ``điều kiện điểm bán
+thống trị''. Việc tìm điểm bán thống trị là bước trung gian để tìm điểm thống
+trị trực tiếp. Dưới đây là một số tính chất quan trọng về điểm thống trị trực
+tiếp và điểm bán thống trị.
+
+\paragraph{\term{Bổ đề 2.}}
+\(\operatorname{idom}(x)\) và \(\operatorname{sdom}(x)\) đều là tổ tiên của
+\(x\) trên cây DFS và đều khác \(x\). Hơn nữa, trên cây DFS,
+\(\operatorname{idom}(x)\) là tổ tiên của \(\operatorname{sdom}(x)\).
+
+\paragraph{\term{Chứng minh.}}
+Việc \(\operatorname{idom}(x)\) là tổ tiên của \(x\) trên cây DFS là hiển
+nhiên, vì trên cây DFS có một đường đi từ \(s\) đến \(x\), và
+\(\operatorname{idom}(x)\) bắt buộc nằm trên đường đi này.
+
+Do cha của \(x\) trên cây DFS đã thỏa yêu cầu của điểm bán thống trị, nên
+\(\operatorname{sdom}(x)<x\). Mặt khác, nếu \(\operatorname{sdom}(x)\) không
+phải tổ tiên của \(x\), thì không khó thấy cha của \(\operatorname{sdom}(x)\)
+trên cây DFS cũng thỏa yêu cầu của điểm bán thống trị, và còn nhỏ hơn
+\(\operatorname{sdom}(x)\), mâu thuẫn với định nghĩa điểm bán thống trị.
+
+Theo định nghĩa điểm bán thống trị, ta có thể đi theo cây DFS từ \(s\) tới
+\(\operatorname{sdom}(x)\), rồi đi theo đường đi trong định nghĩa tới \(x\).
+Vì vậy các đỉnh trên đường từ \(\operatorname{sdom}(x)\) tới \(x\) trong cây
+DFS (không bao gồm \(\operatorname{sdom}(x)\)) đều không thống trị \(x\). Do đó
+\(\operatorname{idom}(x)\) chắc chắn là tổ tiên của \(\operatorname{sdom}(x)\).
+\proofbox
+
+\paragraph{\term{Bổ đề 3.}}
+Cho \(v,w\) thỏa \(v\) là tổ tiên của \(w\) trên cây DFS. Khi đó hoặc \(v\) là
+tổ tiên của \(\operatorname{idom}(w)\), hoặc \(\operatorname{idom}(w)\) là tổ
+tiên của \(\operatorname{idom}(v)\).
+
+\paragraph{\term{Chứng minh.}}
+Nếu \(v=w\), kết luận hiển nhiên, nên giả sử \(v\ne w\). Chứng minh bằng phản
+chứng. Vì \(v,w,\operatorname{idom}(v),\operatorname{idom}(w)\) đều là tổ tiên
+của \(w\), nếu kết luận trong bổ đề không đúng, thì theo thứ tự độ sâu chúng
+lần lượt là
+\[
+\operatorname{idom}(v),\operatorname{idom}(w),v,w
+\]
+và đôi một khác nhau. Điều này có nghĩa là tồn tại một đường đi từ \(s\) đến
+\(v\) không qua \(\operatorname{idom}(w)\). Đi tiếp theo cây DFS tới \(w\), ta
+thu được một đường đi từ \(s\) đến \(w\) không qua \(\operatorname{idom}(w)\),
+mâu thuẫn. \proofbox
+
+Với các tính chất trên, ta sẽ chỉ ra mối liên hệ chặt chẽ giữa điểm bán thống
+trị và điểm thống trị trực tiếp, từ đó có thể dùng cái trước để tính cái sau.
+
+\paragraph{\term{Định lý 2.}}
+Lấy một đỉnh \(w\ne s\). Xét mọi đỉnh \(x\) trên đường từ
+\(\operatorname{sdom}(w)\) tới \(w\) trong cây DFS, không bao gồm
+\(\operatorname{sdom}(w)\). Nếu chúng đều thỏa
+\(\operatorname{sdom}(x)\ge \operatorname{sdom}(w)\), thì
+\[
+\operatorname{idom}(w)=\operatorname{sdom}(w).
+\]
+
+\paragraph{\term{Chứng minh.}}
+Theo Bổ đề 2, \(\operatorname{idom}(w)\) là tổ tiên của \(\operatorname{sdom}(w)\),
+nên chỉ cần chứng minh \(\operatorname{sdom}(w)\) thống trị \(w\). Xét một
+đường đi \(P\) bất kỳ từ \(s\) đến \(w\); ta sẽ chứng minh
+\(\operatorname{sdom}(w)\) chắc chắn nằm trên \(P\). Gọi \(x\) là đỉnh cuối
+cùng trên \(P\) thỏa \(x<\operatorname{sdom}(w)\). Nếu không tồn tại đỉnh như
+vậy, thì chắc chắn \(\operatorname{sdom}(w)=\operatorname{idom}(w)=s\), kết
+luận vẫn đúng. Đồng thời, gọi \(y\) là đỉnh đầu tiên sau \(x\) trên \(P\) nằm
+trên đường từ \(\operatorname{sdom}(w)\) tới \(w\) trong cây DFS. Lấy đoạn con
+từ \(x\) tới \(y\) trên \(P\), được \(v_0=x,v_1,\ldots,v_k=y\).
+
+Bây giờ xét đường \(v_0,\ldots,v_k\). Ta khẳng định với mọi \(1\le i<k\) đều
+có \(v_i>y\), tức \(\operatorname{sdom}(y)\le x<\operatorname{sdom}(x)\). Nếu
+không, tồn tại một \(v_i<y\). Khi đó theo Định lý 1, tồn tại \(i\le j\le k-1\)
+sao cho \(v_j\) là tổ tiên của \(y\). Theo cách chọn \(x\), có
+\(\operatorname{sdom}(w)\le v_j\), vì vậy \(v_j\) cũng nằm trên đường từ
+\(\operatorname{sdom}(w)\) tới \(w\) trong cây DFS, mâu thuẫn với cách chọn
+\(y\). Mâu thuẫn trên suy ra
+\(\operatorname{sdom}(y)\le x<\operatorname{sdom}(x)\). Kết hợp với điều kiện
+của định lý, bắt buộc có \(y=\operatorname{sdom}(w)\), tức đường đi \(P\) chứa
+\(\operatorname{sdom}(w)\). \proofbox
+
+\paragraph{\term{Định lý 3.}}
+Lấy một đỉnh \(w\ne s\). Xét mọi đỉnh trên đường từ \(\operatorname{sdom}(w)\)
+tới \(w\) trong cây DFS, không bao gồm \(\operatorname{sdom}(w)\). Gọi \(u\)
+là đỉnh có giá trị \(\operatorname{sdom}\) nhỏ nhất trong số đó. Khi đó
+\(\operatorname{sdom}(u)\le \operatorname{sdom}(w)\) và
+\[
+\operatorname{idom}(u)=\operatorname{idom}(w).
+\]
+
+\paragraph{\term{Chứng minh.}}
+Vì \(w\) cũng là một ứng viên của \(u\), nên
+\(\operatorname{sdom}(u)\le \operatorname{sdom}(w)\) là hiển nhiên. Chú ý rằng
+trên cây DFS, \(\operatorname{idom}(w)\) là tổ tiên của \(u\). Theo Bổ đề 3,
+\(\operatorname{idom}(w)\) cũng là tổ tiên của \(\operatorname{idom}(u)\), nên
+chỉ cần chứng minh \(\operatorname{idom}(u)\) thống trị \(w\).
+
+Xét một đường đi \(P\) bất kỳ từ \(s\) đến \(w\); ta sẽ chứng minh
+\(\operatorname{idom}(u)\) chắc chắn nằm trên \(P\). Gọi \(x\) là đỉnh cuối
+cùng trên \(P\) thỏa \(x<\operatorname{idom}(u)\). Nếu không tồn tại đỉnh như
+vậy, thì chắc chắn \(\operatorname{idom}(u)=\operatorname{idom}(w)=s\), kết
+luận vẫn đúng. Đồng thời, gọi \(y\) là đỉnh đầu tiên sau \(x\) trên \(P\) nằm
+trên đường từ \(\operatorname{idom}(u)\) tới \(w\) trong cây DFS. Lấy đoạn con
+từ \(x\) tới \(y\) trên \(P\), được \(v_0=x,v_1,\ldots,v_k=y\).
+
+Tương tự chứng minh Định lý 2, ta có \(\operatorname{sdom}(y)\le x\). Theo Bổ
+đề 2, \(\operatorname{idom}(u)\le \operatorname{sdom}(u)\). Kết hợp lại:
+\[
+\operatorname{sdom}(y)\le x<\operatorname{idom}(u)\le \operatorname{sdom}(u).
+\]
+Đến đây, từ cách chọn \(u\), ta biết \(y\) không thể là hậu duệ thật sự của
+\(\operatorname{sdom}(w)\). Mặt khác, \(y\) cũng không thể vừa là hậu duệ thật
+sự của \(\operatorname{idom}(u)\), vừa là tổ tiên của \(u\); nếu không, đi theo
+cây DFS từ \(s\) tới \(\operatorname{sdom}(y)\), rồi đi theo \(P\) tới \(y\),
+cuối cùng đi theo cây DFS tới \(u\), ta thu được một đường đi không qua
+\(\operatorname{idom}(u)\), mâu thuẫn với định nghĩa điểm thống trị.
+
+Theo \(\operatorname{idom}(u)\le \operatorname{sdom}(w)<u\le w\) và
+\(\operatorname{idom}(u)<y\), khả năng duy nhất còn lại là
+\(y=\operatorname{idom}(u)\). Vậy đường đi \(P\) chứa \(\operatorname{idom}(u)\).
+\proofbox
+
+Hai định lý trên giải thích quan hệ giữa điểm bán thống trị và điểm thống trị
+trực tiếp, đồng thời cho một cách tính điểm thống trị trực tiếp từ điểm bán
+thống trị. Với đỉnh \(w\ne s\), xét mọi đỉnh trên đường từ
+\(\operatorname{sdom}(w)\) tới \(w\) trong cây DFS, không bao gồm
+\(\operatorname{sdom}(w)\). Gọi \(u\) là đỉnh có \(\operatorname{sdom}\) nhỏ
+nhất trong số đó. Nếu \(\operatorname{sdom}(u)=\operatorname{sdom}(w)\), dùng
+Định lý 2 ta có \(\operatorname{idom}(w)=\operatorname{sdom}(w)\); ngược lại,
+\(u\ne w\), dùng Định lý 3 ta có
+\(\operatorname{idom}(w)=\operatorname{idom}(u)\).
+
+\subsubsection{Tính điểm bán thống trị và điểm thống trị trực tiếp}
+
+\paragraph{\term{Điểm bán thống trị.}}
+Để tìm điểm bán thống trị, ta cần định lý dưới đây.
+
+\paragraph{\term{Định lý 4.}}
+\(\operatorname{sdom}(w)\) bằng giá trị nhỏ nhất trong các ứng viên sinh ra từ
+hai trường hợp sau:
+
+\begin{enumerate}
+  \item Có cạnh \((v,w)\); khi đó \(v\) là một ứng viên của
+  \(\operatorname{sdom}(w)\).
+  \item \(u\) là tổ tiên của \(v\) trên cây DFS, \(u>w\), và có cạnh \((v,w)\);
+  khi đó \(\operatorname{sdom}(u)\) là một ứng viên của
+  \(\operatorname{sdom}(w)\).
+\end{enumerate}
+
+\paragraph{\term{Chứng minh.}}
+Gọi \(x\) là giá trị nhỏ nhất trong mọi ứng viên. Trước hết ta chứng minh mỗi
+ứng viên đều thỏa điều kiện điểm bán thống trị, từ đó suy ra
+\(\operatorname{sdom}(w)\le x\). Nếu \(x\) đến từ trường hợp 1, rõ ràng
+\((x,w)\) chính là đường đi thỏa điều kiện điểm bán thống trị. Ngược lại,
+\(x=\operatorname{sdom}(u)\). Khi đó lấy đường đi từ \(\operatorname{sdom}(u)\)
+đến \(u\) được nêu trong điều kiện điểm bán thống trị, nối tiếp đường đi từ
+\(u\) đến \(v\) trong cây DFS, rồi cuối cùng đi từ \(v\) đến \(w\), ta được một
+đường đi thỏa điều kiện điểm bán thống trị của \(w\).
+
+Còn cần chứng minh \(\operatorname{sdom}(w)\ge x\). Xét đường đi ứng với điều
+kiện điểm bán thống trị từ \(\operatorname{sdom}(w)\) đến \(w\):
+\[
+v_0=\operatorname{sdom}(w),v_1,\ldots,v_k=w,
+\]
+trong đó với mọi \(1\le i<k\) đều có \(v_i\ge w\). Nếu \(k=1\), nó đã được xét
+trong trường hợp 1; sau đây giả sử \(k>1\). Lấy \(j\) là chỉ số nhỏ nhất thỏa
+\(j\ge 1\) và \(v_j\) là tổ tiên của \(v_{k-1}\) trên cây DFS. Chỉ số như vậy
+chắc chắn tồn tại, vì \(k\) là một chỉ số hợp lệ.
+
+Bây giờ xét đường \(v_0,\ldots,v_j\). Ta khẳng định nó là đường thỏa điều kiện
+điểm bán thống trị của \(v_j\), tức với mọi \(1\le i<j\) đều có \(v_i>v_j\).
+Nếu không, xét mọi chỉ số \(i\) thỏa \(v_i\le v_j\), lấy chỉ số có \(v_i\) nhỏ
+nhất. Theo Định lý 1, \(v_i\) chắc chắn là tổ tiên của \(v_j\), mâu thuẫn với
+cách chọn \(j\). Vì vậy \(\operatorname{sdom}(v_j)\le \operatorname{sdom}(w)\);
+mà \(\operatorname{sdom}(v_j)\) chắc chắn được xét trong trường hợp 2, nên
+\(x\le \operatorname{sdom}(w)\). \proofbox
+
+Với Định lý 4, có thể thiết kế thuật toán tìm điểm bán thống trị như sau:
+
+\begin{enumerate}
+  \item Tìm một cây DFS của \(G\) và thứ tự DFS.
+  \item Nếu điểm \(\operatorname{sdom}\) của mọi đỉnh đều đã được tìm, kết thúc
+  thuật toán; ngược lại, tìm đỉnh lớn nhất \(w\) trong các đỉnh chưa có
+  \(\operatorname{sdom}(w)\).
+  \item Xét trường hợp 1, có thể tính trực tiếp mọi ứng viên.
+  \item Xét trường hợp 2: duyệt các cạnh \((v,w)\) thỏa \(v>w\). Khi đó \(v\)
+  chắc chắn đã được đánh dấu. Bắt đầu từ \(v\), liên tục đi lên cha đã được
+  đánh dấu trên cây DFS để tạo thành một đường đi, rồi lấy giá trị
+  \(\operatorname{sdom}\) nhỏ nhất trên đường này làm ứng viên.
+  \item Gộp các ứng viên thu được từ trường hợp 1 và 2 để nhận giá trị
+  \(\operatorname{sdom}(w)\), đánh dấu \(w\) là đã tìm được
+  \(\operatorname{sdom}\), rồi quay lại bước 2.
+\end{enumerate}
+
+Có thể thấy việc xét mọi đỉnh theo thứ tự từ lớn xuống nhỏ chính là để các giá
+trị \(\operatorname{sdom}\) cần dùng trong bước 4 đều đã được tìm. Dễ thấy các
+phần ngoài bước 4 có tổng độ phức tạp không vượt quá \(O(n+m)\). Để tối ưu độ
+phức tạp, ở bước 4 ta dùng cấu trúc dữ liệu DSU có trọng số để duy trì giá trị
+\(\operatorname{sdom}\) nhỏ nhất trên đường đi và vị trí đạt giá trị nhỏ nhất
+đó. Khi đánh dấu \(x\), nối mọi con của \(x\) trên cây DFS tới \(x\) và duy trì
+lại thông tin nhỏ nhất. Nếu cài đặt DSU với nén đường đi một cách mộc mạc, độ
+phức tạp thời gian đạt \(O((n+m)\log n)\), độ phức tạp không gian là \(O(n+m)\).
+Với bài toán này còn có các cách cài đặt DSU nhanh hơn, đạt độ phức tạp thấp
+hơn là \(O((n+m)\alpha(n))\), thậm chí tuyến tính; bạn đọc quan tâm có thể tham
+khảo tài liệu liên quan.
+
+\paragraph{\term{Điểm thống trị trực tiếp.}}
+Để tìm mọi \(\operatorname{idom}\), định nghĩa \(\operatorname{pivot}(w)\) là
+đỉnh có giá trị \(\operatorname{sdom}\) nhỏ nhất trên đường từ
+\(\operatorname{sdom}(w)\) tới \(w\) trong cây DFS, không bao gồm
+\(\operatorname{sdom}(w)\). Nếu đã tìm được mọi \(\operatorname{sdom}(w)\) và
+\(\operatorname{pivot}(w)\), ta có thể lần lượt xác định
+\(\operatorname{idom}\) của từng đỉnh theo thứ tự từ nhỏ tới lớn dựa trên Bổ
+đề 2 và Bổ đề 3. Cụ thể: nếu
+\[
+\operatorname{sdom}(\operatorname{pivot}(w))=\operatorname{sdom}(w),
+\]
+thì \(\operatorname{idom}(w)=\operatorname{sdom}(w)\); ngược lại
+\[
+\operatorname{idom}(w)=\operatorname{idom}(\operatorname{pivot}(w)).
+\]
+Ở đây, do \(\operatorname{pivot}(w)\le w\), trước khi xét tới \(w\) thì
+\(\operatorname{idom}(\operatorname{pivot}(w))\) chắc chắn đã được tìm.
+
+Cuối cùng, chỉ cần sửa nhẹ thuật toán tìm điểm bán thống trị ở trên là có thể
+tìm được \(\operatorname{pivot}\) của mỗi đỉnh. Với mỗi đỉnh \(x\), mở một
+\(\operatorname{bucket}(x)\) để lưu mọi đỉnh \(w\) thỏa
+\(\operatorname{sdom}(w)=x\). Nếu hiện đang tìm \(\operatorname{sdom}\) của
+đỉnh \(w\), thì trước khi thực hiện thao tác đánh dấu ở bước 5, tức thao tác
+\emph{link} của DSU, xét mọi đỉnh \(x\) trong \(\operatorname{bucket}(w)\) và
+truy vấn trực tiếp trong DSU để lấy giá trị \(\operatorname{pivot}(x)\). Sau
+khi tìm được \(\operatorname{sdom}(w)\), cũng đừng quên thêm \(w\) vào
+\(\operatorname{bucket}(\operatorname{sdom}(w))\).
+
+Kết hợp những điều trên, ta đã có thuật toán cây thống trị hoàn chỉnh.
+
+\subsubsection{Tổng kết thuật toán}
+
+Dưới đây là phần tổng hợp và tóm lược thuật toán:
+
+\begin{enumerate}
+  \item Tìm một cây DFS của \(G\) và thứ tự DFS.
+  \item Nếu điểm \(\operatorname{sdom}\) của mọi đỉnh đều đã được tìm, chuyển
+  tới bước 8; ngược lại, tìm đỉnh lớn nhất \(w\) trong các đỉnh chưa có
+  \(\operatorname{sdom}(w)\).
+  \item Xét trường hợp 1, có thể tính trực tiếp mọi ứng viên.
+  \item Xét trường hợp 2: duyệt các cạnh \((v,w)\) thỏa \(v>w\). Khi đó \(v\)
+  chắc chắn đã được đánh dấu. Bắt đầu từ \(v\), liên tục đi lên cha đã được
+  đánh dấu trên cây DFS để tạo thành một đường đi, rồi lấy giá trị
+  \(\operatorname{sdom}\) nhỏ nhất trên đường này làm ứng viên. Đường này chính
+  là đường từ đỉnh \(v\) tới gốc của \(v\) trong DSU hiện tại, nên có thể truy
+  vấn trực tiếp trong DSU.
+  \item Gộp các ứng viên thu được từ trường hợp 1 và 2 để nhận giá trị
+  \(\operatorname{sdom}(w)\), rồi thêm \(w\) vào
+  \(\operatorname{bucket}(\operatorname{sdom}(w))\).
+  \item Với mỗi đỉnh \(x\) trong \(\operatorname{bucket}(w)\), tìm
+  \(\operatorname{pivot}(x)\). Giá trị này cũng có thể lấy trực tiếp bằng cách
+  truy vấn giá trị nhỏ nhất trên đường từ \(x\) tới gốc của \(x\) trong DSU.
+  \item Với mỗi con \(c\) của \(w\) trên cây DFS, đặt cha của \(c\) trong DSU
+  là \(w\), đồng thời duy trì thông tin giá trị nhỏ nhất trên đường.
+  \item Xét lần lượt từng đỉnh \(w\) theo thứ tự từ nhỏ tới lớn. Nếu
+  \(\operatorname{sdom}(\operatorname{pivot}(w))=\operatorname{sdom}(w)\), đặt
+  \(\operatorname{idom}(w)=\operatorname{sdom}(w)\); ngược lại đặt
+  \(\operatorname{idom}(w)=\operatorname{idom}(\operatorname{pivot}(w))\).
+\end{enumerate}
+
+Thuật toán này có độ phức tạp không gian \(O(n+m)\). Nút thắt thời gian nằm ở
+việc duy trì DSU; nếu dùng nén đường đi mộc mạc, độ phức tạp là
+\(O((n+m)\log n)\). Trong phạm vi thi tin học, độ phức tạp này đã đủ tốt.
+
+\subsection{Ứng dụng của cây thống trị}
+
+\subsubsection{Điểm thống trị của một tập đỉnh}
+
+Điểm thống trị của tập đỉnh \(S\) được định nghĩa là đỉnh mà mọi đường đi từ
+\(s\) tới bất kỳ \(x\in S\) nào cũng bắt buộc đi qua. Không khó thấy các đỉnh
+như vậy chính là giao của các tập điểm thống trị của mọi đỉnh trong \(S\). Mà
+điểm thống trị của đỉnh \(x\) chính là mọi tổ tiên của \(x\) trên cây thống
+trị, nên điểm thống trị của tập \(S\) chính là tổ tiên chung gần nhất (LCA) của
+mọi \(x\in S\) trên cây thống trị.
+
+\subsubsection{Cạnh thống trị}
+
+Tương tự định nghĩa điểm thống trị, nếu mọi đường đi từ \(s\) tới \(x\) đều đi
+qua cạnh \((u,v)\), thì ta nói \((u,v)\) thống trị \(x\). Đồng thời cũng có thể
+định nghĩa cạnh thống trị trực tiếp một cách tương tự: nếu \((u,v)\) thống trị
+\(x\), và mọi cạnh thống trị của \(x\) cũng thống trị \(u\), thì gọi \((u,v)\)
+là cạnh thống trị trực tiếp của \(x\).
+
+Để tìm cạnh thống trị của mỗi đỉnh, một cách đơn giản là với mỗi cạnh
+\((u,v)\) trong đồ thị gốc, tạo một đỉnh phụ \(w\), nối \((u,w)\) và
+\((w,v)\), rồi tìm cây thống trị của đồ thị mới. Với một đỉnh \(x\) của đồ thị
+gốc, các cạnh thống trị của nó chính là các tổ tiên là đỉnh phụ của \(x\) trong
+cây thống trị của đồ thị mới; cạnh thống trị trực tiếp là đỉnh có độ sâu lớn
+nhất trong số đó, có thể tìm đơn giản bằng DFS. Tuy nhiên, đồ thị mới có
+\(n+m\) đỉnh và \(2m\) cạnh, có thể gây hằng số khá lớn. Xem kỹ cách làm này,
+ta thấy các đỉnh phụ có nhiều tính chất trong quá trình chạy thuật toán, nhờ đó
+không nhất thiết phải chạy trọn vẹn thuật toán trên đồ thị mới mới suy ra được
+cạnh thống trị.
+
+\paragraph{\term{Bổ đề 4.}}
+Cạnh \((u,v)\) là cạnh thống trị của đỉnh \(x\) khi và chỉ khi \(u\) và \(v\)
+đều là điểm thống trị của \(x\), đồng thời chỉ có đúng một đường đi đơn từ
+\(u\) tới \(v\), tức cạnh \((u,v)\) là cạnh thống trị của \(v\).
+
+\paragraph{\term{Chứng minh.}}
+Nếu cạnh \((u,v)\) là cạnh thống trị của \(x\), thì mọi đường đi từ \(s\) tới
+\(x\) đều đi qua \(u\) và \(v\), tức \(u\) và \(v\) thống trị \(x\). Hơn nữa,
+nếu từ \(u\) tới \(v\) còn một đường đi khác ngoài cạnh \((u,v)\), ta có thể đi
+theo một đường đi bất kỳ từ \(s\) tới \(u\), rồi tới \(v\), rồi tới \(x\) mà
+không qua \((u,v)\). Vì vậy từ \(u\) tới \(v\) bắt buộc có đúng một đường đi
+đơn.
+
+Ngược lại, nếu các điều kiện của bổ đề đúng, thì hiển nhiên cạnh \((u,v)\) sẽ
+thống trị đỉnh \(x\). \proofbox
+
+Từ Bổ đề 4, với một cạnh \((u,v)\) trên cây DFS, nếu \(u\) thống trị \(v\) và
+từ \(u\) tới \(v\) chỉ có đúng một đường đi đơn, thì \((u,v)\) thống trị mọi
+đỉnh mà \(v\) thống trị. Nhìn lại thuật toán cây thống trị, nếu cạnh \((u,v)\)
+nằm trên cây DFS và \(\operatorname{idom}(v)=u\), thì chắc chắn có
+\(\operatorname{sdom}(v)=u\).
+
+Bây giờ tập trung vào điều kiện ``từ \(u\) tới \(v\) chỉ có đúng một đường đi
+đơn''. Có thể hiểu nó qua cách tạo đỉnh phụ ở trên. Giả sử chỉ tạo đỉnh phụ
+\(w\) cho riêng cạnh này, khi đó \(\operatorname{sdom}(w)=u\) và
+\(\operatorname{sdom}(v)\ge u\). Lúc này \(\operatorname{idom}(v)=w\) khi và
+chỉ khi \(\operatorname{sdom}(v)=w\). Quay lại đồ thị gốc, điều này tương
+đương với: khi tính \(\operatorname{sdom}(v)\), không xét cạnh \((u,v)\), tức
+khi chỉ xét trường hợp 2 thì không có ứng viên nào. Như vậy, chỉ cần thêm một
+kiểm tra trong quá trình tìm \(\operatorname{sdom}\), ta có thể xác định liệu
+từ \(u\) tới \(v\) có chỉ một đường đi đơn hay không.
+
+Cuối cùng, ta tìm được mọi cạnh \((u,v)\) thỏa nó thống trị \(v\), rồi duyệt
+một lần trên cây DFS là xác định được cạnh thống trị trực tiếp của mỗi đỉnh.
+Cách làm này không cần tạo đỉnh phụ, hằng số nhỏ hơn và độ khó cài đặt không
+tăng rõ rệt.
+
+\subsubsection{Điểm khớp và cầu trong đồ thị có hướng}
+
+Trong đồ thị có hướng \(G\), \(u\) và \(v\) liên thông mạnh nếu \(u\) tới được
+\(v\) và \(v\) cũng tới được \(u\). Quan hệ liên thông mạnh là quan hệ tương
+đương; các lớp tương đương mà nó tạo ra được gọi là thành phần liên thông mạnh,
+tương ứng với thành phần liên thông trong đồ thị vô hướng. Với đồ thị \(G\),
+ký hiệu \(G\setminus\{u\}\) là đồ thị mới thu được sau khi xóa đỉnh \(u\) và
+các cạnh liên quan; \(G\setminus\{(u,v)\}\) là đồ thị mới thu được sau khi xóa
+cạnh \((u,v)\).
+
+Điểm khớp và cầu của đồ thị vô hướng là các đỉnh và cạnh mà sau khi xóa, số
+thành phần liên thông tăng lên. Tương ứng với chúng, điểm khớp mạnh và cầu mạnh
+trong đồ thị có hướng là các đỉnh và cạnh mà sau khi xóa, số thành phần liên
+thông mạnh tăng lên. Một câu hỏi tự nhiên là làm thế nào để tìm tất cả điểm
+khớp mạnh và cầu mạnh trong một đồ thị \(G\). Giống như đồ thị vô hướng, khi
+tìm điểm khớp mạnh và cầu mạnh, có thể xét riêng từng thành phần liên thông
+mạnh, nên phần thảo luận dưới đây đều dành cho đồ thị liên thông mạnh.
+
+\paragraph{\term{Bổ đề 5.1.}}
+Đỉnh \(v\) là điểm khớp mạnh khi và chỉ khi với mọi \(x\ne v\), đều tồn tại một
+đỉnh \(y\ne v\) sao cho một trong hai điều sau đúng:
+
+\begin{enumerate}
+  \item Mọi đường đi từ \(x\) tới \(y\) đều đi qua \(v\).
+  \item Mọi đường đi từ \(y\) tới \(x\) đều đi qua \(v\).
+\end{enumerate}
+
+\paragraph{\term{Bổ đề 5.2.}}
+Cạnh \((u,v)\) là cầu mạnh khi và chỉ khi với mọi \(x\), đều tồn tại một đỉnh
+\(y\) sao cho một trong hai điều sau đúng:
+
+\begin{enumerate}
+  \item Mọi đường đi từ \(x\) tới \(y\) đều đi qua cạnh \((u,v)\).
+  \item Mọi đường đi từ \(y\) tới \(x\) đều đi qua cạnh \((u,v)\).
+\end{enumerate}
+
+\paragraph{\term{Chứng minh.}}
+Chứng minh của hai bổ đề gần như giống nhau; ở đây chỉ chứng minh Bổ đề 5.1.
+Nếu \(v\) là điểm khớp mạnh, thì \(G\setminus\{v\}\) không phải đồ thị liên
+thông mạnh. Khi đó xét một đỉnh \(y\) không cùng thành phần liên thông mạnh với
+\(x\): hoặc không tồn tại đường đi từ \(x\) tới \(y\), hoặc không tồn tại đường
+đi từ \(y\) tới \(x\). Do \(G\) là liên thông mạnh, suy ra điều kiện của bổ đề
+đúng. Mặt khác, nếu điều kiện của bổ đề đúng, thì \(x\) và \(y\) không còn liên
+thông mạnh sau khi xóa \(v\). \proofbox
+
+Nếu dùng Bổ đề 5.1, chọn tùy ý một đỉnh \(v\) là có thể tìm mọi điểm khớp mạnh
+khác \(v\). Với điều kiện 1, chỉ cần tìm \(\operatorname{DT}(G,v)\); mọi đỉnh
+không phải lá, trừ \(v\), trong cây thống trị đều là điểm khớp mạnh. Với điều
+kiện 2, chỉ cần xây đồ thị đảo \(G^R\) của \(G\) rồi tìm
+\(\operatorname{DT}(G^R,v)\). Cuối cùng, dùng thuật toán tìm thành phần liên
+thông mạnh thông thường là có thể xác định liệu đỉnh \(v\) có phải điểm khớp
+mạnh hay không.
+
+Với cầu mạnh cũng có kết luận tương tự, có thể áp dụng thuật toán cạnh thống
+trị ở mục trước để giải quyết. Các thuật toán tìm điểm khớp mạnh và cầu mạnh
+nói trên có độ phức tạp thời gian bằng với độ phức tạp tìm cây thống trị.
+
+\subsubsection{Ứng dụng trong công nghiệp}
+
+Cây thống trị có nhiều công dụng trong các cấu trúc cần dựa trên đồ thị có
+hướng.
+
+Mạng nơ-ron có thể được trừu tượng hóa thành một đồ thị có hướng: nhiệm vụ tính
+toán ở mỗi đỉnh phụ thuộc vào kết quả của các đỉnh có cạnh trỏ tới nó. Để tăng
+tốc việc chạy mạng nơ-ron, người ta thường dùng tính toán song song để tối ưu
+thứ tự tính các đỉnh. Khi đó cây thống trị có thể giúp tìm một phần các đỉnh
+được sử dụng với tần suất cao và ưu tiên tính chúng.
+
+Ngoài ra, cây thống trị còn có thể phát huy tác dụng trong nguyên lý biên dịch
+và phát hiện rò rỉ bộ nhớ. Nhìn chung, khái niệm ``thống trị'' có các cách nói
+tương tự trong nhiều lĩnh vực, nên cây thống trị, với tư cách công cụ tìm quan
+hệ thống trị, có phạm vi ứng dụng rộng.
+
+\subsection{Tổng kết}
+
+Bài viết này giới thiệu thuật toán tìm cây thống trị và một số ứng dụng. Dù bài
+toán cây thống trị đã được giải quyết, từ góc độ ứng dụng có thể thấy cây thống
+trị có nhiều biến thể và vẫn còn nhiều điều đáng nghiên cứu.
+
+Hy vọng bài viết này giúp nhiều bạn học sinh hiểu thuật toán và công cụ cây
+thống trị hơn, đồng thời đi sâu khám phá các vấn đề liên quan.
+
+\subsection*{Lời cảm ơn}
+
+Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+Xin cảm ơn huấn luyện viên Gao Wenyuan của đội tuyển quốc gia đã hướng dẫn.
+Xin cảm ơn thầy Li Shu của Trường Ngoại ngữ Nam Kinh đã hướng dẫn và ủng hộ.
+Xin cảm ơn tất cả thầy cô và bạn học từng giúp đỡ tôi. Xin cảm ơn cha mẹ đã
+luôn hết lòng ủng hộ và khích lệ tôi.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Thomas Lengauer, Robert Endre Tarjan. \emph{A Fast Algorithm for
+  Finding Dominators in a Flowgraph}.
+  \item Adam L. Buchsbaum, Haim Kaplan, Anne Rogers, Jeffery R. Westbrook.
+  \emph{A New, Simpler Linear-Time Dominators Algorithm}.
+  \item Giuseppe F. Italiano, Luigi Laura, Federico Santaroni. \emph{Finding
+  Strong Bridges and Strong Articulation Points in Linear Time}.
+  \item Robert E. Tarjan. \emph{Depth-First Search and Linear Graph
+  Algorithms}.
 \end{enumerate}
 
 \end{document}
