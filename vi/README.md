@@ -22,3 +22,5 @@ tương ứng trong `build/`.
 - `build/`: PDF sinh ra khi biên dịch, không viết tay.
 - `oipl-vn.sty`: định dạng chung cho tất cả bản dịch.
 - `TRANSLATION.md`: quy ước dịch thuật và quy trình xử lý PDF-only.
+- `QUALITY_AUDIT.md`: danh sách các tệp đã có bản LaTeX nhưng chưa đủ chất
+  lượng hoặc mới là ghi chú mục lục/tóm tắt.
