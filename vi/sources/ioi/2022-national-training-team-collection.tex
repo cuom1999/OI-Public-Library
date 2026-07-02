@@ -18,7 +18,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2022. Tệp này
 là bản quét ảnh: \texttt{pdftotext} chỉ trả về các dấu sang trang và không khôi
 phục được văn bản thân bài. Vì vậy bản LaTeX này chuyển ngữ phần nhận diện tập
-sách, mục lục và bảy bài đầu tiên bằng cách đọc trực tiếp các trang đã render
+sách, mục lục và tám bài đầu tiên bằng cách đọc trực tiếp các trang đã render
 từ PDF, kết hợp OCR bằng \texttt{tesseract}.
 \end{abstract}
 
@@ -4784,6 +4784,385 @@ và cảm ơn cha mẹ đã luôn chăm sóc, ủng hộ.
   Approximate Graph Coloring}. Journal of the ACM, 1983.
 \end{enumerate}
 
+\section{Bàn về bài toán tối ưu không gian trong thi tin học}
+
+\begin{center}
+\textbf{Chen Zhixuan, Trường Trung học Zhilin, Nhạc Thanh, Chiết Giang}
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết giới thiệu một vài mô hình xử lý dữ liệu thường gặp, cùng các kỹ thuật
+tối ưu không gian tương ứng. Tác giả phân tích hiệu quả, phạm vi áp dụng của
+các kỹ thuật này, rồi minh họa bằng một số bài toán cụ thể.
+
+\subsection{Mở đầu}
+
+Trong thi tin học, đề bài thường đặt yêu cầu cao về thời gian, đôi khi còn chấp
+nhận hy sinh bộ nhớ để đổi lấy thời gian tốt hơn. Tuy nhiên trong một số bài,
+giới hạn bộ nhớ nghiêm ngặt cũng là một cách kiểm tra năng lực thiết kế thuật
+toán. Bài viết này chọn một số mô hình xử lý dữ liệu phổ biến, trình bày vài
+cách đơn giản để giảm độ phức tạp không gian, đồng thời đưa ra phương pháp tối
+ưu cụ thể cho một số bài kinh điển.
+
+\subsection{Mô hình 1: xử lý dữ liệu tĩnh trên DAG}
+
+Trong nhiều bài toán, dữ liệu cần xử lý có thể chia thành nhiều khối. Giữa các
+khối có quan hệ phụ thuộc, còn đáp án cuối cùng chỉ liên quan tới khối cuối
+cùng. Mô hình này có thể mô tả như sau:
+\begin{enumerate}
+  \item Có $n$ khối dữ liệu; khối thứ $i$ ký hiệu là $\operatorname{data}_i$,
+  kích thước là $L_i$.
+  \item Một cạnh có hướng $(i,j)$ biểu thị việc tính $\operatorname{data}_i$
+  phụ thuộc vào $\operatorname{data}_j$. Các cạnh này tạo thành một DAG. Ngoài
+  ra, mỗi khối cũng có thể phụ thuộc vào dữ liệu đầu vào.
+  \item Chi phí lưu dữ liệu đầu vào có thể bỏ qua, và đáp án chỉ liên quan tới
+  khối cuối cùng.
+\end{enumerate}
+
+Cách xử lý trực tiếp là cấp phát trước $n$ mảng có độ dài
+$\max_i L_i$, hoặc cấp phát riêng bộ nhớ cho từng khối. Nhưng khi mọi phụ
+thuộc của một khối đã được xử lý xong, khối đó có thể được giải phóng. Vì vậy
+có thể chọn một thứ tự topo, chẳng hạn $1,2,\ldots,n$, xử lý từng khối, cấp
+phát bộ nhớ khi cần và giải phóng khi khối không còn hiệu lực. Trong trường
+hợp tổng quát, cách này khó ước lượng không gian, phụ thuộc vào thứ tự topo,
+và việc cấp phát/giải phóng động cũng có hằng số lớn.
+
+Với một số trường hợp đặc biệt, có những kỹ thuật đơn giản vừa giảm bộ nhớ vừa
+giữ được hằng số thời gian tốt.
+
+\subsubsection{Trường hợp đặc biệt 1: mảng lăn}
+
+Mảng lăn thường áp dụng được khi:
+\begin{enumerate}
+  \item mọi khối dữ liệu có cùng kích thước $L$;
+  \item với mỗi $i$, các khối mà $\operatorname{data}_i$ phụ thuộc vào đều có
+  chỉ số $j$ thỏa $i-m<j<i$, trong đó $m$ là một hằng số nhỏ.
+\end{enumerate}
+Khi đó dùng mảng lăn đưa không gian xuống $O(mL)$.
+
+\paragraph{Ví dụ 1: tô màu bóng.}
+Có $n$ quả bóng xếp thành một hàng, ban đầu đều màu trắng. Tô quả thứ $i$ tốn
+chi phí $w_i$. Cần tìm chi phí tô nhỏ nhất sao cho trong mọi đoạn $m$ quả liên
+tiếp có ít nhất hai quả được tô. Ràng buộc đọc được từ bản quét là
+$n\le 10^6$, $m\le 10^3$, $w_i\le 10^9$.
+
+Đặt $f_{i,j}$ là chi phí nhỏ nhất khi quả được tô cuối cùng là $i$, quả được
+tô ngay trước đó là $j$. Chuyển tiếp của quy hoạch động chỉ dùng những trạng
+thái mà hai vị trí tô gần nhau hơn $m$, nên có thể xử lý bằng tiền tố hoặc cực
+trị trượt. Cách trực tiếp có thời gian và không gian $O(nm)$.
+
+Xem mỗi lớp $f_i$ là một khối kích thước $m$. Khi xử lý $f_i$, chỉ các lớp
+$f_j$ với $j>i-m$ còn có thể tham gia chuyển tiếp, nên có thể lưu các lớp này
+theo chỉ số $i\bmod m$. Cùng tư tưởng hàng đợi vòng này cũng có thể dùng để
+giảm không gian trong những thuật toán như SPFA.
+
+\subsubsection{Trường hợp đặc biệt 2: gộp trên cây}
+
+Gộp trên cây thường chỉ trường hợp:
+\begin{enumerate}
+  \item các cạnh phụ thuộc tạo thành một cây gốc hướng ra ngoài từ một khối
+  $u$;
+  \item kích thước $L_i$ của mỗi khối bằng tổng kích thước của các khối con.
+\end{enumerate}
+Khi đó không gian duy trì có thể tối ưu về $O(L_u)$.
+
+\paragraph{Ví dụ 2: ba lô trên cây.}
+Cho một cây vô hướng có các đỉnh đánh số $1$ tới $n$. Mỗi đỉnh có trọng số
+$w_i$. Trọng số của một khối liên thông là tích trọng số các đỉnh trong khối.
+Với mỗi $i$, cần tính tổng trọng số của mọi khối liên thông đúng $i$ đỉnh và
+đi qua đỉnh $1$, lấy modulo $10^9+7$. Ràng buộc đọc được là
+$n\le 8000$, $1\le w_i<10^9+7$.
+
+Đặt $f_{u,i}$ là tổng trọng số các khối liên thông có $i$ đỉnh, chứa $u$, và
+có đỉnh sâu nhất nhỏ nhất là $u$. Với mỗi cạnh cha--con, ta gộp quy hoạch động
+của cây con vào quy hoạch động của đỉnh cha. Cài đặt ba lô cây ngây thơ có
+thời gian và không gian $O(n^2)$.
+
+Nhưng kích thước của khối dữ liệu $f_u$ đúng bằng kích thước cây con của $u$,
+đây là mô hình gộp trên cây điển hình. Sau khi gộp thông tin của con $v$ vào
+$u$, dữ liệu của $v$ không còn cần riêng nữa. Nếu xem kích thước của $f_u$ là
+số đỉnh liên quan tới nó, tại mọi thời điểm mỗi đỉnh chỉ thuộc nhiều nhất một
+khối dữ liệu, nên tổng số giá trị DP hiệu lực không vượt quá $n$.
+
+Để tránh cấp phát động, có thể lưu các giá trị $f$ trong đoạn thứ tự DFS tương
+ứng với các con đã duyệt. Khi gộp hai khối, chúng vừa đúng là hai đoạn kề nhau
+trên thứ tự DFS. Merge sort cũng là ví dụ điển hình của mô hình này: dữ liệu
+đang duy trì có thể đặt ngay trên đoạn đang sắp xếp; nếu không thể gộp tại chỗ,
+cần tính thêm không gian tạm thời $O(n)$.
+
+\subsection{Mô hình 2: xử lý dữ liệu tĩnh có truy vấn}
+
+Một bài xử lý dữ liệu tĩnh thường có thể mô tả như sau:
+\begin{enumerate}
+  \item Dữ liệu thỏa mô hình 1. Giả sử sau khi tối ưu theo mô hình 1, không
+  gian xử lý là $\operatorname{process}(L_i)$.
+  \item Có $m$ truy vấn độc lập. Mỗi truy vấn có thể tách thành $O(c)$ bài toán
+  con, và mỗi bài toán con chỉ liên quan tới thông tin của một khối dữ liệu.
+\end{enumerate}
+
+Do phải trả lời truy vấn, ta không thể giải phóng khối ngay sau khi nó hết hiệu
+lực như mô hình 1 để đạt không gian lý tưởng
+$O(\operatorname{process}(L_i))$. Nếu xử lý online mọi truy vấn, không gian
+trực tiếp thường là $O(\sum_i L_i)$. Tùy theo bậc lớn của $n,L_i,m,c$ và tính
+chất truy hồi/quyết định của dữ liệu, có thể chọn nhiều kỹ thuật giảm không
+gian nhưng cố gắng không đổi bản chất thuật toán.
+
+\subsubsection{Kỹ thuật 1: tách xử lý}
+
+Khi $c$ nhỏ và các bài toán con tương đối độc lập, có thể đưa không gian về
+\[
+  O(\operatorname{process}(L_i)+n+m\cdot c+k),
+\]
+trong đó $k$ là chi phí phụ trợ của bài cụ thể:
+\begin{enumerate}
+  \item Offline mọi bài toán con của các truy vấn, rồi phân phối chúng vào
+  danh sách của khối dữ liệu tương ứng.
+  \item Xử lý từng khối như trong mô hình 1; khi tới khối hiện tại, lấy các
+  truy vấn trên danh sách của nó ra và trả lời.
+\end{enumerate}
+
+\paragraph{Ví dụ 3: ST/RMQ.}
+Cho dãy $a_1,a_2,\ldots,a_n$ và $m$ truy vấn, mỗi truy vấn hỏi giá trị lớn nhất
+trên đoạn $[l,r]$. Ràng buộc đọc được là $n\le 10^5$,
+$m\le 5\cdot 10^5$.
+
+Sparse Table cổ điển xử lý RMQ trong thời gian $O(n\log n+m)$ và không gian
+$O(n\log n)$. Xem mỗi lớp nhân đôi là một khối kích thước $O(n)$; lớp thứ $i$
+chỉ phụ thuộc vào lớp thứ $i-1$, nên có thể dùng mảng lăn với
+$\operatorname{process}(L)=O(n)$. Mỗi truy vấn RMQ tách thành $O(1)$ bài toán
+con độc lập. Vì vậy áp dụng tách xử lý đưa không gian xuống $O(n+m)$. Bài RMQ
+còn có thuật toán tốt hơn cả về thời gian lẫn không gian, nhưng không thuộc
+hướng tối ưu đang bàn ở đây.
+
+\subsubsection{Kỹ thuật 2: xử lý song song}
+
+Khi các bài toán con của truy vấn có quan hệ phụ thuộc hoặc quan hệ quyết định,
+tách xử lý đơn giản không còn trực tiếp áp dụng được. Nếu tham số của mỗi bài
+toán con được quyết định từ kết quả của bài toán con trước, có thể xử lý song
+song nhiều truy vấn theo từng vòng. Ví dụ đơn giản nhất là nhị phân đáp án; kỹ
+thuật ``nhị phân cùng nhau'' thường được dùng để tránh phải bền vững hóa dữ
+liệu.
+
+\paragraph{Ví dụ 4: phần tử lớn thứ $k$ trên đoạn.}
+Cho dãy $a_1,\ldots,a_n$ và $m$ truy vấn. Mỗi truy vấn hỏi phần tử lớn thứ $k$
+trong đoạn $[l,r]$. Ràng buộc đọc được: $n,m\le 10^5$,
+$1\le a_i\le n$, $1\le k\le r-l+1$.
+
+Cách kinh điển là dựng cây đoạn giá trị bền vững theo từng tiền tố; truy vấn
+trên hai phiên bản $r$ và $l-1$ để đi xuống cây, mỗi tầng dùng trọng số con để
+quyết định hướng đi. Vì $\operatorname{data}_i$ và
+$\operatorname{data}_{i-1}$ chỉ khác nhau trên một đường dài $O(\log n)$, tổng
+bộ nhớ là $O(n\log n)$.
+
+Theo tư tưởng xử lý song song, có thể offline mọi truy vấn và mô tả trạng thái
+nhị phân hiện tại bằng các tham số như $(L,R,\operatorname{mid})$. Mỗi vòng
+cần đếm bao nhiêu số trong đoạn thuộc một nửa giá trị. Nếu xử lý mỗi vòng bằng
+đếm điểm hai chiều ngây thơ rồi quyết định vòng tiếp theo, không gian giảm
+xuống $O(n)$ nhưng thời gian tăng.
+
+Để giữ bản chất thuật toán của cây đoạn bền vững, mô tả trạng thái truy vấn
+bằng vị trí nút $p$ trên cây đoạn giá trị. Ở mỗi vòng, bài toán con chỉ cần
+một phần tử ở hai khối dữ liệu tiền tố $l-1$ và $r$. Vì không cần bền vững hóa,
+không gian xử lý khối là $O(n)$. Tiếp tục chia các tầng của cây đoạn thành các
+khối dữ liệu: ở vòng thứ $i$, mỗi tiền tố chỉ dùng khối thứ $i$. Khi xử lý một
+tầng, mỗi bước chỉ sửa một vị trí cụ thể, nên thời gian mỗi tầng là tuyến tính.
+Trong cài đặt, có thể tiền xử lý số hiệu lá rồi dùng phép bit để tìm tổ tiên
+cấp cần thiết; hoặc bỏ cấu trúc đánh số cây đoạn ban đầu và định vị hoàn toàn
+bằng bit. Cây đoạn cũng có thể thay bằng Fenwick tree và chia theo
+\texttt{lowbit}.
+
+\subsubsection{Kỹ thuật 3: nén bài toán con}
+
+Khi $c$ lớn, tách xử lý giúp giảm bộ nhớ dữ liệu nhưng lại sinh thêm quá nhiều
+bộ nhớ để lưu các bài toán con của truy vấn. Khi đó cần quan sát chính quá
+trình tách truy vấn và nén cách lưu bài toán con.
+
+\paragraph{Ví dụ 5: bao lồi trên đoạn.}
+Cho $n$ điểm $(x_i,y_i)$ và $m$ truy vấn. Mỗi truy vấn cho đoạn $[l,r]$ và hệ
+số $k$, cần tính
+\[
+  \max_{l\le j\le r} (k x_j+y_j).
+\]
+Ràng buộc đọc được: $n,m\le 10^5$, các tọa độ và $k$ không vượt quá $10^9$,
+coi $n$ và $m$ cùng bậc.
+
+Dùng cây đoạn lưu bao lồi ở mỗi nút, tiền xử lý bằng cách gộp như merge sort.
+Mỗi truy vấn tách thành $O(\log n)$ nút cây đoạn; nếu truy vấn từng bao bằng
+nhị phân thì thời gian $O(\log^2 n)$. Offline theo hệ số $k$ có thể dùng con
+trỏ tối ưu trên từng bao, cho thời gian và không gian $O(n\log n)$.
+
+Thông tin trên cây đoạn gồm $2n-1$ khối; quá trình xây dựng giống merge sort
+nên có thể đạt $\operatorname{process}(L_i)=O(n)$. Tuy nhiên nếu trực tiếp áp
+dụng tách xử lý, bộ nhớ lưu mọi bài toán con truy vấn sẽ quá lớn. Nhận xét
+quan trọng là việc tách một truy vấn đoạn chỉ là một quá trình truy vấn trên
+cây đoạn; tại mỗi thời điểm đệ quy chỉ cần $O(1)$ tham số để mô tả trạng thái.
+Do đó dùng chính tham số của quá trình đệ quy thay cho việc lưu tường minh mọi
+bài toán con:
+\begin{enumerate}
+  \item Duyệt từng nút cây đoạn, đồng thời duy trì tập truy vấn đang đi tới nút
+  đó.
+  \item Ở nút hiện tại, quyết định truy vấn nào đi sang con trái, con phải, và
+  truy vấn nào được trả lời tại nút hiện tại.
+  \item Sau khi xử lý hai con, gộp bao lồi của hai con rồi trả lời phần truy
+  vấn thuộc nút này.
+  \item Khi quay lui, hoàn tác thay đổi của tập truy vấn.
+\end{enumerate}
+
+Cách nén này tích hợp tiền xử lý với xử lý truy vấn, nên không đổi bản chất
+thuật toán: thời gian vẫn $O(n\log n)$, không gian giảm về $O(n)$. Nếu dùng
+cây đoạn ZKW không đệ quy, cài đặt còn đơn giản hơn: sắp truy vấn theo $k$,
+xác định lá bắt đầu của đoạn, chia cây theo độ sâu, xử lý từ dưới lên; ở mỗi
+tầng, đưa mọi truy vấn lên một tầng rồi tìm các phần cần hỏi, sau đó gộp bao
+lồi của tầng hiện tại. Phương pháp này còn có thể hỗ trợ sửa đổi dạng chèn
+điểm.
+
+\subsection{Phân khối cho bài toán dãy đặc biệt}
+
+Với bài toán đoạn trên dãy, chọn cách phân khối hợp lý đôi khi giảm đáng kể
+bộ nhớ. Khác với thuật toán phân khối thông thường, phân khối để tối ưu bộ nhớ
+thường dùng số khối hoặc kích thước khối tương đối nhỏ.
+
+\subsubsection{Phân khối tầng trên}
+
+Phân khối tầng trên chia dãy gốc thành ít khối, mỗi khối là một bài toán con:
+\begin{enumerate}
+  \item Dãy gốc dài $n$, có $m$ thao tác đoạn.
+  \item Với dãy dài $n$, xử lý thao tác toàn cục có thời gian/không gian
+  $T(n),M(n)$.
+  \item Với dãy dài $n$, xử lý thao tác đoạn có thời gian/không gian
+  $T'(n),M'(n)$.
+\end{enumerate}
+Nếu chia đều dãy thành $S$ đoạn, một thao tác đoạn được tách thành một số thao
+tác toàn cục trên các khối nguyên và $O(1)$ thao tác đoạn biên. Thời gian xấp
+xỉ
+\[
+  S\cdot T(n/S)+T'(n/S),
+\]
+còn vì có thể offline xử lý từng khối độc lập, không gian là
+\[
+  M(n/S)+M'(n/S).
+\]
+
+Với bài bao lồi trên đoạn ở trên, cách ngây thơ có thể xem là
+$T(n)=O(1)$, $M(n)=O(n)$, $T'(n)=O(\log n)$,
+$M'(n)=O(n\log n)$. Lấy $S=\log n$, thời gian vẫn cùng bậc $O(\log n)$ cho mỗi
+truy vấn, còn không gian giảm xuống $O(n)$.
+
+\subsubsection{Phân khối tầng dưới}
+
+Phân khối tầng dưới thường có mô hình:
+\begin{enumerate}
+  \item Chia dãy dài $n$ thành các khối dài $S$.
+  \item Tính kết quả gộp thông tin trong từng khối, rồi biến dãy gốc thành dãy
+  mới dài khoảng $n/S$.
+  \item Dùng cấu trúc dữ liệu ban đầu trên dãy mới.
+\end{enumerate}
+Không gian cấu trúc trên dãy mới giảm theo hệ số $S$. Khi xử lý điểm hoặc
+đoạn, cần đi vào $O(1)$ khối và xử lý thô bên trong; thời gian mỗi thao tác có
+dạng $O(\log(n/S)+f(S))$.
+
+\paragraph{Ví dụ 6: DP động.}
+Cho dãy $a_1,a_2,\ldots,a_n$. Cần chọn một số phần tử sao cho khoảng cách giữa
+hai phần tử được chọn kề nhau không vượt quá $k$. Trọng số của một phương án là
+tích các phần tử đã chọn; cần tính tổng trọng số mọi phương án hợp lệ modulo
+$10^9+7$. Có $m$ lần sửa, mỗi lần đổi $a_x$ thành $y$, sau mỗi lần sửa in đáp
+án mới. Ràng buộc đọc được: $n\le 10^5$, $m\le 10^5$, $k\le 8$.
+
+Đây là mô hình DP động bằng ma trận. Mỗi nút cây đoạn lưu một ma trận chuyển
+trạng thái; sửa điểm tốn $O(k^3\log n)$, tiền xử lý $O(nk^3)$, không gian
+$O(nk)$.
+
+Dùng phân khối tầng dưới, mỗi khối được dựng lại bằng DP tuyến tính trong
+khối. Chọn $S$ cỡ $\sqrt{k}\log n$ hoặc một hằng số nhỏ hơn $\log n$ trong thực
+tế, không gian giảm về $O(n)$, tiền xử lý cũng giảm hệ số, đổi lại hằng số sửa
+điểm tăng. Các kỹ thuật như tối ưu bằng \texttt{bitset} hoặc nén nhiều chữ số
+trên một ô nhớ cũng có thể nhìn như các dạng phân khối tầng dưới đặc biệt.
+
+\subsection{Tối ưu cho trie}
+
+\subsubsection{Mô hình trie ngây thơ}
+
+Giả sử xây trie từ $n$ xâu $s_1,s_2,\ldots,s_n$, tổng độ dài là $m$, bảng chữ
+cái là $\Sigma$. Trie ngây thơ có $O(m)$ nút; nếu mỗi nút lưu một mảng con cho
+mọi ký tự trong $\Sigma$, không gian là $O(m|\Sigma|)$.
+
+\subsubsection{Trie bằng danh sách liên kết}
+
+Khi bảng chữ cái lớn, lưu cả mảng hậu duệ ở mỗi nút gây lãng phí. Có thể thay
+mảng bằng danh sách các cạnh con thực sự tồn tại. Tổng số cạnh con của mọi nút
+chỉ là $O(m)$, nên không gian còn $O(m)$. Đổi lại, tìm cạnh con phải duyệt danh
+sách, thời gian xây trie là $O(m|\Sigma|)$ trong cận xấu, nhưng hằng số thường
+nhỏ.
+
+Nếu sắp xếp mọi xâu theo thứ tự từ điển trước khi chèn, khi chèn vào trie chỉ
+cần so sánh cạnh con cuối của danh sách xem có khớp hay không; thời gian chèn
+có thể đạt $O(m\log n+\sum |s_i|)$, và với cài đặt tốt có thể gần tuyến tính.
+Khi xử lý khớp, cũng có thể duy trì con trỏ ở mỗi nút để đạt tuyến tính khấu
+hao. Dùng cây cân bằng thay danh sách đưa truy vấn cạnh xuống $O(\log|\Sigma|)$
+nhưng tốn bộ nhớ hơn, cài đặt khó hơn, và khi $|\Sigma|\le 26$ thường không
+hiệu quả hơn.
+
+\subsubsection{Trie nén}
+
+Trie nén gom các chuỗi dài bậc một trên trie thường thành một nút, giữ nguyên
+quan hệ tổ tiên, nhờ đó số nút giảm xuống $O(n)$. Hình trong bản gốc so sánh
+trie thường và trie nén của bốn xâu \texttt{abcd}, \texttt{adec},
+\texttt{abccd}, \texttt{be}; bản OCR không đủ rõ để dựng lại chính xác, nhưng
+ý chính là các đoạn chỉ có một đường đi được nén thành nhãn cạnh dài hơn.
+
+Giống trie thường, mỗi nút trie nén vẫn cần lưu các cạnh con theo ký tự đầu,
+đồng thời mỗi nút lưu chuỗi nén trên cạnh nối với cha. Khi chèn hoặc truy cập,
+ta dùng ký tự đầu để tìm cạnh con, rồi so sánh chuỗi hiện tại với nhãn cạnh.
+Nếu xuất hiện vị trí không khớp, tạo một nút mới làm điểm tách và đặt cả xâu
+mới lẫn nút cũ làm con của nó. Mỗi lần chèn một xâu sinh thêm nhiều nhất một
+nút, nên tổng số nút không vượt quá $2n-1$. Không gian là
+$O(m+n|\Sigma|)$ nếu lưu nhãn cạnh trực tiếp và mỗi nút vẫn lưu cấu trúc cạnh
+con theo bảng chữ cái.
+
+Suffix tree là một trie nén đặc biệt của mọi hậu tố của một xâu. Mỗi nhãn cạnh
+nén đều là một đoạn con của xâu gốc, nên không cần dùng thêm $O(m)$ bộ nhớ để
+lưu chuỗi cạnh; chỉ cần lưu cặp chỉ số đoạn.
+
+\paragraph{Ứng dụng: cây đoạn mở nút động.}
+Cây đoạn mở nút động theo miền giá trị, hỗ trợ sửa điểm, về bản chất là trie
+trên bảng chữ cái $\{0,1\}$; xâu được chèn chính là biểu diễn nhị phân của chỉ
+số. Với $n$ lần sửa điểm, cây đoạn mở nút động ngây thơ dùng
+$O(n\log V)$ bộ nhớ, trong đó $V$ là miền giá trị.
+
+Khi một giá trị số có thể lưu trong $O(1)$ ô nhớ, nhãn chuỗi ứng với mỗi nút
+trie có thể ghi bằng chỉ số hoặc đoạn bit, tổng không gian còn $O(n)$. Dùng
+trie nén cho cây đoạn mở nút động vì vậy có thể giảm bộ nhớ xuống $O(n)$. Cùng
+ý tưởng áp dụng được cho bài toán gộp cây đoạn, nhưng cài đặt cần xét nhiều
+trường hợp hơn.
+
+\subsection{Tổng kết}
+
+Bài viết trình bày các hướng tối ưu không gian cho xử lý dữ liệu tĩnh và truy
+vấn, thao tác đoạn trên dãy, trie và một số cấu trúc liên quan, đồng thời minh
+họa bằng các bài toán kinh điển.
+
+Trong ứng dụng thực tế, tối ưu không gian thường rất quan trọng; trong thi thuật
+toán nó lại không phải lúc nào cũng là trọng tâm. Tác giả hy vọng bài viết có
+thể gợi hứng thú với tối ưu không gian, từ đó giúp thiết kế thêm nhiều thuật
+toán tốt và đưa góc nhìn tối ưu bộ nhớ vào các đề thi tin học.
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng trao đổi và học
+tập; cảm ơn huấn luyện viên đội tuyển quốc gia Yang Yaoliang đã hướng dẫn; cảm
+ơn thầy Zhang Chao đã ủng hộ và chỉ bảo; cảm ơn bạn Dai Jiangqi của Trường
+Ngoại ngữ Nam Kinh và bạn Zhou Pinliang của Đại học Giao thông Tây An đã đọc
+kiểm tra bản thảo; cảm ơn các thầy cô và bạn bè từng giúp đỡ.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Liu Rujia. \emph{Nhập môn kinh điển về thi thuật toán}. Nhà xuất bản
+  Đại học Thanh Hoa.
+  \item Kurt Maly. \emph{Compressed Tries}. 1976.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục đã đọc được trên ảnh render, tập năm 2022 bao phủ các nhóm chủ đề
@@ -4833,5 +5212,11 @@ dựng lại các hình khi OCR không cung cấp đủ nhãn đáng tin cậy. 
 trong các định lý kỹ thuật về đồ thị ba phía bị nhiễu trên OCR, nên bản dịch
 giữ dạng công thức đọc chắc được và diễn giải vai trò của các hằng số thay vì
 tự suy diễn từng dòng biến đổi.
+Bài thứ tám được OCR từ các trang vật lý 122--132 của PDF, tương ứng trang mục
+lục 118--128. Bài này có một hình so sánh trie thường và trie nén; OCR không
+đọc đủ nhãn cạnh, nên bản dịch ghi chú ý nghĩa hình thay vì dựng lại sơ đồ.
+Một số công thức độ phức tạp và ký hiệu chỉ số trong các ví dụ DP bị nhiễu,
+nên bản dịch giữ các chặn tiệm cận và chuyển tiếp đọc chắc được, đồng thời
+diễn giải phần còn lại bằng văn bản.
 
 \end{document}

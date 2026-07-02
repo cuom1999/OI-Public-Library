@@ -37,7 +37,8 @@ tính, bài thứ ba của Yuan Yutao về bài toán tính tổng đa thức, b
 của Zhong Zhixian về bài toán tập độc lập trong thi tin học, bài thứ năm của
 Chen Junkun về \emph{Đồ thị con kỳ diệu}, và bài thứ sáu của Sun Yaofeng về
 bài toán bao đóng bắc cầu động, bài thứ bảy của Wang Leping về
-\emph{A + B Problem}.
+\emph{A + B Problem}, và bài thứ tám của Xu Mingkuan về thuật toán chia khối
+kích thước phi chuẩn.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -5766,6 +5767,1301 @@ Cảm ơn bạn Mao Xiao đã giúp đỡ.
   Trại Đông Olympic Tin học Thanh thiếu niên Toàn quốc năm 2016.
 \end{enumerate}
 
+\section{Bước đầu tìm hiểu thuật toán chia khối kích thước phi chuẩn}
+
+\begin{center}
+Xu Mingkuan, Trường Trung học Thực nghiệm trực thuộc Đại học Sư phạm Bắc Kinh
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Chia khối là một thuật toán thực dụng, đơn giản và dễ cài đặt. Nó không chỉ có
+thể giải nhiều bài toán thao tác trên cấu trúc dữ liệu tuyến tính, mà còn có
+thể tối ưu một số thuật toán khác. Bài viết này giới thiệu cách xác định kích
+thước khối tối ưu, dùng một số ví dụ để giới thiệu ứng dụng trực tiếp của chia
+khối kích thước phi chuẩn, đồng thời giới thiệu vài ứng dụng dùng chia khối
+kích thước phi chuẩn để tối ưu thuật toán khác.
+\end{abstract}
+
+\subsection{Dẫn nhập}
+
+Chia khối là một thuật toán quan trọng, thường dùng để xử lý các thao tác trên
+đoạn của dãy tuyến tính; ưu điểm của nó là thực dụng và dễ cài đặt. Dù cây
+đoạn có thể xử lý một số tình huống tương đối đơn giản trong độ phức tạp
+\(\Oh(\log n)\), khi gặp tình huống phức tạp hơn ta có thể phải đào sâu tính
+chất của thông tin cần duy trì. Điều đó có thể dẫn tới độ phức tạp cao hơn,
+thậm chí khiến bài toán không giải được. Lúc này ưu thế của chia khối thể
+hiện rõ: không cần phân tích bài toán quá phức tạp, cũng không cần cài đặt
+phức tạp. Vì vậy chia khối có tính thực dụng cao.
+
+Chia khối không chỉ giải trực tiếp nhiều bài toán thao tác trên cấu trúc dữ
+liệu tuyến tính, mà còn có thể tối ưu một số thuật toán khác. Bằng cách chọn
+kích thước khối phi chuẩn phù hợp, ta có thể tối ưu các bài toán LCA (tổ tiên
+chung gần nhất), RMQ (truy vấn giá trị nhỏ nhất đoạn), LA (tổ tiên mức \(k\))
+về độ phức tạp thời gian tối ưu theo lý thuyết.
+
+Trong luận văn đội tuyển tập huấn năm 2013, Luo Jianqiao~[1] từng nghiên cứu
+ứng dụng tư tưởng chia khối trong một lớp bài toán xử lý dữ liệu, Wang
+Ziyu~[2] cũng từng nghiên cứu một số ứng dụng của chia khối; trong luận văn
+đội tuyển tập huấn năm 2015, Zou Xiaoyao~[3] từng nghiên cứu ứng dụng của
+chia khối trong một lớp bài toán trực tuyến.
+
+Bài viết này dựa trên các kết quả nghiên cứu~[1,2,3] và nghiên cứu thêm về
+thuật toán chia khối có kích thước phi chuẩn.
+
+Cấu trúc bài viết như sau. Mục 2 giới thiệu ngắn gọn thuật toán chia khối. Mục
+3 giới thiệu một phương pháp ngắn gọn để xác định kích thước khối tối ưu, đồng
+thời giới thiệu ứng dụng trực tiếp của chia khối kích thước phi chuẩn trong
+một số ví dụ. Mục 4 giới thiệu một ứng dụng khác thường dùng chia khối để tối
+ưu độ phức tạp không gian, và một kỹ thuật dùng chia khối để tối ưu độ phức
+tạp thời gian của một số thuật toán: Method of Four Russians.
+
+Bài viết nhiều lần nhắc tới thời gian chạy chương trình. Môi trường chạy là hệ
+điều hành 64-bit Ubuntu 16.04 LTS, Intel Core i3-3240 CPU @ 3.40GHz, bộ nhớ
+16GB, GCC/G++ phiên bản 5.4.0, bật tối ưu \texttt{-O2}. Mọi thời gian chạy
+đều lấy trung vị sau nhiều lần chạy để giảm sai số hết mức có thể.
+
+\subsection{Giới thiệu thuật toán chia khối}
+
+Chia khối là một thuật toán rất thường gặp trong tin học, thường dùng để xử lý
+các bài toán như thao tác đoạn trên dãy.
+
+Nếu xử lý thô bạo thao tác đoạn trên một dãy dài \(n\), độ phức tạp là
+\(\Oh(n)\). Ta có thể chia dãy thành các khối; khi thực hiện thao tác đoạn,
+phần gồm các khối nguyên vẹn trong đoạn được xử lý cùng nhau, còn phần không
+nằm trong khối nguyên vẹn được xử lý thô bạo.
+
+Chẳng hạn, nếu cần thực hiện hai loại thao tác: ``cộng một số trên đoạn'' và
+``hỏi giá trị tại một điểm'', ta có thể chia khối dãy và duy trì một nhãn cộng
+cho mỗi khối (ghi lại toàn bộ phần tử trong khối đã được cộng bao nhiêu). Khi
+sửa đổi, mỗi khối nguyên vẹn được sửa nhãn trực tiếp trong \(\Oh(1)\), còn
+phần không thuộc khối nguyên vẹn thì sửa thô bạo từng phần tử. Khi hỏi, chỉ
+cần trả về giá trị phần tử cộng với nhãn cộng của khối chứa nó.
+
+Đặt kích thước khối là \(S\), khi đó có tất cả \(\left\lceil n/S\right\rceil\)
+khối. Nếu thao tác trên một phần tử và thao tác trên một khối nguyên vẹn đều
+có độ phức tạp \(\Oh(1)\), thì một thao tác đoạn có độ phức tạp
+\[
+  \Oh\left(\frac{n}{S}+S\right),
+\]
+đạt cực tiểu \(\Oh(\sqrt n)\) khi \(S=\sqrt n\).
+
+\begin{center}
+\small
+\fbox{\parbox{0.72\linewidth}{
+Ghi chú hình 4 trong bản gốc: đồ thị của \(\frac nS+S\), \(S\) và
+\(\frac nS\) theo \(S\), với \(n=10^5\), minh họa điểm cân bằng gần
+\(S=\sqrt n\).}}
+\end{center}
+
+Vì sao \(\Oh\left(\frac nS+S\right)\) đạt cực tiểu khi \(S=\sqrt n\)? Ta có
+thể chứng minh bằng bất đẳng thức trung bình cộng -- trung bình nhân:
+\[
+  \frac{\sum_{i=1}^{n}x_i}{n}\ge
+  \sqrt[n]{\prod_{i=1}^{n}x_i},
+\]
+với mọi \(n\ge 2\) số thực không âm \(x_1,x_2,\ldots,x_n\); dấu bằng xảy ra
+khi và chỉ khi \(x_1=x_2=\cdots=x_n\).
+
+Lấy \(n=2\), \(x_1=\frac nS\), \(x_2=S\), ta được
+\[
+  \frac nS+S\ge 2\sqrt n,
+\]
+dấu bằng xảy ra khi và chỉ khi \(\frac nS=S\), tức \(S=\sqrt n\).
+
+\subsection{Xác định kích thước khối}
+
+Với nhiều bài toán chia khối, kích thước khối \(\sqrt n\) là tối ưu; nhưng
+cũng có không ít trường hợp \(\sqrt n\) không tối ưu. Trước hết xét một bài.
+
+\paragraph{Ví dụ 1. Nhập môn chia khối 2 by hzwer.}
+\footnote{Đề và lời giải nguồn: Huang Zhewei~[4].}
+Cho một dãy dài \(n\), có \(n\) thao tác. Thao tác gồm hai loại: cộng một số
+trên đoạn, hoặc hỏi số phần tử nhỏ hơn một giá trị \(x\) trong đoạn.
+
+Ta chia dãy thành \(\sqrt n\) khối, mỗi khối kích thước \(\sqrt n\). Trước hết
+xét trường hợp chỉ có thao tác hỏi: phần khối không nguyên vẹn thì liệt kê
+thống kê; để tìm số phần tử nhỏ hơn một giá trị trong mỗi khối nguyên vẹn, ta
+có thể sắp xếp trước từng khối (tổng độ phức tạp \(\Oh(n\log n)\)), rồi dùng
+tìm kiếm nhị phân trong khối. Mỗi truy vấn nhị phân trong không quá \(\sqrt n\)
+khối và thô bạo không quá \(2\sqrt n\) phần tử, nên tổng độ phức tạp là
+\[
+  \Oh\left(n\log n+n\sqrt n\log n\right)
+  =
+  \Oh\left(n\sqrt n\log n\right).
+\]
+
+Vậy cộng trên đoạn thì sao? Ta đặt một nhãn cộng cho mỗi khối; mỗi thao tác
+đánh dấu trực tiếp \(\Oh(1)\) cho mỗi khối nguyên vẹn, còn các khối không
+nguyên vẹn có ít phần tử nên sửa thô bạo giá trị phần tử. Chú ý sau khi sửa
+khối không nguyên vẹn, thứ tự phần tử trong khối có thể bị phá, nên hai khối
+không nguyên vẹn ở đầu và cuối cần được sắp xếp lại.
+
+Khi có nhãn cộng, truy vấn ngoài khối vẫn thô bạo; trong khối thì hỏi số phần
+tử nhỏ hơn \(x-\text{nhãn cộng}\), tức dùng \(x-\text{nhãn cộng}\) làm giá trị
+nhị phân.
+
+Cách đặt kích thước \(\sqrt n\) ở trên đúng là dễ nghĩ và tự nhiên dẫn tới độ
+phức tạp \(\Oh(n\sqrt n\log n)\), nhưng không dễ tối ưu. Ta đặt kích thước
+khối là \(S\) và phân tích lại độ phức tạp.
+
+Với thao tác hỏi, mỗi lần nhị phân trong không quá \(\left\lceil n/S\right\rceil\)
+khối và thô bạo không quá \(2S\) phần tử, độ phức tạp là
+\[
+  \Oh\left(\frac nS\log S+S\right).
+\]
+Với thao tác sửa, mỗi lần đánh dấu không quá \(\left\lceil n/S\right\rceil\)
+khối và sắp xếp hai khối, độ phức tạp là
+\[
+  \Oh\left(\frac nS+S\log S\right).
+\]
+Tiền xử lý chỉ cần \(\Oh(n\log n)\). Vì vậy tổng độ phức tạp là
+\[
+  \Oh\left(n\log S\left(\frac nS+S\right)\right).
+\]
+Biểu thức này hiển nhiên tối ưu khi \(S=\sqrt n\), tổng độ phức tạp vẫn là
+\(\Oh(n\sqrt n\log n)\); không có tối ưu gì. Vấn đề nằm ở đâu?
+
+Thực ra mỗi lần sửa phần khối không nguyên vẹn không cần \(\Oh(S\log S)\) để
+sắp xếp: ban đầu mảng đã có thứ tự, sau khi cộng một số vào một phần trong
+khối, có thể tách mảng cũ thành phần đã sửa và phần chưa sửa; mỗi phần đều là
+một mảng có thứ tự, nên có thể trộn trong \(\Oh(S)\). Do đó tổng độ phức tạp
+là
+\[
+  \Oh\left(n\left(\frac nS\log S+S\right)\right),
+\]
+lấy \(S=\sqrt{n\log n}\) thì đạt \(\Oh(n\sqrt{n\log n})\).
+
+\subsubsection{Độ phức tạp của kích thước khối}
+
+Trong bài trên, cuối cùng ta muốn
+\[
+  \Oh\left(\frac{n\log n}{S}+S\right)
+\]
+đạt cực tiểu. Dùng bất đẳng thức trung bình cộng -- trung bình nhân cũng suy
+ra
+\[
+  \frac{n\log n}{S}+S\ge 2\sqrt{n\log n},
+\]
+dấu bằng xảy ra khi và chỉ khi \(S=\sqrt{n\log n}\).
+
+Vậy có phải với mọi bài toán chia khối, ta đều có thể đặt kích thước khối là
+\(S\), rồi cuối cùng dùng bất đẳng thức trung bình cộng -- trung bình nhân để
+suy ra kích thước khối tối ưu và độ phức tạp thấp nhất?
+
+Một số thuật toán chia khối (như Mo có sửa đổi) có độ phức tạp mỗi thao tác
+là
+\[
+  \Oh\left(\frac{n^2}{S^2}+S\right).
+\]
+Nếu dùng trực tiếp bất đẳng thức trung bình cộng -- trung bình nhân, ta chỉ
+được
+\[
+  \frac{n^2}{S^2}+S\ge 2\sqrt{\frac{n^2}{S}},
+\]
+vẫn chưa khử được biến \(S\). Nhưng ta có thể tách \(S\) thành \(S/2+S/2\)
+rồi dùng bất đẳng thức trung bình cộng -- trung bình nhân:
+\[
+  \frac{n^2}{S^2}+\frac S2+\frac S2
+  \ge 3\sqrt[3]{\frac{n^2}{4}}
+  =
+  \Oh(n^{2/3}),
+\]
+dấu bằng xảy ra khi \(S=\sqrt[3]{2n^2}\). Hình 5 trong bản gốc cho đồ thị của
+\(\frac{n^2}{S^2}+S\) theo \(S\) với \(n=50000\).
+
+Trong tình huống này vẫn có thể dùng bất đẳng thức trung bình cộng -- trung
+bình nhân để suy ra kích thước khối tối ưu và độ phức tạp thấp nhất, nhưng độ
+khó suy diễn tăng đáng kể: ta phải nghĩ cách dùng bất đẳng thức để khử \(S\).
+
+Vì trong phần lớn trường hợp, hàm độ phức tạp thời gian của thuật toán chia
+khối đạt cực tiểu khi đạo hàm theo kích thước khối \(S\) bằng \(0\), ta cũng
+có thể giải phương trình đạo hàm bằng \(0\) để thu được kích thước khối tối ưu
+và độ phức tạp thấp nhất. Chẳng hạn, đạo hàm của \(\frac{n^2}{S^2}+S\) là
+\(-2\frac{n^2}{S^3}+1\), giải
+\[
+  -2\frac{n^2}{S^3}+1=0
+\]
+được \(S=\sqrt[3]{2n^2}\). Nhưng lấy đạo hàm cũng không hẳn đơn giản.
+
+Dưới đây là một cách gọn để xác định kích thước khối tối ưu. Trong đa số
+trường hợp, ta có thể suy ra độ phức tạp thời gian dạng \(\Oh(A+B)\), trong
+đó \(A\) giảm khi \(S\) tăng, \(B\) tăng khi \(S\) tăng, chẳng hạn
+\(A=\frac{n\log n}{S}\), \(B=S\). Khi đó giải phương trình \(A=B\) là được
+kích thước khối \(S\) tối ưu về độ phức tạp; hơn nữa giá trị của một vế trong
+phương trình \(A=B\) chính là độ phức tạp tối ưu.
+
+Xét ví dụ trên:
+\[
+  \frac{n^2}{S^2}=S
+\]
+cho \(S=n^{2/3}\), và độ phức tạp thời gian tối ưu là \(S=n^{2/3}\). Cách này
+gọn hơn nhiều.
+
+Chứng minh phương pháp trên như sau. Vì \(A+B\le 2\max(A,B)\) và
+\(\max(A,B)\le A+B\), nên \(\Oh(A+B)=\Oh(\max(A,B))\); ta chỉ cần làm
+\(\max(A,B)\) nhỏ nhất. Lại vì \(A\) giảm khi \(S\) tăng, \(B\) tăng khi
+\(S\) tăng, nên nếu tại \(S=x\) có \(A=B=y\), thì khi \(S<x\) ta có \(A>y\),
+khi \(S>x\) ta có \(B>y\). Do đó \(\max(A,B)\) nhỏ nhất khi \(A=B\).
+
+Nếu bài toán phức tạp hơn và cuối cùng chỉ suy ra được độ phức tạp dạng
+\(\Oh(A+B+C)\), trong đó \(A\) giảm theo \(S\), còn \(B,C\) tăng theo \(S\)
+(hoặc ngược lại: \(A\) tăng, \(B,C\) giảm), thì tương tự, có thể lần lượt giải
+\(A=B\), \(A=C\), rồi thay vào biểu thức ban đầu để so sánh kích thước khối
+nào tốt hơn.
+
+Thêm vài ví dụ:
+\[
+  \Oh\left(\frac{nm\log n}{S}+nS\right)
+  \quad\Rightarrow\quad
+  S=\sqrt{m\log n},\quad
+  \Oh\left(n\sqrt{m\log n}\right);
+\]
+\[
+  \Oh\left(\frac{n^3}{S^2w}+mS\right)
+  \quad\Rightarrow\quad
+  S=\sqrt[3]{\frac{n^3}{mw}},\quad
+  \Oh\left(\frac{nm^{2/3}}{w^{1/3}}\right);
+\]
+\[
+  \Oh\left(\frac{n^2}{S^2}+\frac nS+S\right)
+  \quad\Rightarrow\quad
+  S=n^{2/3},\quad
+  \Oh(n^{2/3}).
+\]
+
+\subsubsection{Hằng số của kích thước khối}
+
+Sau khi xác định bậc độ phức tạp của kích thước khối, ta tiếp tục xác định
+hằng số. Trên thực tế, trong đa số tình huống, không xét hằng số đã rất gần
+với kích thước khối tối ưu: tính ra \(\Oh(\sqrt n)\) thì lấy \(\sqrt n\),
+tính ra \(\Oh(\sqrt{n\log n})\) thì lấy \(\sqrt{n\log n}\). Nguyên nhân là
+hàm thời gian chạy (số phép tính) theo kích thước khối thường khá ``phẳng''
+gần giá trị tối ưu (đạo hàm có trị tuyệt đối nhỏ), nên hằng số của kích thước
+khối hơi lệch không ảnh hưởng nhiều.
+
+Nhưng cũng có ngoại lệ. Chẳng hạn bài \emph{Nhập môn chia khối 2 by hzwer} ở
+trên cuối cùng suy ra bậc của kích thước khối là \(\Oh(\sqrt{n\log n})\),
+nhưng kích thước khối tối ưu thực tế có hằng số rất nhỏ, đến mức nếu chỉ nhìn
+kích thước khối thực tế thì dễ tưởng bậc là \(\Oh(\sqrt n)\). Nguyên nhân là:
+\begin{itemize}
+  \item Độ phức tạp mỗi thao tác là
+  \(\Oh\left(\frac nS\log S+S\right)\). Khi phân tích ta đã đổi
+  \(\log S\) thành \(\log n\); do \(S\approx \sqrt n\), nên
+  \(\log S\approx \frac12\log n\), sinh ra hằng số \(1/2\).
+  \item Phần \(\Oh\left(\frac nS\log S\right)\) là tìm kiếm nhị phân có hiệu
+  suất cao, và chỉ thao tác hỏi mới có độ phức tạp này; phần \(\frac nS\) của
+  thao tác sửa có thể bỏ qua so với nó. Trong khi đó phần \(\Oh(S)\) là trộn
+  có hiệu suất thấp hơn. Để cân bằng hiệu suất hai phần, cần giảm \(S\).
+\end{itemize}
+
+\begin{center}
+\small
+\fbox{\parbox{0.72\linewidth}{
+Ghi chú hình 6 trong bản gốc: so sánh điểm tối ưu của
+\(\frac nS\log n+S\) và \(\frac nS\log S+2S\), với \(n=50000\). Đồ thị thứ
+hai có điểm tối ưu dịch về kích thước khối nhỏ hơn.}}
+\end{center}
+
+Dưới đây là một tối ưu hằng số áp dụng được cho nhiều bài toán chia khối. Khi
+thao tác đoạn và xử lý thô bạo phần không nằm trong khối nguyên vẹn, nếu phần
+này có nhiều phần tử, vượt quá một nửa độ dài khối, ta có thể đổi sang thao
+tác trên cả khối nguyên vẹn, rồi thực hiện ``thao tác ngược'' trên phần không
+cần thao tác trong khối ấy. Ví dụ cộng đoạn thì đổi thành trừ đoạn; tính tổng
+đoạn thì đổi thành lấy số đối của tổng. Các thao tác không có tính ``trừ
+được'' như gán đoạn không dùng được tối ưu này.
+
+Chẳng hạn, chia dãy \([1..100]\) thành 10 khối
+\([1..10],[11..20],\ldots,[91..100]\), nay cần cộng \(x\) vào đoạn
+\([2..56]\). Cách thông thường đánh dấu \(+x\) cho các khối
+\([11..20],\ldots,[41..50]\), rồi cộng \(x\) vào các phần tử
+\(2,3,4,5,6,7,8,9,10,51,52,53,54,55,56\). Sau tối ưu, ta có thể đánh dấu
+\(+x\) cho các khối \([1..10],\ldots,[51..60]\), rồi trừ \(x\) ở các phần tử
+\(1,57,58,59,60\).
+
+Thêm tối ưu này, hằng số của phần thô bạo giảm một nửa, nên kích thước khối
+nên tăng thích hợp để cân bằng hiệu suất hai phần.
+
+\paragraph{Ví dụ 2. Thử thách (subtask 2).}
+\footnote{Nguồn bài: WC 2017.}
+Cho hai xâu tam phân dài \(n\). Có \(q\) truy vấn, hỏi sau khi lấy một đoạn
+con từ mỗi xâu thì có bao nhiêu vị trí tương ứng bằng nhau. Trong đề gốc hỏi
+số vị trí tương ứng hơn kém \(1\) theo modulo \(3\), có thể chuyển thành bằng
+nhau.
+
+Giới hạn: \(n=q=300000\). Giới hạn thời gian: 3s. Giới hạn bộ nhớ: 2GB.
+
+Trước hết xem thuật toán chuẩn làm thế nào. Ta dùng xâu nhị phân để biểu diễn
+xâu tam phân đầu vào:
+\[
+  0\to 100,\qquad 1\to 010,\qquad 2\to 001.
+\]
+Khi đó chỉ cần thống kê số bit \(1\) trong kết quả \texttt{and} theo bit của
+hai xâu con.
+
+Dùng trực tiếp \texttt{std::bitset} thì thời gian mỗi phép tính là
+\(\Theta(n/w)\), chạy vài chục giây. Nếu tự viết một \texttt{bitset}, ta có
+thể chỉ tính phần cần hỏi, dùng bảng theo đoạn để thống kê số bit \(1\). Dù
+độ phức tạp vẫn là \(\Oh(nq/w)\), cách này nhanh hơn nhiều, thời gian chạy là
+3.898s. Thêm tối ưu đọc vào và mở vòng lặp, thời gian giảm xuống 3.689s.
+
+Khi giảng bài, Wang Yisong~[5] nhắc tới một cách truyền thống chia khối FFT
+\(\Oh(n(\log n)^{1.5})\), nhưng không chạy qua. Bây giờ ta tối ưu thuật toán
+này.
+
+Nhắc lại bài toán sau khi chuyển hóa: cho hai xâu nhị phân cùng độ dài không
+quá \(9\cdot 10^5\), có không quá \(3\cdot 10^5\) truy vấn. Mỗi truy vấn hỏi
+số bit \(1\) trong kết quả \texttt{and} theo bit giữa một xâu con của xâu thứ
+nhất và một xâu con của xâu thứ hai.
+
+Chú ý rằng số bit \(1\) trong \texttt{and} của hai xâu 01 chính là tích vô
+hướng của chúng; nếu đảo một xâu bằng \texttt{std::reverse}, giá trị đó là
+một hạng trong tích chập.
+
+Ta chia mỗi xâu thành \(\operatorname{num}\) khối, mỗi khối kích thước \(S\),
+trong đó \(\operatorname{num}=\left\lceil 3n/S\right\rceil\). Với mỗi khối của
+xâu thứ nhất và mỗi khối của xâu thứ hai, đảo khối của xâu thứ hai rồi làm
+một tích chập (có thể dùng FFT trong \(\Oh(S\log S)\)). Khi cài đặt cụ thể,
+có thể lưu kết quả FFT của \(2\operatorname{num}\) khối, tiết kiệm
+\(2\operatorname{num}^2-2\operatorname{num}\) lần FFT, nhưng vẫn cần
+\(\operatorname{num}^2\) lần IFFT. Ta thu được một mảng dài \(2S\); khi cài
+đặt, dùng \texttt{short} thay vì \texttt{int} có thể tiết kiệm không gian và
+hơi giảm hằng số thời gian. Phần tử thứ \(i\) (\(1\le i\le S\)) của mảng này
+là tích vô hướng giữa tiền tố dài \(i\) của khối xâu thứ nhất và hậu tố dài
+\(i\) của khối xâu thứ hai trước khi đảo. Phần tử thứ \(2S-i\) là tích vô
+hướng giữa hậu tố dài \(i\) của khối xâu thứ nhất và tiền tố dài \(i\) của
+khối xâu thứ hai trước khi đảo. Vì vậy ta có thể tiền xử lý trong thời gian
+\[
+  \Oh(\operatorname{num}^2S\log S)=\Oh\left(\frac{n^2\log S}{S}\right)
+\]
+và không gian
+\[
+  \Oh(\operatorname{num}^2S)=\Oh\left(\frac{n^2}{S}\right)
+\]
+để biết tích vô hướng giữa tiền tố/hậu tố tùy ý của một khối tùy ý ở xâu thứ
+nhất với hậu tố/tiền tố tùy ý của một khối tùy ý ở xâu thứ hai.
+
+Khi truy vấn, xét xâu con của xâu thứ nhất được chia khối ra sao. Phần đầu và
+cuối không thuộc khối nguyên vẹn thì tính thô bạo. Với mỗi khối nguyên vẹn,
+nếu nó tương ứng với một khối nguyên vẹn của xâu thứ hai, lấy trực tiếp kết
+quả tiền xử lý. Nếu không, nó nhất định tương ứng với hậu tố của một khối và
+tiền tố của khối kế tiếp trong xâu thứ hai. Giả sử độ dài hậu tố là \(x\), lấy
+tích vô hướng giữa tiền tố dài \(x\) của khối nguyên vẹn ở xâu thứ nhất với
+hậu tố dài \(x\) của khối này ở xâu thứ hai, cộng với tích vô hướng giữa hậu
+tố dài \(S-x\) của khối nguyên vẹn ở xâu thứ nhất với tiền tố dài \(S-x\) của
+khối kế tiếp ở xâu thứ hai. Do đó một truy vấn được trả lời trong
+\[
+  \Oh(\operatorname{num}+S)=\Oh\left(\frac nS+S\right).
+\]
+
+Tổng độ phức tạp là
+\[
+  \Oh\left(\frac{n^2\log S}{S}+q\left(\frac nS+S\right)\right).
+\]
+Lấy \(S=\sqrt{n/\log n}\) được
+\(\Oh(n(\log n)^{1.5}+q\sqrt{n\log n})\). Nhưng lấy
+\(S=\sqrt{n\log n}\) thì được độ phức tạp tốt hơn:
+\[
+  \Oh\left((n+q)\sqrt{n\log n}\right).
+\]
+Nhờ xác định kích thước khối, ta đã chia độ phức tạp cho một \(\log\). Hiệu
+quả thực tế như bảng 1.
+
+\begin{center}
+\small
+\begin{tabular}{c c}
+\textbf{Kích thước khối} & \textbf{Thời gian chạy}\\
+\hline
+\(256\sqrt{n/\log n}\) & 130.347s\\
+\(512\sqrt{2n/\log n}\) & 73.173s\\
+\(1024\sqrt n\) & 41.272s\\
+\(2048\sqrt{2n}\) & 21.539s\\
+\(4096\sqrt{n\log n}\) & 14.555s\\
+\(8192\sqrt{2n\log n}\) & 14.599s\\
+\(16384\) & 21.271s
+\end{tabular}
+\end{center}
+
+Dù hiệu quả tối ưu độ phức tạp rất rõ, thời gian 14.555s / 14.599s (tương ứng
+lấy \(S=4096\sqrt{n\log n}\) và \(S=8192\sqrt{2n\log n}\); các cặp thời gian
+sau cũng hiểu tương tự) vẫn kém xa thuật toán chuẩn. Ta cần vài tối ưu hằng
+số.
+
+\begin{enumerate}
+  \item Giảm số lần FFT/IFFT. Vì đầu vào đều là số thực (xâu 01), dùng kỹ
+  thuật Mao Xiao nhắc trong luận văn đội tuyển tập huấn năm 2016~[6] có thể
+  gộp mỗi hai lần FFT/IFFT thành một lần. Sau tối ưu, thời gian giảm xuống
+  11.362s / 12.866s.
+
+  \item Tối ưu đọc vào. Có thể dùng \texttt{fread}. Sau tối ưu, thời gian giảm
+  xuống 11.110s / 12.151s.
+
+  \item Giảm số lần thô bạo. Khi truy vấn, nếu phần đầu và cuối không thuộc
+  khối nguyên vẹn có độ dài vượt quá nửa khối, ta có thể đổi kết quả thô bạo
+  phần này thành trừ đi kết quả thô bạo phần không nằm trong khối ấy, đồng
+  thời tính thêm một khối nguyên vẹn. Như vậy hằng số của phần này chia đôi.
+  Sau tối ưu, thời gian giảm xuống 8.783s / 6.912s.
+
+  \item Giảm quy mô FFT/IFFT. Chú ý giá trị lớn nhất của kết quả tích chập chỉ
+  là \(S/3\), lãng phí độ chính xác của kiểu \texttt{double}. Ta có thể dùng
+  một \texttt{double} để lưu mỗi hai hạng liền kề, dùng một số lớn \(x\) để
+  phân biệt. Ở đây \(x\) cần lớn hơn giá trị lớn nhất của tích chập; lấy
+  \(x=S/2\) sẽ tiện thao tác bit vì \(S\) là lũy thừa của 2.
+
+  Ví dụ, thay vì tính tích chập của
+  \(\{a_0,a_1,a_2,a_3\}\) và \(\{b_0,b_1,b_2,b_3\}\), ta tính tích chập của
+  \(\{a_0+a_1x,a_2+a_3x\}\) và \(\{b_0+b_1x,b_2+b_3x\}\). Kết quả thu được
+  chứa các hạng \(x^2\); chuyển mọi hạng \(x^2\) sang hạng hằng của biểu thức
+  kế tiếp là khôi phục được tích chập ban đầu.
+
+  Sau cách này, giá trị lớn nhất của kết quả tích chập trở thành
+  \[
+    \frac S6\cdot (x+1)^2
+    =
+    \frac{S^3+4S^2+4S}{24},
+  \]
+  với \(S=131072\) cũng chỉ khoảng \(9.38\cdot 10^{13}\), nằm trong phạm vi
+  kiểu \texttt{double} chịu được. Khi chuyển từ \texttt{double} về số nguyên,
+  cần dùng kiểu như \texttt{long long}. Sau tối ưu, thời gian giảm xuống
+  5.854s / 5.260s.
+
+  Một tối ưu khác là bỏ cách trên và đổi \texttt{double} thành \texttt{float},
+  nhưng thời gian chỉ giảm xuống 8.077s / 6.524s, kém xa tối ưu trên.
+
+  \item Trở về bài gốc. Khi chuyển xâu tam phân thành xâu nhị phân, ta đã làm
+  quy mô dữ liệu tăng gấp 3, khiến phần thô bạo chạy rất chậm. Ta có thể không
+  chuyển bài toán, mà làm trực tiếp ba lần tiền xử lý FFT trên xâu tam phân
+  gốc: với các vị trí tương ứng cùng là 0, cùng là 1, cùng là 2, mỗi lần coi
+  ký tự mục tiêu là 1 và các ký tự khác là 0. Như vậy còn có thể cộng kết quả
+  của ba lần tiền xử lý lại để tiết kiệm bộ nhớ.
+
+  Khi truy vấn, phần khối nguyên vẹn làm như trước, phần thô bạo đổi thành mô
+  phỏng trực tiếp. Tổng độ phức tạp không đổi, hằng số thời gian của phần thô
+  bạo chia 3, hằng số không gian cũng chia 3. Sau tối ưu, thời gian giảm xuống
+  1.646s / 1.302s.
+\end{enumerate}
+
+Đến đây ta đã đạt 1.302s, nhanh hơn nhiều so với thuật toán chuẩn kể trên
+(3.689s). Kết hợp ưu điểm của thuật toán chuẩn, ta còn có thể tối ưu độ phức
+tạp thêm một bước. Nhìn lại phần thô bạo của thuật toán này, ngoài quy mô truy
+vấn nhỏ hơn thì không khác bài gốc. Vậy tại sao không dùng \texttt{bitset}?
+Tối ưu này không thể dùng đồng thời với tối ưu hằng số cuối cùng ở trên.
+
+Sau khi dùng \texttt{bitset}, độ phức tạp một truy vấn giảm xuống
+\[
+  \Oh\left(\operatorname{num}+\frac Sw\right)
+  =
+  \Oh\left(\frac nS+\frac Sw\right).
+\]
+Tổng độ phức tạp là
+\[
+  \Oh\left(\frac{n^2\log S}{S}
+    +q\left(\frac nS+\frac Sw\right)\right).
+\]
+Lấy \(S=\sqrt{nw\log n}\) được
+\[
+  \Oh\left((n+q)\sqrt{\frac{n\log n}{w}}\right).
+\]
+Sau tối ưu, thời gian giảm xuống 0.979s / 0.774s. Hai số này lần lượt ứng với
+\(S=32768\sqrt{nw\log n}\) và \(S=65536\sqrt{2nw\log n}\). Thậm chí bỏ hết các
+tối ưu hằng số phía trước, cách này vẫn chạy 2.488s / 2.269s.
+
+Ngoài ra, có thể mở vòng lặp ở bước dùng \texttt{bitset} tự viết để
+\texttt{and} hai xâu con, tra bảng số bit \(1\) rồi cộng lại. Cuối cùng thời
+gian giảm xuống 0.964s / 0.749s.
+
+\subsection{Ứng dụng của chia khối kích thước phi chuẩn}
+
+\subsubsection{Tối ưu độ phức tạp không gian của sàng Eratosthenes}
+
+Sàng Eratosthenes~[7] là một phương pháp đơn giản để tìm số nguyên tố: gạch
+bỏ mọi bội của các số nguyên tố không vượt quá \(\sqrt n\), sẽ thu được mọi
+số nguyên tố không vượt quá \(n\).
+
+Độ phức tạp thời gian của nó là
+\[
+  \Oh\left(n\sum_{\substack{p\le \sqrt n\\p\text{ nguyên tố}}}\frac1p\right)
+  =
+  \Oh(n\log\log n)
+\]
+theo định lý Mertens thứ hai~[8], và độ phức tạp không gian là \(\Oh(n)\) bit.
+
+Ta cũng có thể trong lúc sàng số nguyên tố, phân tích thừa số nguyên tố của
+mỗi số từ \(1\) đến \(n\); độ phức tạp thời gian vẫn là
+\[
+\Oh\left(
+n\sum_{\substack{p\le n\\p\text{ nguyên tố}}}\sum_{i=1}^{\infty}\frac1{p^i}
+\right)
+=
+\Oh\left(
+n\sum_{\substack{p\le n\\p\text{ nguyên tố}}}\frac1{p-1}
+\right)
+=
+\Oh(n\log\log n),
+\]
+độ phức tạp không gian là \(\Oh(n)\).
+
+Thuật toán này chia khối được. Với một đoạn bất kỳ \((L,R]\), nếu đã tiền xử
+lý mọi số nguyên tố không vượt quá \(\sqrt R\), ta có thể phân tích thừa số
+nguyên tố của mọi số trong \((L,R]\) trong thời gian
+\[
+  \frac{R}{\log R}
+  +(R-L)\sum_{\substack{p\le\sqrt R\\p\text{ nguyên tố}}}
+  \sum_{i=1}^{\infty}\frac1{p^i}.
+\]
+Vì vậy, nếu chia \((0,n]\) thành các khối kích thước \(S\), độ phức tạp thời
+gian là
+\[
+\begin{aligned}
+&\sum_{i=1}^{\lceil n/S\rceil}
+\left(
+  \frac{\sqrt{iS}}{\log(iS)}
+  +S\sum_{\substack{p\le\sqrt{iS}\\p\text{ nguyên tố}}}
+  \sum_{j=1}^{\infty}\frac1{p^j}
+\right)\\
+&\qquad =
+\Oh\left(
+\sum_{i=1}^{\lceil n/S\rceil}
+\left(
+  \frac{\sqrt{iS}}{\log(iS)}+S\log\log(iS)
+\right)
+\right)\\
+&\qquad =
+\Oh\left(\frac{n^{1.5}}{S\log n}+n\log\log n\right).
+\end{aligned}
+\]
+Độ phức tạp không gian là
+\[
+  \Oh\left(\frac{\sqrt n}{\log n}+S\right),
+\]
+trong đó \(\frac{\sqrt n}{\log n}\) là để lưu các số nguyên tố không vượt quá
+\(\sqrt n\). Khi tiền xử lý, có thể dùng \(\Oh(n^{1/4})\) thời gian và
+\(\Oh(1)\) không gian cho mỗi số để kiểm tra thô bạo nó có nguyên tố hay
+không, nên không cần không gian \(\sqrt n\).
+
+Do đó lấy \(S=\frac{\sqrt n}{\log n}\) thì vẫn giữ được độ phức tạp thời gian
+\(\Oh(n\log\log n)\), đồng thời đạt độ phức tạp không gian
+\(\Oh(\sqrt n/\log n)\). Khi bộ nhớ cho phép, có thể dùng \(\Oh(\sqrt n)\)
+không gian để tiền xử lý số nguyên tố, đồng thời lấy \(S=\sqrt n\), khi đó
+hằng số thời gian nhỏ hơn. Sàng Eratosthenes chia khối không chỉ tiết kiệm bộ
+nhớ, mà còn tránh mở mảng lớn, có thể đặt cả mảng vào cache cấp một hoặc cấp
+hai, nên hiệu suất thực tế cao hơn; xem ví dụ tiếp theo.
+
+\paragraph{Ví dụ 3. Công thức của Tiểu Z.}
+\footnote{Nguồn bài: Wang Jinghan, Trường Trung học Thực nghiệm trực thuộc Đại
+học Sư phạm Bắc Kinh.}
+Đặt
+\[
+  S(n)=\sum_{i=1}^{n} i\cdot \sigma_1(i^2),
+\]
+trong đó \(\sigma_1(x)\) là tổng các ước của \(x\). Nhập một số nguyên dương
+\(n\), xuất \(S(n)\bmod (10^9+7)\).
+
+Giới hạn: \(n\le 10^9\). Giới hạn bộ nhớ: 1GB.
+
+Bài này có lời giải \(\Oh(n^{3/4}/\log n)\), nhưng độ khó suy diễn và cài đặt
+đều cao, lại không liên quan nhiều tới bài viết này nên không nói thêm.
+
+Dưới đây giới thiệu cách chia đoạn lập bảng. Chú ý với mỗi số \(x\), chỉ cần
+phân tích \(x\) thành thừa số nguyên tố là có thể tính tiện
+\(x\cdot\sigma_1(x^2)\bmod(10^9+7)\). Cụ thể, đặt
+\[
+  x=\prod_{i=1}^{k}p_i^{\alpha_i},
+\]
+trong đó \(p_1,p_2,\ldots,p_k\) là các số nguyên tố đôi một khác nhau,
+\(\alpha_1,\alpha_2,\ldots,\alpha_k\in\mathbb N^*\). Khi đó
+\[
+  x\cdot\sigma_1(x^2)
+  =
+  x\prod_{i=1}^{k}\sum_{j=0}^{2\alpha_i}p_i^j
+  =
+  x\prod_{i=1}^{k}(p_i^{2\alpha_i+1}-1)(p_i-1)^{-1}.
+\]
+Vì vậy có thể chọn một độ dài đoạn \(\operatorname{len}\), chẳng hạn \(10^7\),
+dùng sàng Eratosthenes chia khối ở trên để tiền xử lý cục bộ trong thời gian
+\(\Oh(n\log\log n)\) mọi
+\[
+  S(i\cdot\operatorname{len})\bmod(10^9+7)
+  \quad (i\in\mathbb N,\ i\cdot\operatorname{len}\le n),
+\]
+rồi thông qua bài này trong thời gian \(\Oh(\operatorname{len}\log\log n)\)
+và độ dài mã \(\Oh((n/\operatorname{len})\log\operatorname{answer})\).
+
+\begin{center}
+\small
+\begin{tabular}{c c}
+\textbf{Kích thước khối} & \textbf{Thời gian chạy}\\
+\hline
+\(3052\sqrt n/\log n\) & 36.882\\
+\(16384\) & 31.330\\
+\(31623\sqrt n\) & 29.840\\
+\(65536\) & 31.613\\
+\(10^7\) & 56.506\\
+\(10^8\) & 57.812\\
+\(10^9\) (không chia khối) & 59.674
+\end{tabular}
+\end{center}
+
+Bảng trên cho thấy chia khối cũng tối ưu thời gian của sàng Eratosthenes rất
+rõ. Sàng Euler (tức ``sàng tuyến tính'', thời gian và không gian đều
+\(\Oh(n)\)) chạy dữ liệu \(n=10^9\) chỉ cần 19.167s, nhưng bất lợi không gian
+rất lớn (cần ít nhất 6.5GB bộ nhớ), và không thể dùng để lập bảng theo đoạn.
+
+Trên một máy khác dùng Intel Core i5-6500 CPU @ 3.20 GHz và Windows 10, sàng
+Eratosthenes không chia khối chạy 67.35s, sàng Euler chạy 21.85s, còn sàng
+Eratosthenes chia khối (kích thước khối vẫn là \(31623\sqrt n\)) có thể đặt
+cả mảng vào cache cấp một nên chỉ chạy 24.81s; hiệu quả tối ưu càng rõ.
+
+\subsubsection{Method of Four Russians}
+
+Method of Four Russians~[9] là một kỹ thuật tăng tốc một số thuật toán. Tư
+tưởng chính của nó là chia khối, tiền xử lý thô bạo bên trong khối, áp dụng
+thuật toán gốc giữa các khối nguyên vẹn, qua đó giảm quy mô dữ liệu của thuật
+toán gốc và tối ưu độ phức tạp thời gian. Khác với các kiểu chia khối trước
+đó, vì tiền xử lý bên trong khối của Method of Four Russians rất tốn thời
+gian, kích thước khối thường ở cấp \(\Oh(\log n)\).
+
+Mao Xiao trong luận văn đội tuyển tập huấn năm 2016 đã giới thiệu kỹ thuật
+dùng Method of Four Russians để giảm số phép nhân trong lũy thừa nhanh (tức
+độ dài chuỗi cộng) từ \(2\log_2 n+C\) (\(C\) là hằng số) xuống
+\[
+  \log_2 n+\Oh\left(\frac{\log n}{\log\log n}\right).
+\]
+Nếu chỉ xét số phép nhân ở phần không nhân đôi, đây là ví dụ chia độ phức tạp
+thời gian cho \(\log\log n\); nhưng do lũy thừa nhanh là \(\Omega(\log n)\),
+kỹ thuật này chỉ có thể xem là tối ưu hằng số.
+
+Tiếp theo giới thiệu vài ứng dụng của Method of Four Russians trong tối ưu độ
+phức tạp thời gian.
+
+\paragraph{Tối ưu nhân ma trận 01.}
+Trong tiểu mục này, nhân ma trận 01 được định nghĩa là: mọi phép toán của phép
+nhân ma trận thông thường đều thực hiện theo modulo \(2\).
+
+Giả sử \(A\) là ma trận 01 kích thước \(m\times n\), \(B\) là ma trận 01 kích
+thước \(n\times p\). Định nghĩa tích \(C=AB\) là ma trận 01 kích thước
+\(m\times p\), trong đó
+\[
+  c_{ij}=
+  \left(\sum_{k=1}^{n}a_{ik}b_{kj}\right)\bmod 2.
+\]
+Với các định nghĩa khác của nhân ma trận 01, chẳng hạn đảm bảo đầu vào là ma
+trận 01 nhưng phép nhân là phép nhân ma trận thông thường, một phần cách tối
+ưu trong tiểu mục này cũng áp dụng được.
+
+\paragraph{Chia khối một chiều.}
+Ta liệt kê từng \(c_{ij}\) và xét cách tính nhanh
+\(\sum_{k=1}^{n}a_{ik}b_{kj}\). Chia khối biểu thức tổng này, đặt kích thước
+khối là \(S\). Khi đó hai xâu 01 độ dài \(S\) có tất cả \(4^S\) trường hợp.
+Ta có thể tốn \(\Oh(S)\) thời gian tính tổng cho mỗi trường hợp, đồng thời
+trong \(\Oh(mn+np)\) tiền xử lý mỗi hàng của \(A\) và mỗi cột của \(B\) ở mỗi
+khối độ dài \(S\) thuộc trường hợp nào. Như vậy tổng độ phức tạp là
+\[
+  \Oh\left(mn+np+mp+\frac{mnp}{S}+4^S\cdot S\right).
+\]
+Lấy \(S=\log_4(mnp)\) được
+\[
+  \Oh\left(mn+np+mp+\frac{mnp}{\log(mnp)}\right).
+\]
+Khi \(m=n=p\), độ phức tạp là \(\Oh(n^3/\log n)\).
+
+\paragraph{Dùng bitset.}
+Thực ra thuật toán trên không có nhiều giá trị thực dụng trong thi tin học,
+vì nhân ma trận 01 có thể dùng \texttt{bitset}: biểu thức
+\(\sum_{k=1}^{n}a_{ik}b_{kj}\) có thể thu được bằng cách \texttt{and} hai
+\texttt{bitset} rồi đếm số bit \(1\). Khi đó độ phức tạp là
+\[
+  \Oh\left(mn+np+mp+\frac{mnp}{w}\right).
+\]
+Khi \(m=n=p\), độ phức tạp là \(\Oh(n^3/w)\). Với quy mô dữ liệu mà phép nhân
+ma trận có thể chấp nhận, \(w\) lớn hơn \(\log n\) rất nhiều.
+
+\paragraph{Chia khối hai chiều.}
+Ta có thể chia các ma trận \(A,B,C\) thành các ma trận con \(S\times S\). Để
+tiện, giả sử \(n,m,p\) đều là bội của \(S\); nếu không, có thể thêm \(0\) ở
+bên phải hoặc bên dưới các ma trận để làm tròn. Theo phép nhân ma trận phân
+khối, nếu \(A_{ij},B_{ij},C_{ij}\) là các khối con, thì
+\[
+  C_{ij}=
+  \left(\sum_{k=1}^{n/S}A_{ik}B_{kj}\right)\bmod 2,
+\]
+trong đó lấy modulo \(2\) cho một ma trận nghĩa là lấy modulo \(2\) từng phần
+tử.
+
+Hai ma trận \(S\times S\) có tất cả \(4^{S^2}\) trường hợp. Ta có thể tốn
+\(\Oh(S^3)\) thời gian tiền xử lý tích cho mỗi trường hợp, đồng thời trong
+\(\Oh(mn+np)\) tiền xử lý mỗi khối của \(A,B\) thuộc trường hợp nào. Như vậy
+có thể tính một khối của \(C\) trong \(\Oh(nS)\), tổng độ phức tạp là
+\[
+  \Oh\left(mn+np+mp+\frac{mnp}{S}+4^{S^2}\cdot S^3\right).
+\]
+Lấy \(S=\sqrt{\log_4(mnp)}\) được
+\[
+  \Oh\left(mn+np+mp+\frac{mnp}{\sqrt{\log(mnp)}}\right).
+\]
+Khi \(m=n=p\), độ phức tạp là \(\Oh(n^3/\sqrt{\log n})\).
+
+Dù độ phức tạp này còn kém chia khối một chiều, nó có thể kết hợp với
+\texttt{bitset}: khi tiền xử lý tích của hai ma trận \(S\times S\), dùng
+\texttt{bitset} đạt \(\Oh(S^3/w)\); mỗi lần tính một khối của \(C\) cũng dùng
+\texttt{bitset} đạt \(\Oh(nS/w)\). Tổng độ phức tạp là
+\[
+  \Oh\left(mn+np+mp+\frac{mnp}{Sw}+4^{S^2}\cdot\frac{S^3}{w}\right),
+\]
+lấy \(S=\sqrt{\log_4(mnp)}\) được
+\[
+  \Oh\left(mn+np+mp+\frac{mnp}{w\sqrt{\log(mnp)}}\right).
+\]
+Khi \(m=n=p\), độ phức tạp là \(\Oh(n^3/(w\sqrt{\log n}))\).
+
+\paragraph{Tối ưu LCA và RMQ.}
+LCA~[11] (Lowest Common Ancestor), tức tổ tiên chung gần nhất, là bài toán:
+trong một cây có gốc, tìm tổ tiên chung gần nhất của hai nút. RMQ~[12] (Range
+Minimum Query), tức truy vấn giá trị nhỏ nhất đoạn, là bài toán: trong một dãy
+số, truy vấn giá trị nhỏ nhất của một đoạn (cũng có thể truy vấn vị trí của
+giá trị nhỏ nhất).
+
+Hai bài toán này đều kinh điển và có nhiều thuật toán. Dưới đây dùng
+\(\Oh(f(n))-\Oh(g(n))\) để mô tả độ phức tạp: với quy mô dữ liệu \(n\), thuật
+toán tốn \(\Oh(f(n))\) thời gian tiền xử lý, sau đó mỗi truy vấn tốn
+\(\Oh(g(n))\). Nếu có \(m\) truy vấn, tổng độ phức tạp là
+\(\Oh(f(n)+m\cdot g(n))\).
+
+LCA có các thuật toán như vét cạn \(\Oh(n)-\Oh(n)\) hoặc
+\(\Oh(n^2)-\Oh(1)\), nhân đôi \(\Oh(n\log n)-\Oh(\log n)\), phân rã nặng nhẹ
+\(\Oh(n)-\Oh(\log n)\), phân rã chuỗi dài \(\Oh(n)-\Oh(\sqrt n)\), và Tarjan
+offline \(\Oh((n+m)\alpha(n))\).\footnote{\(m\) là số truy vấn, \(\alpha\) là
+hàm Ackermann ngược.}
+
+RMQ có các thuật toán như vét cạn \(\Oh(n)-\Oh(n)\) hoặc
+\(\Oh(n^3)-\Oh(1)\), DP đơn giản \(\Oh(n^2)-\Oh(1)\), chia khối
+\(\Oh(n)-\Oh(\sqrt n)\), bảng ST \(\Oh(n\log n)-\Oh(1)\), cây đoạn
+\(\Oh(n)-\Oh(\log n)\); Wang Ziyu cũng giới thiệu thuật toán
+\(\Oh(n\log\log n)-\Oh(1)\) và \(\Oh(n\log^* n)-\Oh(1)\) trong luận văn đội
+tuyển tập huấn năm 2013~[2].
+
+Tiểu mục này tiếp theo giới thiệu thuật toán Method of Four Russians
+\(\Oh(n)-\Oh(1)\) cho hai bài toán trên. Đây là độ phức tạp thời gian tối ưu,
+vì đọc đầu vào đã cần \(\Omega(n)\).
+
+\paragraph{Chuyển LCA thành \(\pm1\) RMQ.}
+Trước hết, ta duyệt Euler toàn bộ cây: bắt đầu DFS từ gốc, mỗi lần đi qua một
+cạnh (dù đi xuống hay đi lên) thì ghi lại nút hiện tại. Cuối cùng thu được một
+dãy nút và dãy độ sâu tương ứng.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75, every node/.style={circle,draw,inner sep=1.5pt}]
+\node (1) at (0,4) {1};
+\node (2) at (-2,2.6) {2};
+\node (4) at (2,2.6) {4};
+\node (3) at (-2,1.2) {3};
+\node (5) at (1,1.2) {5};
+\node (8) at (2.7,1.2) {8};
+\node (9) at (4,1.2) {9};
+\node (6) at (0.4,-0.2) {6};
+\node (7) at (1.6,-0.2) {7};
+\draw (1)--(2)--(3);
+\draw (1)--(4);
+\draw (4)--(5);
+\draw (5)--(6);
+\draw (5)--(7);
+\draw (4)--(8);
+\draw (4)--(9);
+\end{tikzpicture}
+
+\small
+Ví dụ hình 8: dãy nút là
+\(1,2,3,2,1,4,5,6,5,7,5,4,8,4,9,4,1\); dãy độ sâu là
+\(0,1,2,1,0,1,2,3,2,3,2,1,2,1,2,1,0\).
+\end{center}
+
+Hai dãy này có vài tính chất:
+\begin{itemize}
+  \item Vì có \(n-1\) cạnh, độ dài dãy là \(2n-1\).
+  \item Mỗi nút xuất hiện trong dãy nút đúng số lần bằng số con của nó cộng
+  \(1\).
+  \item Trong dãy độ sâu, hiệu của hai số kề nhau luôn là \(\pm1\).
+  \item LCA của hai nút bất kỳ chính là nút có độ sâu nhỏ nhất giữa hai lần
+  xuất hiện của chúng trong duyệt Euler. Gọi \(\operatorname{place}(u)\) là
+  một vị trí xuất hiện bất kỳ của nút \(u\) trong dãy nút. Với hai nút \(u,v\),
+  giả sử \(\operatorname{place}(u)\le \operatorname{place}(v)\); nếu vị trí
+  nhỏ nhất của dãy độ sâu trên đoạn
+  \([\operatorname{place}(u),\operatorname{place}(v)]\) là \(w\), thì LCA của
+  \(u\) và \(v\) là nút ở vị trí \(w\) trong dãy nút.
+\end{itemize}
+
+Cái gọi là \(\pm1\) RMQ là RMQ trên dãy mà hiệu hai số kề nhau luôn là
+\(\pm1\). Như vậy ta đã chuyển LCA thành \(\pm1\) RMQ trong \(\Oh(n)\).
+
+\paragraph{Thuật toán ST cho RMQ.}
+Thuật toán ST (Sparse Table) tiền xử lý giá trị nhỏ nhất của mọi đoạn có độ
+dài là lũy thừa của \(2\), để mỗi lần truy vấn giá trị nhỏ nhất của đoạn bất
+kỳ trong \(\Oh(1)\).
+
+Có thể dùng DP sau để tiền xử lý trong \(\Oh(n\log n)\). Định nghĩa
+\(f[i][j]\) là giá trị nhỏ nhất của đoạn \([j,j+2^i)\). Giá trị đầu:
+\(f[0][j]=a[j]\), với \(a\) là dãy ban đầu; khi \(j>n\) thì
+\(f[i][j]=\infty\). Chuyển:
+\[
+  f[i][j]=\min\left(f[i-1][j],f[i-1][j+2^{i-1}]\right).
+\]
+Truy vấn: giá trị nhỏ nhất trên đoạn \([l,r)\) bằng
+\[
+\min\left(
+f[\lfloor\log_2(r-l)\rfloor][l],
+f[\lfloor\log_2(r-l)\rfloor][r-2^{\lfloor\log_2(r-l)\rfloor}]
+\right).
+\]
+Ở đây \(\lfloor\log_2 x\rfloor\) có thể tiền xử lý trong \(\Oh(n)\). Nếu cần
+truy vấn vị trí nhỏ nhất, chỉ cần sửa nhẹ phần DP và truy vấn: mảng tiền xử lý
+lưu vị trí của giá trị nhỏ nhất, khi lấy \(\min\) thì so sánh theo giá trị ở
+vị trí tương ứng.
+
+\paragraph{Method of Four Russians.}
+Ta chia khối dãy của \(\pm1\) RMQ, đặt kích thước khối là \(S\).
+
+Có thể tính giá trị nhỏ nhất của mỗi khối (và vị trí của nó) trong \(\Oh(n)\).
+Trên dãy gồm \(\left\lceil n/S\right\rceil\) giá trị nhỏ nhất này, áp dụng
+thuật toán ST; thời gian tiền xử lý là
+\(\Oh\left(\frac nS\log\frac nS\right)\), và mỗi lần truy vấn phần khối nguyên
+vẹn trong \(\Oh(1)\).
+
+Vậy phần đoạn truy vấn không thuộc khối nguyên vẹn thì sao? Lúc này mới dùng
+tới tính chất ``hiệu hai số kề nhau đều là \(\pm1\)'': nếu lấy hiệu của mỗi
+hai số kề nhau trong \(S\) số của một khối, ta được \(S-1\) số, nên có không
+quá \(2^{S-1}\) loại. Ta có thể với mọi dãy \(\pm1\) trong \(2^{S-1}\) loại
+này, lấy tổng tiền tố để khôi phục thành một dãy \(S\) số (chú ý không biết số
+đầu tiên là bao nhiêu, có thể tạm chọn 0), rồi tiền xử lý vị trí giá trị nhỏ
+nhất của mọi \(\frac{S(S+1)}2\) đoạn. Dễ thấy dù số đầu tiên là bao nhiêu, vị
+trí giá trị nhỏ nhất của các đoạn này đều như nhau. Cuối cùng, tiền xử lý mỗi
+khối trong \(\left\lceil n/S\right\rceil\) khối thuộc loại nào, là có thể
+truy vấn vị trí giá trị nhỏ nhất của đoạn bất kỳ trong một khối bất kỳ trong
+\(\Oh(1)\).
+
+Tóm lại, ta đạt mỗi truy vấn \(\Oh(1)\), còn thời gian tiền xử lý là
+\[
+  \Oh\left(\frac nS\log\frac nS+2^S\cdot S^2\right).
+\]
+Lấy \(S=\log_2 n\) là đạt \(\Oh(n)\).
+
+\paragraph{So sánh thời gian chạy LCA.}
+Trong bảng 3 và bảng 4, dạng ``\(a+b=c\)'' nghĩa là tiền xử lý tốn \(a\) giây,
+\(n\) truy vấn tốn tổng cộng \(b\) giây, còn nhập cây \(n\) đỉnh và trả lời
+\(n\) truy vấn tốn tổng cộng \(c\) giây. Tách thời gian tiền xử lý và truy vấn
+như vậy giúp suy ra: khi cây có \(n\) đỉnh và số truy vấn là \(m\), tổng thời
+gian xấp xỉ \(a+\frac mn b\).
+
+Cây được biểu diễn bằng mảng cha, \(\operatorname{father}[i]\) là cha của đỉnh
+\(i\) (gốc là đỉnh \(0\), \(i\in[1,n)\),
+\(\operatorname{father}[i]\in[0,i)\)). Với bốn dạng cây, ``ngẫu nhiên'' nghĩa
+là mọi \(\operatorname{father}[i]\) được sinh đều trên \([0,i)\); ``chuỗi''
+nghĩa là cả cây là một đường (\(\operatorname{father}[i]=i-1\)); ``cây nhị
+phân hoàn chỉnh'' nghĩa là
+\(\operatorname{father}[i]=\left\lfloor\frac{i-1}{2}\right\rfloor\); ``hỗn
+hợp'' nghĩa là \(n/3\) đỉnh tạo thành một chuỗi, \(n/3\) đỉnh tạo thành một
+cây nhị phân hoàn chỉnh, phần còn lại khoảng \(n/3\) đỉnh sinh cha ngẫu nhiên.
+Mọi truy vấn đều sinh ngẫu nhiên.
+
+Trong thuật toán Tarjan offline, có thể viết DSU chỉ nén đường đi, không hợp
+theo hạng, hằng số nhỏ nhưng trung bình mỗi thao tác \(\Oh(\log n)\); cũng có
+thể viết DSU nén đường đi + hợp theo hạng, trung bình mỗi thao tác
+\(\Oh(\alpha(n))\). Trong bảng, dòng Tarjan thứ nhất là thời gian của DSU chỉ
+nén đường đi, dòng thứ hai là DSU nén đường đi + hợp theo hạng. ``Thuật toán
+ST'' chỉ việc chuyển LCA thành RMQ rồi dùng trực tiếp ST
+\(\Oh(n\log n)-\Oh(1)\).
+
+\begin{center}
+\scriptsize
+\begin{tabular}{c c c c c}
+\textbf{Dạng cây} & \textbf{Ngẫu nhiên} & \textbf{Chuỗi} &
+\textbf{Cây nhị phân} & \textbf{Hỗn hợp}\\
+\hline
+Four Russians & \(0.221+0.354=0.575\) & \(0.105+0.331=0.436\) &
+\(0.056+0.339=0.395\) & \(0.172+0.372=0.544\)\\
+ST & \(0.444+0.127=0.571\) & \(0.190+0.161=0.351\) &
+\(0.177+0.130=0.307\) & \(0.290+0.140=0.430\)\\
+Nặng nhẹ & \(0.091+0.632=0.723\) & \(0.014+0.062=0.076\) &
+\(0.008+0.945=0.953\) & \(0.045+0.606=0.651\)\\
+Nhân đôi & \(0.043+0.388=0.431\) & \(0.042+0.865=0.907\) &
+\(0.009+0.390=0.399\) & \(0.081+0.947=1.028\)\\
+Tarjan & \(0.595/0.754\) & \(0.707/0.450\) &
+\(0.424/0.450\) & \(0.617/0.556\)\\
+Vét cạn & \(0.010+0.546=0.556\) & -- &
+\(0.002+0.477=0.479\) & --
+\end{tabular}
+\end{center}
+
+\begin{center}
+\small Bảng 3: so sánh thời gian chạy LCA, \(n=2\cdot 10^6\).
+\end{center}
+
+\begin{center}
+\scriptsize
+\begin{tabular}{c c c c c}
+\textbf{Dạng cây} & \textbf{Ngẫu nhiên} & \textbf{Chuỗi} &
+\textbf{Cây nhị phân} & \textbf{Hỗn hợp}\\
+\hline
+Four Russians & \(1.189+1.956=3.145\) & \(0.534+1.912=2.446\) &
+\(0.291+1.825=2.116\) & \(0.860+1.935=2.795\)\\
+ST & \(2.611+0.685=3.296\) & \(1.087+0.889=1.976\) &
+\(1.012+0.688=1.700\) & \(1.767+0.779=2.546\)\\
+Nặng nhẹ & \(0.522+4.415=4.937\) & \(0.145+0.333=0.478\) &
+\(0.071+6.918=6.989\) & \(0.336+4.391=4.727\)\\
+Nhân đôi & \(0.308+2.089=2.397\) & \(0.244+5.154=5.398\) &
+\(0.056+2.090=2.146\) & \(0.579+6.180=6.759\)\\
+Tarjan & \(4.287/5.380\) & \(4.961/2.898\) &
+\(2.997/3.071\) & \(3.890/3.759\)\\
+Vét cạn & \(0.081+4.406=4.487\) & -- &
+\(0.010+3.756=3.766\) & --
+\end{tabular}
+\end{center}
+
+\begin{center}
+\small Bảng 4: so sánh thời gian chạy LCA, \(n=10^7\).
+\end{center}
+
+Do những năm gần đây trong OI, chấm theo nhóm test ngày càng thịnh hành, ta
+quan tâm hơn tới hiệu suất trong trường hợp xấu nhất. Trong các thuật toán
+trên, với \(n=10^7\), Method of Four Russians đúng là nhanh nhất trong trường
+hợp xấu nhất (trong bốn dạng cây kể trên), nhưng ưu thế so với ST rất nhỏ: dù
+mỗi truy vấn đều là \(\Oh(1)\), Method of Four Russians phải lấy \(\min\) của
+tối đa 4 số, còn ST chỉ lấy \(\min\) của tối đa 2 số. Khi số truy vấn nhỏ hơn
+tương đối so với kích thước cây, ưu thế của Method of Four Russians rõ hơn.
+Chẳng hạn, khi cây có \(10^7\) đỉnh và \(5\cdot 10^6\) truy vấn, trong trường
+hợp xấu nhất (cây ``ngẫu nhiên'') Method of Four Russians chạy 2.167s, trong
+khi ST trong trường hợp xấu nhất (cây ``ngẫu nhiên'') chạy 2.953s, phân rã
+nặng nhẹ trong trường hợp xấu nhất (cây nhị phân hoàn chỉnh) chạy 3.530s, nhân
+đôi trong trường hợp xấu nhất (cây hỗn hợp) chạy 3.669s, Tarjan offline trong
+trường hợp xấu nhất (cây ngẫu nhiên) cũng chạy 3.034s (chỉ nén đường đi) /
+4.101s (nén đường đi + hợp theo hạng).
+
+\paragraph{Chuyển RMQ thành LCA.}
+RMQ có thể chuyển thành LCA bằng cách dựng cây Descartes (Cartesian tree). Cây
+Descartes là một cây nhị phân, mỗi nút có hai giá trị: \emph{key} và
+\emph{value}; \emph{key} thỏa tính chất cây tìm kiếm nhị phân, còn
+\emph{value} thỏa tính chất heap (trong bài này là heap nhỏ). Ở đây
+\emph{key} của mỗi nút là vị trí tương ứng trong dãy ban đầu, nên không biểu
+diễn tường minh; \emph{value} là số tương ứng trong dãy ban đầu.
+
+Trước hết tìm giá trị nhỏ nhất trong dãy (có thể giả sử dãy không có phần tử
+trùng; nếu có thì dùng chỉ số làm khóa phụ để so sánh, qua đó khử trùng), đặt
+nó làm gốc. Số này chia dãy ban đầu thành hai nửa; ta lần lượt dựng cây
+Descartes cho hai dãy con trái và phải, rồi nối gốc của chúng làm con trái và
+con phải của gốc tương ứng với giá trị nhỏ nhất ban đầu. Như vậy dựng được
+toàn bộ cây Descartes.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8, every node/.style={circle,draw,inner sep=1.5pt}]
+\node (2) at (0,3) {2};
+\node (7) at (-1.5,1.8) {7};
+\node (4) at (1.5,1.8) {4};
+\node (8a) at (-2.2,0.6) {8};
+\node (6) at (0.7,0.6) {6};
+\node (5) at (2.3,0.6) {5};
+\node (8b) at (0.1,-0.6) {8};
+\node (9) at (1.3,-0.6) {9};
+\draw (2)--(7)--(8a);
+\draw (2)--(4);
+\draw (4)--(6);
+\draw (4)--(5);
+\draw (6)--(8b);
+\draw (6)--(9);
+\end{tikzpicture}
+
+\small Hình 9: ví dụ cây Descartes của dãy \(8,7,2,8,6,9,4,5\).
+\end{center}
+
+Dễ chứng minh với mọi đoạn \([l,r]\), giá trị nhỏ nhất của đoạn này chính là
+LCA của hai nút tương ứng với \(l\) và \(r\) trên cây Descartes.
+
+Nhưng dựng đệ quy như vậy quá chậm; có thể dựng tuyến tính không? Câu trả lời
+là có.
+
+Ta dùng một ngăn xếp đơn điệu để duy trì chuỗi phải của cây Descartes, lần
+lượt thêm nút từ trái sang phải: bật khỏi đỉnh ngăn xếp những nút lớn hơn nút
+mới; nối nút mới vào cây con phải của đỉnh ngăn xếp hiện tại (nếu không tồn
+tại thì đặt nút hiện tại làm gốc); nối nút cuối cùng bị bật ra (nếu có) vào
+cây con trái của nút mới; cuối cùng đẩy nút mới vào ngăn xếp.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.78, every node/.style={circle,draw,inner sep=1.5pt}]
+\node (a2) at (-3,2.3) {2};
+\node (a4) at (-2,1.1) {4};
+\node (a5) at (-1.1,-0.1) {5};
+\draw (a2)--(a4)--(a5);
+\node[draw=none,circle=false] at (0,1.1) {\(\operatorname{insert}(3)\)};
+\node (b2) at (1.4,2.3) {2};
+\node (b3) at (2.4,1.1) {3};
+\node (b4) at (1.7,-0.1) {4};
+\node (b5) at (2.5,-1.3) {5};
+\draw (b2)--(b3)--(b4)--(b5);
+\end{tikzpicture}
+
+\small Hình 10: trong bước dựng tuyến tính, ngăn xếp từ \(2,4,5\) chuyển thành
+\(2,3\), và \(4\) trở thành con trái của \(3\).
+\end{center}
+
+Như vậy ta đã chuyển RMQ thành LCA trong \(\Oh(n)\), rồi áp dụng thuật toán
+Method of Four Russians ở trên để đạt RMQ \(\Oh(n)-\Oh(1)\).
+
+\paragraph{Tối ưu LA (tổ tiên mức \(k\)).}
+LA~[13] (Level Ancestor), tức tổ tiên mức \(k\), là bài toán: trong một cây có
+gốc, truy vấn tổ tiên thứ \(k\) của một nút \(v\); hoặc truy vấn tổ tiên của
+\(v\) có độ sâu \(d\). Ghi độ sâu của gốc là \(0\), độ sâu của nút khác là độ
+sâu của cha cộng \(1\). Vì có thể tiền xử lý độ sâu của mỗi nút, hai bài toán
+này tương đương.
+
+Bài toán này có các thuật toán như vét cạn \(\Oh(n)-\Oh(n)\) hoặc
+\(\Oh(n^2)-\Oh(1)\), nhân đôi \(\Oh(n\log n)-\Oh(\log n)\), phân rã nặng nhẹ
+\(\Oh(n)-\Oh(\log n)\), phân rã chuỗi dài \(\Oh(n)-\Oh(\sqrt n)\). Tiếp theo
+giới thiệu thuật toán Method of Four Russians đạt độ phức tạp thời gian tối
+ưu \(\Oh(n)-\Oh(1)\).
+
+\paragraph{Thuật toán nhân đôi.}
+Tốn \(\Oh(n\log n)\) thời gian để tiền xử lý tổ tiên cách \(1,2,4,8,\ldots,
+2^i,\ldots,2^\ell\) tầng của mỗi nút \(v\), trong đó
+\(\ell=\lfloor\log_2\operatorname{depth}(v)\rfloor\). Khi truy vấn tổ tiên
+thứ \(k\), phân tích nhị phân \(k\), rồi lần lượt nhảy lên.
+
+Ví dụ, muốn hỏi tổ tiên thứ \(11\) của \(v\), thì bắt đầu từ \(v\), lần lượt
+nhảy lên \(8,2,1\) tầng. Hiển nhiên mỗi truy vấn tốn \(\Oh(\log n)\).
+
+\paragraph{Phân rã chuỗi dài.}
+Phân rã chuỗi dài nghĩa là mỗi lần chọn một chuỗi dài nhất đi từ gốc xuống
+(nếu có nhiều chuỗi dài nhất thì chọn tùy ý), xóa nó đi, rồi tiếp tục phân rã
+chuỗi dài trên mỗi cây sinh ra.
+
+Ta có thể ghi lại dãy nút của mỗi chuỗi được phân rã (theo thứ tự độ sâu tăng
+dần), đồng thời ghi mỗi nút nằm ở vị trí thứ mấy trong dãy nút của chuỗi chứa
+nó; ký hiệu nút \(v\) ở vị trí \(\operatorname{place}(v)\).
+
+Khi truy vấn tổ tiên thứ \(k\) của nút \(v\), nếu \(\operatorname{place}(v)>k\)
+thì lấy nút thứ \(\operatorname{place}(v)-k\) trong dãy nút của chuỗi chứa
+\(v\). Ngược lại, truy vấn đệ quy tổ tiên thứ
+\(k-\operatorname{place}(v)\) của cha nút đầu chuỗi chứa \(v\).
+
+Trong quá trình đệ quy trên, mỗi lần đệ quy thêm một tầng, độ dài chuỗi chứa
+nút đang xét tăng ít nhất \(1\), nên tối đa đệ quy \(\Oh(\sqrt n)\) tầng (vì
+\(\sum_{i=1}^{2\lceil\sqrt n\rceil}\lceil\sqrt n\rceil>n\)). Vì vậy mỗi truy
+vấn có độ phức tạp \(\Oh(\sqrt n)\).
+
+\begin{center}
+\small
+\fbox{\parbox{0.72\linewidth}{
+Ghi chú hình 11 trong bản gốc: một cây 23 nút dùng để minh họa phân rã chuỗi
+dài; ví dụ truy vấn \(LA(17,5)\) đi qua
+\(LA(17,5)=LA(15,4)=LA(12,3)=LA(1,0)=1\).}}
+\end{center}
+
+\paragraph{Thuật toán phân rã thang.}
+Trên cơ sở phân rã chuỗi dài, kéo dài ngược mỗi chuỗi (dãy nút của chuỗi) về
+phía gốc một đoạn bằng chính độ dài chuỗi (nếu gặp gốc thì dừng). Chuỗi kéo
+dài này gọi là ``thang'', đồng thời giữ nguyên chuỗi (thang) mà mỗi nút thuộc
+về, dù lúc này một nút có thể bị nhiều thang phủ. Ghi nút \(v\) là nút thứ
+\(\operatorname{place}(v)\) trong dãy nút của thang chứa nó.
+
+Khi truy vấn tổ tiên thứ \(k\) của \(v\), nếu \(\operatorname{place}(v)>k\)
+thì lấy nút thứ \(\operatorname{place}(v)-k\) trong dãy nút của thang chứa
+\(v\). Ngược lại, truy vấn tổ tiên thứ
+\(k-\operatorname{place}(v)+1\) của nút đầu thang chứa \(v\).
+
+Trong quá trình đệ quy này, mỗi lần đệ quy thêm một tầng, chiều cao của nút
+truy vấn (ghi lá có chiều cao \(1\), nút khác có chiều cao bằng chiều cao lớn
+nhất của con cộng \(1\)) ít nhất nhân \(2\), nên tối đa đệ quy \(\Oh(\log n)\)
+tầng. Vì vậy mỗi truy vấn tốn \(\Oh(\log n)\).
+
+Chẳng hạn trong hình 11 của bản gốc:
+\[
+  LA(17,5)=LA(15,4)=LA(11,2)=1.
+\]
+Chuỗi dài \((17)\) tương ứng thang \((15,17)\), chuỗi dài \((15,16)\) tương
+ứng thang \((11,12,15,16)\), chuỗi dài \((10,11,12,13,14)\) tương ứng thang
+\((1,10,11,12,13,14)\).
+
+\paragraph{Thuật toán \(\Oh(n\log n)-\Oh(1)\).}
+Kết hợp thuật toán nhân đôi và thuật toán phân rã thang, ta có được một thuật
+toán \(\Oh(n\log n)-\Oh(1)\).
+
+Trước hết lần lượt tốn \(\Oh(n\log n)\) và \(\Oh(n)\) để làm phần tiền xử lý
+của hai thuật toán. Khi truy vấn tổ tiên thứ \(k\) của nút \(v\), ghi chiều
+cao của \(v\) là \(\operatorname{height}(v)\). Ta dùng nhân đôi để nhảy bước
+đầu tiên, đặt khoảng cách nhảy là \(\operatorname{len}\), với
+\(\operatorname{len}\ge \lfloor k/2\rfloor\), và nhảy tới nút \(u\). Khi đó
+chiều cao của \(u\) ít nhất là
+\(\operatorname{height}(v)+\operatorname{len}\). Tiếp theo dùng phân rã thang
+để truy vấn tổ tiên thứ \(k-\operatorname{len}\) của \(u\). Vì
+\[
+  \operatorname{height}(u)\ge
+  \operatorname{height}(v)+\operatorname{len}
+  \ge k/2
+  \ge k-\operatorname{len},
+\]
+tổ tiên thứ \(k-\operatorname{len}\) của \(u\) nhất định nằm trên thang chứa
+\(u\), nên có thể tính đáp án trong \(\Oh(1)\).
+
+\paragraph{Thuật toán \(\Oh(n+L\log n)-\Oh(1)\).}
+Ở đây \(L\) là số lá của cây.
+
+Ta có thể trong \(\Oh(n)\) tiền xử lý một lá bất kỳ trong cây con của mỗi nút
+và khoảng cách từ nút này tới lá ấy. Như vậy có thể trong \(\Oh(1)\) chuyển
+bài toán hỏi tổ tiên thứ \(k\) của một nút bất kỳ thành bài toán hỏi tổ tiên
+thứ \(k'\) của một lá bất kỳ.
+
+Trong thuật toán trên, ta chỉ cần dùng bước nhảy đầu tiên của nhân đôi, nên
+chỉ cần tiền xử lý tổ tiên cách \(1,2,4,8,\ldots,2^i,\ldots,2^\ell\) tầng của
+mỗi lá \(v\), trong đó
+\(\ell=\lfloor\log_2\operatorname{depth}(v)\rfloor\). Việc này có thể hoàn
+thành trong \(\Oh(n+L\log n)\): DFS toàn cây, đồng thời dùng
+\texttt{std::vector} hoặc mảng (thay vì \texttt{std::stack}) để duy trì ngăn
+xếp DFS. Khi duyệt tới một lá, ngăn xếp DFS lần lượt chứa mọi nút trên đường
+từ lá này tới gốc, nên ta có thể trong \(\Oh(\log n)\) tính tổ tiên cách
+\(1,2,4,8,\ldots,2^i,\ldots,2^\ell\) tầng của lá này.
+
+Khi truy vấn, sau bước nhảy đầu tiên vẫn dùng thuật toán phân rã thang; mỗi
+truy vấn vẫn tốn \(\Oh(1)\).
+
+Đáng tiếc là trong trường hợp xấu nhất \(L=\Oh(n)\), nên thuật toán này xấu
+nhất vẫn cần \(\Oh(n\log n)\) thời gian tiền xử lý.
+
+\paragraph{Method of Four Russians cho LA.}
+Để giảm số lá, ta có thể chia khối phần gần lá của cây. Đặt kích thước khối
+là \(S\), xóa mọi nút có kích thước cây con trong cây gốc không vượt quá \(S\).
+Khi đó cây mới có không quá \(n/S\) lá, vì mỗi lá của cây mới tương ứng với
+một cây con trong cây gốc có kích thước lớn hơn \(S\). Có thể áp dụng thuật
+toán trên, tiền xử lý mọi tổ tiên ở tầng lũy thừa của 2 cho mỗi lá của cây
+mới và phân rã thang của cây mới trong
+\[
+  \Oh\left(n+\frac nS\log n\right),
+\]
+nhờ đó trả lời truy vấn trên các nút thuộc cây mới trong \(\Oh(1)\).
+
+Với truy vấn ở các nút đã bị xóa, ta có thể trong \(\Oh(n)\) tiền xử lý
+khoảng cách từ mỗi nút bị xóa tới nút gần nhất không bị xóa (tức lá tương ứng
+trong cây mới). Nếu khi hỏi tổ tiên thứ \(k\), \(k\) không nhỏ hơn khoảng cách
+này, ta có thể trong \(\Oh(1)\) chuyển truy vấn gốc thành truy vấn trên lá
+tương ứng trong cây mới, rồi trả lời trong \(\Oh(1)\).
+
+Chỉ còn một tình huống chưa giải quyết: nút hỏi và nút đáp án đều đã bị xóa.
+Quan sát mọi nút bị xóa, chúng tạo thành một rừng mà mỗi cây có kích thước
+không quá \(S\).
+
+Xét một cây có gốc kích thước không quá \(S\). Ta có thể duyệt Euler nó: bắt
+đầu DFS từ gốc, mỗi lần đi qua cạnh hướng xuống thì ghi một dấu ngoặc trái,
+mỗi lần đi qua cạnh hướng lên thì ghi một dấu ngoặc phải, thu được một dãy
+ngoặc dài không quá \(2S\). Số dãy ngoặc hợp lệ dài không quá \(2S\) là tổng
+\(S\) số Catalan đầu, hiển nhiên là \(\Oh(4^S)\); cụ thể gần cấp
+\(4^S/S^{3/2}\), nhưng không cần độ phức tạp chính xác như vậy. Ta có thể với
+mỗi dãy ngoặc dài không quá \(2S\), khôi phục một cây có gốc kích thước không
+quá \(S\) theo thứ tự DFS, rồi dùng thuật toán vét cạn trong \(\Oh(S^2)\) để
+tính mọi tổ tiên của mọi nút trong cây; tổng thời gian là \(\Oh(4^S\cdot S^2)\).
+
+Ta có thể trong \(\Oh(n)\) tiền xử lý dãy ngoặc tương ứng với mỗi cây trong
+rừng này, cũng như song ánh giữa nhãn của mỗi nút và vị trí của nó trong thứ
+tự DFS của cây. Như vậy, với mỗi truy vấn mà nút hỏi và đáp án đều đã bị xóa,
+ta tra bảng theo dãy ngoặc của cây kích thước không quá \(S\) chứa nút hỏi để
+biết tổ tiên thứ \(k\) của nó ở vị trí nào trong thứ tự DFS, rồi đổi về nhãn
+nút tương ứng trong cây này.
+
+Tóm lại, ta đạt mỗi truy vấn \(\Oh(1)\), còn thời gian tiền xử lý là
+\[
+  \Oh\left(n+\frac nS\log n+4^S\cdot S^2\right).
+\]
+Lấy \(S=\log_4 n\) là đạt \(\Oh(n)\).
+
+\subsubsection{Tiểu kết}
+
+Điều kiện để áp dụng Method of Four Russians là: có thể chọn một kích thước
+khối \(S\) sao cho sau khi chia khối bài toán, số loại khối khác nhau có thể
+xuất hiện nhỏ hơn rất nhiều so với quy mô bài toán gốc. Với phép nhân ma trận
+thông thường, chẳng hạn ma trận kích thước \(1000\times 1000\) và trị tuyệt
+đối của mỗi phần tử không vượt quá \(10^6\), dù chia thành các ma trận
+\(1\times1\), số loại khối khác nhau vẫn rất lớn, bằng bình phương số giá trị
+có thể của một phần tử ma trận; như vậy không thể áp dụng Method of Four
+Russians.
+
+Nếu số loại khối khác nhau có thể xuất hiện là \(\Oh(c_1^{S^c})\), trong đó
+\(c,c_1\) là hằng số và \(c_1>1\), thì thông thường có thể lấy kích thước khối
+\[
+  S=\sqrt[c]{c_3\log_{c_1}n},
+\]
+trong đó \(c_3\) là một hằng số nhỏ, thường không vượt quá \(1\). Khi đó trong
+tiền xử lý không vượt quá độ phức tạp của thuật toán gốc, đồng thời chia độ
+phức tạp theo quy mô dữ liệu của thuật toán gốc cho
+\(\sqrt[c]{\log_{c_1}n}\).
+
+\subsection{Tổng kết}
+
+Thuật toán chia khối tách bài toán gốc thành hai bài toán con: khối nguyên vẹn
+và khối không nguyên vẹn; lần lượt giải chúng, rồi bằng cách chọn kích thước
+khối như \(S=\sqrt n\) để cân bằng hiệu suất hai phần, đạt một độ phức tạp
+thời gian khá tốt. Khi độ phức tạp của hai bài toán con khác nhau, thuật toán
+chia khối kích thước phi chuẩn xuất hiện: kích thước khối tối ưu không chỉ có
+thể là \(\Oh(\sqrt n)\), mà còn có thể là \(\Oh(\sqrt{nw\log n})\) hoặc
+\(\Oh(n^{2/3})\), thậm chí có thể là \(\Oh(\log n)\) hoặc \(\Oh(\sqrt{\log n})\).
+
+Bài viết đã bước đầu tìm hiểu thuật toán chia khối kích thước phi chuẩn, giới
+thiệu một số cách tối ưu thuật toán chia khối, đồng thời giới thiệu ứng dụng
+của chia khối kích thước phi chuẩn trong tối ưu một số thuật toán khác. Trong
+đó, ba bài toán LCA, RMQ, LA có thể được tối ưu tới độ phức tạp thời gian tối
+ưu theo lý thuyết. Dùng chia khối kích thước phi chuẩn không chỉ có thể đạt độ
+phức tạp thời gian tốt hơn chia khối kích thước thông thường \(\sqrt n\) cho
+nhiều bài toán thao tác đoạn, mà còn có thể tối ưu một số thuật toán khác. Hy
+vọng các ví dụ này có thể gợi mở cho độc giả.
+
+\subsection*{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+
+Cảm ơn thầy Hu Weidong đã quan tâm và giúp đỡ tôi trong nhiều năm qua.
+
+Cảm ơn các thầy cô và bạn học khác từng giúp đỡ và gợi mở cho tác giả.
+
+Cảm ơn cha mẹ tôi đã chăm sóc và quan tâm chu đáo tới tôi.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}[label={[\arabic*]}]
+  \item Luo Jianqiao. \emph{Bàn về ứng dụng của tư tưởng chia khối trong một
+  lớp bài toán xử lý dữ liệu}, luận văn đội tuyển tập huấn quốc gia năm 2013.
+
+  \item Wang Ziyu. \emph{Ứng dụng của phương pháp chia khối}, luận văn đội
+  tuyển tập huấn quốc gia năm 2013.
+
+  \item Zou Xiaoyao. \emph{Bàn về chia khối trong một lớp bài toán trực
+  tuyến}, luận văn đội tuyển tập huấn quốc gia năm 2015.
+
+  \item Huang Zhewei. ``[Chia khối] Nhập môn chia khối dãy số 1--9 by
+  hzwer'', \url{http://hzwer.com/8053.html}.
+
+  \item Wang Yisong. Slide bình giảng bài \emph{Thử thách}, Trại Đông Toàn
+  quốc năm 2017.
+
+  \item Mao Xiao. \emph{Tìm hiểu lại biến đổi Fourier nhanh}, luận văn đội
+  tuyển tập huấn quốc gia năm 2016.
+
+  \item \href{https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes}{Wikipedia
+  tiếng Anh về sàng Eratosthenes}.
+
+  \item \href{https://en.wikipedia.org/wiki/Mertens%27_theorems}{Wikipedia
+  tiếng Anh về định lý Mertens}.
+
+  \item \href{https://en.wikipedia.org/wiki/Method_of_Four_Russians}{Wikipedia
+  tiếng Anh về Method of Four Russians}.
+
+  \item Prof. Erik Demaine. ``Lecture 15 -- April 12, 2012'', 6.851:
+  Advanced Data Structures (Spring 2012),
+  \url{https://courses.csail.mit.edu/6.851/spring12/scribe/lec15.pdf}.
+
+  \item \href{https://en.wikipedia.org/wiki/Lowest_common_ancestor}{Wikipedia
+  tiếng Anh về LCA}.
+
+  \item \href{https://en.wikipedia.org/wiki/Range_minimum_query}{Wikipedia
+  tiếng Anh về RMQ}.
+
+  \item \href{https://en.wikipedia.org/wiki/Level_ancestor_problem}{Wikipedia
+  tiếng Anh về LA}.
+\end{enumerate}
+
 \section*{Ghi chú về trích xuất}
 
 Nội dung bài đầu được trích bằng \texttt{pdftotext} từ trang vật lý 3 đến 13
@@ -5818,5 +7114,12 @@ hàm sinh trên trang 94--96 được kiểm tra bằng trang render vì lớp v
 ra làm nhiễu ký hiệu trần, nhị thức và chỉ số lũy thừa; dòng tích phân dẫn tới
 \(E(x)=e^{-D(x)}\) được giữ theo bản in dù biểu thức trong ngoặc có vẻ là ghi
 chú công thức \(\ln F(x)\) chứ không phải một vế toán học hoàn chỉnh.
+
+Bài thứ tám được trích bằng \texttt{pdftotext} từ trang vật lý 101 đến 123
+của PDF, tương ứng trang bài viết 99 đến 121; trang vật lý 124 là bài kế tiếp.
+Bài này không có ảnh raster. Các đồ thị hàm số trong hình 4--7 được thay bằng
+ghi chú hình ngắn gọn vì việc dựng lại chính xác trục và đường cong không ảnh
+hưởng nội dung thuật toán; các hình cây nhỏ được dựng lại bằng
+\texttt{tikz}. Nguồn không có mẫu mã chương trình cần giữ nguyên.
 
 \end{document}

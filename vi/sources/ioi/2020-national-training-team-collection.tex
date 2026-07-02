@@ -23,14 +23,14 @@
 \begin{abstract}
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2020. Tệp được
 tạo bằng XeTeX và có lớp văn bản Unicode đọc được. Bản LaTeX này chuyển ngữ
-phần nhận diện tập sách, toàn bộ mục lục, và bảy bài đầu tiên: bài của Jiang
+phần nhận diện tập sách, toàn bộ mục lục, và tám bài đầu tiên: bài của Jiang
 Mingrun về tối ưu các bài toán chia khối cổ điển bằng fractional cascading, bài
 của Chen Sunli về cây thống trị, báo cáo ra đề \emph{Ghép số} của Jiang
 Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, bài của
 Chen Yu về nguyên lý chuyển vị, và bài của Li Baitian về duy trì động giá trị
 cực trị của hàm số, cùng báo cáo ra đề \emph{Trò chơi trên đồ thị} của Zuo
-Junchi. Các hình nhỏ trong báo cáo thứ tư và thứ bảy được dựng lại bằng TikZ từ
-bản render PDF.
+Junchi, và bài của Zhou Yuyang về một loại DFT không bình thường. Các hình nhỏ
+trong báo cáo thứ tư và thứ bảy được dựng lại bằng TikZ từ bản render PDF.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -4436,6 +4436,826 @@ Cảm ơn tất cả các bạn đã giúp đỡ tôi.
   \item \url{https://max.book118.com/html/2019/0810/6243233210002053.shtm}
   (\emph{Bàn về tác hại của đề lệch}, Wang Tianyi).
   \item \url{http://vfleaking.blog.uoj.ac/blog/909}.
+\end{enumerate}
+
+\section{Một loại DFT không bình thường}
+
+\begin{center}
+Zhou Yuyang, Trường Trung học số 1 Thiệu Hưng
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Biến đổi Fourier nhanh là một thuật toán rất hữu dụng trong Olympic Tin học.
+Bài viết này giới thiệu một số ứng dụng khá tinh tế của biến đổi Fourier nhanh.
+Bài viết trình bày thuật toán Bluestein, áp dụng nó vào tính giá trị tại nhiều
+điểm và nội suy nhiều điểm của đa thức khi mô-đun nhỏ, đồng thời thử dùng thuật
+toán Bluestein để giải một số bài toán đa thức tiêu biểu.
+
+\subsection{Dẫn nhập}
+
+Biến đổi Fourier nhanh là một thuật toán rất hữu dụng. Nhờ biến đổi Fourier
+nhanh, ta có thể tính tích của hai đa thức trong thời gian \(O(n\log n)\). Đồng
+thời, phép nhân đa thức có thể được dùng để giải nhiều bài toán đa thức khác,
+chẳng hạn nghịch đảo đa thức, \(\exp\) của đa thức, v.v.
+
+Tuy nhiên, có một số bài toán đặc biệt tuy có thể giải bằng biến đổi Fourier
+nhanh, nhưng cần các phép biến đổi khéo léo. Bài viết này tập trung tổng kết
+cách làm của một lớp bài toán đặc biệt, rồi thử áp dụng chúng vào các bài toán
+thường gặp hơn.
+
+Bài viết chủ yếu gồm ba phần. Phần thứ nhất giới thiệu một số khái niệm liên
+quan tới biến đổi Fourier. Phần thứ hai bắt đầu từ vài bài ví dụ, giới thiệu
+cách suy ra thuật toán Bluestein và các ứng dụng cơ bản hơn của nó. Phần thứ ba
+xoay quanh tính giá trị tại nhiều điểm và nội suy nhiều điểm của đa thức; thông
+qua hai bài toán thuật toán kinh điển, phần này trình bày công dụng của thuật
+toán Bluestein khi mô-đun nhỏ, đồng thời thử mở rộng cách làm này sang các bài
+toán tổng quát hơn.
+
+\subsection{Định nghĩa và thuyết minh liên quan}
+
+\subsubsection{Quy ước liên quan}
+
+Trong bài viết này, ta dùng ký hiệu \(|f(x)|\) để chỉ bậc của đa thức \(f(x)\).
+Ở đây ta quy ước hệ số của hạng tử bậc cao nhất của mọi đa thức khác không đều
+khác \(0\).
+
+Trong bài viết này, ta định nghĩa giá trị của đa thức \(f(x)\) tại \(p\) là kết
+quả thu được khi thay \(p\) vào \(f(x)\).
+
+Trong bài viết này, ta dùng ký hiệu \(\omega_n\) để chỉ căn bậc \(n\) của đơn
+vị, tức là
+\[
+\omega_n=\cos\frac{2\pi}{n}+\sin\frac{2\pi}{n}i.
+\]
+
+\subsubsection{Biến đổi Fourier rời rạc (DFT)}
+
+Biến đổi Fourier rời rạc là dãy điểm trị độ dài \(n\) nhận được khi lần lượt
+thay \(\omega_n^0,\omega_n^1,\ldots,\omega_n^{n-1}\) vào đa thức \(f(x)\).
+Trong bài viết này, ta gọi tham số \(n\) trong biến đổi Fourier rời rạc là độ
+dài mô-đun. Trong thi tin học, biến đổi Fourier rời rạc thường cần bảo đảm
+\(n>|f(x)|\).
+
+Khi đã biết dãy điểm trị \(a\) độ dài \(n\), ta dựng đa thức
+\[
+g(x)=\sum_{i=0}^{n-1}a_i x^i.
+\]
+Nếu lần lượt thay
+\(\omega_n^0,\omega_n^{-1},\ldots,\omega_n^{-(n-1)}\) vào \(g(x)\) và thu được
+dãy điểm trị \(b\) độ dài \(n\), thì
+\[
+f(x)=\frac1n\sum_{i=0}^{n-1}b_i x^i.
+\]
+Chứng minh có thể xem ở blog\footnote{Liên kết blog:
+\url{https://www.cnblogs.com/RabbitHu/p/FFT.html}.}, ở đây lược bỏ. Vì vậy, ta
+có thể dùng điểm trị của hai đa thức tại
+\(\omega_n^0,\omega_n^1,\ldots,\omega_n^{n-1}\) để nhanh chóng tính tích của
+hai đa thức.
+
+Biến đổi Fourier nhanh (FFT) là một tối ưu của biến đổi Fourier rời rạc dựa
+trên chia để trị. Thời gian chạy một lần là \(O(n\log n)\). Phần sau sẽ trình
+bày cách làm của nó.
+
+\subsubsection{Biến đổi Fourier nhanh với mô-đun tổng quát (MTT)}
+
+Giả sử ta cần tính các hệ số của \(A(x)\times B(x)\) theo mô-đun
+\(p=10^9+7\). Nếu trực tiếp dùng biến đổi Fourier rời rạc để giải, giá trị tuyệt
+đối của kết quả chạy sẽ đạt cỡ \(p^2\times |A(x)|\), không chấp nhận được về độ
+chính xác.
+
+Xét tách mỗi hệ số của đa thức thành dạng \(xC+y\), trong đó \(0\le y<C\) và
+\(C\) là một số nguyên dương. Theo đó, ta có thể tách đa thức \(A(x)\) thành
+\(A_1(x)C+A_2(x)\), trong đó mọi hệ số của \(A_2(x)\) đều là số nguyên trong
+\([0,C-1)\). Tương tự, với \(B(x)\) ta cũng tách thành \(B_1(x)C+B_2(x)\). Khi
+đó tích của hai đa thức là
+\[
+A_1(x)B_1(x)C^2+\bigl(A_1(x)B_2(x)+A_2(x)B_1(x)\bigr)C+A_2(x)B_2(x).
+\]
+Với các hạng tử có bậc theo \(C\) khác nhau, ta trực tiếp dùng phương pháp trên
+để giải. Lấy \(C=\sqrt p\), giá trị tuyệt đối của kết quả sinh ra khi chạy phép
+nhân đa thức chỉ còn \(p\times |A(x)|\), đủ chấp nhận được về độ chính xác.
+
+Hoặc ta tìm ba số nguyên tố khác nhau, mỗi số có dạng \(p\times 2^k+1\)
+\((k\ge 22)\); sau khi tìm căn nguyên thủy, dùng biến đổi Fourier nhanh để giải
+riêng rẽ, cuối cùng dùng định lý phần dư Trung Hoa để gộp đáp án. Thuật toán
+này có hằng số khá kém.
+
+Trong luận văn đội tuyển quốc gia năm 2016 của anh Mao Xiao có nhắc tới tối ưu
+cho thuật toán thứ nhất; độc giả quan tâm có thể tự tra cứu.
+
+\subsection{DFT với độ dài mô-đun tổng quát}
+
+\subsubsection{Dẫn vào}
+
+\paragraph{\term{Ví dụ 1.}}\footnote{Nguồn: Peking University Training 2019.}
+
+\term{Đề bài.} Có một dãy tuần hoàn vô hạn
+\(x_1,x_2,\ldots\), chu kỳ là \(n\). Sau khi thực hiện một thao tác, chu kỳ của
+dãy \(x'\) sau thao tác vẫn là \(n\), và thỏa
+\[
+x'_i=x_i+x_{i+1}.
+\]
+
+Có \(q\) truy vấn. Mỗi truy vấn cho \(n,m,k,i,p\), yêu cầu tính: khi chu kỳ của
+dãy là \(n\), ban đầu chỉ có \(x_i=v\), còn các \(x_j=0\ (j\ne i)\), sau khi
+thực hiện \(k\) thao tác, giá trị của \(x_m\ (m\le n)\) lấy mô-đun \(p\) là
+bao nhiêu. Bảo đảm tồn tại căn bậc \(n\) của đơn vị theo nghĩa mô-đun \(p\).
+
+\[
+k\le 2\times 10^9,\qquad p\le 2\times 10^9,\qquad \sum n\le 10^6.
+\]
+
+\term{Cách làm.} Sau khi xét ý nghĩa tổ hợp của đáp án, ta thực hiện một phép
+đảo qua căn đơn vị đơn giản:
+\[
+\begin{aligned}
+\sum_{t=0}^{\infty}\binom{K}{tn+m}
+&=\sum_{i=0}^{K}\binom{K}{i}
+  \frac{\sum_{j=0}^{n-1}\omega_n^{(i-m)j}}{n}\\
+&=\frac1n\sum_{j=0}^{n-1}\omega_n^{-mj}
+  \sum_{i=0}^{K}\binom{K}{i}\omega_n^{ij}\\
+&=\frac1n\sum_{j=0}^{n-1}\omega_n^{-mj}(1+\omega_n^j)^K.
+\end{aligned}
+\]
+
+Sau khi tìm căn đơn vị, chỉ cần dùng lũy thừa nhanh để cộng trực tiếp. Độ phức
+tạp là \(O(n\log K)\).
+
+\paragraph{\term{Ví dụ 2.}}
+
+\term{Đề bài.} Có \(q\) truy vấn. Mỗi truy vấn cho đa thức \(A(x)\) có bậc hạng
+tử cao nhất nhỏ hơn \(n\), hỏi kết quả từng hệ số của \(A(x)^K\) sau khi lấy
+phần dư theo \((x^n-1)\), rồi lấy mô-đun số nguyên tố \(p\). Bảo đảm tồn tại
+căn bậc \(n\) của đơn vị theo nghĩa mô-đun \(p\).
+
+\[
+k\le 2\times 10^9,\qquad p\le 2\times 10^9,\qquad \sum n\le 10^6.
+\]
+
+\term{Suy nghĩ.} Trực tiếp đẩy công thức để tính đáp án rất rườm rà. Dùng lũy
+thừa nhanh đa thức \(O(n\log n\log K)\) thì độ phức tạp quá cao. Đồng thời, vì
+có phép lấy phần dư theo \(x^n-1\), ta không thể giải bài toán này bằng
+\(\exp\) đa thức và \(\ln\) đa thức.
+
+Vì DFT độ dài mô-đun \(n\) về bản chất là thực hiện một phép tích chập vòng độ
+dài \(n\), nếu có thể nhanh chóng thực hiện DFT với độ dài mô-đun đúng bằng
+\(n\), ta có thể giải bài toán trong độ phức tạp \(O(n(\log n+\log K))\) với
+một hằng số nhỏ.
+
+Nhưng FFT chỉ xử lý được trường hợp đặc biệt độ dài mô-đun là \(2^k\), còn DFT
+trực tiếp có thời gian quá lớn. Vì vậy, ta cần một phương pháp tốt hơn và tổng
+quát hơn để giải FFT với độ dài mô-đun bất kỳ.
+
+\subsubsection{Biến đổi Fourier nhanh}
+
+Trước hết ta ôn lại cách làm của biến đổi Fourier nhanh. Giả sử độ dài mô-đun
+\(n=2^k\), và ta cần tìm dãy điểm trị \(a\) độ dài \(n\) thu được khi lần lượt
+thay \(\omega_n^0,\omega_n^1,\ldots,\omega_n^{n-1}\) vào đa thức \(f(x)\). Đặt
+\[
+f(x)=\sum_{i=0}^{n-1}f_i x^i.
+\]
+
+Đặt
+\[
+f_1(x)=\sum_{i=0}^{n/2-1}f_{2i}x^i,\qquad
+f_2(x)=\sum_{i=0}^{n/2-1}f_{2i+1}x^i,
+\]
+thì \(f(x)=f_1(x^2)+xf_2(x^2)\).
+
+Xét giá trị của đa thức \(f(x)\) sau khi thay \(\omega_n^k\) và
+\(\omega_n^{k+n/2}\). Ta lần lượt thu được:
+\[
+\begin{aligned}
+f(\omega_n^k)
+&=f_1(\omega_n^{2k})+\omega_n^k f_2(\omega_n^{2k})\\
+&=f_1(\omega_{n/2}^k)+\omega_n^k f_2(\omega_{n/2}^k),\\
+f(\omega_n^{k+n/2})
+&=f_1(\omega_n^{2k+n})+\omega_n^{k+n/2}f_2(\omega_n^{2k+n})\\
+&=f_1(\omega_{n/2}^k)-\omega_n^k f_2(\omega_{n/2}^k).
+\end{aligned}
+\]
+
+Dễ thấy kết quả chạy chỉ liên quan tới \(f_1(\omega_{n/2}^k)\) và
+\(f_2(\omega_{n/2}^k)\). Vì vậy, có thể dùng độ phức tạp \(O(n)\) để chuyển nó
+thành hai bài toán con kích thước \(n/2\). Áp dụng định lý chính, không khó để
+thu được độ phức tạp thời gian \(O(n\log n)\). Đây chính là biến đổi Fourier
+nhanh (FFT) thường nói.
+
+\subsubsection{Biến đổi Fourier nhanh dựa trên chia để trị}
+
+Tương tự biến đổi Fourier nhanh, ta xét mở rộng nó sang độ dài mô-đun tổng quát
+hơn. Nói chung, bây giờ giả sử ta cần tính
+\[
+V(j)=\sum_{i<n}a_i\omega_n^{ij}.
+\]
+
+Tương tự ý tưởng phía trên, đặt \(d\) là thừa số nguyên tố nhỏ nhất của \(n\),
+\(m=n/d\), \(j=pd+q\ (0\le p<m,0\le q<d)\), và
+\(i=xm+y\ (0\le x<d,0\le y<m)\). Thay các định nghĩa trên vào công thức DFT, ta
+được:
+\[
+\begin{aligned}
+V(pd+q)
+&=\sum_{0\le i<n}\omega_n^{i(pd+q)}a_i\\
+&=\sum_{0\le i<n}\omega_n^{ipd}\omega_n^{iq}a_i\\
+&=\sum_{0\le i<n}\omega_m^{ip}\omega_n^{iq}a_i\\
+&=\sum_{0\le y<m}\sum_{0\le x<d}
+  \omega_m^{(xm+y)p}\omega_n^{(xm+y)q}a_{xm+y}\\
+&=\sum_{0\le y<m}\sum_{0\le x<d}
+  \omega_m^{yp}\omega_d^{xq}\omega_n^{yq}a_{xm+y}.
+\end{aligned}
+\]
+
+Lần lượt liệt kê giá trị của \(q\). Khi đó
+\(\sum_{x<d}\omega_d^{xq}\omega_n^{yq}a_{xm+y}\) là một hằng số chỉ phụ thuộc
+vào \(y\); ta đặt nó là \(B(y)\) và thay vào công thức ban đầu:
+\[
+\begin{aligned}
+V(pd+q)
+&=\sum_{0\le y<m}\sum_{0\le x<d}
+  \omega_m^{yp}\omega_d^{xq}\omega_n^{yq}a_{xm+y}\\
+&=\sum_{0\le y<m}\omega_m^{yp}B(y).
+\end{aligned}
+\]
+
+Đối chiếu với định nghĩa DFT ban đầu, không khó nhận ra rằng khi \(q\) đã xác
+định, ta đã chuyển nó thành đúng một bài toán con kích thước \(m\). Điều này
+gợi ý rằng ta có thể giải bài toán con này bằng đệ quy.
+
+Xét độ phức tạp thời gian. Gọi thời gian giải bài toán DFT có độ dài mô-đun
+\(n\) là \(F(n)\). Theo định nghĩa thuật toán, ta có
+\[
+F(n)=dF\left(\frac nd\right)+O(dn),\qquad F(1)=O(1).
+\]
+Giả sử phân tích thừa số nguyên tố của \(n\) có dạng \(\prod a_i^{p_i}\). Theo
+dạng phân tích này, đặt hàm
+\[
+\Omega_0(n)=\sum_i a_i p_i.
+\]
+Khi đó \(F(1)\) thỏa \(F(n)=O(n\Omega_0(n))\). Nếu với mọi số nguyên nhỏ hơn
+\(n\) đều thỏa \(F(n)=O(n\Omega_0(n))\), thì
+\[
+F(n)=O\left(\Omega_0\left(\frac nd\right)n\right)+O(dn),
+\]
+và không khó thấy nó vẫn thỏa \(F(n)=O(n\Omega_0(n))\). Từ đó ta tính được độ
+phức tạp.
+
+Nhưng trong trường hợp xấu nhất, \(\Omega_0(n)\) vẫn có thể đạt cấp \(O(n)\).
+Vì vậy, ta cần một thuật toán có độ phức tạp tốt hơn.
+
+\subsubsection{Biến đổi Fourier nhanh dựa trên tích chập}
+
+Ta quay lại công thức của DFT và IDFT để xét bài toán này:
+\[
+V(j)=\sum_{0\le i<n}\omega_n^{ij}a_i.
+\]
+
+Xét ý nghĩa thực tế của \(i\times j\): có thể xem là số cách chọn một vật từ
+mỗi đống trong hai đống vật, đống thứ nhất có kích thước \(i\), đống thứ hai có
+kích thước \(j\).
+
+Trên số cách này, ta xét bao hàm--loại trừ. Lấy số cách gộp hai đống vật rồi
+chọn hai phần tử khác nhau không xét thứ tự, trừ đi tổng của số cách chọn hai
+phần tử khác nhau không xét thứ tự trong đống thứ nhất và trong đống thứ hai;
+kết quả chính là số cách chọn riêng một vật từ mỗi đống. Chuyển thành công thức
+toán học:
+\[
+\binom{i+j}{2}-\binom{i}{2}-\binom{j}{2}=i\times j.
+\]
+Thay công thức bao hàm--loại trừ trên vào công thức DFT, ta được:
+\[
+V(j)\omega_n^{-\binom j2}
+=\sum_{0\le i<n}a_i\omega_n^{-\binom i2}\omega_n^{\binom{i+j}{2}}.
+\]
+
+Công thức này có thể được xem là kết quả của một phép tích chập hiệu giữa
+\[
+C(x)=\sum\omega_n^{-\binom i2}x^i
+\]
+và
+\[
+B(x)=\sum a_i\omega_n^{\binom i2}x^i,
+\]
+rồi nhân từng hệ số với giá trị hằng số tương ứng. Lúc này ta không quan tâm
+tới ảnh hưởng do độ dài mô-đun của tích chập gây ra; ta chỉ quan tâm tới kết
+quả tích chập, không quan tâm tới vấn đề độ dài mô-đun của tích chập. Vì vậy,
+có thể trực tiếp dùng MTT để giải. Độ phức tạp thời gian là \(O(n\log n)\).
+
+Tương tự, với công thức IDFT, thay công thức bao hàm--loại trừ phía trên ta
+được:
+\[
+V(j)\omega_n^{-\binom j2}
+=\sum_{0\le i<n}a_i\omega_n^{\binom i2}\omega_n^{-\binom{i+j}{2}}.
+\]
+
+Tương tự, công thức này vẫn có thể được xem là một phép tích chập hiệu, rồi
+nhân từng hệ số với giá trị hằng số tương ứng. Vì vậy, vẫn có thể trực tiếp
+dùng một lần MTT để giải. Độ phức tạp thời gian \(O(n\log n)\). Thuật toán này
+cũng được gọi là thuật toán Bluestein hoặc biến đổi \(Z\).
+
+Thật ra, với bất kỳ số khác không \(a\), ta đều có thể dùng ý tưởng này để tính
+các giá trị
+\[
+V(j)=\sum_{0\le i<n}x_i a^{ij}.
+\]
+Ta chỉ cần bảo đảm tồn tại \(a^{ij}\) và nghịch đảo của nó. Nói cách khác, với
+số phức, thuật toán này vẫn áp dụng được.
+
+\begin{itemize}
+  \item Mẹo tối ưu nhỏ: ban đầu độ dài mô-đun của phần tích chập hiệu cần mở
+  tới cấp \(3n\). Nhưng theo bản chất của việc dùng FFT để tăng tốc nhân đa
+  thức, ta đã thực hiện một phép tích chập vòng. Vì chỉ quan tâm tới tính đúng
+  của \(n\) phần tử ở giữa, việc cho \(n\) phần tử cuối trùng với \(n\) phần tử
+  đầu trong kết quả sẽ không ảnh hưởng tới tính đúng đắn của đáp án. Vì vậy,
+  chỉ cần mở độ dài mô-đun tới cấp \(2n\).
+\end{itemize}
+
+\subsubsection{Ví dụ}
+
+\paragraph{\term{Ví dụ 3.}}\footnote{Nguồn: UOJ498, \emph{Cuộc đuổi bắt năm
+mới}.}
+
+\term{Đề bài.} Định nghĩa tích của hai đồ thị vô hướng đơn
+\(G_1=(V_1,E_1)\), \(G_2=(V_2,E_2)\) là một đồ thị mới
+\[
+G_1\times G_2=(V^*,E^*).
+\]
+Trong đó tập đỉnh mới thỏa
+\[
+V^*=\{(a,b)\mid a\in V_1,\ b\in V_2\},
+\]
+còn tập cạnh mới thỏa
+\[
+E^*=\{((u_1,v_1),(u_2,v_2))\mid (u_1,u_2)\in E_1,\ (v_1,v_2)\in E_2\}.
+\]
+
+Cho số nguyên dương \(n\), cùng \(n\) số nguyên dương
+\(m_1,m_2,\ldots,m_n\). Cần tính kỳ vọng số thành phần liên thông của đồ thị mới
+\[
+H=(((G_1\times G_2)\times G_3)\times\cdots)\times G_n
+\]
+theo mô-đun \(998244353\). Trong đó, mỗi \(G_i\) được sinh ngẫu nhiên đều nhau
+từ toàn bộ các đồ thị có \(m_i\) đỉnh.
+
+\[
+n,m_i\le 100000.
+\]
+
+\term{Cách làm.} Ta xét cách tính số thành phần liên thông sau khi đã cho một
+dãy các \(G_k\).
+
+Trước hết xét chọn một đỉnh trong mỗi đồ thị. Nếu bậc của một đỉnh được chọn
+nào đó bằng \(0\) (ta gọi nó là ``đỉnh cô lập''), thì dãy đỉnh này tương ứng
+với một đỉnh cô lập trên \(H\). Nếu không, ta xét chọn một thành phần liên thông
+có kích thước \(>1\) trong mỗi đồ thị. Xét số thành phần liên thông thu được từ
+tích của các thành phần liên thông này. Chú ý rằng hiện tại mỗi đỉnh đều có
+cạnh kề và đồ thị là vô hướng, nên ta có thể đi qua lại trên một cạnh. Tính
+liên thông giữa hai dãy đỉnh có thể được giản lược thành tính chẵn lẻ của độ
+dài đường đi.
+
+Nếu hai đỉnh nằm trong một đồ thị có chu trình lẻ, thì hiển nhiên đều tồn tại
+đường đi độ dài lẻ và đường đi độ dài chẵn. Nếu hai đỉnh nằm trong một đồ thị
+hai phía, điều này liên quan tới việc chúng có ở cùng một phía hay không. Vì
+vậy, ta có kết luận: nếu trong \(n\) thành phần liên thông được chọn có \(k\)
+thành phần không chứa chu trình lẻ, thì tích của các thành phần liên thông này
+sẽ đóng góp \(2^{\max(k-1,0)}\) thành phần liên thông vào đáp án. Do đó, ta chỉ
+cần biết trong toàn bộ các đồ thị kích thước \(m_k\) có thể có bao nhiêu đỉnh
+cô lập, bao nhiêu thành phần liên thông không có chu trình lẻ, và bao nhiêu
+thành phần liên thông; từ đó có thể tính đáp án.
+
+Gọi EGF của đồ thị vô hướng đơn là
+\[
+G(x)=\sum_{n\ge 0}\frac{2^{\binom n2}}{n!}x^n,
+\]
+thì EGF của đồ thị liên thông là \(C=\ln G\). Không khó thu được EGF của số
+thành phần liên thông bằng cách liệt kê cách chèn thành phần liên thông vào một
+đồ thị, tức là \(G\ln G\).
+
+Xét EGF của đồ thị hai phía có tô màu:
+\[
+B=\sum_{n\ge 0}\sum_{m\ge 0}
+\binom{n+m}{n}2^{nm}\frac{x^{n+m}}{(n+m)!}.
+\]
+Một thành phần liên thông không có chu trình lẻ hiển nhiên có đúng \(2\) cách
+tô màu, nên EGF của nó là \(\frac{\ln B}{2}\). Số thành phần liên thông không
+có chu trình lẻ có thể được biểu diễn bởi \(G\frac{\ln B}{2}\). Ở đây ta có
+thể dùng thuật toán Bluestein để tối ưu quá trình tính EGF của đồ thị hai phía
+có tô màu.
+
+Độ phức tạp thời gian \(O(n\log n)\).
+
+\paragraph{\term{Ví dụ 4.}}\footnote{Nguồn: Codeforces 901E, \emph{Cyclic
+Cipher}.}
+
+\term{Đề bài.} Cho hai dãy số nguyên không âm \(b_i\) và \(c_i\) độ dài \(n\),
+đều đánh chỉ số từ \(0\).
+
+Biết dãy số nguyên không âm \(a\) thỏa
+\[
+c_i=\sum_{k=0}^{n-1}(b_{k-i\bmod n}-a_k)^2,
+\]
+cần tìm mọi nghiệm hợp lệ của \(a_i\). Bảo đảm mọi dịch vòng độ dài \(n\) của
+\(b\) đều độc lập tuyến tính.
+
+\[
+n\le 10^5,\qquad b_i\le 10^3,\qquad c_i\le 5\times 10^6.
+\]
+
+\term{Cách làm.} Để tiện mô tả, sau đây mọi dãy đều là dãy vô hạn có chu kỳ
+\(n\).
+
+Vì \((a-b)^2=a^2+b^2-2ab\), nên
+\[
+c_k-c_{k-1}=\sum_{i=0}^{n-1}b_i(a_{i+k}-a_{i-k+1}).
+\]
+Đặt \(c'_k=c_k-c_{k-1}\), \(a'_k=a_k-a_{k-1}\), ta có
+\[
+c'_k=\sum_{y-x\bmod n=k}b_xa'_y.
+\]
+Do đó, \(c'_k\) có thể được xem là kết quả tích chập độ dài mô-đun \(n\) của
+\(b_i x^i\) với \(a'_i x^{n-i}\). Dùng thuật toán Bluestein theo nghĩa mô-đun,
+ta có thể nhanh chóng tính được duy nhất một bộ \(a'_i\) hợp lệ.
+
+Đặt \(a_0=x\), các số còn lại đều có thể biểu diễn bằng \(x\). Khi đó ta lập
+được một phương trình bậc hai một ẩn, từ đó giải ra không quá hai nghiệm hợp
+lệ; chỉ cần trực tiếp thay vào để kiểm tra tính hợp lệ.
+
+Độ phức tạp thời gian \(O(n\log n)\).
+
+\subsection{Ứng dụng của DFT trong tính giá trị tại nhiều điểm}
+
+\subsubsection{Ý tưởng chung}
+
+Bài toán tính giá trị tại nhiều điểm của đa thức là bài toán có nhiều truy vấn,
+mỗi truy vấn hỏi giá trị của đa thức \(f(x)\) tại \(y\).
+
+Vì biến đổi Fourier rời rạc là dãy điểm trị độ dài \(n\) nhận được khi lần lượt
+thay \(\omega_n^0,\omega_n^1,\ldots,\omega_n^{n-1}\) vào đa thức \(f(x)\), khi
+giải bài toán tính giá trị tại nhiều điểm của đa thức, nếu các điểm truy vấn
+thỏa một số tính chất đặc biệt, ta có thể sắp xếp lại chúng rồi dùng thuật toán
+Bluestein để tăng tốc quá trình tính giá trị tại nhiều điểm.
+
+\paragraph{\term{Ví dụ 5.}}\footnote{Nguồn: UOJ500, \emph{DFT cơ số tùy ý}.}
+
+\term{Đề bài.} Cho đa thức bậc \(n\)
+\[
+f(x)=\sum_{i=0}^{n}f_i x^i.
+\]
+Có \(Q\) truy vấn; truy vấn thứ \(i\) hỏi kết quả của \(f(q_i)\) lấy mô-đun
+\(p=998244353\). Các \(q_i\) được sinh theo cách sau:
+\[
+\forall 1\le i\le Q,\qquad q_i=(q_{i-1}\times a+b)\bmod 998244353.
+\]
+\[
+1\le n\le 2.5\times 10^5,\quad 1\le Q\le 10^6,\quad
+2\le a<998244353,\quad 0\le q_0,b<998244353.
+\]
+
+\term{Cách làm.} Giả sử ta đã biết một đa thức \(f(x)\) bậc \(n\) bất kỳ. Khi
+đó ta có thể:
+
+\begin{itemize}
+  \item tìm trong \(O(n)\) đa thức duy nhất \(g(x)\) bậc không quá \(n\) thỏa
+  \(g(x)=f(x*k)\);
+  \item tìm trong \(O(n\log n)\) đa thức duy nhất \(h(x)\) bậc không quá \(n\)
+  thỏa \(h(x)=f(x+k)\).
+\end{itemize}
+
+Quan sát thấy giá trị truy vấn khá đặc biệt, ta thử dùng một vài biến đổi trên,
+thông qua cộng, trừ, nhân, chia để chuyển giá trị truy vấn thành một dạng đẹp
+hơn.
+
+Trước hết quy nạp thu được
+\[
+q_i=q_0a^i+\sum_{j=0}^{i-1}ba^j.
+\]
+Tiếp theo thực hiện các biến đổi sau:
+
+\begin{enumerate}
+  \item Nhân vế phải với \(a-1\), thu được
+  \(q_i=q_0(a-1)a^i+ba^i-b\).
+  \item Cộng \(b\) vào vế phải, thu được
+  \(q_i=q_0(a-1)a^i+ba^i\).
+  \item Chia cho \(q_0(a-1)+b\), thu được \(q_i=a^i\).
+\end{enumerate}
+
+Chú ý rằng khi \(q_0(a-1)+b=0\), ta có \(q_i=q_0\), nên chỉ cần tính một điểm
+trị đơn lẻ tại \(q_0\). Ngược lại, dưới phạm vi dữ liệu đã cho, mọi phép toán
+trên đều hợp lệ. Vì vậy, ta có thể thực hiện biến đổi tương tự với \(f(x)\):
+tìm đa thức bậc \(n\) \(g(x)\) thỏa
+\[
+g(x)=f\left(\frac{x(q_0(a-1)+b)-b}{a-1}\right).
+\]
+Theo tính chất của các biến đổi trên, có đúng một đa thức bậc không quá \(n\)
+thỏa điều kiện.
+
+Bây giờ ta cần tính giá trị của đa thức \(g(x)\) tại
+\(a^1,a^2,\ldots,a^Q\), tức là cần tính
+\[
+V(i)=\sum_{j=0}^{n}g_j a^{ij}.
+\]
+Không khó nhận ra công thức cần giải thỏa mọi tính chất của thuật toán
+Bluestein, nên có thể dùng thuật toán này để giải.
+
+Độ phức tạp thời gian \(O((n+Q)\log(n+Q))\).
+
+\paragraph{\term{Ví dụ 6.}}\footnote{Nguồn: CODECHEF POLYEVAL.}
+
+\term{Đề bài.} Cho đa thức bậc \(n\)
+\[
+f(x)=\sum_{i=0}^{n}a_i x^i.
+\]
+Có \(Q\) truy vấn, mỗi truy vấn cho một số nguyên dương \(y\), hỏi giá trị
+\(f(y)\) lấy mô-đun \(p=786433=3\cdot 2^{18}+1\).
+
+\[
+n,Q\le 250000,\qquad 0\le y<p.
+\]
+
+\term{Cách làm.} Xét ý nghĩa thực tế của biến đổi Fourier rời rạc, không khó
+nhận ra DFT độ dài mô-đun \(n\) có thể được xem là các điểm trị sinh ra khi
+thay \(\omega_n^0,\omega_n^1,\ldots,\omega_n^{n-1}\) vào đa thức \(A(x)\).
+
+Vì \(p\) là số nguyên tố nên tồn tại căn nguyên thủy theo mô-đun \(p\). Điều
+này có nghĩa là tồn tại \(g\) thỏa \(\omega_{p-1}\equiv g\pmod p\). Đồng thời,
+theo định nghĩa căn nguyên thủy, \(g^0,g^1,\ldots,g^{p-2}\) đôi một khác nhau
+theo nghĩa mô-đun và vừa đúng lấy được mọi số nguyên dương nhỏ hơn \(p\), nguyên
+tố cùng nhau với \(p\). Nói cách khác, chúng tạo thành một hoán vị của
+\([1,p-1]\).
+
+Vì vậy, nếu ta chạy một DFT độ dài mô-đun \(p-1\) trên \(A(x)\), rồi sắp xếp
+lại dãy điểm trị thu được, ta sẽ nhận được các điểm trị tại
+\(1,2,\ldots,p-1\). Đồng thời, điểm trị tại \(0\) hiển nhiên là \(a_0\). Do đó,
+mọi điểm trị đều đã được tính.
+
+Độ phức tạp thời gian \(O(p\log p)\).
+
+\subsubsection{Mở rộng}
+
+Ta thử mở rộng mô-đun của Ví dụ 6 sang trường hợp tổng quát hơn. Bây giờ giả
+sử ta cần tính điểm trị theo mô-đun \(p=q^c\ (c\ge 1)\), trong đó \(q\) là một
+số nguyên tố bất kỳ lớn hơn \(2\).
+
+Vì \(q^c\) có căn nguyên thủy, nên tồn tại \(g\) thỏa
+\[
+\omega_{\varphi(q^c)}\equiv g\pmod {q^c}.
+\]
+Đồng thời, theo định nghĩa căn nguyên thủy,
+\[
+g^0,g^1,\ldots,g^{\varphi(q^c)-1}
+\]
+đôi một khác nhau theo nghĩa mô-đun và vừa đúng lấy được mọi số nguyên dương
+nhỏ hơn \(q^c\), nguyên tố cùng nhau với \(q^c\). Với điểm trị tại các điểm này,
+ta vẫn có thể dùng một lần DFT để tính.
+
+Với các số nguyên không nguyên tố cùng nhau với \(q^c\), đặt số đó là \(x\).
+Hiển nhiên \(x^c\equiv 0\pmod {q^c}\), nên ta chỉ cần xét đóng góp của các hạng
+tử có bậc nhỏ hơn \(c\); trực tiếp tính thô \(c-1\) hạng tử đầu là đủ để tính
+được điểm trị. Vì \(c=O(\log p)\), phần này vẫn có độ phức tạp thời gian
+\(O(p\log p)\).
+
+Riêng với mô-đun đặc biệt \(p=2^c\ (c\ge 3)\), tuy nó không có căn nguyên thủy,
+nhưng vẫn có thể chứng minh
+\[
+\pm 3^0,\pm 3^1,\ldots,\pm 3^{2^{c-2}}
+\]
+đôi một khác nhau theo nghĩa mô-đun và đều nguyên tố cùng nhau với \(2\). Quá
+trình chứng minh khá phức tạp nên ở đây lược bỏ. Với điểm trị tại các điểm này,
+ta vẫn có thể dùng hai lần DFT để tính. Tương tự, với các điểm không nguyên tố
+cùng nhau với \(2\), vẫn chỉ cần xét các hạng tử có bậc nhỏ hơn \(c\).
+
+Nhưng vì độ dài mô-đun của biến đổi Fourier nhanh không nguyên tố cùng nhau với
+\(2\), sẽ xảy ra vấn đề khi làm IDFT. Vì vậy, ta cần giải quyết bằng cách nhân
+mô-đun của phần biến đổi Fourier nhanh với độ dài mô-đun, rồi cuối cùng trực
+tiếp chia kết quả cho độ dài mô-đun; hoặc đặt độ dài mô-đun của phần FFT là
+\(3^k\), rồi dùng biến đổi Fourier nhanh dựa trên chia để trị. Do đó, bài toán
+vẫn có thể được giải trong thời gian \(O(p\log p)\).
+
+Nếu dùng định lý phần dư Trung Hoa để gộp các đáp án theo các \(q^c\) khác
+nhau, thì với mô-đun bất kỳ, ta đều có thể tính giá trị tại nhiều điểm của đa
+thức trong \(O(p\log p)\).
+
+\subsection{Ứng dụng của DFT trong nội suy nhiều điểm}
+
+Bài toán nội suy nhiều điểm của đa thức là bài toán: cho điểm trị của đa thức
+\(f(x)\) tại một số vị trí \(y\), hỏi các hệ số của \(f(x)\).
+
+Vì DFT có thể được ứng dụng tốt vào tính giá trị tại nhiều điểm của đa thức, ta
+xét mở rộng nó sang thao tác nghịch đảo, tức là nội suy nhiều điểm của đa thức.
+
+\subsubsection{Nội suy nhiều điểm từ các điểm trị liên tiếp}
+
+\term{Đề bài.} Cho dãy điểm trị \(a\) của đa thức bậc \(n\) \(f(x)\) tại
+\(0\sim n\), hỏi từng hệ số của \(f(x)\) lấy mô-đun \(p\).
+
+\[
+0<n<p\le 500000,\qquad p \text{ là số nguyên tố.}
+\]
+
+\term{Thuật toán.} Vì thao tác nghịch đảo của tính giá trị tại nhiều điểm là
+nội suy nhiều điểm, và thao tác nghịch đảo của DFT là IDFT, nếu xem tính giá
+trị tại nhiều điểm là một thao tác DFT, điều này gợi ý rằng ta có thể thử dùng
+một lần IDFT để giải bài toán nội suy nhiều điểm của đa thức.
+
+Cụ thể, trước hết ta tính các điểm trị tại \(0\sim p-1\) từ các điểm trị tại
+\(0\sim n\). Việc này có thể thực hiện bằng cách chuyển qua lại giữa điểm trị
+và tính chất giai thừa giảm của đa thức; phần này không triển khai thêm.
+
+Vì ta đã biết các điểm trị tại \(1\sim p-1\), ta có thể dùng một lần IDFT để
+xác định một đa thức \(f(x)\) bậc không quá \(p-1\), sao cho điểm trị của
+\(f(x)\) tại \(1\sim p-1\) vừa đúng là \(a_1,a_2,\ldots,a_{p-1}\). Tính đúng
+đắn của phần này có thể thu được từ tính đúng đắn của DFT và IDFT. Do đó, bây
+giờ chỉ cần dựng đa thức \(h(x)\) thỏa
+\[
+h(x)\equiv [x=0]\pmod p.
+\]
+Không khó nhận ra khi đó
+\[
+f(x)+h(x)(a_0-f(0))
+\]
+chính là đáp án.
+
+Ta có thể dựng đa thức sau:
+\[
+h(x)=\sum_{j=0}^{p-2}x^j.
+\]
+Khi \(x=0\), giá trị của nó là \(1\); khi \(x=1\), giá trị của nó là \(p\), nên
+theo nghĩa mô-đun giá trị là \(0\). Khi \(x>1\), theo công thức tổng cấp số
+nhân, đáp án là
+\[
+\frac{x^{p-1}-1}{x-1}.
+\]
+Theo định lý nhỏ Fermat, \(x^{p-1}\equiv 1\pmod p\), nên theo nghĩa mô-đun giá
+trị vẫn là \(0\). Thay trực tiếp nó vào công thức phía trên sẽ thu được đáp án.
+
+Độ phức tạp thời gian \(O(p\log p)\).
+
+\subsubsection{Nội suy nhiều điểm từ các điểm trị không liên tiếp}
+
+\term{Đề bài.} Cho các điểm trị \(g_1,g_2,\ldots,g_{n+1}\) của đa thức bậc
+\(n\) \(f(x)\) tại \(a_1,a_2,\ldots,a_{n+1}\), hỏi từng hệ số của \(f(x)\) lấy
+mô-đun \(p\).
+
+\[
+0<n<p\le 300000,\qquad p \text{ là số nguyên tố},\qquad n<p-2.
+\]
+Bảo đảm \(a_i>0\), và các \(a_i\) đôi một khác nhau.
+
+\term{Thuật toán.} Theo nội suy Lagrange, ta có thể rất tiện tính đáp án là
+\[
+\sum_i g_i\prod_{j\ne i}\frac{x-a_j}{a_i-a_j}.
+\]
+Đặt \(F(x)=\prod_i(x-a_i)\), và biến đổi công thức một chút, đáp án có thể được
+rút gọn thành
+\[
+\left(\sum_i\frac{g_i}{(x-a_i)F'(a_i)}\right)F(x).
+\]
+
+Với phần tính \(F'(a_i)\), ta có thể giải bằng tính giá trị tại nhiều điểm của
+đa thức; phần nhân với \(F(x)\) cuối cùng có thể để xử lý sau. Vì vậy, hiện tại
+ta chuyển nó thành hai bài toán con có giá trị hơn:
+
+\begin{itemize}
+  \item Tính \(F(x)=\prod_i(x-a_i)\).
+  \item Tính \(G(x)=\sum_i\frac{v_i}{x-a_i}\).
+\end{itemize}
+
+\paragraph{\term{Bài toán con 1.}}
+
+\[
+\begin{aligned}
+F(x)&=\prod_i(x-a_i),\\
+\frac{F(x)}{\prod_i(-a_i)}
+&=\prod_i\left(-\frac{x}{a_i}+1\right),\\
+\ln\left(\frac{F(x)}{\prod_i(-a_i)}\right)
+&=\sum_i\ln\left(-\frac{x}{a_i}+1\right),\\
+\ln'\left(\frac{F(x)}{\prod_i(-a_i)}\right)
+&=\sum_i\sum_j\frac{1}{(a_i)^{j+1}}x^j.
+\end{aligned}
+\]
+
+Theo công thức trên, bài toán con 1 có thể dùng một lần \(\exp\) đa thức và một
+lần tích phân để chuyển thành bài toán con 2 trong độ phức tạp \(O(p\log p)\).
+Tiếp theo ta chỉ thảo luận cách làm của bài toán con 2.
+
+\paragraph{\term{Bài toán con 2.}}
+
+\[
+\begin{aligned}
+G(x)
+&=\sum_i\frac{v_i}{x-a_i}\\
+&=\sum_i v_i\sum_j\left(\frac1{a_i}\right)^{j+1}x^j\\
+&=\sum_j x^j\sum_i v_i\left(\frac1{a_i}\right)^{j+1}\\
+&=\sum_j x^j\sum_k\sum_i[\omega_{p-1}^k=a_i]v_i\omega_{p-1}^{-k(j+1)}.
+\end{aligned}
+\]
+
+Đặt
+\[
+H(k)=\sum_i[\omega_{p-1}^k=a_i]v_i,
+\]
+thì
+\[
+\begin{aligned}
+G(x)&=\sum_j x^j\sum_k H(k)\omega_{p-1}^{-k(j+1)},\\
+G(x)x&=\sum_j x^j\sum_k H(k)\omega_{p-1}^{-kj}.
+\end{aligned}
+\]
+
+Quan sát công thức cuối, không khó nhận ra nó thỏa tính chất của thuật toán
+Bluestein. Vì vậy, vẫn có thể dùng thuật toán Bluestein để tăng tốc tính
+\(G(x)x\).
+
+Do đó, cả hai bài toán con đều có thể giải trong độ phức tạp thời gian
+\(O(p\log p)\), tổng độ phức tạp là \(O(p\log p)\).
+
+\paragraph{\term{Trường hợp đặc biệt.}}
+
+Với trường hợp \(a_i=0\), vì trong quá trình suy luận khi giải bài toán con 1
+và 2 ta đã dùng tới \(\frac{v_i}{x}\) và đạo hàm của nó, nên suy luận phía trên
+sẽ sinh lỗi nghiêm trọng.
+
+Một phương án xử lý là dùng cách dựng \(g(x)=f(x+k)\) đã nhắc tới trong Ví dụ
+3, tịnh tiến toàn bộ các \(a_i\) sao cho mọi \(a_i\) đều khác \(0\). Theo đó ta
+có thể tính được duy nhất các \(g_i\). Cuối cùng tịnh tiến ngược lại đa thức
+\(g(x)\) đã tính.
+
+Một phương án khác là khi nội suy, bỏ qua điểm trị tại \(a_i=0\) để nội suy,
+cuối cùng cộng thêm một bội số của
+\[
+\prod_{a_i\ne 0}(x-a_i)
+\]
+sao cho điểm trị của \(f(0)\) là đúng. Phương pháp này cũng được gọi là phương
+pháp nội suy Lagrange bộ phận.
+
+\subsubsection{Mở rộng}
+
+Bài toán con 2 có thể được xem là kết quả của việc lấy một vector cột đã cho
+rồi nhân bên phải với một ma trận Vandermonde có định thức khác \(0\). Thật ra,
+ta cũng có thể dùng thuật toán trên để giải ma trận Vandermonde khi mô-đun nhỏ.
+
+Giả sử ta cần giải hệ phương trình
+\[
+G(j)=\sum_i a_i x_i^j.
+\]
+Tương tự bài toán 2, đặt
+\[
+H(k)=\sum_i[\omega_{p-1}^k=x_i]a_i,
+\]
+thì hệ phương trình có thể được chuyển thành
+\[
+G(j)=\sum_k H(k)\omega_{p-1}^{kj}.
+\]
+
+Tương tự các bài toán đã thảo luận trước đó, không khó nhận ra ta đã chuyển bài
+toán thành nội suy nhiều điểm của đa thức từ các điểm trị liên tiếp. Vì vậy, có
+thể trực tiếp dùng thuật toán này để giải trong độ phức tạp thời gian
+\(O(p\log p)\).
+
+\subsection{Lời kết}
+
+Phần lớn các thuật toán phía trên đều là ứng dụng của thuật toán Bluestein
+trong trường mô-đun. Thật ra vào năm 2003, giới học thuật đã đề xuất một phép
+nghịch đảo của thuật toán Bluestein có độ phức tạp thời gian \(O(n\log n)\).
+Độc giả quan tâm có thể tự tra cứu các bài báo liên quan.
+
+\subsection{Triển vọng}
+
+Bài viết này đã nhắc tới một số phương pháp và kỹ thuật để giải các bài toán
+biến đổi Fourier nhanh, nhưng trong đại dương thuật toán mênh mông, chúng vẫn
+chỉ là phần nổi của tảng băng. Hy vọng trong tương lai sẽ có nhiều ứng dụng hơn
+của thuật toán Bluestein được phát hiện và phát minh, và cũng hy vọng có thêm
+nhiều bài biến đổi Fourier nhanh thú vị xuất hiện trong Olympic Tin học.
+
+\subsection{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+Cảm ơn thầy Chen Heli và thầy Dong Yehua của Trường Trung học số 1 Thiệu Hưng
+vì sự quan tâm và hướng dẫn.
+
+Cảm ơn huấn luyện viên đội tuyển quốc gia Gao Wenyuan vì sự hướng dẫn và giúp
+đỡ.
+
+Cảm ơn bạn Dai Jiangqi vì gợi mở về thuật toán nội suy nhiều điểm từ các điểm
+trị không liên tiếp.
+
+Cảm ơn bạn Deng Mingyang và anh Kong Chaozhe đã đọc soát bài viết này.
+
+Cảm ơn các thầy cô và bạn học khác từng giúp đỡ và gợi mở cho tôi.
+
+Cảm ơn cha mẹ vì sự quan tâm, ủng hộ và chăm sóc chu đáo.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Zhang Jialin, \emph{Phép nhân đa thức}, luận văn đội tuyển quốc gia năm
+  2002.
+  \item Mao Xiao, \emph{Tìm hiểu lại biến đổi Fourier nhanh}, luận văn đội tuyển
+  quốc gia năm 2016.
+  \item Bluestein, L. (1970). ``A linear filtering approach to the computation
+  of discrete Fourier transform''.
 \end{enumerate}
 
 \end{document}
