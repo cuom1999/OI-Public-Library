@@ -23,13 +23,14 @@
 \begin{abstract}
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2020. Tệp được
 tạo bằng XeTeX và có lớp văn bản Unicode đọc được. Bản LaTeX này chuyển ngữ
-phần nhận diện tập sách, toàn bộ mục lục, và sáu bài đầu tiên: bài của Jiang
+phần nhận diện tập sách, toàn bộ mục lục, và bảy bài đầu tiên: bài của Jiang
 Mingrun về tối ưu các bài toán chia khối cổ điển bằng fractional cascading, bài
 của Chen Sunli về cây thống trị, báo cáo ra đề \emph{Ghép số} của Jiang
 Xunchi, báo cáo ra đề \emph{Khối liên thông nhỏ nhất} của Pan Junyue, bài của
 Chen Yu về nguyên lý chuyển vị, và bài của Li Baitian về duy trì động giá trị
-cực trị của hàm số. Các hình nhỏ trong báo cáo thứ tư được dựng lại bằng TikZ
-từ bản render PDF.
+cực trị của hàm số, cùng báo cáo ra đề \emph{Trò chơi trên đồ thị} của Zuo
+Junchi. Các hình nhỏ trong báo cáo thứ tư và thứ bảy được dựng lại bằng TikZ từ
+bản render PDF.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -3822,6 +3823,619 @@ Cảm ơn bạn Fang Lixing đã chỉ lỗi cho bài viết này.
   gia Trung Quốc IOI 2020. 2019.
   \item Daniel Zhang.
   \url{https://codeforces.com/blog/entry/68534?#comment-530381}. 2019.
+\end{enumerate}
+
+\section{Báo cáo ra đề \emph{Trò chơi trên đồ thị}}
+
+\begin{center}
+Zuo Junchi, Trường Trung học số 2 trực thuộc Đại học Sư phạm Hoa Đông
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết này giới thiệu một bài tương tác do tác giả ra cho một số trường trong
+một đợt huấn luyện chọn đội tuyển cấp tỉnh. Bài khai thác sâu các kiến thức về
+tính liên thông của đồ thị, cây khung của đồ thị, thứ tự DFS của cây có gốc,
+đồng thời kết hợp tự nhiên các thuật toán cơ bản như tìm kiếm nhị phân, chia để
+trị và tư tưởng ngẫu nhiên hóa. Kiến thức dùng trong bài không cao cấp, nhưng
+đòi hỏi thí sinh hiểu sâu các tư tưởng quan trọng ẩn sau những thuật toán cơ
+bản.
+
+Ngoài ra, bài có nhiều điểm thành phần, có thể dẫn dắt thí sinh đi tới lời giải
+đúng và phân biệt thí sinh ở các mức độ suy nghĩ khác nhau. Lời giải đúng đại
+khái chia thành ba phần, và nghĩ ra mỗi phần đều có điểm tương ứng.
+
+Bài viết này nêu một mục tiêu trong ra đề: thiết kế điểm thành phần phải khớp
+chặt với lời giải đúng.
+
+\subsection{Ý chính bài toán và phạm vi dữ liệu}
+
+\subsubsection{Mô tả bài toán}
+
+Bạn Z có một đồ thị vô hướng gồm \(n\) đỉnh và \(m\) cạnh, có thể có cạnh song
+song nhưng không có khuyên. Bạn U muốn biết hình dạng đồ thị này, nhưng bạn Z
+không chịu nói.
+
+Bạn Z: Tôi có thể cho bạn biết đồ thị này liên thông, các đỉnh được đánh số từ
+\(0\) đến \(n-1\), các cạnh được đánh số từ \(0\) đến \(m-1\).
+
+Bạn U: Vậy sau khi xóa đi một cạnh, tình trạng liên thông của đồ thị này thế
+nào?
+
+Bạn Z: Dù sao bạn cũng không đoán ra đâu, thế này nhé. Mỗi lần bạn cho tôi một
+tập \(S\) gồm các số hiệu cạnh, rồi cho thêm một đỉnh \(u\), tôi sẽ giúp bạn
+tính xem sau khi nối các cạnh có số hiệu nằm trong \(S\), đỉnh \(0\) có liên
+thông với đỉnh \(u\) hay không.
+
+Nghe xong, bạn U suy nghĩ rất lâu nhưng vẫn không biết làm thế nào để hỏi ra
+hai đầu mút của từng cạnh trong đồ thị.
+
+Vì vậy bạn ấy tìm tới bạn, muốn nhờ bạn hỏi ra thông tin của đồ thị này. Ta bảo
+đảm đồ thị đã được sinh sẵn từ trước, tức là nó không thay đổi theo các truy
+vấn của bạn U. Đồng thời bạn không được hỏi quá nhiều lần: bạn cần thu được
+thông tin của đồ thị trong \(30000\) truy vấn.
+
+\subsubsection{Cách tương tác}
+
+Bạn không cần cài đặt hàm chính; bạn chỉ cần cài đặt một hàm:
+\texttt{bool query(int u, std::vector<int> s);}
+
+Hàm này cần trả về một mảng \(e\) có độ dài \(m\), trong đó \(e[i]\) biểu thị
+hai đầu mút của cạnh thứ \(i\) (không xét thứ tự).
+
+Hàm bạn cài đặt chỉ được gọi hàm trong thư viện tương tác:
+\texttt{bool query(int u, std::vector<int> s);}
+
+Trong hàm này, \(u\) là một số nguyên thuộc \([0,n-1]\), còn \(s\) là một mảng
+\texttt{int} có độ dài \(m\), các giá trị chỉ có thể là \(0\) hoặc \(1\). Nếu
+\(s[i]=1\) thì biểu thị \(i\) nằm trong tập \(S\) mà bạn U hỏi, ngược lại là
+không nằm trong \(S\). Ý nghĩa của hàm là: cho \(u\) và \(S\), hỏi đỉnh \(0\)
+có thể đi tới \(u\) bằng các cạnh có số hiệu nằm trong \(S\) hay không.
+
+\subsubsection{Phạm vi dữ liệu và ràng buộc đặc biệt}
+
+Với mọi dữ liệu, bảo đảm \(1\le n,m\le 600\), và đồ thị là liên thông.
+
+\begin{itemize}
+  \item Subtask 1 (6 pts): \(n,m\le 25\), \(m=n-1\).
+  \item Subtask 2 (10 pts): \(n,m\le 25\).
+  \item Subtask 3 (17 pts): \(m=n-1\), mỗi đỉnh trong đồ thị có bậc không quá
+  \(2\), và đỉnh \(0\) có bậc \(1\).
+  \item Subtask 4 (24 pts): \(m=n-1\).
+  \item Subtask 5 (19 pts): bảo đảm khi xét riêng các cạnh có số hiệu
+  \(<n-1\), cạnh số \(i\) nối hai đỉnh \(i\) và \(i+1\).
+  \item Subtask 6 (13 pts): bảo đảm khi xét riêng các cạnh có số hiệu
+  \(<n-1\), đồ thị tạo thành một cây.
+  \item Subtask 7 (11 pts): không có ràng buộc đặc biệt.
+\end{itemize}
+
+\subsection{Kỹ năng chuẩn bị}
+
+\subsubsection{Khái niệm và thuật ngữ cơ bản của đồ thị}
+
+Với một đồ thị vô hướng \(G\), nếu giữa hai đỉnh bất kỳ đều tồn tại một đường
+đi nối hai đỉnh đó, ta gọi đồ thị là liên thông.
+
+Nếu một đồ thị vô hướng \(G\) thỏa mãn rằng giữa hai đỉnh bất kỳ có đúng một
+đường đi nối chúng, thì \(G\) được gọi là một cây (hay cây không gốc).
+
+Với một đồ thị vô hướng liên thông tổng quát \(G\), nếu cây \(T\) có cùng tập
+đỉnh với \(G\) và tập cạnh của \(T\) là tập con của tập cạnh \(G\), thì \(T\)
+được gọi là một cây khung của \(G\).
+
+Sau khi chọn gốc cho một cây không gốc, ta thu được một cây có gốc. Với mỗi đỉnh
+không phải gốc \(u\), đỉnh đầu tiên trên đường đi từ \(u\) tới gốc, không tính
+điểm xuất phát, được gọi là cha của \(u\). Nếu \(v\) là cha của \(u\), thì \(u\)
+được gọi là con của \(v\). Nếu một đỉnh không có con, ta gọi nó là lá. Ta còn
+gọi mọi đỉnh trên đường đi từ gốc tới \(u\) là tổ tiên của \(u\). Với một đỉnh
+cụ thể \(u\), sau khi bỏ cạnh nối \(u\) với cha của nó (nếu cạnh này tồn tại),
+tập các đỉnh mà \(u\) còn đi tới được gọi là cây con của \(u\).
+
+Ngoài ra, nếu một cây có gốc \(T\) thỏa mãn mỗi đỉnh của \(T\) có không quá một
+con, thì \(T\) được gọi là một dây.
+
+Hình 1 là một ví dụ về cây có gốc, trong đó \(0\) có hai con \(1,2\), \(1\) có
+hai con \(3,4\), \(2\) có một con là \(5\), còn \(3,4,5\) không có con, nên
+chúng là lá.
+
+Hình 2 biểu thị một dây. Trong đó \(0,1,2,3,4\) mỗi đỉnh vừa đúng có một con,
+còn \(5\) là lá.
+
+\begin{center}
+\begin{tikzpicture}[
+  scale=0.82,
+  every node/.style={circle,draw,minimum size=7.2mm,inner sep=0pt},
+  edge/.style={line width=0.65pt}
+]
+  \node (a0) at (1.4,2.4) {0};
+  \node (a1) at (0.7,1.25) {1};
+  \node (a2) at (2.1,1.25) {2};
+  \node (a3) at (0.2,0.1) {3};
+  \node (a4) at (1.2,0.1) {4};
+  \node (a5) at (2.6,0.1) {5};
+  \draw[edge] (a0)--(a1)--(a3);
+  \draw[edge] (a1)--(a4);
+  \draw[edge] (a0)--(a2)--(a5);
+
+  \begin{scope}[xshift=5.3cm]
+    \node (b0) at (0,3.4) {0};
+    \node (b1) at (0,2.4) {1};
+    \node (b2) at (0,1.4) {2};
+    \node (b3) at (0,0.4) {3};
+    \node (b4) at (0,-0.6) {4};
+    \node (b5) at (0,-1.6) {5};
+    \draw[edge] (b0)--(b1)--(b2)--(b3)--(b4)--(b5);
+  \end{scope}
+\end{tikzpicture}
+
+Hình 1: ví dụ về cây có gốc lấy \(0\) làm gốc \hfill
+Hình 2: ví dụ về dây lấy \(0\) làm gốc
+\end{center}
+
+\subsubsection{Thứ tự DFS của cây}
+
+Với một cây có gốc \(T\) được đánh số từ \(0\), ta có một thuật toán DFS thường
+gặp như sau:
+
+\begin{verbatim}
+DFS(u)
+1 PUSH(Ans, u)
+2   for v in child(u)
+3        DFS(v)
+\end{verbatim}
+
+Trong mã giả, \(\operatorname{child}(u)\) biểu thị một thứ tự nào đó của các
+con của \(u\).
+
+Sau khi chạy thuật toán DFS này, \(\operatorname{Ans}\) ghi lại dãy đỉnh được
+tạo ra trong quá trình DFS. Ký hiệu vị trí của \(u\) trong thứ tự DFS, đánh số
+từ \(0\), là \(\operatorname{id}_u\). Khi đó ta có tính chất sau:
+
+\paragraph{\term{Tính chất 1.}}
+Nếu \(v\) là tổ tiên của \(u\), thì \(\operatorname{id}_u\ge
+\operatorname{id}_v\).
+
+\paragraph{\term{Chứng minh.}}
+Trong quá trình DFS, nếu đã thăm một đỉnh thì cha của nó chắc chắn cũng đã được
+thăm, nên \(\operatorname{id}_u\ge \operatorname{id}_v\).
+
+\subsubsection{Một phương pháp cơ bản}
+
+Ta xét bài toán đơn giản sau: trong các số \(1,2,\ldots,N\) có \(M\) số tốt (ở
+đây ta xem \(M\) khá nhỏ, còn \(N\) khá lớn). Hiện tại bạn có thể chỉ định một
+vài số và hỏi trong các số đó có số tốt hay không; bạn cần dùng \(O(M\log N)\)
+thao tác để tìm tất cả các số tốt.
+
+Tư tưởng này được dùng nhiều lần trong bài tương tác này, và cũng xuất hiện
+trong rất nhiều bài tương tác ở các kỳ thi OI.
+
+Ta dùng tư tưởng chia để trị. Mã giả như sau; ở đây giá trị trả về của
+\(\operatorname{Ask}(S)\) biểu thị trong \(S\) có tồn tại số tốt hay không, còn
+\(\operatorname{Ans}\) cuối cùng sẽ chứa tập tất cả số tốt.
+
+\begin{verbatim}
+SOLVE(left, right)
+ 1   mid <- (left + right) / 2
+ 2   if left == right
+ 3          Ans <- Ans union {mid}
+ 4   else
+ 5          S1 <- {left, left + 1, ..., mid}
+ 6          S2 <- {mid + 1, mid + 2, ..., right}
+ 7          if Ask(S1)
+ 8               SOLVE(left, mid)
+ 9          if Ask(S2)
+10               SOLVE(mid + 1, right)
+\end{verbatim}
+
+Xét cấu trúc cây chia để trị do thuật toán này tạo ra. Các lá của nó có khoảng
+độ dài \(1\), và số trong khoảng đó chắc chắn là số tốt. Mỗi lá có độ sâu
+\(O(\log N)\), nên tổng số nút của cây chia để trị là \(O(M\log N)\). Vì vậy số
+lần hỏi cũng là \(O(M\log N)\).
+
+\subsection{Giới thiệu thuật toán}
+
+Các thuật toán được giới thiệu sẽ đi sâu dần theo gợi ý từ điểm thành phần, nên
+ta sẽ trình bày theo thứ tự dây, cây, rồi đồ thị liên thông.
+
+\subsubsection{Dây}
+
+Phần điểm này có nhiều cách làm \(O(n\log n)\), về cơ bản đều mượn tư tưởng
+ngẫu nhiên hóa.
+
+Ở đây ta đưa ra một cách làm.
+
+Trước hết, xáo trộn ngẫu nhiên tập đỉnh \(\{1,2,\ldots,n-1\}\) thành
+\(p_1,p_2,\ldots,p_{n-1}\). Sau đó lần lượt thêm từng đỉnh \(p_i\). Ta cần duy
+trì:
+
+\begin{enumerate}
+  \item thứ tự tương đối giữa các đỉnh đã thêm;
+  \item với mỗi cạnh, tập mọi đỉnh nằm bên trái nó, tức phía gần đỉnh \(0\).
+\end{enumerate}
+
+Ban đầu ta xem đỉnh \(0\) nằm ngoài cùng bên trái, đồng thời thêm một đỉnh ảo
+số \(n\) ở ngoài cùng bên phải.
+
+Với mỗi đỉnh mới thêm \(p_i\), trước hết ta có thể tìm kiếm nhị phân trên dãy
+hiện tại để biết nó phải được chèn vào vị trí nào giữa các đỉnh đã thêm. Cụ thể
+có thể giữ lại các cạnh nằm bên trái một đỉnh nào đó, rồi phán đoán \(0\) có đi
+tới được đỉnh mới thêm hay không, để thu hẹp khoảng đỉnh sẽ chèn vào.
+
+Tiếp theo, trong các cạnh nằm giữa hai đỉnh được chèn vào là \(u_l,u_r\), ta
+duyệt thô từng cạnh \(e\) để phán đoán nó nằm bên trái hay bên phải \(p_i\).
+Bước này có thể thực hiện bằng cách xóa cạnh đó, giữ lại mọi cạnh khác, rồi
+phán đoán \(0\) có liên thông với \(p_i\) hay không.
+
+Sau đây ta giải thích sơ lược vì sao độ phức tạp là \(O(n\log n)\).
+
+Do độ phức tạp của mỗi lần tìm kiếm nhị phân đã là \(O(n\log n)\), ta chỉ cần
+xét độ phức tạp của phần duyệt thô để phán đoán vị trí từng cạnh. Giả sử đã
+thêm \(i\) đỉnh, thì theo nghĩa ngẫu nhiên, chi phí cần bỏ ra là \(O(n/i)\). Vì
+\(\sum_{i=1}^{n+2}1/i=O(\ln n)\), nên
+\(\sum_{i=1}^{n+2} n/i=O(n\ln n)\). Từ đó tổng độ phức tạp là
+\(O(n\log n)\).
+
+Vì vậy ta giải được bài con này trong \(O(n\log n)\) truy vấn.
+
+\subsubsection{Cây}
+
+Trong phần sau, ta đều xem cây là cây có gốc tại \(0\).
+
+\paragraph{\term{Cách làm \(O(n^2)\).}}
+Với mỗi cạnh \(e_i\), ta xóa cạnh này và giữ lại tất cả các cạnh còn lại. Sau
+đó lần lượt hỏi đỉnh \(0\) có thể đi tới những đỉnh nào. Các đỉnh không đi tới
+được sẽ tạo thành cây con của một đỉnh nào đó.
+
+Ngược lại, ta cũng có thể biết mọi cạnh trên đường đi từ mỗi đỉnh tới gốc, nhờ
+đó biết được độ sâu của mỗi đỉnh.
+
+Sau đó, với mỗi cạnh, ta xét các đỉnh mà gốc không đi tới được sau khi xóa cạnh
+đó, rồi tìm đỉnh có độ sâu nhỏ nhất trong các đỉnh này. Đỉnh đó chính là gốc
+của cây con, cũng là đầu mút sâu hơn của cạnh này.
+
+Tiếp đó, với mỗi đỉnh \(u\), ta tìm cây con có kích thước nhỏ nhất trong các
+cây con chứa nó, không tính cây con của chính \(u\), thì thu được cha của nó.
+
+Cuối cùng, từ một đầu mút sâu hơn của mỗi cạnh, ta suy ra được cả hai đầu mút
+và giải quyết bài toán.
+
+Ta phải xóa tổng cộng \(n-1\) cạnh, và với mỗi cạnh hỏi \(n-1\) lần, nên tổng
+độ phức tạp là \(O(n^2)\).
+
+\paragraph{\term{Cách chia cạnh thành các dây.}}
+Ta xét gán cho mỗi đỉnh một số \(0,1,\ldots,c-1\), sao cho các đỉnh có cùng số
+tạo thành một dây, và cha của đỉnh trên cùng của mỗi dây thuộc một dây có số
+hiệu nhỏ hơn. Ban đầu mọi cạnh trên cây đều chưa được đánh dấu.
+
+\begin{center}
+\begin{tikzpicture}[
+  scale=0.92,
+  edge/.style={line width=1.05pt,line cap=round}
+]
+  \coordinate (r) at (0,1.7);
+  \coordinate (a) at (0.45,0.8);
+  \coordinate (b) at (0.75,-0.1);
+  \coordinate (c) at (1.05,-1.0);
+  \coordinate (d) at (-0.7,0.35);
+  \coordinate (e) at (-1.45,-0.25);
+  \coordinate (f) at (-1.85,-1.0);
+  \coordinate (g) at (1.6,0.25);
+  \coordinate (h) at (2.2,-0.45);
+  \coordinate (i) at (-0.35,-0.65);
+  \coordinate (j) at (-0.75,-1.45);
+  \coordinate (k) at (0.25,-1.1);
+  \draw[edge,red!80] (r)--(a)--(b)--(c);
+  \draw[edge,blue!75] (a)--(d)--(e);
+  \draw[edge,purple!75] (e)--(f);
+  \draw[edge,green!65!black] (b)--(g)--(h);
+  \draw[edge,yellow!85!black] (a)--(i)--(j);
+  \draw[edge,orange!85] (b)--(k);
+\end{tikzpicture}
+
+Hình 3: cách chia
+\end{center}
+
+Hình 3 là một ví dụ về cách chia đúng. Trong đó, mỗi cạnh của dây màu đỏ có đầu
+mút sâu hơn và gốc được đánh số \(0\), dây màu cam được đánh số \(1\), dây màu
+vàng được đánh số \(2\), dây màu lục được đánh số \(3\), dây màu lam được đánh
+số \(4\), dây màu tím được đánh số \(5\). Cách hiểu trực quan của phép chia này
+là: các dây phía sau đều được ``gắn'' dưới một dây nào đó phía trước. Điều này
+khiến về sau ta chỉ cần giải riêng từng dây, rồi tìm ``điểm nối'' giữa mỗi dây
+và phần trước đó.
+
+Cố định một đỉnh \(u\), định nghĩa mọi cạnh chưa đánh dấu trên đường đi từ
+\(0\) tới \(u\) là cạnh tốt. Nếu phần bù của tập được hỏi trong một truy vấn có
+chứa cạnh tốt, thì \(0\) và \(u\) sẽ không liên thông.
+
+Lần lượt xét các đỉnh \(1,2,\ldots,n-1\).
+
+\textbf{Trường hợp một:} nếu chỉ giữ lại các cạnh đã đánh dấu mà \(0\) vẫn liên
+thông với \(u\), điều này cho thấy chính \(u\) nằm trên một dây đã có. Khi đó
+ta có thể giữ lại các cạnh thuộc những dây có số hiệu không quá \(\mathrm{mid}\)
+và hỏi \(0\) có liên thông với \(u\) hay không. Bằng tìm kiếm nhị phân, ta biết
+được số hiệu dây chứa \(u\).
+
+\textbf{Trường hợp hai:} nếu chỉ giữ lại các cạnh đã đánh dấu mà \(0\) không
+liên thông với \(u\), lúc này ta tìm tất cả các cạnh tốt chưa đánh dấu. Bước
+này có thể thực hiện bằng phương pháp chia để trị ở mục 2.3. Cuối cùng, ta cho
+các đỉnh sâu hơn của những cạnh này tạo thành một dây mới có số hiệu \(c\), rồi
+đặt \(c\) mới bằng \(c+1\).
+
+Chú ý rằng khi gặp trường hợp hai, bạn có thể biết tập số hiệu các cạnh nối các
+đỉnh của dây mới tới cha của chúng, nhưng chưa biết dây này gồm những đỉnh nào.
+Tuy nhiên, về sau có thể dùng cách làm của trường hợp một để xác định mọi đỉnh
+trên dây này.
+
+Vì vậy, cuối cùng ta biết được mỗi dây gồm những đỉnh nào, đồng thời biết tập số
+hiệu các cạnh nối các đỉnh này với cha của chúng.
+
+\paragraph{\term{Cách làm sau khi đã chia thành các dây.}}
+Nếu biết các thông tin đó, ta có thể theo thứ tự số hiệu tăng dần để lần lượt
+xác định thứ tự trên từng dây, cũng như số hiệu cạnh nối mỗi đỉnh trên dây với
+cha của nó; bước này dùng trực tiếp cách làm của phần dây. Do đó ta chỉ cần biết
+số hiệu đỉnh là cha của đỉnh trên cùng của mỗi dây.
+
+Bước này có thể dùng cách tìm kiếm nhị phân trên thứ tự DFS. Cụ thể, giả sử dây
+đang được thêm có số hiệu \(i\), và mọi đỉnh có số hiệu \(<i\) tạo thành một
+cây \(T\) đã biết, chỉ còn cạnh nối từ dây \(i-1\) sang dây \(i\) là chưa biết.
+Ta giữ lại các cạnh trong \(T\) mà thứ tự DFS của hai đầu mút đều không quá
+\(\mathrm{mid}\), rồi giữ lại số hiệu cạnh nối đỉnh trên cùng của dây này tới
+cha nó, hỏi có thể đi tới đỉnh trên cùng của dây hay không, từ đó biết thứ tự
+DFS của cha của cạnh này có không quá \(\mathrm{mid}\) hay không.
+
+Chú ý rằng ở đây ta dùng tính chất 1 trong mục 2.2. Tính chất này bảo đảm rằng
+sau khi giữ lại các cạnh có hai đầu mút đều có thứ tự DFS không quá
+\(\mathrm{mid}\), đồ thị con thu được liên thông mọi đỉnh có thứ tự DFS không
+quá \(\mathrm{mid}\).
+
+\subsubsection{Đồ thị liên thông}
+
+\paragraph{\term{Thuật toán \(O(nm)\) để tìm cây khung.}}
+Ta chỉ cần tìm một tập chỉ số cạnh sao cho các cạnh mang những chỉ số này tạo
+thành một cây khung. Khi đó có thể áp dụng toàn bộ các phương pháp tìm cây ở
+trên.
+
+Ban đầu, mọi cạnh đều ở trạng thái chưa đánh dấu. Sau đó lần lượt thêm các đỉnh
+\(1,2,\ldots,n-1\). Giả sử đang thêm tới đỉnh \(u\), và các cạnh đã đánh dấu
+trước đó liên thông \(0\) với \(1,2,\ldots,u-1\).
+
+\paragraph{\term{Tính chất 1.}}
+Lần lượt quét mọi cạnh chưa đánh dấu. Nếu sau khi xóa cạnh này, đỉnh \(0\)
+không thể đi tới \(u\), thì đánh dấu cạnh đó; ngược lại bỏ qua cạnh đó. Khi đó
+các cạnh mới được đánh dấu theo cách này có thể liên thông \(0\) với \(u\), và
+các cạnh được đánh dấu vẫn tạo thành một rừng.
+
+\paragraph{\term{Chứng minh.}}
+Do ban đầu đồ thị liên thông, hiển nhiên \(0\) có thể đi tới \(u\). Khi ta lần
+lượt quét mọi cạnh chưa đánh dấu, việc bỏ qua một cạnh không ảnh hưởng tới tính
+liên thông từ \(0\) tới \(u\) trước đó.
+
+Tiếp theo chứng minh đồ thị con tạo bởi các cạnh mới được đánh dấu là không có
+chu trình. Phản chứng, giả sử tồn tại một chu trình \(C\), gồm các cạnh
+\(e_{i_1},e_{i_2},\ldots,e_{i_k}\), trong đó \(i_1<i_2<\cdots<i_k\) theo thời
+điểm chúng được đánh dấu. Khi đánh dấu \(e_{i_1}\), hai đầu mút của \(e_{i_1}\)
+đã được nối bằng các cạnh \(e_{i_2},e_{i_3},\ldots,e_{i_k}\). Vì vậy xóa
+\(e_{i_1}\) không ảnh hưởng tới tính liên thông, tức \(e_{i_1}\) không phải là
+cầu; nó đáng lẽ phải bị bỏ qua chứ không bị đánh dấu, mâu thuẫn.
+
+Nhờ tính chất 1, mỗi vòng ta có thể dùng \(O(m)\) truy vấn để mở rộng rừng sinh
+ra trên các đỉnh \(0,1,\ldots,u-1\) thành rừng sinh ra trên
+\(0,1,\ldots,u\). Từ đó tìm được cây khung trong \(O(nm)\) truy vấn.
+
+\paragraph{\term{Thuật toán \(O(n\log m)\) để tìm cây khung.}}
+Chú ý rằng cuối cùng ta chỉ cần đánh dấu \(n-1\) cạnh. Ta có thể đổi quá trình
+quét tuần tự của thuật toán trước thành: mỗi lần tìm một tiền tố dài nhất có
+thể xóa mà \(0\) vẫn đi tới được \(u\). Quá trình này có thể thực hiện bằng tìm
+kiếm nhị phân đơn giản.
+
+Như vậy ta lần lượt tìm kiếm nhị phân cạnh tiếp theo cần được đánh dấu thay vì
+bị xóa. Có tổng cộng \(n\) vòng tìm kiếm nhị phân; trong mỗi vòng, trừ lần tìm
+kiếm nhị phân cuối cùng, các lần còn lại đều khiến ta đánh dấu thêm một cạnh.
+Do đó nhiều nhất có \(n+n-1=O(n)\) lần tìm kiếm nhị phân. Tổng độ phức tạp thời
+gian là \(O(n\log m)\).
+
+\paragraph{\term{Thuật toán \(O(nm)\) để tìm cạnh không thuộc cây.}}
+Trước hết áp dụng thuật toán cho cây để tìm hai đầu mút của mỗi cạnh trong cây
+khung \(T\).
+
+\begin{center}
+\begin{tikzpicture}[
+  scale=0.78,
+  every node/.style={circle,draw,minimum size=5.8mm,inner sep=0pt},
+  edge/.style={line width=0.65pt},
+  redge/.style={red!80,line width=0.95pt}
+]
+  \node (r) at (1.8,2.3) {0};
+  \node (a) at (0.9,1.05) {\(u\)};
+  \node (b) at (0.15,-0.35) {};
+  \node (c) at (1.25,-0.35) {};
+  \node (d) at (2.6,0.95) {};
+  \node (e) at (3.35,-0.35) {};
+  \node (f) at (2.2,-0.35) {};
+  \draw[edge] (r)--(a)--(b)--(c)--(a);
+  \draw[edge] (r)--(d)--(e)--(f)--(d);
+  \draw[redge,bend left=28] (b) to (a);
+\end{tikzpicture}
+
+Hình 4: cạnh đỏ biểu thị một cạnh không thuộc cây mà ta chưa biết
+\end{center}
+
+Với mỗi cạnh cây \((u,v)\), giả sử \(u\) là đỉnh sâu hơn. Giả sử cạnh cần hỏi
+là \(e_i=(w_1,w_2)\), trong đó \(w_1,w_2\) chưa biết. Ta xóa \((u,v)\), giữ lại
+mọi cạnh còn lại, rồi giữ thêm \(e_i\), và hỏi \(0\) có liên thông với \(u\) hay
+không. Nếu đáp án là liên thông, điều đó cho thấy trong \(w_1,w_2\) có đúng một
+đỉnh nằm trong cây con của \(u\) (như tình huống ở Hình 4), tức là đường đi từ
+\(w_1\) tới \(w_2\) trên \(T\) đi qua \((u,v)\).
+
+Với mỗi cạnh không thuộc cây, ta lần lượt biết được mỗi cạnh cây có nằm trên
+đường đi mà nó ``băng qua'' hay không. Như vậy có thể suy ra \(w_1,w_2\) từ hai
+đầu mút của đường đi.
+
+\paragraph{\term{Thuật toán một \(O(m\log m)\) để tìm cạnh không thuộc cây.}}
+Phần này có thể làm từ trên xuống, cũng có thể làm từ dưới lên. Vì cách từ dưới
+lên có hằng số nhỏ hơn và dễ hiểu hơn, trước hết ta trình bày cách này.
+
+Xét việc xóa một lá \(u\) của cây khung; khi xóa, ta cần biết mọi cạnh kề với
+\(u\). Sau khi xóa hết mọi đỉnh, ta sẽ thu được mọi cạnh không thuộc cây.
+
+Bước thứ nhất: gọi các cạnh kề với \(u\) là cạnh tốt. Xóa cạnh duy nhất của
+\(T\) kề với \(u\). Nếu một truy vấn chứa toàn bộ \(n-2\) cạnh còn lại của
+\(T\) và một cạnh tốt, thì \(0\) liên thông với \(u\). Nếu chỉ chứa \(n-2\) cạnh
+còn lại của \(T\) mà không chứa cạnh tốt, thì \(0\) không liên thông với \(u\).
+Ta lại áp dụng phương pháp tìm số tốt ở trên để tìm mọi chỉ số cạnh tốt.
+
+Bước thứ hai: với mỗi cạnh không thuộc cây, tìm đầu mút còn lại. Bước này có
+thể dùng tư tưởng tìm kiếm nhị phân trên thứ tự DFS đã nói trước đó. Cụ thể, giữ
+lại các đỉnh có thứ tự DFS không quá \(\mathrm{mid}\) và cạnh không thuộc cây
+\(e_i\) đang xét. Nếu lúc này \(0\) có thể đi tới \(u\), thì đầu mút còn lại
+của \(e_i\) có thứ tự DFS không quá \(\mathrm{mid}\); ngược lại thì lớn hơn
+\(\mathrm{mid}\). Như vậy ta tìm kiếm nhị phân được đầu mút còn lại của cạnh
+không thuộc cây nối với lá này.
+
+Cuối cùng, ta giải bài này trong \(O(m\log m)\) truy vấn.
+
+\subsubsection{Thuật toán hai \texorpdfstring{\(O(m\log m)\)}{O(m log m)}
+để tìm cạnh không thuộc cây}
+
+Ta xét các cạnh cây theo một thứ tự tùy ý. Nếu đang xét cạnh cây \((u,v)\), giả
+sử \(v\) là cha của \(u\), thì sau khi xóa cạnh này ta thu được hai thành phần
+liên thông \(C_1,C_2\). Ta cần tìm mọi cạnh không thuộc cây băng qua \(C_1,C_2\).
+
+Ban đầu, đánh dấu mọi cạnh không thuộc cây là ``chưa biết''. Mỗi lần chỉ xóa
+đúng cạnh \((u,v)\), giữ lại \(n-2\) cạnh cây còn lại. Nếu trong các cạnh không
+thuộc cây ta thêm vào có cạnh tốt, thì \(0\) liên thông với \(u\), ngược lại
+\(0\) không liên thông với \(u\). Vì vậy ta lại có thể dùng phương pháp chia để
+trị đã nói ở trên để tìm mọi cạnh tốt chưa biết. Đánh dấu các cạnh tốt này là
+đã biết; về sau không cần xét chúng nữa.
+
+Tiếp theo, với một cạnh không thuộc cây \(e\) vừa tìm được, ta đánh số các đỉnh
+trong cây con \(C_1\) theo thứ tự DFS, rồi giữ lại các cạnh có đầu mút có thứ
+tự DFS không quá \(\mathrm{mid}\), giữ lại mọi cạnh cây trong \(C_2\), giữ lại
+\(e\), và hỏi \(0\) có đi tới được \(u\) hay không. Nếu có, thì đầu mút nằm
+trong \(C_1\) của cạnh đó có thứ tự DFS không quá \(\mathrm{mid}\); ngược lại
+thì lớn hơn \(\mathrm{mid}\). Tương tự, ta làm điều giống vậy với thành phần
+liên thông \(C_2\), là biết được hai đầu mút của cạnh không thuộc cây \(e\).
+
+Sau khi xét xong \(n-1\) cạnh, ta có thể thu được mọi cạnh không thuộc cây, vì
+mỗi cạnh không thuộc cây chắc chắn ``băng qua'' ít nhất một cạnh cây.
+
+Thực ra thuật toán một là biến thể của thuật toán hai dưới một thứ tự xét cạnh
+đặc biệt. Nếu trong thuật toán hai, ta đổi thứ tự xét cạnh thành: mỗi lần bóc
+dần một cạnh nối lá với cha của nó, thì tương đương với thuật toán một. Tuy
+nhiên khi bóc lá, một đầu mút của mỗi ``cạnh tốt'' luôn cố định, nên có thể đổi
+hai lần tìm kiếm nhị phân trên thứ tự DFS thành một lần tìm kiếm nhị phân trên
+thứ tự DFS, từ đó giảm hằng số.
+
+\subsection{Quá trình ra đề}
+
+Vấn đề này được tác giả nghĩ ra khi thử ra một bài tương tác trên cây. Ban đầu,
+tác giả suy nghĩ về tính chất của các thành phần liên thông trong đồ thị con
+trên cây, và thu được phiên bản của bài chỉ có phần điểm cây. Sau đó, qua suy
+nghĩ, tác giả tìm được cách khéo léo chuyển cây thành dây, rồi giải quyết bài
+toán ``dây''.
+
+Nhưng tôi cho rằng bài toán đẹp này vẫn có thể mở rộng, nên bắt đầu suy nghĩ
+xem trên đồ thị liên thông tổng quát, bài toán còn có thể được giải hiệu quả
+hay không. Tôi dùng cùng một phương pháp chuyển cái tổng quát về cái đặc biệt,
+tìm được cách tìm một cây khung. Sau đó tác giả tiếp tục nghĩ xem có thể dùng
+cạnh cây làm công cụ để tìm tất cả các cạnh không thuộc cây hay không, và thu
+được một cách làm hoàn chỉnh.
+
+Khi thiết kế điểm thành phần, để nâng cao độ phân hóa, tác giả cố gắng giữ lại
+những chặng trung gian mà mình đã đi qua khi suy nghĩ bài này. Giả sử lời giải
+đúng có ba điểm khó \(A,B,C\). Tôi cho rằng một mô hình tốt hơn để thiết kế
+điểm thành phần là chẳng hạn: làm được brute force được \(20\) điểm; nghĩ ra
+một trong \(A,B,C\) thì thêm \(20\) điểm; nghĩ ra hai điểm thì thêm \(40\)
+điểm; nghĩ ra cả ba điểm thì thêm \(60\) điểm; kết hợp được \(A,B,C\) để thu
+được lời giải đúng thì được \(100\) điểm.
+
+Trong khi đó, nhiều cách cho điểm thành phần hiện nay lại là: trước khi nghĩ ra
+\(B\) bắt buộc phải nghĩ ra \(A\), trước khi nghĩ ra \(C\) bắt buộc phải nghĩ ra
+\(A,B\), thì mới lấy được nhiều điểm hơn. Mô hình này khiến thí sinh nghĩ ra
+\(B\) nhưng chưa nghĩ ra \(A\) nhận cùng điểm với thí sinh brute force, có thể
+làm tăng tính ngẫu nhiên của cuộc thi và giảm độ phân hóa. Vì vậy, tôi cho rằng
+trong thiết kế điểm thành phần của đề OI, chúng ta còn rất nhiều không gian để
+cải thiện.
+
+\subsection{Tình hình điểm số}
+
+\subsubsection{Tình hình điểm số dự kiến}
+
+Hai subtask đầu cần thí sinh hiểu ý nghĩa đề bài và suy nghĩ đơn giản để thu
+được một thuật toán đa thức; dự kiến \(70\%\) thí sinh có thể lấy được. Subtask
+3 có nhiều cách làm và không có điểm nào quá khó nghĩ, dự kiến \(60\%\) thí
+sinh có thể lấy được điểm này. Subtask 4, 5, 6 là các trường hợp đặc biệt của
+lời giải đúng ở những phương diện khác nhau; dự kiến \(50\%\) thí sinh có thể
+lấy đúng một subtask, và \(30\%\) thí sinh có thể lấy hai subtask. Còn để đạt
+điểm \(70\)--\(100\), cần kết hợp nhiều cách làm khác nhau một cách hữu cơ, độ
+khó tư duy rất lớn, nên ước tính không quá \(5\%\) thí sinh có thể AC bài này.
+
+\subsubsection{Tình hình điểm số thực tế}
+
+Trong số các thí sinh có điểm, có \(1\) người đạt \(71\) điểm, \(1\) người đạt
+\(52\) điểm, \(1\) người đạt \(47\) điểm, \(4\) người đạt \(33\) điểm, \(2\)
+người đạt \(17\) điểm, \(4\) người đạt \(16\) điểm, và \(3\) người đạt \(6\)
+điểm. Có thể thấy tình hình điểm số thực tế không tốt hơn dự kiến của tôi.
+
+Từ góc độ thí sinh, điều này cho thấy thí sinh cần tăng cường luyện tập bài
+tương tác, nắm một số khuôn mẫu cơ bản của bài tương tác, như phương pháp tư
+duy tôi nêu ở mục 2.3, đồng thời nâng cao năng lực xử lý các vấn đề phức tạp,
+nhiều bước. Từ góc độ người ra đề, tôi cảm thấy trong các cuộc thi sau này,
+mình cần tăng cường hơn nữa tác dụng gợi ý và dẫn dắt của điểm thành phần để
+nâng cao độ phân hóa.
+
+\subsection{Tổng kết}
+
+Nhìn từ bốn kỳ thi WC2016, WC2018, WC2019 và NOI2019, ta có thể thấy các tác
+giả đề đang thử nâng cao tỷ trọng của bài tương tác trong OI. Vì vậy, tôi chọn
+báo cáo ra đề cho một bài tương tác làm chủ đề luận văn đội tuyển quốc gia của
+mình. Ngoài ra, vì đồng thời mang thân phận thí sinh và người ra đề, tôi không
+tránh khỏi có cách hiểu riêng về quá trình ra đề, nên trong bài viết này cũng
+đưa vào một vài suy nghĩ độc đáo về quá trình ra đề, với hy vọng có thể gợi mở
+cho độc giả.
+
+Tóm lại, bài viết này giới thiệu một bài tương tác do tôi ra. Trong quá trình
+giới thiệu bài tương tác này, bài viết trước hết trình bày kiến thức cơ bản về
+đồ thị và các phương pháp tư duy cơ bản của bài tương tác, rồi phân tích sâu
+các thuật toán khác nhau cho bài.
+
+Cuối cùng, từ bài toán này, bài viết mở rộng sang giới thiệu quan điểm riêng
+của chúng tôi về khâu thiết kế điểm thành phần khi ra đề, đồng thời nhìn về sự
+phát triển tương lai của lĩnh vực ``bài tương tác'' trong OI.
+
+Hy vọng bài viết này không chỉ giúp mọi người học được lời giải của bài toán
+này, mà còn lĩnh hội được tư tưởng cơ bản của bài tương tác. Đồng thời cũng hy
+vọng sau khi bài viết này được công bố, trên sân thi OI sẽ xuất hiện nhiều bài
+tương tác hơn, với thiết kế điểm thành phần khoa học hơn.
+
+\subsection{Lời cảm ơn}
+
+Cảm ơn CCF đã cho tôi một nền tảng quý báu để chia sẻ và giao lưu.
+
+Cảm ơn cha mẹ vì công ơn nuôi dưỡng.
+
+Cảm ơn huấn luyện viên Jin Jing của Trường Trung học số 2 trực thuộc Đại học Sư
+phạm Hoa Đông vì sự hướng dẫn.
+
+Cảm ơn các huấn luyện viên đội tuyển quốc gia vì sự tận tụy.
+
+Cảm ơn bạn Zhang Bowei đã cùng tôi thảo luận nhiều cách giải của bài này, đặc
+biệt là thuật toán đầu tiên \(O(n\log n)\) để xác định cạnh không thuộc cây, và
+cũng giúp tôi rất nhiều trong việc viết luận văn. Cảm ơn bạn Lyu Shiqing và bạn
+Chen Siyuan đã dạy tôi cách dùng LaTeX, giúp tôi dàn trang luận văn.
+
+Cảm ơn tất cả các bạn đã giúp đỡ tôi.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item \url{https://csacademy.com/app/graph_editor/}.
+  \item \url{https://zh.wikipedia.wikimirror.org/wiki/%E5%9B%BE_(%E6%95%B0%E5%AD%A6)}.
+  \item \url{https://zh.wikipedia.wikimirror.org/wiki/%E6%A0%91%E7%8A%B6%E5%9B%BE}.
+  \item \url{https://zh.wikipedia.wikimirror.org/wiki/%E6%A0%91_(%E5%9B%BE%E8%AE%BA)}.
+  \item \url{https://max.book118.com/html/2019/0810/6243233210002053.shtm}
+  (\emph{Bàn về tác hại của đề lệch}, Wang Tianyi).
+  \item \url{http://vfleaking.blog.uoj.ac/blog/909}.
 \end{enumerate}
 
 \end{document}
