@@ -30,7 +30,9 @@ dãy, bài thứ bảy của Zheng Jun về dãy Thue--Morse, và bài thứ tá
 về nhân ma trận và phép quy giảm, cùng bài thứ chín của Wu Lin về một số bài
 toán kinh điển modulo lũy thừa của số nguyên tố nhỏ, và bài thứ mười của Xiao
 Daien về các phương pháp dễ cài đặt để duy trì thông tin trên cây động, cùng
-bài thứ mười một của Jiao Siyuan về các bài toán lân cận trên đồ thị.
+bài thứ mười một của Jiao Siyuan về các bài toán lân cận trên đồ thị, và bài
+thứ mười hai của Huang Jiaxu về duy trì thông tin bằng chia để trị trên cây
+đoạn.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -4771,5 +4773,286 @@ Bài này được dịch từ trang PDF 88--93, tương ứng các trang in 169
 PDF 88 chứa nửa trái là kết bài trước, và trang PDF 93 chứa nửa phải là đầu bài
 kế tiếp; bản dịch chỉ lấy phần thuộc bài này. Bài không có hình minh họa cần
 nhập lại.
+
+\section*{Bài 12. Bàn về một lớp thuật toán duy trì thông tin dựa trên chia để trị bằng cây đoạn}
+\addcontentsline{toc}{section}{Bài 12. Bàn về một lớp thuật toán duy trì thông tin dựa trên chia để trị bằng cây đoạn}
+
+\begin{center}
+Huang Jiaxu, Trường Trung học trực thuộc Đại học Sư phạm Phúc Kiến
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết giới thiệu một lớp thuật toán offline kết hợp chia để trị bằng cây
+đoạn với cấu trúc dữ liệu có thể hoàn tác. Trọng tâm là cách dùng DSU hoàn tác
+để duy trì thông tin của các thành phần liên thông khi cạnh chỉ xuất hiện trên
+một khoảng thời gian, rồi mở rộng sang các phép sửa, hỏi và phiên bản bền vững.
+Các ví dụ cho thấy cùng một khuôn mẫu có thể xử lý thông tin có phép nghịch
+đảo, thông tin chỉ có phép gộp đơn điệu, thông tin theo đoạn trên dãy, và dữ
+liệu trên cây phiên bản.
+
+\subsection*{1. Giới thiệu chia để trị bằng cây đoạn}
+
+Chia để trị bằng cây đoạn thường được dùng khi ta biết trước toàn bộ dãy thao
+tác. Mỗi thông tin chỉ có hiệu lực trên một hoặc vài khoảng thời gian; ta đưa
+khoảng đó vào các nút của một cây đoạn theo trục thời gian. Khi DFS trên cây,
+ta thêm toàn bộ thông tin gắn với nút hiện tại, xử lý các con, rồi hoàn tác
+những thay đổi vừa thêm. Vì vậy kỹ thuật này đặc biệt phù hợp với các bài toán
+mà thêm thông tin dễ hơn xóa thông tin.
+
+\paragraph{Ví dụ 1.1. Liên thông động offline.}
+Cho một đồ thị vô hướng đơn, hỗ trợ thêm cạnh, xóa cạnh và hỏi hai đỉnh có liên
+thông hay không. Với mỗi cạnh, gom các khoảng thời gian mà cạnh tồn tại rồi
+đưa các khoảng đó vào cây đoạn. Trong DFS, dùng DSU hoàn tác để thêm cạnh; tại
+lá, trả lời truy vấn ở thời điểm tương ứng; khi quay lui, khôi phục DSU về
+trạng thái trước khi vào nút. Mỗi cạnh được đưa vào \(O(\log m)\) nút, mỗi lần
+gộp DSU tốn \(O(\log n)\) nếu dùng tìm gốc không nén đường đi, nên tổng thời
+gian là \(O(m\log m\log n)\) và không gian là \(O(m\log m)\).
+
+\subsection*{2. Duy trì thông tin toàn cục của thành phần liên thông}
+
+\paragraph{Ví dụ 2.1. Tháp truyền tin.}
+Cho đồ thị có \(n\) đỉnh và \(m\) cạnh. Đỉnh \(i\) chỉ tồn tại trong khoảng
+\([L_i,R_i]\). Cần xác định với mỗi đỉnh xem có thời điểm nào nó tồn tại và
+liên thông với đỉnh \(1\) hay không. Có thể nhìn bài toán như sau: tại mỗi thời
+điểm, cộng \(1\) vào toàn bộ đỉnh thuộc thành phần liên thông chứa đỉnh \(1\);
+sau cùng, đỉnh nào có tổng trọng số dương là một đáp án hợp lệ.
+
+\subsubsection*{2.1. Thuật toán 1}
+
+Nếu thông tin trên một thành phần có phép nghịch đảo, ta có thể đặt nhãn lười
+trên đại diện DSU. Khi gộp tập \(y\) vào tập \(x\), ghi lại nhãn hiện tại
+\(\mathrm{tag}_1\) của \(x\). Khi hoàn tác, nếu nhãn mới của \(x\) là
+\(\mathrm{tag}_2\), phần chênh lệch \(\mathrm{tag}_2-\mathrm{tag}_1\) chính là
+lượng tác động cần chuyển cho tập \(y\). Cách này giải được ví dụ trên, nhưng
+phụ thuộc vào việc thông tin có thể trừ ngược lại; nhiều phép cập nhật đơn điệu
+không có tính chất đó.
+
+\paragraph{Ví dụ 2.2.}
+Cho đồ thị vô hướng có \(n\) đỉnh, \(m\) cạnh và trọng số đỉnh \(a_i\). Cạnh
+\(i=(x_i,y_i)\) chỉ tồn tại trong khoảng \([l_i,r_i]\). Cần hỗ trợ hai thao
+tác: hỏi trọng số lớn nhất trong thành phần liên thông hiện tại của \(x\), và
+thay mọi trọng số trong thành phần đó bằng \(\max(\cdot,w)\). Phép cập nhật
+\(\max\) không có phép nghịch đảo, nên thuật toán nhãn lười ở trên không đủ.
+
+\subsubsection*{2.2. Thuật toán 2}
+
+Xét một đại diện \(x\). Trong quá trình DFS trên cây đoạn, các tập được gộp vào
+tập của \(x\) tạo thành một dãy theo thứ tự ngăn xếp: chỉ thêm ở cuối và khi
+quay lui cũng chỉ xóa ở cuối. Do đó mỗi đại diện duy trì một stack; phần tử
+trên stack lưu thông tin của đoạn đã gộp, giá trị lớn nhất tiền tố và nhãn
+lười. Các thao tác cần có là:
+\begin{itemize}
+  \item thêm một khối thông tin vào cuối;
+  \item xóa khối cuối khi hoàn tác;
+  \item áp dụng cập nhật \(\max\) lên toàn bộ dãy;
+  \item hỏi giá trị lớn nhất hiện tại của dãy.
+\end{itemize}
+
+Khi xóa phần tử cuối, nhãn lười của nó được đẩy xuống phần tử mới ở đỉnh stack
+và sang stack của đại diện vừa tách ra. Nhờ cấu trúc LIFO của DSU hoàn tác, các
+phép thêm, xóa, sửa toàn cục và hỏi toàn cục đều là \(O(1)\) ngoài chi phí tìm
+đại diện. Tổng số lần gộp do cây đoạn sinh ra là \(O(m\log q)\), nên thời gian
+là \(O(n+(m\log q+q)\log n)\) và không gian trực tiếp là
+\(O(n+m\log q+q)\).
+
+Một cách hiểu khác là mỗi thành phần đang được biểu diễn bởi một cây nhị phân
+kiểu cây tái cấu trúc Kruskal. Gộp hai tập tạo một nút cha, còn hoàn tác thì
+đẩy nhãn từ nút cha xuống hai con và tách cây. Các phép sửa và hỏi trên thành
+phần chỉ thao tác ở gốc của cây đó.
+
+\subsubsection*{2.3. Tối ưu không gian}
+
+Nếu lưu sẵn mọi cạnh vào các nút cây đoạn, không gian là \(O(m\log q)\). Ta có
+thể giảm không gian bằng cách truyền danh sách cạnh xuống khi đệ quy. Ở một
+nút, mô phỏng thao tác đưa một khoảng vào cây đoạn: những cạnh cần đi vào con
+trái được gom thành một đoạn đầu, những cạnh cần đi vào con phải được gom
+thành một đoạn khác, tương tự sắp xếp một dãy \(0/1\) trong thời gian tuyến
+tính. Nhờ vậy không cần lưu danh sách tại tất cả các nút.
+
+Dù tổng số lần gộp vẫn là \(O(m\log q)\), tại một thời điểm không dùng rollback
+qua nhiều nhánh đồng thời; trong DSU sống, \(n\) đỉnh chỉ có thể gộp nhiều nhất
+\(n-1\) lần. Kết hợp với việc tái sử dụng bộ nhớ, không gian của thuật toán 2
+có thể giảm xuống \(O(n+m+q)\).
+
+\subsubsection*{2.4. Duy trì thông tin đoạn trên dãy}
+
+Bài viết còn nêu ví dụ ``cây đoạn mẫu 2'': trên một dãy, hỗ trợ nhân đoạn,
+cộng đoạn và hỏi tổng đoạn. Xem dãy như một đường đi, mỗi thao tác trên đoạn
+tương ứng với việc cắt hai cạnh biên, sửa thành phần ở giữa, rồi nối lại. Áp
+dụng trực tiếp thuật toán 2 cho ta \(O((n+q)\log q\log n)\).
+
+Do các thành phần luôn là các đoạn liên tiếp, cạnh chỉ nối ở hai đầu. Nếu lưu
+đại diện DSU của hai đầu mỗi đoạn, ta xác định thành phần cần sửa trong
+\(O(1)\). Khi đó thời gian giảm còn \(O((n+q)\log q)\) và không gian là
+\(O(n+q)\).
+
+\subsection*{3. Sửa và hỏi điểm}
+
+\paragraph{Ví dụ 3.1.}
+Vẫn trong mô hình đồ thị có cạnh xuất hiện theo khoảng thời gian, ngoài hai
+thao tác ở ví dụ 2.2, thêm hai thao tác mới: hỏi trọng số hiện tại của một đỉnh
+\(x\), và đặt trọng số riêng của \(x\) thành \(w\). Ta cần vừa duy trì thông
+tin toàn cục của thành phần, vừa truy cập được từng điểm bên trong thành phần
+đó.
+
+\subsubsection*{3.1. Duy trì thông tin của một tập}
+
+Với một tập được biểu diễn như dãy theo thứ tự stack, các thao tác trở thành:
+thêm cuối, xóa cuối, sửa toàn dãy bằng nhãn \(\max\), hỏi nhãn của một phần tử
+bất kỳ, sửa một phần tử, và hỏi giá trị lớn nhất toàn dãy. Một stack đơn không
+còn đủ. Có thể dùng cây cân bằng, nhưng vì chỉ thêm và xóa ở cuối, bài viết
+dùng phân nhóm nhị phân kết hợp cây đoạn. Mỗi tập duy trì \(O(\log n)\) cây
+đoạn nhỏ. Thêm hoặc xóa cuối chỉ cần gộp hoặc tách \(O(\log n)\) nút, mỗi nút
+được xử lý \(O(1)\). Sửa toàn dãy, hỏi toàn dãy, sửa điểm và hỏi điểm đều chạy
+trong \(O(\log n)\).
+
+\subsubsection*{3.2. Duy trì thông tin của thành phần liên thông}
+
+Khi gộp hai thành phần, trước hết tìm đại diện rồi thêm thông tin của một tập
+vào cuối tập kia; khi hoàn tác, hỏi nhãn cần truyền xuống tập con, xóa phần tử
+cuối, rồi áp nhãn đó lên tập con. Các thao tác sửa và hỏi toàn thành phần mất
+\(O(\log n)\) sau khi đã tìm đại diện.
+
+Với thao tác điểm, cần đi theo đường từ đỉnh được hỏi lên gốc của cây DSU, đẩy
+các nhãn lười trên đường đó xuống đúng điểm. Đường này có \(O(\log n)\) mức,
+mỗi mức cần thao tác trên cấu trúc của một tập, nên sửa hoặc hỏi điểm tốn
+\(O(\log^2 n)\). Vì vậy toàn bộ thuật toán chạy trong
+\[
+  O\bigl(n+m\log q\log n+q\log^2 n\bigr),
+\]
+và với cách tái sử dụng bộ nhớ ở trên, không gian sống có thể giữ ở
+\(O(n+m+q)\).
+
+\subsection*{4. Duy trì thông tin có tính bền vững}
+
+\paragraph{Ví dụ 4.1.}
+Cho đồ thị có \(n\) đỉnh, \(m\) cạnh và trọng số đỉnh \(a_i\). Phiên bản \(0\)
+có toàn bộ cạnh. Mỗi thời điểm \(i\) tạo phiên bản mới dựa trên một phiên bản
+trước đó \(u\), với một trong ba thao tác:
+\begin{itemize}
+  \item hỏi trọng số lớn nhất trong thành phần của \(x\);
+  \item cập nhật toàn bộ thành phần của \(x\) bằng \(\max(\cdot,w)\);
+  \item đảo trạng thái tồn tại của cạnh \(x\).
+\end{itemize}
+Mỗi thao tác đều tạo ra phiên bản \(i\) từ phiên bản \(u\). Các phiên bản tạo
+thành một cây phiên bản.
+
+\subsubsection*{4.1. Phân tích ban đầu}
+
+Nếu chỉ xét một trục thời gian tuyến tính, mỗi lần thêm cạnh có một khoảng tác
+dụng và có thể phân rã thành \(O(\log q)\) nút cây đoạn; các miền này lồng
+nhau hoặc rời nhau, nên DSU hoàn tác hoạt động tự nhiên. Trên cây phiên bản,
+miền tác dụng của một thay đổi là một cây con. Vì thao tác ở phiên bản mới dựa
+trên đúng trạng thái của phiên bản cha đã chọn, các miền tác dụng không thể bị
+phân rã tùy tiện thành những miền giao nhau. Đây là phần khó của bài toán bền
+vững.
+
+\subsubsection*{4.2. Cấu trúc tổng thể}
+
+Thực hiện phân rã nặng--nhẹ trên cây phiên bản. Với mỗi chuỗi nặng, dựng một
+cây đoạn theo thứ tự DFS của các đỉnh trên chuỗi; với mỗi nhóm con nhẹ của một
+đỉnh, dựng một cây đoạn theo thứ tự DFS của các cây con nhẹ. Các thao tác thêm
+cạnh sau khi phân rã được chia thành ba loại:
+\begin{itemize}
+  \item \emph{cạnh khoảng nặng}: tại đỉnh \(x\), cạnh có hiệu lực trên cây con
+  của \(x\) nhưng loại bỏ cây con của con nặng;
+  \item \emph{cạnh khoảng nhẹ}: tại đỉnh \(x\), cạnh có hiệu lực trên toàn bộ
+  cây con của \(x\);
+  \item \emph{cạnh điểm}: cạnh chỉ có hiệu lực đúng tại phiên bản \(x\).
+\end{itemize}
+
+\subsubsection*{4.3. Phân rã thao tác thêm cạnh}
+
+Với mỗi cạnh gốc của đồ thị, lấy các đỉnh phiên bản nơi trạng thái của cạnh đó
+thay đổi và dựng cây ảo trên tập đỉnh này. Tổng số đỉnh cây ảo trên mọi cạnh là
+theo bậc \(O(m+q)\), còn tổng số cạnh cây ảo là \(O(q)\); thời gian dựng là
+\(O((m+q)\log q)\).
+
+Với một đỉnh \(x\) của cây ảo, nếu thao tác tại \(x\) là xóa cạnh thì bỏ qua;
+nếu là thêm cạnh thì thêm một cạnh điểm ở \(x\). Sau đó xét các cây con thật
+của \(x\) không chứa đỉnh cây ảo nào kế tiếp. Những cây con này là nơi trạng
+thái cạnh không đổi. Nếu đó là con nhẹ, đưa một cạnh khoảng nhẹ vào cây đoạn
+của nhóm con nhẹ; nếu đó là con nặng, đưa một cạnh khoảng nặng dọc theo chuỗi
+nặng đến đáy chuỗi. Mỗi cạnh của cây ảo chỉ làm tăng số đoạn phủ một lượng
+hằng số hoặc \(O(\log q)\).
+
+Với một cạnh cây ảo \((x,y)\), trong đó \(x\) là tổ tiên của \(y\), nếu \(x\)
+là thao tác thêm cạnh thì phạm vi đúng phải là cây con của \(x\) trừ đi cây con
+của đứa con chứa \(y\). Nếu \(y\) và đứa con đó nằm trên cùng một chuỗi nặng,
+ta thêm một đoạn nặng từ cha của \(y\) lên tới đứa con ấy. Nếu không, tách tại
+đỉnh đầu chuỗi chứa \(y\), xử lý đoạn nặng tương ứng rồi tiếp tục trên phần còn
+lại. Nếu \(y\) là đầu chuỗi, chuyển về xử lý điểm ở cha của \(y\). Mỗi lần đi
+qua nhiều nhất \(O(\log q)\) chuỗi, nên tổng số đoạn phủ sinh ra là
+\(O(m+q\log q)\).
+
+\subsubsection*{4.4. Xử lý truy vấn}
+
+Sau khi các cạnh đã được phân rã, xử lý cây phiên bản bằng cùng DSU hoàn tác và
+cấu trúc thông tin thành phần của thuật toán 2. Khi giải một cây con có gốc là
+đầu chuỗi nặng \(x\), ta:
+\begin{enumerate}
+  \item duyệt cây đoạn của chuỗi nặng, thêm các cạnh khoảng nặng khi vào nút;
+  \item tại một lá \(y\), thêm các cạnh điểm của \(y\), thực hiện thao tác tại
+  \(y\), rồi hoàn tác các cạnh điểm;
+  \item duyệt cây đoạn của các con nhẹ của \(y\), thêm các cạnh khoảng nhẹ;
+  \item tại lá tương ứng với một con nhẹ \(z\), đệ quy xử lý cây con của \(z\),
+  sau đó hoàn tác những thao tác thuộc cây con đó;
+  \item khi ra khỏi một cây đoạn hoặc một chuỗi, hoàn tác toàn bộ cạnh đã thêm
+  trong phạm vi đó.
+\end{enumerate}
+
+Các phép sửa thành phần cần rollback cả nhãn lười và giá trị phụ trợ, vì vậy
+mỗi thay đổi được ghi vào một stack hoàn tác riêng. Cách duyệt trên bảo đảm khi
+trả lời một phiên bản, DSU đúng với trạng thái đồ thị của phiên bản đó.
+
+\subsubsection*{4.5. Độ phức tạp}
+
+Số đoạn phủ sau phân rã là \(O(m+q\log q)\). Đưa các đoạn này vào cây đoạn lại
+sinh thêm một hệ số \(O(\log q)\), nên số lần thêm cạnh thực sự là
+\(O((m+q\log q)\log q)\). Mỗi lần thêm cạnh cần tìm đại diện DSU và cập nhật
+thông tin thành phần, do đó tổng thời gian là
+\[
+  O\bigl(n+(m+q\log q)\log q\log n\bigr).
+\]
+Không gian là \(O(n+(m+q\log q)\log q)\), chủ yếu nằm ở các đoạn phủ và stack
+hoàn tác.
+
+\subsection*{5. Tổng kết}
+
+Bài viết trình bày cách kết hợp chia để trị bằng cây đoạn với DSU hoàn tác để
+duy trì thông tin của thành phần liên thông, rồi mở rộng ý tưởng đó sang cây
+phiên bản bằng phân rã nặng--nhẹ. Điểm cốt lõi là giữ thứ tự LIFO của những
+thay đổi cần hoàn tác; khi thứ tự này còn đúng, ta có thể đặt nhiều cấu trúc
+dữ liệu phức tạp hơn lên trên DSU mà vẫn rollback được.
+
+Chia để trị bằng cây đoạn và các cấu trúc có thể hoàn tác còn nhiều ứng dụng
+khác trong bài toán offline. Bài viết hy vọng giúp người đọc hiểu rõ hơn năng
+lực của kỹ thuật này và tiếp tục khai thác nó trong các mô hình duy trì thông
+tin khác.
+
+\subsection*{Lời cảm ơn}
+
+Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+Xin cảm ơn thầy Wang Keke, thầy Zhou Cheng và cô Huang Lihua đã quan tâm, chỉ
+dẫn. Xin cảm ơn cha mẹ đã quan tâm và ủng hộ. Xin cảm ơn tất cả bạn học và
+thầy cô đã giúp đỡ.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Luo Zhezheng. \emph{Từ Unknown bàn về một lớp phương pháp duy trì thông
+  tin đoạn hỗ trợ thêm và xóa ở cuối}. Tập luận văn đội tuyển quốc gia Olympic
+  Tin học Trung Quốc, 2016.
+  \item Xu Haoran. \emph{Bàn về vài lời giải phi cổ điển cho bài toán cấu trúc
+  dữ liệu}. Tập luận văn đội tuyển quốc gia Olympic Tin học Trung Quốc, 2013.
+\end{enumerate}
+
+\subsection*{Ghi chú trích xuất}
+
+Bài này được dịch từ trang PDF 93--97, tương ứng các trang in 179--186. Trang
+PDF 93 chứa phần cuối bài trước ở nửa trái, và trang PDF 97 chứa phần đầu bài
+kế tiếp ở nửa phải; bản dịch chỉ lấy phần thuộc bài này. Bài không có hình
+minh họa cần nhập lại.
 
 \end{document}
