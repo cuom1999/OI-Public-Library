@@ -22,7 +22,8 @@ các trang thân bài đã kiểm tra. Bản LaTeX này chuyển ngữ phần nh
 sách, toàn bộ mục lục, bài đầu tiên của Liu Hengxi về đoạn liên tiếp cùng
 các bài toán liên quan, và bài thứ hai của Gou Jingyu về các phương pháp
 chứng minh tính lồi trong đề OI, cùng bài thứ ba của Liu Haifeng về xử lý
-lân cận trên cây bằng phân rã chuỗi dài.
+lân cận trên cây bằng phân rã chuỗi dài, và bài thứ tư của Xu Xiaoyang về
+nguyên lý chuyển vị trong một lớp bài toán quy hoạch động.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -1977,6 +1978,468 @@ môi trường học tập tin học tốt. Xin cảm ơn gia đình, bạn bè 
 
 \begin{enumerate}
   \item Liu Rujia. \emph{Nghệ thuật thuật toán và thi đấu tin học}.
+\end{enumerate}
+
+\section*{Bài 4. Ứng dụng nguyên lý chuyển vị trong một lớp bài toán quy hoạch động}
+\addcontentsline{toc}{section}{Bài 4. Ứng dụng nguyên lý chuyển vị trong một lớp bài toán quy hoạch động}
+
+\begin{center}
+Xu Xiaoyang, Trường Trung học số 1 trực thuộc Đại học Sư phạm Hoa Trung
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Nguyên lý chuyển vị (\emph{Transposition Principle}) là tư tưởng dùng ma trận
+chuyển vị để viết lại thuật toán của một biến đổi tuyến tính. Nó có thể tối ưu
+hiệu quả độ phức tạp thời gian và bộ nhớ của một số bài toán biến đổi tuyến
+tính. Bài viết đưa nguyên lý này vào quy hoạch động, kết hợp với một số thao
+tác trên cây đoạn, rồi thông qua hai ví dụ trình bày lợi thế của cách nhìn
+chuyển vị khi giải các bài toán DP cần tối ưu bằng cây đoạn.
+
+\subsection*{1. Mở đầu}
+
+Từ thế kỷ trước, nguyên lý chuyển vị đã được dùng trong tối ưu thuật toán biến
+đổi tuyến tính. Nó liên hệ chặt chẽ một thuật toán biến đổi tuyến tính với
+thuật toán của biến đổi chuyển vị. Trước đó, người ta thường tối ưu một biến
+đổi và chuyển vị của nó một cách riêng rẽ, ví dụ nhân đa thức và bài toán
+chuyển vị tương ứng. Nguyên lý chuyển vị cho biết hai bài toán có thể được giải
+trong gần như cùng độ phức tạp thời gian và bộ nhớ. Vì vậy, khi tối ưu được
+một thuật toán biến đổi tuyến tính, ta cũng có thể thu được thuật toán cho
+chuyển vị của nó.
+
+Với bài toán đơn giản, thường có thể tối ưu trực tiếp. Giá trị của nguyên lý
+chuyển vị thể hiện rõ hơn ở những bài toán khó, nhất là khi thuật toán có bản
+chất tuyến tính nhưng dạng trực tiếp không dễ nhìn ra. Hiện tại, các ứng dụng
+trong OI chủ yếu liên quan đến hàm sinh và phép toán đa thức. Bài viết này bàn
+về một hướng ít được nhắc tới hơn: dùng chuyển vị trong DP tối ưu bằng hợp nhất
+hoặc tách cây đoạn.
+
+\subsection*{2. Nguyên lý chuyển vị}
+
+\subsubsection*{2.1. Giới thiệu}
+
+\paragraph{\term{Định nghĩa 2.1} (thuật toán biến đổi tuyến tính).}
+Với ma trận \(A\) kích thước \(m\times n\), một thuật toán có thể tính
+\[
+  b=Aa
+\]
+với mọi vector cột \(a\in R^n\) được gọi là thuật toán biến đổi tuyến tính ứng
+với \(A\).
+
+Nhân ma trận trực tiếp là một ví dụ hiển nhiên, nhưng thuật toán biến đổi tuyến
+tính không nhất thiết phải cài bằng nhân ma trận thô. Ví dụ, thuật toán tính
+tổng hậu tố có thể xem là nhân với ma trận tam giác trên toàn số \(1\). Cách
+cài đặt của thuật toán chỉ phụ thuộc vào ma trận \(A\), không phụ thuộc giá trị
+cụ thể của vector đầu vào.
+
+\paragraph{\term{Định nghĩa 2.2} (chuyển vị của thuật toán).}
+Với thuật toán \(f\) ứng với ma trận \(A\), thuật toán \(g\) ứng với ma trận
+\(A^T\) được gọi là chuyển vị của \(f\). Nghĩa là với mọi vector cột
+\(a'\in R^m\), thuật toán \(g\) tính
+\[
+  b'=A^T a'.
+\]
+Vector \(a'\) ở đây là một đầu vào độc lập, không có quan hệ số trị với vector
+\(a\) của thuật toán gốc.
+
+Vẫn với ví dụ tổng hậu tố, ma trận chuyển vị là ma trận tam giác dưới toàn số
+\(1\), tức thuật toán tổng tiền tố. Do đó có thể xem tổng tiền tố là chuyển vị
+của tổng hậu tố.
+
+Theo nguyên lý chuyển vị, có thể viết lại một thuật toán biến đổi tuyến tính
+thành thuật toán cho biến đổi chuyển vị mà không đổi bậc độ phức tạp. Nếu bài
+toán chuyển vị dễ tối ưu hơn, ta có thể tối ưu nó rồi chuyển ngược để giải bài
+toán ban đầu.
+
+\subsubsection*{2.2. Viết lại thuật toán}
+
+Để tiện xử lý, có thể thêm hàng và cột để biến \(A\) thành một ma trận vuông
+khả nghịch:
+\[
+  \begin{pmatrix}
+    A&I_m\\
+    I_n&0
+  \end{pmatrix}.
+\]
+Đồng thời thêm \(m\) phần tử vào vector đầu vào và đặt chúng bằng \(0\); phần
+mở rộng không ảnh hưởng đến \(m\) phần tử đầu của kết quả, còn \(n\) phần tử
+sau chỉ khôi phục lại đầu vào ban đầu. Vì vậy phần mở rộng không làm đổi bản
+chất thuật toán hay bậc độ phức tạp. Nếu không nói rõ, ta có thể giả sử \(A\)
+là ma trận vuông khả nghịch.
+
+Mọi ma trận khả nghịch có thể phân tích thành tích các ma trận sơ cấp. Ba thao
+tác sơ cấp tương ứng là:
+\begin{enumerate}
+  \item hoán đổi \(a_i\) và \(a_j\), ký hiệu \(a_i\leftrightarrow a_j\);
+  \item nhân \(a_i\) với hằng số \(k\), ký hiệu \(a_i\leftarrow k a_i\);
+  \item cộng \(k a_j\) vào \(a_i\), ký hiệu
+  \(a_i\leftarrow a_i+k a_j\).
+\end{enumerate}
+Hai thao tác đầu khi chuyển vị vẫn giữ nguyên. Thao tác thứ ba chuyển thành
+\[
+  a_j\leftarrow a_j+k a_i.
+\]
+Vì \(A^T=V_k^T V_{k-1}^T\cdots V_1^T\), muốn lấy chuyển vị của thuật toán thì
+đổi từng thao tác thành thao tác chuyển vị tương ứng rồi thực hiện theo thứ tự
+ngược.
+
+\subsection*{3. Nguyên lý chuyển vị và quy hoạch động}
+
+\subsubsection*{3.1. Tư tưởng cơ bản}
+
+Muốn dùng nguyên lý chuyển vị, trước hết cần mô tả bài toán dưới dạng một biến
+đổi tuyến tính. Sau đó dựa trên ý nghĩa cụ thể của ma trận \(A\), ta diễn giải
+bài toán chuyển vị \(b'=A^T a'\). Nếu bài toán chuyển vị có thể giải bằng DP
+hoặc có DP dễ tối ưu hơn, ta chuyển vị quá trình đó để thu được lời giải cho
+bài toán gốc.
+
+\subsubsection*{3.2. Tối ưu quy hoạch động}
+
+Với nhiều bài toán, vẫn có thể thiết kế trạng thái và chuyển trực tiếp mà không
+cần nguyên lý chuyển vị. Nhưng trong các bài cần tối ưu DP bằng cấu trúc dữ
+liệu phức tạp, cách thiết kế trực tiếp có thể rườm rà và thiếu tự nhiên. Khi
+đó, nếu bài toán có thể viết thành biến đổi tuyến tính, nguyên lý chuyển vị
+giúp chuyển bài toán sang dạng dễ nhìn hơn.
+
+Những bài toán chuyển vị hiện thường gặp nhất liên quan tới:
+\begin{itemize}
+  \item hàm sinh và đa thức;
+  \item cây đoạn.
+\end{itemize}
+Bài viết tập trung vào nhóm thứ hai: các DP cần tối ưu bằng thao tác trên cây
+đoạn.
+
+\subsection*{4. Chuyển vị của một số thao tác trên cây đoạn}
+
+Trước khi chuyển vị một thuật toán DP tối ưu bằng cây đoạn, cần hiểu chuyển vị
+của các thao tác cây đoạn là gì. Khi làm điều này, phải mô tả thuật toán cây
+đoạn thành một biến đổi tuyến tính: dữ liệu đầu vào nào được đặt trong vector,
+dữ liệu nào được xem là phần cố định của ma trận \(A\), và đầu ra nằm ở đâu.
+
+\subsubsection*{4.1. Cộng đoạn, hỏi điểm}
+
+Xét dãy \(a_i\) độ dài \(n\), ban đầu toàn \(0\), hỗ trợ:
+\begin{enumerate}
+  \item \(l\ r\ x\): cộng \(x\) cho mọi \(a_i\) với \(i\in[l,r]\);
+  \item \(q\ y\): ghi giá trị \(a_q\) vào \(y\).
+\end{enumerate}
+Các giá trị \(x\) là đầu vào, còn \(l,r,q\) được xem là cố định trong ma trận
+của biến đổi. Với mỗi truy vấn \(y_i\), nó là tổng của những \(x_j\) có thao tác
+cộng xuất hiện trước truy vấn và thỏa \(q_i\in[l_j,r_j]\). Do đó toàn bộ quá
+trình là một biến đổi tuyến tính.
+
+\paragraph{\term{Chuyển vị của thao tác thô}.}
+Nếu cài thô, thao tác cộng đoạn là nhiều phép
+\[
+  a_t\leftarrow a_t+x_i\qquad (t=l_i,\ldots,r_i),
+\]
+còn thao tác hỏi điểm là
+\[
+  y_i\leftarrow y_i+a_{q_i}.
+\]
+Sau khi chuyển vị và đảo thứ tự:
+\begin{itemize}
+  \item thao tác \(l\ r\ x\) trở thành lấy tổng
+  \(a_l+a_{l+1}+\cdots+a_r\) và cộng vào \(x\);
+  \item thao tác \(q\ y\) trở thành cộng \(y\) vào \(a_q\).
+\end{itemize}
+Nói cách khác, chuyển vị của ``cộng đoạn, hỏi điểm'' là ``cộng điểm, hỏi tổng
+đoạn''.
+
+\paragraph{\term{Chuyển vị của thao tác trên cây đoạn}.}
+Dùng đánh dấu vĩnh viễn trên cây đoạn: mỗi nút \(pos\) lưu \(s_{pos}\), nghĩa
+là mọi vị trí trong đoạn của nút đều được cộng thêm \(s_{pos}\). Vector trung
+gian không còn là \(n\) giá trị \(a_i\), mà là \(2n-1\) giá trị \(s_{pos}\).
+
+Thao tác cộng đoạn tách \([l_i,r_i]\) thành các nút cây đoạn \(S_i\), rồi với
+mỗi \(pos\in S_i\) thực hiện \(s_{pos}\leftarrow s_{pos}+x_i\). Thao tác hỏi
+điểm lấy các nút trên đường chứa \(q_i\), gọi là \(S'_i\), rồi thực hiện
+\(y_i\leftarrow y_i+s_{pos}\) với mọi \(pos\in S'_i\). Chuyển vị cho ta:
+\begin{itemize}
+  \item thao tác \(l_i,r_i,x_i\): cộng các \(s_{pos}\) của \(pos\in S_i\) vào
+  \(x_i\);
+  \item thao tác \(q_i,y_i\): cộng \(y_i\) vào mọi \(s_{pos}\) trên đường chứa
+  \(q_i\).
+\end{itemize}
+Ý nghĩa thực tế vẫn đúng là ``cộng điểm, hỏi tổng đoạn''. Như vậy có hai con
+đường để lấy chuyển vị của một thao tác cây đoạn: chuyển vị trực tiếp thao tác
+trên cây đoạn, hoặc trước hết chuyển vị thao tác thô rồi tối ưu bài toán mới
+bằng cây đoạn. Nội dung của hình gốc chỉ minh họa hai con đường này; bài viết
+không cần chèn lại hình để dùng kết luận.
+
+\subsubsection*{4.2. Hai cách giải chuyển vị của thao tác cây đoạn}
+
+Từ phân tích trên, có hai phương pháp:
+\begin{enumerate}
+  \item phân tích trực tiếp các thao tác trên cây đoạn rồi lấy chuyển vị;
+  \item tìm chuyển vị của thao tác thô, sau đó dùng cây đoạn tối ưu bài toán
+  chuyển vị.
+\end{enumerate}
+Phương pháp thứ nhất phức tạp hơn khi phân tích nhưng áp dụng được cho mọi thao
+tác trên cây đoạn. Phương pháp thứ hai dễ hơn khi thuật toán thô đơn giản, nhưng
+khi thuật toán gốc phức tạp, việc diễn giải và tối ưu bài toán chuyển vị có thể
+khó hơn, thậm chí cần thêm chứng minh về độ phức tạp và tính đúng.
+
+\subsubsection*{4.3. Chuyển vị của hợp nhất cây đoạn}
+
+Phần này tạm không xét giá trị số, chỉ xét quá trình đảo ngược thao tác hợp
+nhất cây đoạn. Trong các bài toán thực tế, ta thường chạy hợp nhất cây đoạn
+bình thường rồi xử lý ngược lại; quá trình ngược này rất giống thao tác rollback
+và được gọi là tách cây đoạn. Khái niệm này khác với tách cây đoạn thông
+thường theo giá trị. Ở đây hai cây sau khi tách có thể có miền giá trị trùng
+nhau, vì chúng là hai cây trước khi hợp nhất.
+
+Khi hợp nhất hai cây \(T_1,T_2\), xét hai gốc \(rt_1,rt_2\):
+\begin{itemize}
+  \item nếu một trong hai rỗng, trả về cây không rỗng;
+  \item nếu cả hai không rỗng, hợp nhất con trái với con trái, con phải với con
+  phải, cập nhật thông tin và trả về \(rt_1\).
+\end{itemize}
+Muốn tách cây \(T\) trở lại \(T_1,T_2\), ta đảo quá trình trên: nút sinh ra từ
+trường hợp một bên rỗng được trả lại đúng cây con cũ; nút sinh ra từ trường hợp
+cả hai không rỗng thì đệ quy tách hai con rồi cập nhật hai nút gốc. Nếu cần
+rollback, chỉ cần ghi lại những thông tin bị sửa khi hợp nhất; thời gian và bộ
+nhớ vẫn giữ \(O(n\log n)\).
+
+\subsubsection*{4.4. Hợp nhất cây đoạn để tối ưu MAX-convolution}
+
+\paragraph{\term{4.4.1. MAX-convolution}.}
+Với dãy viết thành chuỗi lũy thừa hình thức
+\[
+  F=\sum_{i=0}^{n} f_i x^i,\qquad G=\sum_{i=0}^{n} g_i x^i,
+\]
+định nghĩa \(H=F\otimes G\) nếu với mọi \(k\):
+\[
+  h_k=\sum_{\max(i,j)=k} f_i g_j.
+\]
+
+\paragraph{\term{4.4.2. Chuyển vị của MAX-convolution}.}
+Xem \(F\) là đầu vào, \(G\) là hằng số tạo ma trận \(A\), và \(H\) là đầu ra.
+Chuyển vị được ký hiệu \(F=H\otimes^T G\). Theo định nghĩa, thao tác gốc với
+mỗi cặp \(i,j\) là
+\[
+  h_{\max(i,j)}\leftarrow h_{\max(i,j)}+f_i g_j.
+\]
+Chuyển vị của nó là
+\[
+  f_i\leftarrow f_i+h_{\max(i,j)}g_j.
+\]
+Do đó
+\[
+  f_i=\sum_{j=0}^{n} h_{\max(i,j)}g_j
+      =h_i\sum_{j=0}^{i}g_j+\sum_{j=i+1}^{n}h_jg_j.
+\]
+
+\paragraph{\term{4.4.3. Tính MAX-convolution}.}
+Để tính \(H=F\otimes G\), duyệt \(i=0,\ldots,n\), đồng thời duy trì
+\[
+  s_f=\sum_{j<i}f_j,\qquad s_g=\sum_{j<i}g_j.
+\]
+Nếu \(f_i=g_i=0\) thì \(h_i=0\). Nếu chỉ một trong hai khác \(0\), \(h_i\) bằng
+tích của giá trị khác \(0\) với tổng tiền tố của dãy còn lại. Nếu cả hai khác
+\(0\), ta có
+\[
+  h_i=s_f g_i+s_g f_i+f_i g_i,
+\]
+rồi cập nhật \(s_f,s_g\).
+
+\paragraph{\term{4.4.4. Tối ưu MAX-convolution bằng hợp nhất cây đoạn}.}
+Nếu trong DP trên cây có
+\[
+  D_i\leftarrow D_i\otimes D_v,
+\]
+và mỗi \(D_i\) ban đầu chỉ có \(O(1)\) vị trí khác \(0\), thì từ định nghĩa
+thấy vị trí \(k\) của kết quả khác \(0\) chỉ khi \(f_k\ne0\) hoặc \(g_k\ne0\).
+Vì vậy tập vị trí khác \(0\) của \(D_i\) luôn nằm trong hợp của các tập vị trí
+ban đầu thuộc cây con. Ta chỉ cần dùng cây đoạn mở nút động để lưu các vị trí
+khác \(0\).
+
+Khi hợp nhất hai cây đoạn tương ứng với \(F=D_i\) và \(G=D_v\), duy trì hai tổng
+tiền tố \(s_f,s_g\). Nếu một bên rỗng, đánh tag nhân với tổng tiền tố bên kia
+và trả về cây con đó; nếu cả hai có nút, đệ quy vào con trái rồi con phải và
+cập nhật. Quá trình có cùng độ phức tạp với hợp nhất cây đoạn thường,
+\(O(n\log n)\).
+
+\paragraph{\term{4.4.5. Chuyển vị của cách tối ưu trên}.}
+Với DP có thêm mảng \(C_i\):
+\[
+  D_i\leftarrow D_i\otimes D_v,\qquad
+  C_i\leftarrow C_i\otimes D_v+C_v\otimes D_i,
+\]
+xem \(D\) là hằng số và bài toán là biến đổi tuyến tính theo \(C\). Xét riêng
+\[
+  C_i\leftarrow C_i\otimes D_v.
+\]
+Khi đảo quá trình hợp nhất, phải tách phần thuộc \(v\) khỏi cây đoạn đã hợp
+nhất. Viết \(C_i=F\), \(D_v=G\). Vì \(G\) là hằng số, tổng \(s_g\) giữ nguyên
+ý nghĩa; chỉ cần xử lý \(s_f\) theo chiều ngược.
+
+Khi thăm nút \(pos\) được hợp nhất từ \(pos_1,pos_2\):
+\begin{itemize}
+  \item nếu \(pos\) rỗng, trả về;
+  \item nếu \(pos_1\) không rỗng và \(pos_2\) rỗng, với mọi \(f_i\) trong đoạn
+  của \(pos_1\), thực hiện \(f_i\leftarrow s_g f_i+s_f\);
+  \item nếu \(pos_1\) rỗng và \(pos_2\) không rỗng, phép toán không liên quan
+  đến \(F\) trong nhánh này;
+  \item nếu cả hai không rỗng, xử lý hai con theo thứ tự ngược với lúc hợp
+  nhất, rồi cập nhật nút hiện tại.
+\end{itemize}
+Nếu đi từ chuyển vị thô của MAX-convolution rồi mới tối ưu bằng cây đoạn, ta
+cũng có thể thu được kết quả tương tự, nhưng cần chứng minh thêm rằng chỉ những
+vị trí nằm trong tập đang được cây đoạn duy trì mới có ý nghĩa.
+
+\subsection*{5. Ví dụ}
+
+\subsubsection*{5.1. Ví dụ 1}
+
+\paragraph{\term{Nguồn}.}
+NOI2024 D2T2, \emph{Đăng sơn}.
+
+\paragraph{\term{Tóm tắt đề}.}
+Cho cây gốc \(1\), cha của đỉnh \(i\) là \(p_i\), độ sâu \(d_i\) là số cạnh từ
+\(i\) tới \(1\). Mỗi đỉnh có tham số \(l_i,r_i,h_i\) hạn chế đường leo núi hợp
+lệ. Một đường leo núi từ \(x\) là dãy
+\[
+  a_1=x,\ a_2,\ldots,a_m=1
+\]
+sao cho mỗi bước hoặc nhảy tới tổ tiên cấp \(k\) của đỉnh hiện tại với
+\(l_{a_i}\le k\le r_{a_i}\), hoặc đi theo một quan hệ cha đặc biệt trong đề; đồng
+thời các lần nhảy phải thỏa ràng buộc về độ sâu \(h_i\). Gọi \(f_x\) là số
+đường leo hợp lệ từ \(x\) tới \(1\); cần tính \(f_2,\ldots,f_n\).
+
+Đặt
+\[
+  A=(f_2,f_3,\ldots,f_n)^T,\qquad a=(1),
+\]
+tức cần tính \(b=Aa\). Xét bài toán chuyển vị: cho hệ số
+\[
+  a'=(v_2,v_3,\ldots,v_n)^T,
+\]
+tính \(b'=A^T a'\). Diễn giải thực tế là: mỗi đường leo hợp lệ có trọng số bằng
+trọng số \(v_s\) của điểm xuất phát \(s\); cần tính tổng trọng số của mọi đường
+leo hợp lệ.
+
+Vì các điểm được ``nhảy tới'' luôn là tổ tiên của điểm nhảy trước đó, đặt
+\(g_x\) là tổng trọng số của mọi đường hiện đang nhảy tới \(x\). Dùng thêm
+\(c_{i,j}\) là số đường trong cây con \(i\) có thể nhảy lên tổ tiên ở độ sâu
+\(j\), và \(t_{i,j}\) là tổng trọng số của các đường như vậy. Nếu \(S_x\) là
+tập con của \(x\), có dạng chuyển:
+\[
+  g_x=v_x+\sum_{i\in S_x}t_{i,d_x},
+\]
+\[
+  c_{x,j}=
+  \begin{cases}
+    [d_x-r_x\le j\le d_x-l_x]+\sum_{i\in S_x}c_{i,j},
+      & j<d_x-h_x,\\
+    0, & j\ge d_x-h_x,
+  \end{cases}
+\]
+\[
+  t_{x,j}=
+  \begin{cases}
+    g_x+\sum_{i\in S_x}t_{i,j}, & j<d_x-h_x,\\
+    0, & j\ge d_x-h_x.
+  \end{cases}
+\]
+Có thể dùng hợp nhất cây đoạn để duy trì các mảng \(c,t\), đạt
+\(O(n\log n)\).
+
+Khi chuyển vị quá trình trên, mảng \(c\) chỉ đóng vai trò hệ số nên có thể
+rollback trực tiếp. Bắt đầu từ \(d_{1,0}=1\), đảo các thao tác tại đỉnh \(x\):
+\[
+  g_x\leftarrow \sum_{j<d_x-h_x} c_{x,j}t_{x,j},
+\]
+rồi đặt \(f_x\leftarrow g_x\), \(t_{x,d_x}\leftarrow g_x\), và truyền
+\(t_{x,j}\) xuống các con. Kết quả cuối cùng là mảng \(f\). Cách nhìn chuyển vị
+giúp tránh việc phải tự thiết kế trực tiếp một DP khó tối ưu theo các hệ số
+\(c\).
+
+\subsubsection*{5.2. Ví dụ 2}
+
+\paragraph{\term{Tóm tắt đề}.}
+Cho một cây, đỉnh \(i\) có trọng số \(p_i\). Trọng số của một đồ thị con liên
+thông là giá trị lớn nhất trong các \(p_i\) của nó. Với mỗi đỉnh \(k\), cần tính
+tổng trọng số của mọi đồ thị con liên thông chứa \(k\).
+
+Gọi \(a_{i,j}\) là số đồ thị con liên thông chứa \(i\) và có trọng số lớn nhất
+bằng \(j\), \(A=(a_{i,j})\), và
+\[
+  a=(1,2,\ldots,n)^T.
+\]
+Bài toán gốc là tính \(b=Aa\). Xét chuyển vị với hệ số
+\[
+  a'=(v_1,v_2,\ldots,v_n)^T.
+\]
+Khi đó bài toán trở thành: mỗi đỉnh có trọng lượng \(v_i\), trọng lượng của một
+đồ thị con liên thông là tổng trọng lượng các đỉnh của nó; với mỗi \(j\), cần
+tính tổng trọng lượng của mọi đồ thị con liên thông có trọng số lớn nhất bằng
+\(j\).
+
+Bài toán chuyển vị này có DP tự nhiên. Gốc cây tại \(1\), gốc của một đồ thị
+con liên thông là đỉnh có độ sâu nhỏ nhất trong nó. Đặt \(f_{i,j}\) là số đồ
+thị con liên thông có gốc \(i\) và trọng số lớn nhất \(j\), còn \(g_{i,j}\) là
+tổng trọng lượng của các đồ thị con đó. Ban đầu
+\[
+  F_i=x^{p_i},\qquad G_i=v_i x^{p_i}.
+\]
+Khi gộp một con \(v\) vào \(i\):
+\[
+  F_i\leftarrow F_i\otimes(1+F_v),
+\]
+\[
+  G_i\leftarrow G_i\otimes(1+F_v)+G_v\otimes F_i.
+\]
+Sau mỗi lần gộp, cộng \(G_i\) vào đáp án theo trọng số. Các phép \(\otimes\) là
+MAX-convolution và có thể tối ưu bằng hợp nhất cây đoạn, nên bài toán chuyển vị
+giải được trong \(O(n\log n)\).
+
+Để quay lại bài toán gốc, đảo quá trình trên. Các chuyển của \(F\) không phụ
+thuộc hệ số đầu vào nên chỉ cần rollback. Nếu đáp án chuyển vị nằm trong mảng
+\(y\), thì với bài toán gốc cần tính
+\[
+  y=\sum_i i x_i.
+\]
+Khi xử lý ngược tại đỉnh \(i\):
+\begin{itemize}
+  \item \(G_i\leftarrow G_i+y\);
+  \item tách các con theo thứ tự ngược:
+  \(G_v\leftarrow G_i\otimes^T F_i\),
+  \(G_i\leftarrow G_i\otimes^T(F_v+1)\);
+  \item sau khi tách xong, lấy đóng góp tại \(p_i\) để gán cho \(v_i\).
+\end{itemize}
+Nhờ cách xử lý \(\otimes^T\) bằng tách cây đoạn ở phần trước, bài toán gốc cũng
+được giải trong \(O(n\log n)\). Với ví dụ này, nếu thiết kế DP trực tiếp cho
+bài toán gốc thì trạng thái, chuyển và tối ưu chuyển đều kém tự nhiên hơn đáng
+kể; chuyển vị đem lại lợi thế rõ ràng.
+
+\subsection*{6. Tổng kết}
+
+Bài viết giới thiệu nguyên lý chuyển vị, khảo sát chuyển vị của một số thao tác
+trên cây đoạn, rồi dùng hai ví dụ để minh họa ứng dụng trong các bài toán quy
+hoạch động có thể mô tả thành biến đổi tuyến tính. Với những bài toán cần hợp
+nhất hoặc tách cây đoạn để tối ưu chuyển, nguyên lý chuyển vị có thể giảm đáng
+kể độ khó khi thiết kế trạng thái, thiết kế chuyển và chứng minh độ phức tạp,
+đồng thời vẫn đạt được bậc \(O(n\log n)\) quen thuộc của hợp nhất cây đoạn.
+
+\subsection*{7. Lời cảm ơn}
+
+Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+Xin cảm ơn các huấn luyện viên đội tuyển quốc gia đã giúp đỡ và chỉ đạo. Xin
+cảm ơn thầy Xiang Qizhong và thầy Hu Weidong đã quan tâm, hướng dẫn. Xin cảm
+ơn gia đình đã ủng hộ và động viên tác giả. Xin cảm ơn Zhang Ruichen, Wu Ruiqi
+và các bạn khác đã đọc kiểm và góp ý cho bài viết.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item A. Bostan, G. Lecerf, and E. Schost. Tellegen's principle into
+  practice. \emph{Proceedings of the 2003 International Symposium on Symbolic
+  and Algebraic Computation}, pages 37--44, 2003.
+  \item Gilbert Strang. \emph{Linear Algebra}, 5th edition. Tsinghua University
+  Press, 2019.
+  \item Chen Yu. Giới thiệu đơn giản về nguyên lý chuyển vị. Tập luận văn đội
+  tuyển quốc gia 2020, 2020.
 \end{enumerate}
 
 \end{document}
