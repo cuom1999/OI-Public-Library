@@ -20,7 +20,7 @@ PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc n
 tạo bằng pdfTeX nhưng lớp văn bản không ánh xạ đúng về Unicode: ngay cả mục
 lục khi trích xuất bằng \texttt{pdftotext} cũng trở thành mojibake. Bản dịch
 này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và mười
-một bài đầu tiên của tập sách, được đọc bằng OCR hoặc đối chiếu với trang render.
+hai bài đầu tiên của tập sách, được đọc bằng OCR hoặc đối chiếu với trang render.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -56,7 +56,10 @@ vật lý trong thi tin học'', dùng các trang PDF vật lý 179--202, tươn
 in 175--198; trang PDF vật lý 203, trang in 199, là đầu bài kế tiếp về đề bài
 bị thất lạc. Bài thứ mười một, ``Báo cáo ra đề \emph{Đề bài bị thất lạc}'',
 dùng các trang PDF vật lý 203--208, tương ứng trang in 199--204; trang PDF vật
-lý 209, trang in 205, là đầu bài kế tiếp về tối ưu DP.
+lý 209, trang in 205, là đầu bài kế tiếp về tối ưu DP. Bài thứ mười hai, ``Một
+số kỹ thuật tối ưu DP'', dùng các trang PDF vật lý 209--219, tương ứng trang in
+205--215; trang PDF vật lý 220, trang in 216, là trang trắng; trang PDF vật lý
+221, trang in 217, là đầu bài kế tiếp về \emph{Product}.
 
 \section{Mục lục đã dịch}
 
@@ -7241,5 +7244,424 @@ Xin cảm ơn thầy Zhang Xingang, huấn luyện viên của tôi, vì nhiều
 
 Xin cảm ơn các đội viên đội tuyển tập huấn đã tham gia thi đối kháng và các
 OIer trên cả nước đã tham gia bản mirror.
+
+\section{Một số kỹ thuật tối ưu DP}
+
+\begin{center}
+\textbf{Zhang Hengjie}\\
+Trường Trung học số 1 Thiệu Hưng
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Quy hoạch động là một dạng bài rất thường gặp trong thi tin học. Bài viết này
+liệt kê một số phương pháp tối ưu DP; các phương pháp đó phát huy tác dụng trên
+nhiều bài toán và cho hiệu quả khá tốt.
+
+\subsection{Dẫn nhập}
+
+DP, viết tắt của \emph{Dynamic Programming}, tức quy hoạch động, là phương pháp
+giải một bài toán phức tạp bằng cách tách nó thành các bài toán con tương đối
+đơn giản. Trong vài năm gần đây, DP xuất hiện rất thường xuyên trong các kỳ thi
+tin học, đặc biệt trên các trang chấm bài lớn; hình thức xuất hiện cũng ngày
+càng phức tạp và đa dạng.
+
+Những phương pháp truyền thống như hàng đợi đơn điệu, tối ưu hóa độ dốc hay bất
+đẳng thức tứ giác đã được trình bày khá kỹ trong các luận văn các năm trước, vì
+vậy bài viết này không nhắc lại chi tiết. Tác giả tổng hợp một loạt kỹ thuật tối
+ưu DP và đưa ra một số ví dụ để giúp người đọc hiểu sâu hơn, hy vọng có ích phần
+nào cho các bạn tham gia thi tin học.
+
+Ghi chú: bài viết này tập trung vào kỹ thuật tối ưu, nên cách suy ra công thức
+chuyển của từng ví dụ không phải trọng tâm trình bày.
+
+\subsection{Tổng hợp phương pháp}
+
+\subsubsection{Dùng nhân ma trận để tăng tốc}
+
+Cách dùng nhân ma trận để tối ưu chuyển DP hẳn đã quen thuộc, nên ở đây chỉ giới
+thiệu ngắn gọn. Nếu xem \(f(i)\) là một vector và \(f(i+1)\) có thể nhận được
+bằng cách nhân \(f(i)\) với ma trận chuyển \(A\), thì giá trị cần tìm \(f(n)\)
+có thể viết dưới dạng \(f(0)\times A^n\). Do phép nhân ma trận có tính kết hợp,
+phần \(A^n\) chỉ cần tối ưu bằng lũy thừa nhanh.
+
+Vì vậy, với một lớp DP có phép chuyển đơn nhất nhưng số lần chuyển rất lớn, ta có
+thể cân nhắc dùng nhân ma trận để tối ưu.
+
+\subsubsection{Tăng tốc bằng phép toán bit}
+
+Với một số DP mà giá trị khóa chỉ là \(0\) hoặc \(1\), có thể dùng phép toán bit
+để đóng gói và xử lý thông tin. Bài ba lô \(0/1\) là một ví dụ điển hình. Sau
+khi tối ưu bằng bit, tốc độ chương trình thường tăng đáng kể, đủ để vượt qua một
+số bộ dữ liệu có quy mô lớn.
+
+\subsubsection{Tối ưu số lượng trạng thái}
+
+\paragraph{Ví dụ 1: Codeforces Round \#265, Div. 1, D.}
+Một người chơi một trò chơi có \(k\) loại trang bị. Ban đầu mỗi loại trang bị
+đều ở cấp \(1\). Mỗi lần đánh quái, hệ thống rơi ngẫu nhiên một món trang bị:
+trước hết chọn đều một loại trang bị; nếu cấp hiện tại của loại đó là \(l\), hệ
+thống chọn đều cấp của món rơi ra trong đoạn \([1,l+1]\). Sau khi rơi trang bị,
+nếu trang bị mới có cấp cao hơn trang bị đang mặc thì người chơi bán trang bị
+cũ và đổi sang trang bị mới; ngược lại người chơi bán trực tiếp trang bị vừa
+rơi ra. Trang bị cấp \(i\) có giá trị \(i\) đồng vàng. Hỏi sau khi đánh \(n\)
+con quái, kỳ vọng số vàng thu được là bao nhiêu.
+
+Giới hạn dữ liệu: \(n\le 10^5\), \(k\le 100\).
+
+Do cần tính kỳ vọng, mà kỳ vọng có tính tuyến tính, ta có thể chỉ tính kỳ vọng
+cho một loại trang bị rồi nhân với \(k\) để có đáp án cuối cùng.
+
+Đặt \(f(i,j)\) là kỳ vọng số vàng thu được nếu hiện đã có trang bị cấp \(j\) và
+còn đánh thêm \(i\) con quái. Khi đó có công thức DP
+\[
+  f(0,j)=0,
+\]
+\[
+\begin{aligned}
+f(i,j)
+&=\frac{1}{k}\cdot\frac{1}{j+1}\sum_{x=1}^{j+1}
+  \left(f(i-1,\max(j,x))+\min(j,x)\right)
+  +\frac{k-1}{k}f(i-1,j)\\
+&=\frac{1}{k}\left(
+  \frac{j}{j+1}\left(f(i-1,j)+\frac{j+1}{2}\right)
+  +\frac{1}{j+1}\left(f(i-1,j+1)+j\right)\right)
+  +\frac{k-1}{k}f(i-1,j).
+\end{aligned}
+\]
+Công thức này đã chuyển trong \(O(1)\). Vì vậy, theo kỹ thuật của mục này, ta
+thử loại bỏ các trạng thái chỉ xảy ra với xác suất cực nhỏ. Trong bài này, nếu
+đã có trang bị cấp \(p\), xác suất lần kế tiếp nhận được trang bị cấp \(p+1\)
+là \(\frac{1}{kp}\). Do đó nếu cuối cùng đạt cấp \(T\), kỳ vọng số quái phải
+đánh xấp xỉ
+\[
+  2k+3k+\cdots+Tk \approx \frac{kT^2}{2},
+\]
+nên sau \(n\) con quái cấp trang bị vào khoảng \(\sqrt{2n/k}\). Dựa trên ý
+tưởng này, ta tìm một ranh giới gần \(\sqrt n\); thực nghiệm cho thấy khi ranh
+giới đủ lớn, tăng thêm ranh giới chỉ làm đáp án thay đổi rất nhỏ. Gọi ranh giới
+là \(B\), về bản chất \(B\sim O(\sqrt n)\). Như vậy thu được thuật toán
+\(O(n\sqrt n)\).
+
+Bài này dùng cách tối ưu số trạng thái: trong khi vẫn bảo đảm độ chính xác của
+đáp án, ta giảm trực tiếp độ phức tạp. Đây là một hướng khá hữu ích.
+
+\subsubsection{Tìm quy luật}
+
+Tìm quy luật là một nét rất đặc trưng trong giải bài OI, nhưng thoạt nhìn không
+dễ liên hệ trực tiếp với những thuật toán DP nghiêm ngặt. Phần sau dùng một bài
+thú vị và khá tiêu biểu để phân tích ứng dụng của việc tìm quy luật trong một
+lớp DP phân tầng.
+
+\paragraph{Ví dụ 2: Topcoder SRM 526 Div. 1, Level 3.}
+Cho \(n\) xâu và một xâu \(S\). Mỗi lần chọn ngẫu nhiên đều một xâu trong tập
+đã cho, chọn xong vẫn giữ xâu đó trong tập. Sau khi chọn \(K\) lần và nối toàn
+bộ các xâu đã chọn theo thứ tự, hỏi kỳ vọng số lần xuất hiện của \(S\) trong
+xâu thu được.
+
+Giới hạn dữ liệu: \(n\le 50\), \(|S|\le 500\), \(K\le 10^{12}\).
+
+Trước hết, vì đề yêu cầu kỳ vọng, đặt \(f(i,j)\) là kỳ vọng số lần xuất hiện của
+\(S\) sau khi đã chọn \(i\) xâu, trong đó phần hậu tố hiện tại đang khớp tới vị
+trí \(j\) của \(S\). Dễ viết được công thức
+\[
+  f(i,j)=\frac{1}{n}\sum_{x=1}^{n}
+  \left(f(i-1,\operatorname{trans}(x,j))+\operatorname{val}(x,j)\right).
+\]
+Ở đây \(\operatorname{trans}(x,j)\) là vị trí khớp mới của \(S\) sau khi đang ở
+trạng thái \(j\) rồi thêm xâu thứ \(x\), còn \(\operatorname{val}(x,j)\) là số
+lần xuất hiện mới được tạo ra. Giá trị cần tìm là \(f(K,0)\).
+
+Nhiều người sẽ nghĩ ngay tới nhân ma trận. Cách đó đúng, nhưng độ phức tạp quá
+cao, khoảng \(O(|S|^3\log K)\), nên không vượt được giới hạn thời gian.
+
+Nếu in bảng giá trị của hàm \(f\), ta sẽ phát hiện rằng khi \(i\) đủ lớn, cụ thể
+là \(i>|S|\), với mọi \(j\), hiệu \(f(i,j)-f(i-1,j)\) là một hằng số. Có thể
+giải thích ngắn gọn như sau. Giả sử hiện đã chọn \(x\) xâu, xét đóng góp của xâu
+thứ \(x+1\), tức số lần khớp có vị trí kết thúc nằm trong xâu thứ \(x+1\). Nếu
+\(|S|=L\), ngoài các khớp nằm hoàn toàn trong xâu thứ \(x+1\), đóng góp này chỉ
+phụ thuộc vào \(L-1\) ký tự ngay trước nó. Khi \(x\) lớn hơn nhiều so với \(L\),
+những ký tự đó đã được sinh ngẫu nhiên theo cùng một phân bố. Nói cách khác,
+cách tính đóng góp của xâu thứ \(x+1\) và của xâu kế tiếp là như nhau, nên xuất
+hiện tính chất nói trên.
+
+Nhờ tính chất này, chỉ cần tính các lớp \(i\le |S|\), rồi kéo dài phần tuyến
+tính còn lại. Độ phức tạp đủ nhỏ để qua bài.
+
+\subsubsection{Tách biến trong trạng thái}
+
+Trong trạng thái DP có thể tồn tại một số biến không ảnh hưởng lẫn nhau trong
+quá trình chuyển. Khi đó ta có thể tính chúng riêng rẽ mà vẫn đạt được hiệu quả
+như tính chung. Xem ví dụ sau để hiểu rõ hơn.
+
+\paragraph{Ví dụ 3: Topcoder SRM 639 Div. 1, Level 2.}
+Cho một tờ giấy hình chữ nhật \(n\times m\), mỗi ô được tô bằng một trong hai
+màu. Mỗi lần có thể gấp tờ giấy theo một đường lưới ngang hoặc dọc; khi các ô
+chồng lên nhau thì màu phải trùng nhau, và không được gấp phần lớn hơn phủ lên
+phần nhỏ hơn. Hỏi sau một số lần gấp tùy ý có bao nhiêu kết cục khác nhau. Hai
+kết cục được xem là khác nhau khi các ô còn lại nằm ở vị trí khác nhau trong
+hình chữ nhật ban đầu.
+
+Giới hạn dữ liệu: \(n,m\le 250\).
+
+Một cách rất thô là đặt \(f(u,d,l,r)\) cho biết tờ giấy ban đầu có thể gấp
+thành hình chữ nhật con từ hàng \(u\) tới hàng \(d\), từ cột \(l\) tới cột
+\(r\) hay không. Khi chuyển, ta liệt kê đường đối xứng dùng cho lần gấp tiếp
+theo. Đáp án là số trạng thái có giá trị \(\mathrm{true}\).
+
+Nhưng cách này quá đắt. Với bài này, gấp ngang và gấp dọc thật ra có thể tách
+riêng. Nói cách khác, hai cặp biến \((u,d)\) và \((l,r)\) không ảnh hưởng nhau.
+Lý do như sau. Xét một tờ giấy có tô màu. Nếu ta thực hiện liên tiếp một lần
+gấp ngang và một lần gấp dọc, đổi thứ tự hai phép gấp đó cho kết quả tương
+đương. Hình minh họa trong bản gốc dùng các ô cùng màu để biểu diễn cùng một
+chữ số, qua đó cho thấy thứ tự ``ngang rồi dọc'' và ``dọc rồi ngang'' tạo ra
+cùng cách chồng ô.
+
+Với một chuỗi thao tác bất kỳ, chuỗi đó gồm một số phép gấp ngang và một số phép
+gấp dọc, chẳng hạn \(VHVVHV\). Vì hai thao tác kề nhau \(HV\) có thể đổi chỗ mà
+không đổi kết quả, ta có thể dùng một loạt phép đổi chỗ để đưa mọi thao tác
+ngang ra trước mọi thao tác dọc, hoặc ngược lại. Do đó tính hợp lệ của
+\(VHVVHV\) tương đương với tính hợp lệ của chuỗi tách thành \(HH\) và \(VVVV\).
+Như vậy, ta tách được bài toán gấp ngang và gấp dọc; đáp án cuối cùng bằng số
+phương án gấp ngang nhân với số phương án gấp dọc.
+
+Thiết kế trạng thái lúc này rất nhẹ. Chỉ xét gấp ngang, còn gấp dọc thì xoay
+bảng \(90^\circ\). Đặt \(f(u,d)\) cho biết tờ giấy ban đầu có thể gấp thành dải
+từ hàng \(u\) tới hàng \(d\) hay không. Khi chuyển, liệt kê đường gấp; phần kiểm
+tra đối xứng có thể tiền xử lý theo kiểu kiểm tra palindrome. Cách này đạt
+\(O(n^3)\), đủ qua bài.
+
+Tuy nhiên việc tối ưu chưa dừng lại. Trong thuật toán trên, hai biến \(u\) và
+\(d\) của \(f(u,d)\) cũng có thể tách tiếp. Tương tự lập luận trước, xét hai lần
+gấp kề nhau: gấp lên và gấp xuống. Nếu phần giấy bị lật qua không chạm tới vết
+gấp, đổi thứ tự hai thao tác là tương đương. Nếu chạm tới vết gấp, do màu ở hai
+bên vết gấp trùng nhau, phần vượt qua vết gấp có thể xem như đã được gấp sẵn
+vào trong, rồi lại quay về trường hợp không chạm vết gấp. Vì vậy ta luôn có thể
+tách thao tác gấp lên khỏi thao tác gấp xuống.
+
+Khi chỉ xét gấp xuống, gấp lên chỉ là đảo ngược trên dưới, ta chỉ cần dùng
+\(g(x)\) cho biết tờ giấy ban đầu có thể gấp sao cho biên trên trở thành \(x\)
+hay không. Nhờ vậy độ phức tạp giảm xuống \(O(n^2)\).
+
+Trong ví dụ này, sau khi tách biến, trạng thái bốn chiều ban đầu được phá thành
+bốn trạng thái một chiều độc lập. Độ phức tạp chương trình giảm mạnh; trong
+những bài thích hợp, kỹ thuật này thường cho hiệu quả rất tốt.
+
+\subsubsection{Hàm hóa giá trị khóa}
+
+``Hàm hóa giá trị khóa'' nghĩa là vẽ các điểm \((x,f(x))\) lên mặt phẳng hai
+chiều rồi dùng một số hàm để khớp chúng. Khi đó một mảng DP có thể được biểu
+diễn bằng các hàm từng đoạn. Phương pháp này xử lý được các bài DP có miền xác
+định trên số thực hoặc miền xác định rất lớn; sau khi vẽ thành hàm, việc nghiên
+cứu tính chất cũng thuận tiện hơn.
+
+\paragraph{Ví dụ 4: Topcoder SRM 610 Div. 1, Level 3.}
+Cho một bàn cờ \(n\times m\) và \(K\) ngày. Ngày thứ \(i\), tại ô
+\((a_i,b_i)\) xuất hiện một mỏ. Nếu đang ở \((x,y)\), số tiền nhận được là
+\[
+  n+m-|x-a_i|-|y-b_i|.
+\]
+Giữa hai ngày liên tiếp, tọa độ ngang được di chuyển không quá \(dx_i\), tọa độ
+dọc được di chuyển không quá \(dy_i\). Ban đầu có thể đứng ở vị trí tùy ý. Hỏi
+số tiền lớn nhất có thể nhận được.
+
+Giới hạn dữ liệu: \(K\le 1000\), \(n,m\le 10^6\).
+
+Do \(x\) và \(y\) không ảnh hưởng nhau khi tính giá trị tối ưu, có thể dùng cách
+tách biến ở mục trước để xét riêng hai tọa độ. Với tọa độ ngang, đặt \(f(i,j)\)
+là lợi ích lớn nhất liên quan tới hoành độ sau \(i\) ngày nếu đứng ở hoành độ
+\(j\). Ta có chuyển
+\[
+  f(i,j)=\max_{|j-k|\le dx_i}
+  \left(f(i-1,k)+n-|j-a_i|\right).
+\]
+Nhưng miền của chiều thứ hai quá lớn, nên ta xem \(f(i)\) như một hàm. Có thể
+chứng minh bằng quy nạp rằng đạo hàm của \(f(i)\) đơn điệu không tăng. Từ tính
+chất này, giả sử \(f(i-1)\) đạt cực đại tại \(x=u\), ta có
+\[
+\begin{cases}
+f(i,j)=f(i-1,j+dx_i)+n-|j-a_i|, & j<u-dx_i,\\
+f(i,j)=f(i-1,u)+n-|j-a_i|, & u-dx_i\le j\le u+dx_i,\\
+f(i,j)=f(i-1,j-dx_i)+n-|j-a_i|, & j>u+dx_i.
+\end{cases}
+\]
+Vì vậy khi chuyển từ \(f(i-1)\) sang \(f(i)\), phần cần làm chỉ là tịnh tiến,
+cắt ghép và cộng thêm hàm \(n-|j-a_i|\). Ta có thể trực tiếp duy trì các đoạn
+thẳng tạo nên hàm. Độ phức tạp được tối ưu thành \(O(K^2)\).
+
+\paragraph{Ví dụ 5: Codeforces Round \#172, Div. 1, E.}
+Cho dãy \(x[1..n]\) và các số \(q,a,b\), trong đó \(a\le b\) và
+\(a(n-1)<q\), thỏa mãn \(1\le x_1\le x_2\le \cdots\le x_n\le q\). Cần tìm một
+dãy \(y[1..n]\) thỏa mãn \(1\le y_i\le q\) và
+\[
+  a\le y_{i+1}-y_i\le b,
+\]
+sao cho
+\[
+  \sum_{i=1}^{n}(y_i-x_i)^2
+\]
+nhỏ nhất.
+
+Giới hạn dữ liệu: \(n\le 6000\), \(1\le q,a,b\le 10^9\).
+
+Một DP tự nhiên là đặt \(f(i,j)\) là giá trị nhỏ nhất của
+\(\sum_{k=1}^{i}(y_k-x_k)^2\) khi đã chọn \(y[1..i]\) và \(y_i=j\). Khi đó
+\[
+  f(i,j)=\min_{k=j-b}^{j-a}\left(f(i-1,k)+(j-x_i)^2\right).
+\]
+Vấn đề là trong bài này \(y\) có thể được xem trên miền rất lớn, khiến DP thông
+thường khó thực hiện. Ta lại dùng cách tương tự ví dụ trước, biểu diễn \(f(i)\)
+bằng hàm từng đoạn. Sau phân tích, ta vẫn thu được tính chất đạo hàm đơn điệu,
+nên có thể dùng cùng phương pháp để duy trì các hàm từng đoạn; điểm khác là
+trong bài này \(f(i)\) được ghép từ các hàm bậc hai.
+
+Độ phức tạp trực tiếp là \(O(n^2)\). Do hàm bậc hai tương đối phức tạp, ta có
+thể duy trì đạo hàm của chúng, vì bản chất của hai cách nhìn là như nhau. Khi
+đó bài toán quay về duy trì các hàm bậc nhất. Mọi thao tác cần dùng đều có thể
+thực hiện bằng cây cân bằng, nhờ vậy độ phức tạp giảm xuống \(O(n\log n)\).
+
+\paragraph{Tiểu kết.}
+Thật ra tối ưu hóa độ dốc và một số phương pháp khác cũng có thể xem là những
+trường hợp của ``hàm hóa giá trị khóa''. Phương pháp này thường giải quyết tốt
+những tình huống miền xác định rất lớn hoặc vô hạn, đồng thời có khả năng mở
+rộng mạnh. Trong ví dụ 5, sau khi dùng cách biểu diễn này, ta còn tiếp tục dùng
+cấu trúc dữ liệu để tối ưu độ phức tạp.
+
+\subsubsection{Gộp heuristic các mảng DP}
+
+Xét bài toán sau. Có \(m\) thao tác và \(n\) biến; mỗi thao tác chỉ có thể tác
+động lên một biến nào đó và làm biến đó thay đổi. Cần dùng không quá \(k\) thao
+tác để tối đa hóa tổng của mọi biến. Giả sử ta đã tính được \(f(i,j)\), nghĩa là
+nếu dùng \(j\) thao tác trên biến \(i\) thì giá trị lớn nhất đạt được là bao
+nhiêu. Khi đó có thể gộp đôi các mảng DP này.
+
+Ví dụ, sau khi gộp biến \(a\) và biến \(b\), ta biết nếu dùng \(j\) thao tác
+trên hai biến đó thì \(a+b\) lớn nhất là bao nhiêu. Nếu biến \(a\) dùng \(x\)
+thao tác và biến \(b\) dùng \(y\) thao tác, sau khi gộp sẽ dùng \(x+y\) thao
+tác. Rõ ràng, gộp một mảng độ dài \(x\) với một mảng độ dài \(y\) tạo ra một
+mảng độ dài \(x+y\). Gộp hết mọi mảng sẽ cho đáp án cuối cùng. Câu hỏi là nên
+gộp theo thứ tự nào?
+
+Mở rộng bài toán này thành một lớp DP: xem một mảng độ dài \(x\) như một điểm có
+trọng số \(x\), tổng trọng số mọi điểm là \(m\). Gộp hai điểm trọng số \(x\) và
+\(y\) tốn \(O(T(x,y))\), rồi tạo ra một điểm trọng số \(x+y\). Giả sử trọng số
+của điểm thứ \(i\) là \(s_i\), ta xét độ phức tạp theo dạng của \(T\).
+
+\paragraph{Trường hợp \(T(x,y)=\min(x,y)\).}
+Trường hợp này rất đơn giản: chỉ cần gộp lần lượt theo thứ tự.
+
+Độ phức tạp là
+\[
+  \sum_{i=2}^{n}O(\min(x,s_i))\le \sum_{i=2}^{n}O(s_i)=O(m),
+\]
+nên toàn bộ trường hợp này có độ phức tạp \(O(m)\).
+
+\paragraph{Trường hợp \(T(x,y)=x\times y\).}
+Tình huống này thường xuất hiện trong các bài trên cây. Thật ra dù gộp theo thứ
+tự nào, tổng độ phức tạp vẫn là \(O(m^2)\), không phải \(O(m^3)\). Để thấy điều
+này, nối mỗi điểm mới được tạo ra với hai điểm tạo nên nó; toàn bộ cấu trúc là
+một cây. Giá trị \(T(x,y)\) tương đương với việc liệt kê mọi cặp điểm thuộc hai
+cây con trái và phải. Mỗi cặp điểm chỉ được liệt kê đúng một lần tại LCA của
+chúng, nên tổng chỉ là \(O(m^2)\).
+
+\paragraph{Trường hợp \(T(x,y)=x+y\).}
+Lúc này nên mỗi lần chọn hai điểm có trọng số nhỏ nhất để gộp.
+
+Xét độ phức tạp. Cũng nối mỗi điểm mới tạo ra với hai điểm tạo nên nó; cấu trúc
+thu được chính là một cây Huffman. Trong hình minh họa của bản gốc, lần đầu chọn
+hai điểm nhỏ nhất \(1,2\) để tạo điểm \(6\), lần hai gộp \(6,3\) thành \(7\),
+lần ba gộp \(4,5\) thành \(8\), cuối cùng gộp \(7,8\) thành \(9\).
+
+Do \(T(x,y)=x+y\), độ phức tạp của toàn bộ thuật toán bằng tổng trọng số của mọi
+điểm nội bộ, hay tương đương
+\[
+  \mathrm{complexity}
+  =\sum O(s_i)
+  =O\left(\sum_{i\ \text{là lá}} s_i\operatorname{dep}_i\right),
+\]
+trong đó \(\operatorname{dep}_i\) là độ sâu của lá \(i\).
+
+Bây giờ ước lượng cận trên cho độ sâu của lá. Với ví dụ trong hình và lá \(1\),
+có thể suy ra
+\[
+\begin{aligned}
+  s_9&=s_7+s_8,\\
+      &\ge 2s_6+s_3,\\
+      &\ge 3s_1+2s_2.
+\end{aligned}
+\]
+Bước đầu tiên dùng việc \(6\) được gộp trước \(8\), nên \(s_8\ge s_6\); bước kế
+tiếp tương tự. Từ phép suy luận này, hệ số đứng trước \(s_x\) chính là dãy
+Fibonacci. Do đó với một lá bất kỳ,
+\[
+  s_{\mathrm{root}}\ge
+  \operatorname{Fib}(\operatorname{dep}_i)s_i+
+  \operatorname{Fib}(\operatorname{dep}_i-1)s_x,
+\]
+trong đó \(\operatorname{Fib}(x)\) là số Fibonacci thứ \(x\), còn \(s_x\) là
+trọng số của một nhánh kề trong suy luận. Vì \(s_{\mathrm{root}}\) chính là tổng
+trọng số \(m\), suy ra \(\operatorname{dep}_i\le O(\log m)\).
+
+Vì vậy trường hợp này có độ phức tạp \(O(m\log m)\).
+
+Cách làm trên có tính mở rộng khá mạnh. Ví dụ nhỏ sau có thể xem như một gợi ý
+để khai thác thêm.
+
+\paragraph{Ví dụ 6: bài \emph{Robot} trong kiểm tra lẫn nhau đội tuyển 2015.}
+Giả sử có \(n\) biến. Các mảng DP của chúng đã được biến đổi, bằng phương pháp
+``hàm hóa giá trị khóa'', thành các hàm gấp khúc; tổng số đoạn thẳng của mọi
+hàm là \(m\). Có \(Q\) truy vấn, mỗi truy vấn hỏi giá trị nhỏ nhất của mọi biến
+tại một điểm cho trước.
+
+Giới hạn dữ liệu: \(n,m\le 10^5\), \(Q\le 5\cdot 10^5\).
+
+\paragraph{Định lý 2.1.}
+Giả sử hàm gấp khúc \(l\) là giá trị nhỏ nhất của \(m\) hàm gấp khúc có số đoạn
+lần lượt là \(a_1,a_2,\ldots,a_m\). Khi đó số đoạn của \(l\) là
+\[
+  O\left(\sum a_i\right).
+\]
+Chứng minh của định lý này khá dài, bản gốc dẫn người đọc tới lời giải bài
+\emph{Robot}.
+
+Theo định lý 2.1, khi gộp hai hàm gấp khúc có số đoạn lần lượt là \(x\) và
+\(y\), có thể xem hàm thu được có ít hơn \(x+y\) đoạn. Vì lấy \(\min\) của hai
+hàm có số đoạn \(x\) và \(y\) tốn \(O(x+y)\), ta dùng trực tiếp chiến lược của
+trường hợp \(T(x,y)=x+y\): mỗi lần chọn hai hàm có ít giao điểm, hay ít đoạn
+nhất, rồi lấy \(\min\). Sau khi đã dựng được hàm cuối cùng, trả lời truy vấn
+bằng cách tìm đoạn chứa điểm hỏi. Độ phức tạp là \(O((m+Q)\log m)\); nếu các
+truy vấn đã được sắp theo thứ tự, độ phức tạp giảm còn \(O(m\log m+Q)\).
+
+\subsection{Tổng kết}
+
+Các phương pháp tối ưu DP rất đa dạng và biến hóa. Khi giải bài, ta nên phân
+tích kỹ tính chất riêng của đề để chọn phương pháp tối ưu thích hợp.
+
+\subsection{Lời cảm ơn}
+
+Xin cảm ơn CCF đã cung cấp nền tảng học tập và giao lưu.
+
+Xin cảm ơn các thầy Chen Heli, You Guanghui và Dong Yehua của Trường Trung học
+số 1 Thiệu Hưng vì nhiều năm quan tâm và chỉ dẫn.
+
+Xin cảm ơn các đàn anh Yu Yili và Dong Honghua của Đại học Thanh Hoa vì đã giúp
+đỡ tôi.
+
+Xin cảm ơn các bạn Wang Jianhao, Ren Zhizhou, Jia Yuekai và những bạn khác của
+Trường Trung học số 1 Thiệu Hưng vì đã giúp đỡ và gợi mở cho tôi.
+
+Xin cảm ơn các thầy cô và bạn bè khác từng giúp đỡ và gợi mở cho tôi.
+
+Xin cảm ơn cha mẹ tôi vì hai mươi năm quan tâm và chăm sóc tận tình như một.
+
+\subsection*{Tài liệu tham khảo của bài viết}
+
+\begin{enumerate}
+  \item Topcoder SRM 526 Algorithm Problem Set Analysis.
+  \item Topcoder SRM 639 Algorithm Problem Set Analysis.
+  \item Codeforces Round \#265 Editorial.
+  \item Codeforces Round \#172 Editorial.
+  \item Zhang Hengjie, lời giải bài \emph{Robot}.
+\end{enumerate}
 
 \end{document}
