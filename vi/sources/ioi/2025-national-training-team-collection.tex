@@ -27,7 +27,8 @@ nguyên lý chuyển vị trong một lớp bài toán quy hoạch động, cùn
 của Chen Xinyang về cơ sở tuyến tính và các biến thể có hỗ trợ xóa, cùng bài
 thứ sáu của Fan Sizhe tổng kết một số ý tưởng cho các bài toán liên quan tới
 dãy, bài thứ bảy của Zheng Jun về dãy Thue--Morse, và bài thứ tám của Chen Nuo
-về nhân ma trận và phép quy giảm.
+về nhân ma trận và phép quy giảm, cùng bài thứ chín của Wu Lin về một số bài
+toán kinh điển modulo lũy thừa của số nguyên tố nhỏ.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -3877,6 +3878,343 @@ tin học đã đồng hành, giúp đỡ.
   Symposium on Discrete Algorithms, 2020.
   \item Renato F. Werneck and Robert E. Tarjan. \emph{Self-adjusting top
   trees}. Symposium on Discrete Algorithms, 2005.
+\end{enumerate}
+
+\section*{Bài 9. Cách làm một số bài toán cổ điển modulo lũy thừa của số nguyên tố nhỏ}
+\addcontentsline{toc}{section}{Bài 9. Cách làm một số bài toán cổ điển modulo lũy thừa của số nguyên tố nhỏ}
+
+\begin{center}
+Wu Lin, Trường Thập Nhất Bắc Kinh
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Các bài toán đếm modulo lũy thừa của số nguyên tố nhỏ chiếm một vị trí quan
+trọng trong số học thuật toán. Bài viết này tổng kết một số phương pháp kinh
+điển cho các bài toán như vậy, đặc biệt là các thủ pháp dùng hàm sinh, thao tác
+giá trị của đa thức và tính chất số học của modulo \(p^k\). Trọng tâm không
+phải là liệt kê mã mẫu, mà là giải thích vì sao các tính chất của \(p^k\) giúp
+giảm số lượng giá trị hoặc hệ số cần tính.
+
+\subsection*{1. Quy ước}
+
+Trong bài, modulo đặc biệt luôn có dạng \(p^k\), với \(p\) là số nguyên tố,
+\(k\in\mathbb Z_{>0}\), và \(p\) tương đối nhỏ. Ký hiệu \(\nu_p(n)\) là số mũ
+lớn nhất sao cho \(p^{\nu_p(n)}\mid n\). Ký hiệu \(f_p(n)\) là phần còn lại
+của \(n!\) sau khi bỏ hết các thừa số \(p\).
+
+\subsection*{2. Thao tác giá trị của đa thức}
+
+Nhiều bài modulo \(p^k\) cuối cùng cần tính giá trị của một đa thức tại một số
+điểm. Phần này nhắc lại nội suy và đa điểm trong bối cảnh modulo có ước nhỏ.
+
+\paragraph{Bổ đề 1 (công thức Legendre).}
+\[
+  \nu_p(n!)=\sum_{i=1}^{\infty}\left\lfloor\frac n{p^i}\right\rfloor .
+\]
+
+\paragraph{Bổ đề 2.}
+Với mọi số nguyên \(n\) và số tự nhiên \(k\), ta có \(k!\mid n^k\).
+
+Để chứng minh, chỉ cần xét từng số nguyên tố \(p\). Tương tự công thức
+Legendre,
+\[
+  \nu_p(n^k)=\sum_{i=1}^{\infty}
+  \left(\left\lfloor\frac n{p^i}\right\rfloor
+  -\left\lfloor\frac {n-k}{p^i}\right\rfloor\right).
+\]
+Do đó
+\[
+  \nu_p(n^k)-\nu_p(k!)=
+  \sum_{i=1}^{\infty}
+  \left(
+  \left\lfloor\frac n{p^i}\right\rfloor
+  -\left\lfloor\frac {n-k}{p^i}\right\rfloor
+  -\left\lfloor\frac k{p^i}\right\rfloor
+  \right),
+\]
+mà mỗi hạng có dạng \(\lfloor a+b\rfloor-\lfloor a\rfloor-\lfloor b\rfloor\ge
+0\). Vì vậy kết quả không âm.
+
+\subsubsection*{2.1. Nội suy đa thức}
+
+Bài toán nội suy: cho các điểm \((x_1,y_1),\ldots,(x_n,y_n)\) của một đa thức
+\(F(x)\) có \(\deg F<n\), với các \(x_i\) đôi một khác nhau, cần khôi phục
+\(F\). Trên trường số thực luôn có nghiệm duy nhất, nhưng modulo \(p^k\) thì
+không phải lúc nào cũng khôi phục được toàn bộ đa thức. Tuy vậy, nếu các điểm
+cho trước là một đoạn số nguyên liên tiếp, ta vẫn xác định được giá trị tại mọi
+điểm nguyên.
+
+\paragraph{Định lý 1.}
+Biết các giá trị nguyên của \(F(x)\), \(\deg F<n\), tại \(1,2,\ldots,n\) theo
+modulo \(p^k\), thì với mọi số nguyên \(x_0\), giá trị \(F(x_0)\bmod p^k\) được
+xác định duy nhất.
+
+Theo công thức nội suy Lagrange,
+\[
+  F(x_0)=\sum_{i=1}^n y_i\prod_{j\ne i}\frac{x_0-j}{i-j}
+  =\sum_{i=1}^n(-1)^{n-i}y_i
+  \frac{(x_0-1)^{i-1}}{(i-1)!}
+  \frac{(x_0-i-1)^{n-i}}{(n-i)!}.
+\]
+Hai thương trong biểu thức cuối là số nguyên theo bổ đề 2, nên \(F(x_0)\) là
+tổ hợp tuyến tính nguyên của các \(y_i\). Vì thế chỉ cần biết \(y_i\bmod p^k\).
+Lập luận này cũng áp dụng cho các đa thức hữu tỉ lấy giá trị nguyên, chẳng hạn
+\(x(x+1)/2\).
+
+\paragraph{Ví dụ 1. \emph{Tự nhiên}.}
+Cho \(n,m\), cần tính
+\[
+  \sum_{0\le i<n} i^m \pmod {2^k},
+\]
+trong đó đề gốc có \(k=64\). Tổng này là đa thức theo \(n\) bậc \(m+1\). Khi
+\(m<k\), nội suy trực tiếp với \(O(k)\) điểm và lũy thừa nhanh cho độ phức tạp
+\(O(k\log m)\).
+
+Khi \(m\ge k\), mọi hạng chẵn đều bằng \(0\) modulo \(2^k\). Đặt
+\(t=\lfloor(n-1)/2\rfloor\), phần hạng lẻ là
+\[
+  \sum_{0\le i\le t}(2i+1)^m
+  =\sum_{0\le i\le t}\sum_{0\le j<k}\binom mj(2i)^j,
+\]
+vì các hạng \(j\ge k\) triệt tiêu. Do đó đáp án vẫn biểu diễn được bằng một đa
+thức bậc \(k\) theo \(t\).
+
+\subsubsection*{2.2. Đa điểm của đa thức}
+
+Với một đa thức nguyên \(F(x)\), bổ đề sau làm giảm mạnh miền giá trị cần xét.
+
+\paragraph{Bổ đề 3.}
+Với mọi số nguyên \(x\), ta có \(x^{p^k}\equiv 0\pmod {p^k}\).
+
+Thật vậy, theo bổ đề 2, \((p^k)!\mid x^{p^k}\), còn
+\(\nu_p((p^k)!)\ge k\). Vì thế, khi tính giá trị của một đa thức hệ số nguyên,
+ta có thể trước hết rút gọn theo \(x\bmod p^k\), hoặc tiền xử lý các giá trị
+tại \(0,1,\ldots,p^k-1\) rồi dùng nội suy liên tiếp để trả lời mọi điểm hỏi.
+
+\paragraph{Ví dụ 2. \emph{Bears and Juice}.}
+Trong lời giải bài này xuất hiện tổng
+\[
+  \sum_{j=0}^{\min(m,n-1)}\binom nj i^j \pmod {2^k}
+\]
+cho mọi \(1\le i\le q\). Nếu làm thẳng sẽ tốn ít nhất \(O(mq)\). Áp dụng cách
+trên, tính thô vài giá trị đầu rồi nội suy các giá trị còn lại, tổng thời gian
+giảm còn \(O((m+q)k)\).
+
+\subsubsection*{2.3. Tính tổ hợp}
+
+Bài toán là tính \(\binom nm\bmod p^k\). Chỉ cần tách
+\[
+  n! = p^a b,\qquad (b,p)=1.
+\]
+Phần \(a=\nu_p(n!)\) tính được bằng công thức Legendre trong \(O(\log_p n)\);
+phần khó là \(b=f_p(n)\).
+
+Ta có
+\[
+  f_p(n)=f_p(\lfloor n/p\rfloor)\prod_{\substack{1\le i\le n\\p\nmid i}} i.
+\]
+Đặt \(n=mp+v\). Phần đuôi từ \(mp+1\) tới \(mp+v\) có thể nhân trực tiếp trong
+\(O(p)\). Với phần nguyên khối, xét
+\[
+  F_m(x)=\prod_{0\le i<m}\prod_{1\le j<p}\left(1+\frac ij x\right),
+\]
+trong đó \(1/j\) là nghịch đảo của \(j\) modulo \(p^k\). Tích khối bằng
+\((p-1)!^mF_m(p)\). Vì cần \(F_m(p)\bmod p^k\), chỉ phải quan tâm tới các hệ số
+bậc \(0\) đến \(k-1\).
+
+Đặt \(G_m(x)=\ln F_m(x)\). Khi khai triển logarit,
+\[
+  G_m(x)=\sum_{t\ge 1}\frac{(-1)^{t-1}}t
+  \left(\sum_{0\le i<m} i^t\right)
+  \left(\sum_{1\le j<p} j^{-t}\right)x^t.
+\]
+Hệ số \([x^t]G_m(x)\) là đa thức theo \(m\) bậc \(t+1\). Từ
+\[
+  F'_m(x)=G'_m(x)F_m(x)
+\]
+suy ra đệ quy
+\[
+  [x^t]F_m(x)=\frac1t\sum_{0\le i<t}
+  (t-i)[x^i]F_m(x)[x^{t-i}]G_m(x).
+\]
+Do \([x^0]F_m(x)=1\), quy nạp cho thấy \([x^t]F_m(x)\) là đa thức theo \(m\)
+bậc không quá \(2t\). Vì vậy \(F_m(p)\bmod p^k\) có thể lấy bằng nội suy liên
+tiếp từ \(F_0(p),F_1(p),\ldots,F_{2k-2}(p)\), các giá trị này tiền xử lý thô
+trong \(O(pk)\). Mỗi truy vấn tính \(f_p(n)/f_p(\lfloor n/p\rfloor)\) tốn
+\(O(p+k+\log n)\), rồi đệ quy cho tổng thời gian
+\(O((p+k)\log_p n+pk+\log n)\).
+
+\subsection*{3. Tìm hệ số của đa thức}
+
+Nhiều bài đếm quy về tìm một hệ số xa của một đa thức. Khi modulo là \(p^k\),
+các đồng dư kiểu Frobenius cho phép chia nhỏ số mũ lớn.
+
+\subsubsection*{3.1. Hệ số xa của lũy thừa cao của đa thức ngắn}
+
+Bài toán: cho đa thức
+\[
+  F(x)=\sum_{i=0}^n a_ix^i,
+\]
+với \(n\) nhỏ nhưng \(m,t\) rất lớn, cần tính \([x^t]F^m(x)\bmod p^k\).
+
+\paragraph{Trường hợp \(k=1\).}
+Với số nguyên tố \(p\) và đa thức nguyên \(F\), ta có
+\[
+  F^p(x)\equiv F(x^p)\pmod p.
+\]
+Đây là hệ quả của định lý Fermat nhỏ và việc các hệ số đa thức trong khai triển
+\(p\)-lần đều chia hết cho \(p\), trừ các hạng thuần.
+
+Xét bài tổng quát hơn \([x^t]F^m(x)G(x)\bmod p\). Viết
+\[
+  m=a_1p+b_1,\qquad t=a_2p+b_2.
+\]
+Ta có
+\[
+  [x^t]F^m(x)G(x)
+  =[x^t]F^{a_1}(x^p)F^{b_1}(x)G(x).
+\]
+Tách \(F^{b_1}(x)G(x)\) theo phần dư của bậc modulo \(p\):
+\[
+  F^{b_1}(x)G(x)=\sum_{0\le r<p}x^rH_r(x^p).
+\]
+Khi đó
+\[
+  [x^t]F^m(x)G(x)=[x^{a_2}]F^{a_1}(x)H_{b_2}(x).
+\]
+Như vậy \(m,t\) cùng chia cho \(p\) sau một bước, còn bậc của đa thức phụ không
+tăng. Tiền xử lý các lũy thừa \(0,\ldots,p-1\) của \(F\) cho độ phức tạp tiền
+xử lý \(O(n^2p)\), và truy vấn \(O(n^2\log_p m)\).
+
+\paragraph{Trường hợp \(k>1\).}
+Tương tự có đồng dư
+\[
+  F^{p^k}(x)\equiv F^{p^{k-1}}(x^p)\pmod {p^k}.
+\]
+Chứng minh bằng quy nạp theo \(k\): giả sử
+\[
+  F^{p^{k-1}}(x)\equiv F^{p^{k-2}}(x^p)+p^{k-1}G(x)\pmod {p^k},
+\]
+nâng lên lũy thừa \(p\) thì mọi hạng có chứa \(G\) đều có đủ số mũ \(p\) để
+triệt tiêu modulo \(p^k\).
+
+Đặt
+\[
+  F_0(x)=F^{p^{k-1}}(x),\qquad
+  G_0(x)=F^{m\bmod p^{k-1}}(x)G(x),\qquad
+  m'=\left\lfloor\frac m{p^{k-1}}\right\rfloor .
+\]
+Khi đó bài toán chuyển thành \([x^t]F_0^{m'}(x)G_0(x)\). Viết tiếp
+\(m'=a_1p+b_1\), \(t=a_2p+b_2\), rồi áp dụng đồng dư trên:
+\[
+  [x^t]F_0^{m'}(x)G_0(x)
+  =[x^{a_1}]F_0^{a_2}(x)H_{b_2}(x).
+\]
+Phân tích độ phức tạp giống trường hợp \(k=1\), nhưng bậc hiệu dụng tăng lên
+khoảng \(np^{k-1}\), nên đạt tiền xử lý \(O(n^2p^{2k})\) và truy vấn
+\(O(n^2p^{2k-2}\log_p m)\).
+
+\subsubsection*{3.2. Hệ số xa của nghịch đảo hợp thành}
+
+Cho đa thức
+\[
+  F(x)=\sum_{1\le i\le n} f_ix^i,\qquad f_1\ne 0,
+\]
+và \(G\) thỏa \(F(G(x))=x\), cần tính \([x^t]G(x)\bmod p^k\) với \(n\) nhỏ,
+\(t\) lớn. Công thức đảo Lagrange quen thuộc có dạng
+\[
+  n[x^n]G^m(x)=m[x^{-m}]F^{-n}(x),
+\]
+nhưng khi làm modulo \(p^k\), phép chia cho \(n\) có thể không hợp lệ. Dùng
+dạng thay thế:
+\[
+  [x^n]G^m(x)=[x^{-m-1}]F'(x)F^{-n-1}(x)
+  =[x^{n-m}]F'(x)\left(\frac{F(x)}x\right)^{-n-1}.
+\]
+Biểu thức này quy về bài hệ số xa của lũy thừa cao ở trên. Điểm cần chú ý là
+số mũ có thể âm, nên trạng thái kết thúc của đệ quy có dạng
+\([x^0]A^{-1}(x)B(x)\).
+
+\subsubsection*{3.3. Nhị thức chập}
+
+Với hai dãy \(a_0,\ldots,a_n\) và \(b_0,\ldots,b_n\), bài toán nhị thức chập
+yêu cầu tính
+\[
+  c_i=\sum_{0\le j\le i}\binom ij a_jb_{i-j}.
+\]
+Thông thường ta đưa về tích chập thường bằng EGF, tức chia cho \(i!\). Khi
+\(p\le n\), các nghịch đảo này không luôn tồn tại modulo \(p^k\).
+
+Ta tách
+\[
+  \binom ij =
+  p^{\nu_p(i!)-\nu_p(j!)-\nu_p((i-j)!)}
+  \frac{f_p(i)}{f_p(j)f_p(i-j)}.
+\]
+Đặt \(\widehat a_i=a_i/f_p(i)\bmod p^k\). Theo định lý Kummer,
+\[
+  \nu_p(i!)-\nu_p(j!)-\nu_p((i-j)!)
+\]
+bằng số lần mượn khi trừ \(j\) khỏi \(i\) trong hệ cơ số \(p\), nên không vượt
+quá \(\lfloor\log_p n\rfloor\). Vì thế có thể làm các tích chập theo từng số
+mũ của \(p\), tính dưới vài modulo NTT lớn rồi ghép CRT về đáp án trước khi
+rút modulo \(p^k\). Do \(p\) khả nghịch trong các modulo NTT lớn, phần tích
+chập trở lại là tích chập thường, đạt \(O(n\log n)\).
+
+\subsubsection*{3.4. Hàm mũ của đa thức}
+
+Bài toán: với \(F(0)=0\), tính \(G(x)=\exp F(x)\) đến bậc \(n\). Cách chuẩn
+dùng Newton cho phương trình
+\[
+  H(G)=\ln G-F=0.
+\]
+Giả sử đã có \(G_0(x)\equiv G(x)\pmod {x^m}\), khai triển Taylor quanh \(G_0\)
+cho
+\[
+  G(x)\equiv G_0(x)\bigl(1+F(x)-\ln G_0(x)\bigr)\pmod {x^{2m}}.
+\]
+Vấn đề trong modulo có ước nhỏ là phép tính \(\ln G_0\) thường cần tích phân,
+tức chia hệ số cho chỉ số. Thay vì duy trì trực tiếp \([x^i]G(x)\), ta duy trì
+\(G^{(i)}(0)=i![x^i]G(x)\). Khi đó đạo hàm và tích phân chuyển thành thao tác
+dịch chỉ số, còn tích chập thường chuyển thành nhị thức chập ở mục trước. Nhờ
+vậy vẫn có thể đạt độ phức tạp \(O(n\log n)\).
+
+\subsection*{4. Tổng kết}
+
+Bài viết khảo sát các bài toán đếm modulo lũy thừa của số nguyên tố nhỏ, rút
+ra hai nhóm công cụ chính: dùng tính chất số học của \(p^k\) để giảm miền giá
+trị hoặc số hệ số cần xét, và dùng hàm sinh/đa thức để chuyển bài đếm thành
+nội suy, hệ số xa, nhị thức chập hoặc hàm mũ đa thức. Phần tính tổ hợp modulo
+\(p^k\) cũng đưa ra một cách làm dựa trên nội suy của các hệ số trong tích
+khối.
+
+\subsection*{Lời cảm ơn}
+
+Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+Xin cảm ơn huấn luyện viên đội tuyển quốc gia Yang Yaoliang, Peng Sijin và
+Zhang Yibin đã hướng dẫn. Xin cảm ơn cha mẹ đã nuôi dưỡng và giáo dục trong
+nhiều năm. Xin cảm ơn thầy Wang Xingming đã bồi dưỡng và chỉ bảo. Xin cảm ơn
+các anh Wu Chang, Dong Yurun, Liu Ziyuan đã góp ý quý báu cho bài viết. Xin cảm
+ơn Zhao Haikun, Zhu Pengrui đã cùng thảo luận, và cảm ơn các thầy cô, bạn bè
+khác đã giúp đỡ.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Tang Jingzhe. \emph{Tính tổ hợp theo modulo}. CSDN article 52553048,
+  2020.
+  \item 2023 Beijing Collegiate Programming Contest.
+  \url{https://qoj.ac/contest/1464/problem/7992}.
+  \item Codeforces 643F, \emph{Bears and Juice}.
+  \url{https://codeforces.com/problemset/problem/643/F}.
+  \item LibreOJ NOI Round \#2, \emph{Simple Arithmetic}.
+  \url{https://loj.ac/p/577}.
+  \item Leukocyte. Ghi chú về đồng dư \(F^{p^k}(x)\).
+  \url{https://www.cnblogs.com/leukocyte/p/14552848.html}.
+  \item 2020--2021 bài tập đội tuyển, bài \emph{Dai Jiaqiang he Duo Xiangmu}.
+  \url{https://loj.ac/p/3398}.
+  \item Bài \emph{Công thức mũ}. \url{https://loj.ac/p/6737}.
 \end{enumerate}
 
 \end{document}
