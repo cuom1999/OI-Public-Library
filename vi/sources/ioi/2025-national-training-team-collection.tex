@@ -23,7 +23,8 @@ sách, toàn bộ mục lục, bài đầu tiên của Liu Hengxi về đoạn l
 các bài toán liên quan, và bài thứ hai của Gou Jingyu về các phương pháp
 chứng minh tính lồi trong đề OI, cùng bài thứ ba của Liu Haifeng về xử lý
 lân cận trên cây bằng phân rã chuỗi dài, và bài thứ tư của Xu Xiaoyang về
-nguyên lý chuyển vị trong một lớp bài toán quy hoạch động.
+nguyên lý chuyển vị trong một lớp bài toán quy hoạch động, cùng bài thứ năm
+của Chen Xinyang về cơ sở tuyến tính và các biến thể có hỗ trợ xóa.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -2441,5 +2442,357 @@ và các bạn khác đã đọc kiểm và góp ý cho bài viết.
   \item Chen Yu. Giới thiệu đơn giản về nguyên lý chuyển vị. Tập luận văn đội
   tuyển quốc gia 2020, 2020.
 \end{enumerate}
+
+\section*{Bài 5. Bàn về ứng dụng cơ sở tuyến tính trong OI}
+\addcontentsline{toc}{section}{Bài 5. Bàn về ứng dụng cơ sở tuyến tính trong OI}
+
+\begin{center}
+Chen Xinyang, Trường Trung học số 2 Hàng Châu
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Cơ sở tuyến tính là công cụ mạnh trong các bài toán về xor của dãy con, đồng
+thời có nhiều mở rộng hữu dụng trong thi tin học. Bài viết trước hết trình bày
+cách xây dựng cơ sở tuyến tính và các ứng dụng cơ bản, sau đó hệ thống hóa một
+số kỹ thuật tối ưu thường gặp. Phần sau giới thiệu cơ sở tuyến tính trực giao,
+cách lấy giao của các không gian sinh bởi xor, và cuối cùng thảo luận cơ sở
+tuyến tính có hỗ trợ xóa. Với biến thể có xóa, bài viết đưa ra hai cách cài
+đặt, trong đó có một phiên bản giữ được đầy đủ tính chất ``tiền tố'', nhằm xử
+lý một số bài toán trước đây khó giải bằng kỹ thuật quen thuộc.
+
+\subsection*{1. Dẫn nhập}
+
+Trong bài viết này, ký hiệu \(\oplus\) chỉ phép xor theo bit. Với một dãy số
+nguyên không âm \(S\), giả sử chỉ cần xét \(m\) bit thấp. Ta gọi dãy \(T\) là
+một cơ sở tuyến tính của \(S\) nếu nó thỏa ba điều kiện sau.
+\begin{enumerate}
+  \item Các giá trị xor của mọi dãy con của \(T\) đôi một khác nhau, kể cả dãy
+  con rỗng.
+  \item Tập các giá trị xor thu được từ dãy con của \(S\) trùng với tập các giá
+  trị xor thu được từ dãy con của \(T\).
+  \item Nếu bỏ các phần tử bằng \(0\), vị trí bit cao nhất bằng \(1\) của các
+  phần tử trong \(T\) giảm nghiêm ngặt.
+\end{enumerate}
+Nhìn theo đại số tuyến tính, đây chính là một cơ sở của không gian sinh bởi các
+véc-tơ bit trên trường \(\mathbb F_2\). Tuy vậy, khi dùng trong OI, ta thường
+diễn đạt bằng thao tác xor để thuận tiện hơn.
+
+Bố cục của bài viết như sau. Phần 2 nhắc lại cách xây dựng và các ứng dụng cơ
+bản. Phần 3 bàn về các kỹ thuật tối ưu khi phải xây dựng hoặc truy vấn nhiều cơ
+sở tuyến tính. Phần 4 giới thiệu cơ sở tuyến tính trực giao và phép lấy giao.
+Phần 5 tập trung vào cơ sở tuyến tính có hỗ trợ xóa, gồm một cách cài đặt đơn
+giản nhưng còn khuyết điểm và một cách cài đặt giữ đầy đủ tính chất tiền tố.
+
+\subsection*{2. Xây dựng và ứng dụng cơ bản}
+
+Mấu chốt của cơ sở tuyến tính là phép biến đổi bảo toàn toàn bộ tập giá trị xor
+của dãy con. Nếu chọn hai vị trí \(i\ne j\) và thay \(S_j\) bằng
+\(S_i\oplus S_j\), thì dãy mới tương đương với dãy cũ: với mỗi dãy con ở một
+bên, ta luôn đổi được sang một dãy con ở bên kia có cùng giá trị xor. Lặp lại
+thao tác khử bit giống khử Gauss, ta đưa dãy ban đầu về một dãy tương đương có
+các bit cao nhất khác nhau.
+
+Khi chèn từng phần tử, ta duy trì mảng \(w_p\), trong đó \(w_p\) là phần tử cơ
+sở có bit cao nhất bằng \(p\), và một biến \(c\) đếm số phần tử phụ thuộc tuyến
+tính bị khử thành \(0\). Để chèn \(x\), duyệt các bit từ cao xuống thấp. Nếu
+bit \(j\) của \(x\) bằng \(0\), bỏ qua. Nếu \(w_j=0\), đặt \(w_j=x\) và dừng.
+Nếu \(w_j\ne0\), gán \(x\leftarrow x\oplus w_j\) rồi tiếp tục. Nếu cuối cùng
+\(x=0\), tăng \(c\). Độ phức tạp là \(O(|S|m)\), bộ nhớ \(O(m)\).
+
+Một hệ quả quan trọng là các phần tử cơ sở khác \(0\) sinh ra đúng \(2^r\) giá
+trị xor khác nhau, với \(r\) là số phần tử cơ sở. Nếu trong quá trình xây dựng
+có \(c\) phần tử bị khử thành \(0\), thì mỗi giá trị biểu diễn được xuất hiện
+đúng \(2^c\) lần khi đếm theo dãy con của dãy gốc.
+
+\paragraph{Giá trị xor lớn nhất.}
+Sau khi có cơ sở, để tìm giá trị xor lớn nhất của một dãy con, khởi tạo
+\(\mathrm{ans}=0\). Duyệt \(j\) từ cao xuống thấp và thay
+\(\mathrm{ans}\) bằng \(\max(\mathrm{ans},\mathrm{ans}\oplus w_j)\). Cách này
+cũng áp dụng khi cần tối đa hóa \(v\oplus x\), với \(x\) là xor của một dãy con:
+chỉ cần khởi tạo \(\mathrm{ans}=v\).
+
+\paragraph{Đếm số dãy con có xor bằng một giá trị.}
+Với giá trị cần kiểm tra \(x\), thử khử \(x\) bằng cơ sở hiện có. Nếu khử được
+về \(0\), \(x\) biểu diễn được và số dãy con có xor bằng \(x\) là \(2^c\). Nếu
+không, đáp án bằng \(0\).
+
+\paragraph{Đếm số giá trị nhỏ hơn một ngưỡng.}
+Sau khi bỏ phần tử phụ thuộc, các giá trị xor sinh bởi cơ sở đôi một khác nhau.
+Ta duyệt bit từ cao xuống thấp, giữ tiền tố hiện tại và so sánh với
+\(\mathrm{lim}\). Khi bit của \(\mathrm{lim}\) bằng \(1\), có thể cộng số lựa
+chọn làm tiền tố nhỏ hơn ngay tại bit đó; phần còn lại được chọn tùy ý từ các
+cơ sở ở bit thấp hơn. Nhánh còn lại buộc phải giữ tiền tố bằng
+\(\mathrm{lim}\) và tiếp tục khử. Cuối cùng nhân thêm \(2^c\) nếu đếm dãy con
+của dãy gốc. Cùng ý tưởng này cũng cho phép tìm giá trị xor nhỏ thứ \(k\).
+
+\paragraph{Đường đi xor lớn nhất trong đồ thị vô hướng.}
+Bài WC2011 ``Đường đi xor lớn nhất'' là ví dụ kinh điển. Chọn một đường đi bất
+kỳ từ \(1\) đến \(n\), có xor là \(v\). Mỗi khi chèn thêm một chu trình vào
+đường đi, hai đầu mút không đổi và giá trị đường đi bị xor thêm giá trị xor của
+chu trình đó. Vì thế đáp án là giá trị lớn nhất của \(v\oplus x\), trong đó
+\(x\) thuộc không gian sinh bởi các xor chu trình.
+
+Không cần liệt kê mọi chu trình. Chọn một cây khung, đặt \(d_u\) là xor trên
+đường từ gốc đến \(u\) trong cây. Với mỗi cạnh ngoài cây \((u,v,w)\), giá trị
+\(d_u\oplus d_v\oplus w\) là xor của chu trình cơ bản tương ứng. Các chu trình
+cơ bản này sinh ra toàn bộ không gian chu trình, nên chỉ cần đưa chúng vào cơ
+sở tuyến tính rồi tối đa hóa \(v\). Độ phức tạp là
+\(O(|V|+|E|m)\).
+
+\subsection*{3. Các kỹ thuật tối ưu thường gặp}
+
+Nếu \(S'\) là cơ sở của \(S\), \(T'\) là cơ sở của \(T\), thì cơ sở của dãy ghép
+\(S+T\) có thể xây từ \(S'+T'\). Vì mỗi cơ sở có nhiều nhất \(m\) phần tử, phép
+gộp tốn \(O(m^2)\). Đây là nền tảng cho cây đoạn lưu cơ sở tuyến tính trên mỗi
+nút: cập nhật một điểm và truy vấn một đoạn đều làm việc qua các phép gộp, đạt
+độ phức tạp kiểu \(O(\log n\cdot m^2)\) mỗi thao tác. Nhược điểm là hằng số và
+nhân tử \(m^2\) khá nặng.
+
+Một kỹ thuật khác là đổi dãy đang duy trì sang một dãy tương đương thuận lợi
+hơn. Chẳng hạn với bài toán cập nhật xor trên đoạn và hỏi xor dãy con lớn nhất
+trên đoạn, đặt \(b_i=a_i\oplus a_{i-1}\). Khi đó đoạn \(a_l,\ldots,a_r\)
+tương đương với phần tử \(a_l\) cùng dãy \(b_{l+1},\ldots,b_r\), còn cập nhật
+xor trên đoạn chỉ làm đổi \(b_l\) và \(b_{r+1}\). Cây đoạn trên dãy \(b\), kèm
+thêm thao tác chèn \(a_l\) khi trả lời, cho lời giải tự nhiên hơn. Với cập nhật
+theo bước \(k\), có thể dùng \(b_i=a_i\oplus a_{i-k}\) tương tự.
+
+\paragraph{Cơ sở tuyến tính tiền tố.}
+Khi xây cơ sở từ trái sang phải, ta có thể ghi lại thời điểm mỗi phần tử cơ sở
+được đưa vào. Tổng quát hơn, gắn cho mỗi giá trị \(a_i\) một độ ưu tiên
+\(t_i\). Trong mảng cơ sở, ngoài \(w_j\) còn lưu độ ưu tiên \(p_j\) của phần tử
+đang chiếm bit \(j\). Khi chèn một cặp \((t,x)\), nếu gặp một bit đã có
+\(w_j\) nhưng độ ưu tiên của \(x\) cao hơn, ta hoán đổi \(x\) với \(w_j\) rồi
+tiếp tục khử phần còn lại. Nhờ đó cơ sở giữ các phần tử có độ ưu tiên cao nhất
+có thể.
+
+Ứng dụng tiêu biểu là CF1100F \emph{Ivan and Burgers}: với mỗi truy vấn tĩnh
+\([l,r]\), sau khi đã xử lý đến \(r\), chỉ cần lấy các phần tử cơ sở có độ ưu
+tiên ít nhất \(l\). Cách này trả lời mọi truy vấn trong \(O((n+q)m)\). Trên
+cây, bài SCOI2016 ``Lucky Numbers'' dùng độ sâu làm độ ưu tiên để lấy cơ sở
+trên đường tổ tiên; đường đi bất kỳ được tách thành hai đoạn quanh LCA rồi gộp.
+Với tập động nhưng biết trước thời điểm xóa, có thể dùng thời điểm xóa làm độ
+ưu tiên để tránh thao tác xóa thật sự. Tuy nhiên cách này chỉ dùng tốt trong
+bối cảnh offline và khi bài toán không cần thêm một thứ tự ưu tiên khác.
+
+\paragraph{Khử tiếp các bit thấp.}
+Sau khi có cơ sở, ta thường khử tiếp các bit thấp khỏi các phần tử cơ sở cao:
+duyệt \(i\) từ thấp lên cao, nếu \(w_i\ne0\) thì với mọi \(j>i\) có bit \(i\)
+bằng \(1\), gán \(w_j\leftarrow w_j\oplus w_i\). Khi đó mỗi bit thấp chỉ xuất
+hiện trong phần tử cơ sở tương ứng của nó. Dạng chuẩn hóa này giúp một số hàm
+trên cơ sở trở nên tuyến tính hơn.
+
+Ví dụ, đặt \(g(x,S)\) là giá trị lớn nhất của \(x\oplus\) xor dãy con của
+\(S\), và \(g'(x,S)\) là giá trị nhỏ nhất. Sau khi chuẩn hóa, \(g'\) có tính
+tuyến tính theo xor:
+\[
+  g'(x_1\oplus\cdots\oplus x_k,S)
+  =g'(x_1,S)\oplus\cdots\oplus g'(x_k,S).
+\]
+Ngoài ra \(g(x,S)\oplus g'(x,S)\) bằng xor của các phần tử cơ sở. Trong bài
+``Xor Master'', tính chất này cho phép duy trì các giá trị đã biến đổi khi cơ
+sở của một tập \(S_0\) mở rộng, tránh cập nhật lại toàn bộ với chi phí
+\(O(nm)\) mỗi lần.
+
+\paragraph{Kết hợp cơ sở tiền tố với cấu trúc dữ liệu.}
+Với bài toán duy trì nhiều dãy \(S_1,\ldots,S_n\), hỗ trợ thêm phần tử vào một
+dãy và hỏi giá trị xor lớn nhất từ dãy ghép \(S_l+\cdots+S_r\), có thể dùng cây
+đoạn. Ở các nút con trái lưu cơ sở hậu tố, ở các nút con phải lưu cơ sở tiền
+tố. Khi truy vấn, tách đoạn tại nút đầu tiên mà hai đầu rơi sang hai phía, rồi
+gộp cơ sở hậu tố bên trái và cơ sở tiền tố bên phải. Cập nhật thêm phần tử tốn
+\(O(m\log n)\), truy vấn tốn \(O(m^2)\). Cách làm này cho thấy sức mạnh của cơ
+sở tiền tố, nhưng chưa xử lý được sửa đổi tùy ý bên trong dãy; vấn đề đó được
+đưa sang phần về cơ sở có xóa.
+
+\subsection*{4. Cơ sở tuyến tính trực giao}
+
+Xét dãy điểm-giá trị \(v(S)\) độ dài \(2^m\), trong đó \(v(S)_i\) là số dãy con
+của \(S\) có xor bằng \(i\). Phép ghép hai dãy tương ứng với tích chập xor:
+\[
+  c_k=\sum_{i\oplus j=k}a_i b_j.
+\]
+Với hai số \(m\)-bit, định nghĩa
+\[
+  i\odot j=\operatorname{popcount}(i\&j)\bmod 2.
+\]
+Biến đổi Walsh--Hadamard cho xor là
+\[
+  \widehat a_i=\sum_j (-1)^{i\odot j}a_j.
+\]
+Nó biến tích chập xor thành nhân theo điểm.
+
+Với một phần tử đơn \(x\), dãy điểm-giá trị có hai lựa chọn: không lấy hoặc lấy
+\(x\). Vì vậy
+\[
+  \widehat{v(S)}_k=\prod_{x\in S}\left(1+(-1)^{x\odot k}\right).
+\]
+Giá trị này bằng \(2^{|S|}\) khi \(k\) trực giao với mọi phần tử của \(S\), và
+bằng \(0\) trong các trường hợp còn lại. Do trực giao với \(S\) tương đương
+trực giao với bất kỳ cơ sở nào của \(S\), ta chỉ cần xét cơ sở.
+
+Điều này hữu ích khi số véc-tơ trực giao ít. Trong CF1336E2, cần đếm dãy con
+theo số bit \(1\) của xor. Nếu cơ sở ban đầu nhỏ, ta liệt kê các xor do cơ sở
+sinh ra. Nếu cơ sở lớn, không gian trực giao nhỏ hơn; ta liệt kê cơ sở trực
+giao rồi dùng FWT để suy ra đáp án. Cân bằng hai phía cho độ phức tạp khoảng
+\(O(nm+2^{m/2}+m^3)\).
+
+\paragraph{Dựng cơ sở trực giao.}
+Trước hết chuẩn hóa cơ sở bằng cách khử các bit thấp. Với mỗi vị trí bit
+\(i\) mà \(w_i=0\), bit \(i\) của một véc-tơ trực giao được chọn tự do. Với mỗi
+\(w_i\ne0\), bit \(i\) của véc-tơ trực giao bị xác định duy nhất để tích vô
+hướng với \(w_i\) bằng \(0\). Vì vậy, với mỗi ô trống \(i\), tạo một véc-tơ
+\[
+  w'_i=2^i+\sum_{\substack{j>i\\ \text{bit }i\text{ của }w_j\text{ bằng }1}}2^j.
+\]
+Các \(w'_i\) sinh đúng toàn bộ không gian trực giao. Chi phí dựng là
+\(O(m^2)\), hoặc \(O(sm)\) nếu chỉ có \(s\) vị trí cần xét.
+
+\paragraph{Giao của nhiều cơ sở.}
+Muốn kiểm tra một giá trị \(x\) có biểu diễn được đồng thời bởi nhiều dãy
+\(S_1,\ldots,S_k\) hay không, ta cần giao của các không gian sinh. Dựa trên
+quan hệ \((A\cap B)^\perp=A^\perp+B^\perp\), có thể lấy trực giao từng cơ sở,
+gộp tất cả cơ sở trực giao, rồi lấy trực giao lần nữa. Nói ngắn gọn: giao bằng
+trực giao của hợp các không gian trực giao.
+
+Trong UOJ698, với các tập \(S_i\), mỗi truy vấn hỏi chỉ số nhỏ nhất \(i\) sao
+cho \(S_i\) không có dãy con xor bằng \(x\). Nếu \(S'_i\) là cơ sở trực giao
+của \(S_i\), thì \(x\) không biểu diễn được bởi \(S_i\) khi và chỉ khi có một
+phần tử của \(S'_i\) không trực giao với \(x\). Ta quét các \(i\), chèn các
+phần tử của \(S'_i\) vào một cơ sở và ghi lại thời điểm chúng xuất hiện. Truy
+vấn trở thành tìm thời điểm đầu tiên có phần tử không trực giao với \(x\), xử
+lý trong \(O(m)\) sau tiền xử lý. Tổng độ phức tạp là
+\(O(nm^2+\sum |S_i|m+qm)\).
+
+\subsection*{5. Cơ sở tuyến tính có xóa}
+
+Các phần trước thường tránh xóa thật sự: hoặc chuyển bài toán thành gộp cơ sở
+trên cây đoạn, hoặc dùng thời điểm xóa làm độ ưu tiên trong một bài toán offline.
+Những chuyển hóa này khá mong manh. Khi bài toán bắt buộc online, hoặc khi độ
+dài bit lớn khiến phép gộp \(O(m^2)\) trở thành nút thắt, ta cần đối mặt trực
+tiếp với thao tác xóa.
+
+\paragraph{Một phiên bản còn khuyết điểm.}
+Xét bài toán động trên các cặp \((t_i,a_i)\): chèn một cặp, xóa một cặp đã có,
+và với một ngưỡng \(\mathrm{lim}\), hỏi số giá trị xor khác nhau sinh bởi các
+\(a_i\) có \(t_i\le \mathrm{lim}\), modulo \(998244353\). Ở đây \(n,m\le2000\).
+Cơ sở tiền tố thông thường không đủ, vì điều kiện vừa theo thời gian tồn tại,
+vừa theo độ ưu tiên, tạo thành một truy vấn hai chiều.
+
+Ta đánh số phần tử theo thứ tự chèn. Mỗi giá trị \(a_i\) có một biểu diễn
+\(\mathrm{resp}_i\) bằng một bitset trên các phần tử chuẩn. Mỗi ô cơ sở
+\(w_j\) cũng lưu \(\mathrm{wresp}_j\), tức biểu diễn của \(w_j\) bằng các phần
+tử chuẩn. Nếu xóa một phần tử không nằm trong cơ sở chuẩn, chỉ cần bỏ nó. Nếu
+xóa một phần tử chuẩn \(i\), ta tìm phần tử ngoài chuẩn có độ ưu tiên nhỏ nhất
+phù hợp để thay thế, cụ thể là một phần tử \(j\) có biểu diễn chứa \(i\). Khi
+tìm được \(j\), dùng các bitset để thay \(i\) bằng \(j\) trong mọi biểu diễn;
+nếu không tìm được, loại \(i\) khỏi cơ sở và cập nhật các biểu diễn liên quan.
+Thao tác chèn xử lý đối xứng: phần tử mới có thể đẩy một phần tử ưu tiên thấp
+hơn ra khỏi cơ sở.
+
+Chi phí mỗi chèn hoặc xóa là \(O((n+m)^2 / w)\), với \(w\) là độ rộng từ máy,
+vì phải thao tác trên các bitset dài. Cách cài đặt này online và hữu ích trong
+một số bài, nhưng có hai khuyết điểm: chi phí phụ thuộc vào số phần tử đang
+duy trì, và nó chỉ giữ được một phần tính chất tiền tố, chưa đủ để thay thế
+hoàn toàn cơ sở tiền tố trong mọi cấu trúc dữ liệu.
+
+\paragraph{Kết hợp phiên bản có xóa với cây đoạn.}
+Quay lại bài toán duy trì mảng \(a\), hỗ trợ sửa một điểm \(a_x=y\) và hỏi giá
+trị xor lớn nhất của dãy con trong đoạn. Cách ở phần 3 dùng cây đoạn và gộp cơ
+sở tốn \(O(m^2\log n)\). Với cơ sở có xóa ở trên, ta có thể tối ưu vì tại mỗi
+nút cây đoạn chỉ cần duy trì các phần tử chuẩn của hai con; số lượng phần tử
+chuẩn không vượt quá \(2m\).
+
+Cụ thể, mỗi nút lưu hai cơ sở tiền tố có xóa, một cho hướng xuôi và một cho
+hướng ngược. Ở lá, cơ sở chuẩn có nhiều nhất một phần tử. Ở nút trong, cơ sở
+được xây từ các phần tử chuẩn của hai con. Khi sửa một điểm, thay đổi ở lá tạo
+ra một số sự kiện chèn/xóa trong cơ sở chuẩn; các sự kiện này được truyền lên
+cha. Vì mỗi nút chỉ duy trì \(O(m)\) phần tử, mỗi tầng chỉ phát sinh lượng nhỏ
+thao tác. Truy vấn vẫn tách đoạn ở điểm chia đầu tiên như phần 3: lấy cơ sở
+hậu tố từ bên trái và cơ sở tiền tố từ bên phải rồi gộp để trả lời.
+
+Để giảm chi phí dựng và bộ nhớ, có thể chặn đáy cây bằng phân khối: mọi nút có
+độ dài đoạn không quá \(m\) được xem như lá giả, bỏ các hậu duệ của nó. Khi sửa
+bên trong lá giả, dựng lại trực tiếp trong \(O(m^2)\), rồi truyền thay đổi lên
+trên. Khi truy vấn rơi hoàn toàn trong một lá giả, dựng cơ sở bằng vét cạn trên
+đoạn ngắn. Nhờ vậy, bài toán có lời giải online
+\(O(nm+qm(\log n+m))\) thời gian và \(O(n)\) bộ nhớ, tốt hơn phương pháp cây
+đoạn truyền thống về bậc độ phức tạp, dù ý tưởng và cài đặt phức tạp hơn.
+
+\paragraph{Phiên bản giữ đầy đủ tính chất tiền tố.}
+Phần này đưa ra một cài đặt mạnh hơn. Mục tiêu là dù chèn các cặp theo thứ tự
+nào, hình dạng cuối cùng của cơ sở vẫn giống hệt cơ sở thu được khi chèn
+\(a_1,a_2,\ldots,a_n\) theo đúng thứ tự chỉ số bằng thuật toán cơ bản ở phần 2.
+Tính ``giống hệt'' này rất quan trọng: khi xóa, ta có thể xem phần tử bị xóa
+như phần tử vừa được chèn cuối cùng, rồi đảo ngược quá trình chèn đó.
+
+Để mô tả trạng thái, ngoài \(w_i\) và \(\mathrm{wresp}_i\), đặt
+\(\mathrm{idx}_i\) là chỉ số cao nhất xuất hiện trong biểu diễn
+\(\mathrm{wresp}_i\); nếu \(w_i=0\) thì xem \(\mathrm{idx}_i=+\infty\). Khi
+chèn một phần tử ở vị trí \(p\), duy trì ba đại lượng: \(\mathrm{cur}\) là giá
+trị đang khử, \(\mathrm{cresp}\) là biểu diễn của nó bằng các phần tử gốc, và
+\(q\) là chỉ số đại diện hiện tại. Ban đầu
+\(\mathrm{cur}=a_p\), \(\mathrm{cresp}=2^p\), \(q=p\). Duyệt bit từ cao xuống
+thấp. Nếu bit hiện tại của \(\mathrm{cur}\) bằng \(0\), ta vẫn có thể phải dùng
+\(\mathrm{cresp}\) để loại \(q\) khỏi các biểu diễn \(\mathrm{wresp}\) nhằm
+giữ ràng buộc mạnh hơn. Nếu bit bằng \(1\), ta so sánh \(q\) với
+\(\mathrm{idx}_i\); khi cần, hoán đổi \(\mathrm{cur}\) với \(w_i\),
+\(\mathrm{cresp}\) với \(\mathrm{wresp}_i\), rồi xor để khử bit. Nếu sau một
+bước \(q=+\infty\), có thể dừng.
+
+Khi chèn xong, có hai khả năng. Nếu \(q=+\infty\), phần tử \(p\) chỉ được thêm
+vào cơ sở chuẩn và không có phần tử chuẩn nào bị loại. Nếu \(1\le q\le n\), thì
+\(p\) đi vào cơ sở chuẩn còn \(q\) bị đẩy ra; khi đó cần dùng \(\mathrm{cresp}\)
+để sửa mọi biểu diễn có chứa \(q\).
+
+Thao tác xóa được thực hiện bằng cách khôi phục trạng thái trước lần chèn cuối.
+Trước hết phải xác định lần chèn đó kết thúc ở trường hợp nào. Nếu có một phần
+tử ngoài cơ sở có biểu diễn chứa \(p\), lấy phần tử có chỉ số nhỏ nhất như vậy
+làm \(q\); khi đó có thể khôi phục \(\mathrm{cur}=0\) và suy ra
+\(\mathrm{cresp}\) từ biểu diễn của \(q\). Nếu không tồn tại, ta ở trường hợp
+\(q=+\infty\) và cần tìm vị trí bit mà quá trình chèn đã dừng.
+
+Dấu hiệu quan trọng là bit \(p\) trong các biểu diễn. Trước khi chèn \(a_p\),
+không biểu diễn nào chứa bit này; trong quá trình chèn, bit \(p\) chỉ lan sang
+các \(\mathrm{wresp}\) thông qua hoán đổi hoặc qua bước khử đặc biệt ở nhánh
+bit \(0\). Vì thế khi đảo ngược từng bit, ta dùng việc
+\(\mathrm{wresp}_i\) có chứa \(p\) hay không để biết bước trước đó có hoán đổi
+hoặc có khử bằng \(\mathrm{cresp}\) hay không. Trường hợp khó nhất là phân biệt
+bit hiện tại của \(\mathrm{cur}\) trước bước đó bằng \(0\) hay \(1\); bài viết
+chỉ ra có thể quyết định bằng cách kiểm tra các bit cao trong
+\(\mathrm{cresp}\) và quan hệ với \(\mathrm{idx}_i\). Nhờ các dấu hiệu này, mọi
+bước chèn đều đảo ngược được một cách xác định.
+
+Cả chèn và xóa đều bị chi phối bởi \(O(n)\) phép xor trên bitset dài \(n\), nên
+mỗi sửa điểm tốn \(O(n^2/w)\). Sau khi duy trì được dạng cơ sở mạnh hơn cơ sở
+tiền tố thông thường, truy vấn các thông tin kinh điển của cơ sở tuyến tính
+cũng xử lý trong \(O(n^2/w)\). Tính cả thời gian xây dựng, ví dụ trong bài viết
+được giải online trong \(O((n+q)n^2/w)\).
+
+\paragraph{Tổng kết phần cơ sở có xóa.}
+Phiên bản ở mục đầu đơn giản hơn nhưng chỉ giữ một phần tính tiền tố. Phiên bản
+sau phức tạp hơn, song giữ được đầy đủ tính tiền tố và vì vậy dùng được trong
+những bài toán động khó hơn. Tác giả nhận xét rằng chi phí của cơ sở có xóa khó
+tránh khỏi việc phụ thuộc vào số phần tử được duy trì; vì thế khi số phần tử
+lớn hơn nhiều so với độ dài bit, các kỹ thuật truyền thống đôi khi vẫn phù hợp
+hơn. Tuy nhiên, trong những bài mà số phần tử cùng bậc với độ dài bit và bắt
+buộc online, hướng tiếp cận này mở ra các lời giải mới.
+
+\subsection*{6. Tổng kết}
+
+Bài viết lần lượt trình bày cách xây dựng cơ sở tuyến tính, các ứng dụng cơ
+bản, những kỹ thuật tối ưu thường dùng, cơ sở trực giao, phép lấy giao và cơ sở
+tuyến tính có hỗ trợ xóa. Ba phần đầu chủ yếu hệ thống hóa các kỹ thuật đã quen
+thuộc trong thi tin học; phần cuối đưa ra thêm một số lý thuyết và cách cài đặt
+mới cho hướng cơ sở tuyến tính có xóa, qua đó tối ưu một số bài toán cổ điển.
+Tác giả hy vọng các ý tưởng này gợi mở thêm nhiều bài toán và mở rộng thú vị
+liên quan đến cơ sở tuyến tính.
+
+\subsection*{Lời cảm ơn}
+
+Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao đổi.
+Xin cảm ơn các huấn luyện viên đội tuyển quốc gia Peng Sijin và Yang Yaoliang
+đã hướng dẫn. Xin cảm ơn cha mẹ, nhà trường, thầy Li Jian, cùng các bạn học đã
+giúp đỡ. Xin cảm ơn Zhang Shaojia và Wang Suyi đã trao đổi, thảo luận và đọc
+kiểm bài viết.
 
 \end{document}

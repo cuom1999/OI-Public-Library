@@ -19,10 +19,11 @@ PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc n
 dàn trang bằng Adobe InDesign; phần bìa và mục lục có lớp văn bản đọc được,
 nhưng nhiều trang thân bài trích xuất thành mojibake và sinh cảnh báo phông
 chữ. Bản LaTeX này chuyển ngữ phần nhận diện tập sách và toàn bộ mục lục, đồng
-thời dịch bốn bài đầu tiên: bài của Zhou Kangyang về bài toán tính tổng hàm nhân
-tính, bài của Guo Yuchong về parity của matroid tuyến tính, và bài của Huang
-Luotian về hợp nhất--tách cấu trúc dữ liệu, cùng bài của Shi Kaicheng về nhân
-tử Lagrange và đối ngẫu trong OI, dựa trên OCR và đối chiếu ảnh trang PDF.
+thời dịch năm bài đầu tiên: bài của Zhou Kangyang về bài toán tính tổng hàm nhân
+tính, bài của Guo Yuchong về parity của matroid tuyến tính, bài của Huang
+Luotian về hợp nhất--tách cấu trúc dữ liệu, bài của Shi Kaicheng về nhân tử
+Lagrange và đối ngẫu trong OI, cùng bài của Shen Jiyu về cập nhật đoạn và truy
+vấn đoạn, dựa trên OCR và đối chiếu ảnh trang PDF.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -3431,6 +3432,868 @@ Cảm ơn những thầy cô và bạn bè khác đã giúp đỡ tác giả.
   tính trong thi tin học}. Tập luận văn đội tuyển quốc gia IOI, 2021.
 \end{enumerate}
 
+\section*{Bài 5. Thuật toán liên quan tới bài toán cập nhật đoạn và truy vấn đoạn cùng ứng dụng}
+\addcontentsline{toc}{section}{Bài 5. Thuật toán liên quan tới bài toán cập nhật đoạn và truy vấn đoạn cùng ứng dụng}
+
+\begin{center}
+Shen Jiyu, Trường Văn Uyên thuộc Tập đoàn Giáo dục Trung học Học Quân,
+Hàng Châu
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết tổng kết bài toán cập nhật và truy vấn phạm vi, giới thiệu một thuật
+toán cập nhật--truy vấn phạm vi offline tối ưu về số phép toán, cùng một số
+thuật toán và ứng dụng khác cho các bài toán liên quan.
+
+\subsection*{1. Lời nói đầu}
+
+Các cấu trúc dữ liệu trên dãy, như cây đoạn, là một lớp thuật toán gọn gàng,
+có thể duy trì nhiều bài toán cập nhật và truy vấn trên dãy, nên được dùng
+rộng rãi trong OI.
+
+Tuy vậy, khi mở rộng bài toán cập nhật--truy vấn từ một chiều lên số chiều cao
+hơn, cấu trúc dữ liệu trên dãy, chẳng hạn cây đoạn, không còn thích ứng tốt
+với cấu trúc phức tạp nữa; so với dãy, độ khó tăng lên đáng kể. Với lớp bài
+toán này, ta cần tìm các hướng giải quyết tốt hơn và tổng quát hơn.
+
+Vì vậy, tác giả muốn dùng bài viết này để giới thiệu một thuật toán
+cập nhật--truy vấn phạm vi tối ưu về số phép toán, cũng như một số cách xử lý
+khác cho bài toán cập nhật--truy vấn trong không gian nhiều chiều.
+
+\subsection*{2. Dẫn nhập}
+
+\subsubsection*{2.1. Một bài toán kinh điển}
+
+Ta bắt đầu từ một bài toán kinh điển.
+
+\paragraph{\term{Ví dụ 2.1}.}
+Duy trì một dãy, trong đó mỗi phần tử là một ma trận \(2\times 2\), và cần
+thực hiện các thao tác sau:
+\begin{itemize}
+  \item cập nhật: cho \(l,r,v\), nhân mọi ma trận trong đoạn \([l,r]\) với ma
+  trận \(v\);
+  \item truy vấn: cho \(l,r\), hỏi tổng các ma trận trong đoạn \([l,r]\).
+\end{itemize}
+
+Đây là bài toán kinh điển của cây đoạn, có thể giải bằng cây đoạn với lazy
+tag. Với mỗi nút trên cây đoạn, ta duy trì tổng ma trận của đoạn tương ứng và
+một lazy tag biểu diễn phép nhân ma trận áp dụng lên đoạn.
+
+Bây giờ xét một bài toán cấu trúc dữ liệu trừu tượng hơn: bỏ qua loại thông tin
+cụ thể cần duy trì, và chỉ xét dạng bài toán tổng quát khi thông tin được duy
+trì thỏa một số điều kiện nhất định.
+
+Với những bài toán cây đoạn duy trì được, dạng trừu tượng là:
+
+Duy trì một dãy. Ta có thể dùng một loại dữ liệu để biểu diễn thông tin của một
+đoạn trên dãy, và dùng một loại dữ liệu để biểu diễn một phép cập nhật trên một
+đoạn. Chúng cần thỏa các tính chất sau:
+\begin{enumerate}
+  \item Thông tin của hai đoạn \([l,\mathit{mid}]\) và
+  \([\mathit{mid}+1,r]\) có thể gộp trong \(O(1)\) để thu được thông tin của
+  \([l,r]\).
+  \item Hai phép cập nhật liên tiếp trên cùng một đoạn có thể gộp trong
+  \(O(1)\) thành một phép cập nhật.
+  \item Nếu biết thông tin của một đoạn, có thể tính trong \(O(1)\) thông tin
+  của đoạn đó sau một phép cập nhật.
+\end{enumerate}
+
+Phép nhân ma trận thỏa tính kết hợp
+\((A\times B)\times C=A\times(B\times C)\) và tính phân phối
+\(A\times(B+C)=A\times B+A\times C\), nhưng không thỏa tính giao hoán. Trong
+bài toán trên, phép gộp thông tin là phép cộng ma trận; còn tính kết hợp và
+tính phân phối lần lượt làm cho bài toán thỏa các tính chất 2 và 3.
+
+\subsubsection*{2.2. Định nghĩa thông tin trừu tượng}
+
+\paragraph{\term{Định nghĩa 2.1}.}
+Một nửa nhóm gồm một tập \(D\) và một phép toán hai ngôi
+\[
+  D\times D\to D,
+\]
+thỏa tính kết hợp:
+\[
+  \forall a,b,c\in D,\qquad (a*b)*c=a*(b*c).
+\]
+
+\paragraph{\term{Định nghĩa 2.2}.}
+Một monoid gồm một tập \(D\), một phép toán hai ngôi \(D\times D\to D\), thỏa
+tính kết hợp
+\[
+  \forall a,b,c\in D,\qquad (a*b)*c=a*(b*c),
+\]
+và có phần tử đơn vị:
+\[
+  \forall a\in D,\qquad a*\epsilon=\epsilon*a=a.
+\]
+
+\paragraph{\term{Định nghĩa 2.3}.}
+Một nửa nhóm giao hoán gồm một tập \(D\), một phép toán hai ngôi
+\(D\times D\to D\), thỏa tính kết hợp và tính giao hoán:
+\[
+  \forall a,b,c\in D,\qquad (a*b)*c=a*(b*c),
+\]
+\[
+  \forall a,b\in D,\qquad a*b=b*a.
+\]
+
+Thông tin được duy trì trong ví dụ phía trước có thể xem là thông tin nửa
+nhóm. Có thể thấy ta thật ra đang duy trì hai thông tin nửa nhóm: một loại biểu
+diễn thông tin của đoạn, một loại biểu diễn lazy tag cập nhật. Không khó nhận
+ra rằng chỉ cần cả thông tin đoạn và thông tin cập nhật đều là thông tin nửa
+nhóm thì có thể dùng cây đoạn để duy trì.
+
+\subsection*{3. Cập nhật--truy vấn phạm vi offline}
+
+\subsubsection*{3.1. Phạm vi rộng hơn}
+
+Trong bài toán, phạm vi cập nhật và truy vấn không nhất thiết là một đoạn trên
+dãy, mà có thể là đường đi đơn trên cây, hình chữ nhật trong mặt phẳng hai
+chiều, phạm vi trực giao nhiều chiều, nửa mặt phẳng, phạm vi cong, v.v.
+
+Ban đầu có \(n\) điểm. Một phạm vi biểu diễn một tập con của tập điểm ban đầu.
+Ta dùng một thông tin để biểu diễn tổng thông tin của các điểm trong phạm vi,
+và dùng một thông tin khác để biểu diễn một phép cập nhật trên phạm vi. Hai
+loại thông tin cần thỏa:
+\begin{enumerate}
+  \item Thông tin \(S,T\) của hai phạm vi có thể gộp trong \(O(1)\) thành
+  \(S+T\).
+  \item Hai phép cập nhật liên tiếp trên một phạm vi có thể gộp trong \(O(1)\)
+  thành một phép cập nhật.
+  \item Nếu biết thông tin của một phạm vi, có thể tính trong \(O(1)\) thông
+  tin của phạm vi đó sau một phép cập nhật.
+\end{enumerate}
+
+\subsubsection*{3.2. Dạng bài toán}
+
+Ban đầu cho một tập gồm \(n\) điểm, mỗi điểm có một trọng số ban đầu. Mỗi phép
+cập nhật cho một phạm vi và một giá trị cập nhật, biểu thị việc lấy trọng số
+của các điểm trong phạm vi thực hiện một phép toán hai ngôi với trọng số cập
+nhật. Mỗi truy vấn cho một phạm vi và hỏi tổng trọng số của các điểm trong phạm
+vi. Trọng số của điểm và trọng số cập nhật thỏa tính chất ``hai nửa nhóm''.
+
+Dạng hình thức như sau. Cho nửa nhóm giao hoán \((D,+)\), nửa nhóm \((M,*)\),
+và một phép tác động hai ngôi
+\[
+  \star:D\times M\to D.
+\]
+Phép tác động này thỏa:
+\[
+  \forall a\in D,\ b,c\in M,\qquad (a\star b)\star c=a\star(b*c),
+\]
+\[
+  \forall a,b\in D,\ c\in M,\qquad (a+b)\star c=a\star c+b\star c.
+\]
+
+Cho một tập ban đầu \(I_0\), một tập hữu hạn \(I\subseteq I_0\), và một tập
+truy vấn \(Q\). Mỗi điểm trong \(I\) có trọng số ban đầu \(d_0(x)\in D\).
+Thao tác thứ \(t\) được định nghĩa như sau:
+\begin{enumerate}
+  \item Cập nhật phạm vi: cho phạm vi \(q_t\in Q\) và \(f_t\in M\). Nếu
+  \(x\in q_t\) thì \(d_t(x)=d_{t-1}(x)\star f_t\), ngược lại
+  \(d_t(x)=d_{t-1}(x)\).
+  \item Truy vấn phạm vi: cho phạm vi \(q_t\in Q\). Đặt
+  \(d_t(x)=d_{t-1}(x)\); đáp án là
+  \[
+    \sum_{x\in q_t} d_t(x).
+  \]
+\end{enumerate}
+Ký hiệu \(n=|I|\) là số trọng số ban đầu, và \(m\) là số thao tác cập nhật,
+truy vấn.
+
+\subsubsection*{3.3. Thuật toán cập nhật--truy vấn phạm vi offline tối ưu}
+
+Sau đây là một thuật toán cập nhật--truy vấn phạm vi offline do Li Xinlong và
+Cai Chengze từ Đại học Thanh Hoa đề xuất.\footnote{Xem [2],
+\url{https://qoj.ac/files/ISAAC_2021_paper_100.pdf}.} Thuật toán này cài đặt
+khá đơn giản, hằng số nhỏ, và có thể chứng minh là tối ưu về số phép toán.
+
+\paragraph{\term{Định nghĩa 3.1}.}
+Định nghĩa quan hệ tương đương như sau. Giả sử có dãy thao tác
+\(q_1,q_2,\ldots,q_k\). Với hai điểm \(x_1,x_2\), nếu
+\[
+  \forall i\in[1,k],\qquad x_1\in q_i \Longleftrightarrow x_2\in q_i,
+\]
+trong đó \(q_i\) là phạm vi của thao tác thứ \(i\), thì gọi \(x_1\) và \(x_2\)
+là tương đương.
+
+Ta gom các điểm tương đương vào cùng một lớp tương đương, từ đó thu được một số
+lớp tương đương. Giả sử xét các thao tác \(q_l,q_{l+1},\ldots,q_r\), và tập
+các lớp tương đương sinh ra là \(R_{l,r}\). Nếu
+\([l',r']\subseteq[l,r]\), thì \(R_{l,r}\) chia tập điểm mịn hơn
+\(R_{l',r'}\); ký hiệu quan hệ này là \(R_{l,r}\subseteq R_{l',r'}\).
+
+Hình 1 trong bản gốc minh họa các điểm bị một số đường cong chia thành các lớp
+tương đương khác nhau: hai điểm thuộc cùng lớp khi chúng nằm trong cùng phía
+đối với mọi phạm vi đang xét.
+
+Vì các thao tác cập nhật đã biết trước, ta thiết kế thuật toán chia để trị trên
+dãy thao tác cập nhật. Trước hết, với dãy thao tác hiện tại, ta có thể chia ra
+một số lớp tương đương. Càng có nhiều thao tác thì lớp tương đương càng mịn;
+phân hoạch mịn nhất có \(n\) lớp tương đương, với \(n\) là tổng số điểm.
+
+Ta muốn xây dựng một cấu trúc dữ liệu dạng cây thỏa:
+\begin{itemize}
+  \item nút lá lưu thông tin của một điểm đơn cần duy trì;
+  \item nút không phải lá là nút phụ trợ để thuận tiện cập nhật và truy vấn,
+  trên đó lưu thông tin của cả cây con tương ứng và tag cần đẩy xuống cây con;
+  \item trước khi truy cập một nút lá, phải truy cập mọi tổ tiên không phải lá
+  của nó.
+\end{itemize}
+
+Không khó thấy rằng cây đoạn trên dãy, Top Tree trên cây, và nhiều thuật toán
+kinh điển khác đều thỏa cấu trúc này. Trong bài toán hiện tại, ta xét việc duy
+trì một rừng có gốc động như sau:
+\begin{itemize}
+  \item mỗi nút tương ứng với một lớp tương đương của một đoạn thao tác nào đó;
+  \item mỗi nút lá lưu thông tin của một lớp tương đương kích thước \(1\), tức
+  thông tin riêng của \(n\) điểm ban đầu.
+\end{itemize}
+
+Giả sử tập lớp tương đương của dãy thao tác hiện tại là \(R_1\). Khi đó mỗi gốc
+của rừng có gốc hiện tại tương ứng với một lớp tương đương trong \(R_1\). Giả
+sử ta muốn chuyển tập lớp tương đương hiện tại từ \(R_1\) sang \(R_2\), và
+thỏa \(R_1\subseteq R_2\), tức \(R_2\) có ít lớp tương đương hơn.
+
+Nếu thực hiện một số phép gộp trên rừng có gốc hiện tại, mỗi lần gộp vài cây có
+gốc, ta có thể chuyển trạng thái \(R_1\) tới trạng thái đích \(R_2\). Cách gộp
+các cây có gốc \(x_1,x_2,\ldots,x_k\) là tạo một nút mới \(y\) làm cha của
+\(x_1,x_2,\ldots,x_k\). Tương tự, ta có thể hủy một số phép gộp trong trạng
+thái \(R_2\), tức xóa các nút gốc, để quay về trạng thái \(R_1\). Gọi hai loại
+thao tác này là di chuyển giữa các rừng có gốc.
+
+Để hỗ trợ cập nhật và truy vấn, xét việc duy trì thêm trường trên các nút không
+phải lá. Cần ghi hai giá trị phụ: một lazy tag cập nhật \(u(x)\), và tổng cây
+con \(d(x)\), tức tổng của các phần tử trong lớp tương đương. Khi thêm nút vào
+rừng có gốc, ta tạo nút mới \(y\) làm cha của \(x_1,x_2,\ldots,x_k\), rồi đặt
+\[
+  u(y)=\epsilon_M,\qquad d(y)=\sum_{i=1}^{k} d(x_i),
+\]
+như vậy là đã kéo thông tin lên. Khi xóa nút khỏi rừng có gốc, ta xóa nút
+\(y\) và tách ra \(k\) cây có gốc \(x_1,x_2,\ldots,x_k\); khi đó cần đẩy lazy
+tag của \(y\) xuống rồi xóa \(y\).
+
+Nếu có một cây gốc \(x\) mà các nút lá trong cây này đúng bằng những điểm nằm
+trong một lần cập nhật hoặc truy vấn, thì \(d(x)\) chính là đáp án của truy
+vấn. Với cập nhật, ta gắn tag lên \(x\):
+\[
+  (d(x),u(x))\leftarrow (d(x)\star U,\ u(x)*U).
+\]
+
+Với bài toán gốc, xét chia để trị. Chia dãy thao tác hiện tại thành hai nửa.
+Vì mỗi nửa có ít thao tác hơn, số lớp tương đương của nó cũng ít hơn; điều này
+nghĩa là hai đoạn sau khi chia để trị chỉ cần xử lý ít thông tin hơn.
+
+Gọi \(R_0\) là trạng thái rừng có gốc gồm \(n\) lá và chưa thực hiện phép gộp
+nào. Giả sử dãy thao tác đang cần xử lý là \(q_l,\ldots,q_r\). Trước hết ta
+chuyển quan hệ tương đương từ \(R_0\) sang \(R_{l,r}\). Giả sử khi đó mọi điểm
+đã có giá trị sau \(l-1\) thao tác đầu, tức \(d_{l-1}(x)\). Sau đó chạy thuật
+toán chia để trị trên \([l,r]\), thu được giá trị \(d_r(x)\) sau \(r\) thao
+tác, rồi quay lui và xử lý giai đoạn tiếp theo.
+
+Khi cần chia để trị trên \(q_l,\ldots,q_r\), đặt
+\(\mathit{mid}=\lfloor(l+r)/2\rfloor\). Trước tiên chuyển tập lớp tương đương
+từ \(R_{l,r}\) sang trạng thái của \(q_l,\ldots,q_{\mathit{mid}}\), tức
+\(R_{l,\mathit{mid}}\); việc này sẽ thêm một số nút vào rừng có gốc. Sau khi
+xử lý xong \(q_l,\ldots,q_{\mathit{mid}}\), quay về \(R_{l,r}\), rồi chuyển
+sang \(R_{\mathit{mid}+1,r}\), chạy chia để trị trên
+\(q_{\mathit{mid}+1},\ldots,q_r\), sau đó lại quay về \(R_{l,r}\).
+
+Khi đệ quy đến \(l=r\), chỉ còn một thao tác, nên chỉ có hai lớp tương đương.
+Cập nhật thì gắn tag lên gốc của cây tương ứng với lớp tương đương cần thao
+tác; truy vấn thì lấy thông tin \(d\) của gốc đó.
+
+Hình 2 trong bản gốc minh họa cấu trúc rừng có gốc khi quan hệ tương đương lần
+lượt đi qua bốn trạng thái \(R_{1,4}\), \(R_{1,2}\), \(R_{3,4}\) và
+\(R_{1,1}\). Khi chuyển từ \(R_{1,4}\) sang \(R_{1,2}\), các lớp
+\(\{A\},\{B\},\{F\}\) được gộp thành \(\{A,B,F\}\);
+\(\{C\},\{D,E\}\) được gộp thành \(\{C,D,E\}\); và \(\{G\},\{J,K\}\) được gộp
+thành \(\{G,J,K\}\). Khi quay từ \(R_{1,2}\) về \(R_{1,4}\), ta hủy các phép
+gộp đó. Khi đệ quy tới \(R_{1,1}\), cây cần cập nhật là cây \(a\); nếu \(x\) là
+gốc của cây \(a\), tương ứng lớp \(\{A,B,C,D,E,F\}\), thì ta gắn tag cập nhật
+và truy vấn giá trị của \(x\).
+
+\subsubsection*{3.4. Độ phức tạp của thuật toán}
+
+Định nghĩa hàm rời rạc \(F\), trong đó \(F(x)\) là số lớp tương đương lớn nhất
+mà \(x\) thao tác có thể chia tập điểm thành. Không khó thấy \(F(x)\) đơn điệu
+tăng, và \(x\) thao tác có thể chia tập \(I\) thành nhiều nhất
+\(\min(F(x),|I|)\) lớp tương đương.
+
+Định nghĩa hàm rời rạc \(G\), trong đó \(G(n)\) thỏa
+\[
+  F(G(n))\le n,\qquad F(G(n)+1)>n.
+\]
+Nói cách khác, với phạm vi đã cho, \(G(n)\) biểu diễn ít nhất cần bao nhiêu
+thao tác để chia \(n\) điểm thành quan hệ tương đương mịn nhất, tức \(n\) lớp
+tương đương.
+
+Giả sử có \(n\) điểm và \(m\) thao tác. Chia \(m\) thao tác thành các nhóm, mỗi
+nhóm có \(G(n)\) thao tác, rồi dùng thuật toán chia để trị trên từng nhóm. Số
+phép toán trên cấu trúc đại số là
+\[
+  T(n,m)=O(n)+\frac{m}{G(n)}T_1(G(n)),\qquad
+  T_1(n)=2T_1(n/2)+O(F(n)).
+\]
+
+Trong bài toán trên dãy, tức thao tác cập nhật--truy vấn đoạn, có
+\(F(n)=O(n)\), do đó \(T(n,m)=O(n+m\log\min(n,m))\). Với cập nhật--truy vấn
+đường đi trên cây cũng có \(F(n)=O(n)\), nên
+\(T(n,m)=O(n+m\log\min(n,m))\).
+
+Nếu phạm vi cập nhật--truy vấn là nửa mặt phẳng, đa giác, hình tròn, ellipse,
+hyperbola, v.v., thì \(F(n)=O(n^2)\), suy ra
+\[
+  T(n,m)=O(n+m\sqrt n).
+\]
+
+Nếu phạm vi cập nhật--truy vấn là phạm vi trong không gian \(d\) chiều, chẳng
+hạn nửa không gian \(d\) chiều, simplex, hình cầu, phạm vi trực giao, đa diện,
+v.v., với \(d>1\), thì \(F(n)=O(n^d)\), suy ra
+\[
+  T(n,m)=O(n+mn^{1-1/d}).
+\]
+
+Đặc biệt, nếu phạm vi cập nhật--truy vấn là tập con tùy ý của tập điểm, thì
+\(F(n)=O(2^n)\), khi đó \(G(n)=O(\log n)\), và
+\[
+  T(n,m)=O\left(n+\frac{mn}{\log n}\right).
+\]
+Điều này nghĩa là ngay cả khi phạm vi là tập con tùy ý, ta vẫn có thể đạt độ
+phức tạp tốt hơn vét cạn.
+
+Với thuật toán trên, số phép toán trên cấu trúc đại số chỉ phụ thuộc vào
+\(n,m,I_0,Q,F\), không phụ thuộc vào hình dạng phạm vi cụ thể hay cấu trúc đại
+số cụ thể. Trong tài liệu [2], với trường hợp \(F(x)=O(x^c)\), người ta chứng
+minh cận dưới số phép toán trên cấu trúc đại số là
+\[
+  \Omega(n+mn^{1-1/c}),
+\]
+tức số phép toán của thuật toán này là tối ưu.
+
+Cần chú ý rằng đây là thuật toán tối ưu về số phép toán, nhưng chưa tính độ
+phức tạp của phần hình học tính toán, như định vị điểm trong mặt phẳng hoặc
+không gian.
+
+\subsubsection*{3.5. Tìm vùng}
+
+Với bài toán cập nhật--truy vấn trong mặt phẳng, ta chia thao tác thành các
+giai đoạn kích thước \(O(\sqrt n)\). Mỗi giai đoạn có \(O(n)\) vùng; dùng thuật
+toán định vị điểm trên đồ thị phẳng là có thể hoàn thành việc di chuyển giữa
+các lớp tương đương. Thuật toán này có thể xử lý cập nhật--truy vấn phạm vi là
+hình tròn, hyperbola, ellipse, v.v. với cùng độ phức tạp.
+
+Có một phương pháp băm tổng quát: nếu cần chuyển tới \(R_{l,r}\), ta gán ngẫu
+nhiên cho mỗi phạm vi một số nguyên trong \([0,2^w)\), rồi thực hiện cộng phạm
+vi đối với các phạm vi \(q_l,q_{l+1},\ldots,q_r\). Khi đó các lớp tương đương
+khác nhau có xác suất cao nhận giá trị băm khác nhau, còn cùng một lớp tương
+đương thì có cùng giá trị băm. Với mỗi lớp tương đương của \(R_{l,r}\), lấy một
+đại diện, rồi thực hiện chuyển tới \(R_{l,\mathit{mid}}\) và
+\(R_{\mathit{mid}+1,r}\).
+
+Bài toán được chuyển thành: sau một số phép cộng phạm vi, xuất ra giá trị của
+mỗi điểm. Đây là một bài toán cấu trúc dữ liệu trừu tượng mới nhưng đơn giản
+hơn.
+
+\subsubsection*{3.6. Ứng dụng}
+
+\paragraph{\term{Ví dụ 3.1 (CTS2021). Đo thử cập nhật--truy vấn nửa mặt phẳng}.}
+
+Cho nửa nhóm giao hoán \((D,+)\), nửa nhóm \((M,*)\), và phép tác động hai ngôi
+\(\star:D\times M\to D\), trong đó \(\star\) thỏa tính kết hợp và tính phân
+phối.
+
+Cho \(n\) điểm \((x_i,y_i)\) trên mặt phẳng, mỗi điểm có trọng số ban đầu
+\(d_i\in D\). Cần thực hiện \(m\) thao tác. Thao tác thứ \(j\) cho
+\(a_j,b_j,c_j\) và thông tin nửa nhóm \(o_j\in M\). Với mọi \(i\) thỏa
+\[
+  a_jx_i+b_jy_i<c_j,
+\]
+trước hết cần trả lời \(\sum_i d_i\) trên các điểm đó, sau đó cập nhật mọi
+\(d_i\) tương ứng theo phép tác động bởi \(o_j\). Các thao tác là offline.
+\footnote{\url{https://qoj.ac/problem/9020},
+\url{https://qoj.ac/problem/4817}.}
+
+Trong bài này, mỗi phạm vi thao tác là một nửa mặt phẳng. Với một dãy thao tác
+độ dài \(m\), mặt phẳng bị chia thành \(O(m^2)\) vùng. Chia dãy thao tác thành
+các nhóm độ dài \(B\) rồi chia để trị và áp dụng thuật toán trên; đặt
+\(B=\sqrt n\), ta thu được độ phức tạp về số phép toán là \(O(n+m\sqrt n)\).
+
+Tiếp theo cần xử lý phần hình học tính toán, có thể dùng thuật toán định vị
+điểm trên đồ thị phẳng. Cụ thể, với \(m\) đường thẳng truy vấn, tính giao điểm
+của mọi cặp đường thẳng, sắp xếp các giao điểm theo tọa độ \(x\), rồi quét.
+Trong quá trình quét, duy trì thứ tự của mọi đường thẳng theo tọa độ \(y\) tại
+tọa độ \(x\) hiện tại; khi gặp một giao điểm thì hoán đổi thứ tự hai đường
+thẳng. Đồng thời sắp xếp mọi điểm theo tọa độ \(x\); khi quét tới một điểm, nhị
+phân để xác định điểm đó thuộc vùng nào. Như vậy ta thu được thông tin ban đầu
+của \(O(m)\) vùng.
+
+Sau khi khởi tạo rừng có gốc, cần xử lý thay đổi của rừng khi chuyển từ
+\(R_{l,r}\) sang \(R_{l,\mathit{mid}}\), tức tìm những vùng nào bị gộp. Với mỗi
+đường thẳng, sắp xếp các giao điểm trên đường đó theo tọa độ \(x\) tăng dần và
+duy trì một danh sách liên kết; mỗi giao điểm thuộc danh sách của hai đường
+thẳng. Khi xóa đường thẳng đó, duyệt các giao điểm trên danh sách, xóa giao
+điểm khỏi danh sách của đường thẳng còn lại, rồi gộp hai vùng hai bên. Như vậy
+hoàn thành quá trình xóa đường thẳng và gộp vùng. Khi khôi phục đường thẳng đã
+xóa, cũng duyệt danh sách của đường thẳng đó và lần lượt hoàn tác các thao tác.
+
+Độ phức tạp thời gian của cách làm này là \(O(n+m\sqrt n\log n)\), nút thắt
+nằm ở sắp xếp giao điểm và nhị phân trong quét. Tuy nhiên bài này là bài tương
+tác, chỉ cần bảo đảm số phép toán là đúng.
+
+\paragraph{\term{Ví dụ 3.2 (Ynoi2006). rmpq}.}
+
+Cho monoid \(D\), và một mặt phẳng trong đó mỗi điểm có trọng số
+\(d(x,y)\in D\). Cần thực hiện các thao tác sau:
+\begin{enumerate}
+  \item Cập nhật: cho đường thẳng \(x=x_0\) hoặc \(y=y_0\), cùng hai trọng số
+  \(d_1,d_2\). Cập nhật \(d(x,y)\) ở một phía của đường thẳng thành
+  \(d(x,y)*d_1\), và phía còn lại thành \(d(x,y)*d_2\).
+  \item Truy vấn: cho \(x,y\), hỏi giá trị \(d(x,y)\).
+\end{enumerate}
+Các thao tác bắt buộc online.\footnote{\url{https://www.luogu.com.cn/problem/P7881}.}
+
+Trong bài này, mỗi thao tác có phạm vi là phạm vi trực giao hai chiều. Dưới một
+dãy thao tác, điều này tương đương với việc mặt phẳng bị một số đường thẳng
+ngang và dọc chia thành lưới hình chữ nhật, trong đó mỗi ô là một lớp tương
+đương. Nếu dãy thao tác có độ dài \(m\), số lớp tương đương là \(O(m^2)\).
+
+Chia dãy thao tác thành các nhóm độ dài \(B\) và chia để trị. Trước hết dùng
+chia để trị để xử lý lưới hình chữ nhật do nửa trái và nửa phải thao tác sinh
+ra, cùng thông tin của mỗi ô. Khi gộp hai lưới, chỉ cần trộn riêng các đường
+ngang và các đường dọc, là có thể ánh xạ mỗi ô trong lưới con tới ô tương ứng
+trong lưới hiện tại; như vậy đã hoàn thành việc gộp các lớp tương đương.
+
+Quá trình gộp chia để trị tương đương với việc bắt đầu từ số lớp tương đương ít
+nhất và lần lượt xây dựng các lớp tương đương cho từng đoạn, tức xây dựng từ
+gốc của rừng có gốc, đồng thời tính được quan hệ tương ứng giữa các lớp tương
+đương.
+
+Vì thao tác bắt buộc online, mỗi khi tích lũy đủ \(B\) thao tác rời rạc, ta
+đóng chúng thành một khối và chia để trị xử lý. Khi truy vấn, định vị điểm
+trong lưới của \(m/B\) khối phía trước để lấy thông tin, còn với khối cuối cùng
+có ít hơn \(B\) thao tác thì truy vấn vét cạn.
+
+Nếu dùng kỹ thuật nhóm nhị phân, mỗi lần thêm ở cuối một khối kích thước \(1\);
+khi hai khối cuối có cùng kích thước và chưa vượt ngưỡng \(B\), liên tục gộp
+hai khối cuối. Cách này cũng đạt hiệu quả chia để trị, và khi truy vấn trên các
+khối rời chỉ cần định vị điểm trong \(O(\log B)\) khối, giảm hằng số mà không
+đổi độ phức tạp số phép toán.
+
+Chi phí xử lý chia để trị một dãy thao tác độ dài \(n\) là
+\[
+  T(n)=2T(n/2)+O(n^2)=O(n^2).
+\]
+Nếu tổng số thao tác cập nhật và truy vấn là \(n\), chọn \(B=\sqrt n\) sẽ được
+độ phức tạp số phép toán \(O(n\sqrt n)\). Định vị điểm cần nhị phân trong các
+tọa độ \(x\) và \(y\) của lưới, nên độ phức tạp thời gian là
+\(O(n\sqrt n\log n)\), đủ để qua bài này. Có thể dùng kỹ thuật fractional
+cascading để tối ưu xuống \(O(n\sqrt n)\).
+
+\paragraph{\term{Ví dụ 3.3 (Ynoi2007). TB5x}.}
+
+Cho nửa nhóm giao hoán \((D,+)\), nửa nhóm \((M,*)\), và phép tác động hai ngôi
+\(\star:D\times M\to D\), trong đó \(\star\) thỏa tính kết hợp và tính phân
+phối. Ban đầu có \(n\) điểm \((i,p_i)\) trong mặt phẳng hai chiều, với \(p\) là
+một hoán vị. Cần thực hiện \(m\) thao tác.
+
+Mỗi thao tác cho \(x_1,y_1,x_2,y_2\) thỏa
+\[
+  0<x_1<x_2<n,\qquad 0<y_1<y_2<n.
+\]
+Tọa độ lưới của một điểm được định nghĩa là
+\[
+  ((x\ge x_1)+(x\ge x_2),\ (y\ge y_1)+(y\ge y_2)).
+\]
+Thao tác gồm:
+\begin{enumerate}
+  \item Hỏi tổng trọng số của các điểm có tọa độ lưới \((X,Y)\), ghi vào
+  \(\mathtt{ans}[X][Y]\).
+  \item Với mỗi điểm có tọa độ lưới \((X,Y)\), thực hiện cập nhật
+  \(\mathtt{o}[X][Y]\).
+  \item Tọa độ của mọi điểm đồng thời thay đổi. Với một điểm có tọa độ lưới
+  \((X,Y)\), tọa độ của nó đổi từ \((x,y)\) thành
+  \((x+\mathtt{dx}[X], y+\mathtt{dy}[Y])\), trong đó
+  \[
+    \mathtt{dx}[0]=0,\quad
+    \mathtt{dx}[1]=n-x_2,\quad
+    \mathtt{dx}[2]=x_1-x_2,
+  \]
+  \[
+    \mathtt{dy}[0]=0,\quad
+    \mathtt{dy}[1]=n-y_2,\quad
+    \mathtt{dy}[2]=y_1-y_2.
+  \]
+\end{enumerate}
+Các thao tác là offline.\footnote{\url{https://www.luogu.com.cn/problem/P7723}.}
+
+Trong bài này, mỗi thao tác có phạm vi là phạm vi trực giao hai chiều. Khác với
+bài trước, sau mỗi thao tác, tọa độ \(x\) và \(y\) của mọi điểm đều được hợp
+thành với một hoán vị.
+
+Ta vẫn dùng cách gộp chia để trị của bài trước: bắt đầu từ số lớp tương đương
+ít nhất và lần lượt xây dựng các lớp tương đương cho từng đoạn, tức xây dựng
+từ các lá của chia để trị và từ gốc của rừng có gốc. Mỗi thao tác cập nhật tọa
+độ là một hoán vị gồm ba đoạn liên tiếp; hợp một hoán vị gồm \(x\) đoạn liên
+tiếp với một hoán vị gồm \(y\) đoạn liên tiếp sinh ra nhiều nhất \(x+y\) đoạn,
+và mỗi đoạn là một lớp tương đương.
+
+Khi gộp, dựa vào hoán vị của hai đoạn con trái và phải để tính hoán vị của đoạn
+hiện tại, đồng thời xác định mỗi đoạn trong hoán vị hiện tại, tức mỗi lớp tương
+đương, tương ứng với lớp tương đương nào trong hai con. Sau khi xây dựng quan
+hệ tương ứng của các lớp tương đương và cấu trúc rừng có gốc, dùng thuật toán
+chia để trị ở trên là giải được bài này. Số phép toán và thời gian đều là
+\[
+  O(n+m\sqrt n).
+\]
+
+\subsection*{4. Cây phân hoạch tập điểm}
+
+Giả sử cần thiết kế một cây phân hoạch tập điểm sao cho mỗi cập nhật hoặc truy
+vấn chỉ đệ quy vào một số ít cây con. Khi đó ta có thể hỗ trợ cập nhật--truy
+vấn phạm vi, đồng thời có thể online.
+
+Với đoạn, cây phân hoạch tập điểm tối ưu là cây đoạn. Độ phức tạp thao tác là
+\(O(n+m\log n)\). Với đường đi đơn trên cây, cây phân hoạch tập điểm tối ưu là
+static LCT, Top Tree, v.v.; độ phức tạp thao tác cũng là \(O(n+m\log n)\).
+
+Với hình chữ nhật trong mặt phẳng hai chiều, cây phân hoạch tối ưu là KDT. Độ
+phức tạp thao tác là \(O(n+m\sqrt n)\). Với phạm vi trực giao nhiều chiều, cây
+phân hoạch tối ưu cũng là KDT; trong không gian \(d\) chiều với \(d>1\), độ
+phức tạp thao tác là \(O(n+mn^{1-1/d})\).
+
+Trong trường hợp nửa mặt phẳng hai chiều, Optimal Partition Tree [1] là cấu
+trúc dữ liệu cập nhật--truy vấn phạm vi simplex hai chiều tối ưu: tồn tại một
+cách phân hoạch tập điểm sao cho mọi simplex hai chiều có thể được biểu diễn
+bằng tổng các tập điểm của \(O(\sqrt n)\) cây con. Cấu trúc dữ liệu này có hằng
+số lớn và khó cài đặt.
+
+Optimal Partition Tree có thể mở rộng lên phạm vi simplex nhiều chiều, đồng
+thời vẫn bảo đảm tối ưu về lý thuyết. Với bài toán \(d\) chiều, độ phức tạp
+thao tác là \(O(n+mn^{1-1/d})\).
+
+Lưu ý rằng trong nửa mặt phẳng hai chiều, độ phức tạp của KDT khi dùng làm cây
+phân hoạch tập điểm là sai; có nhiều cách dựng dữ liệu để phá, chẳng hạn đặt
+các điểm rời rạc trên một đường tròn và truy vấn bằng nhiều tiếp tuyến gần với
+đường tròn.
+
+\subsection*{5. Bài toán truy vấn phạm vi nửa mặt phẳng}
+
+\subsubsection*{5.1. Dạng bài toán}
+
+Trong bài toán này không có cập nhật, chỉ có truy vấn: hỏi thông tin nửa nhóm
+giao hoán ở một phía của nửa mặt phẳng. Nếu được offline, dùng thuật toán
+cập nhật--truy vấn nói trên là đạt cận dưới số phép toán
+\(O(n+m\sqrt n)\). Tuy nhiên khi chỉ có truy vấn và không có cập nhật, còn có
+một số thuật toán có thể có độ phức tạp thấp hơn hoặc hỗ trợ bắt buộc online.
+Sau đây là vài thuật toán cho bài toán này.
+
+\subsubsection*{5.2. Đường quét xoay}
+
+Chia tập điểm tùy ý thành các khối kích thước \(B\).
+
+Định nghĩa dạng chuẩn của một nửa mặt phẳng như sau: trước hết tịnh tiến nửa
+mặt phẳng truy vấn xuống dưới cho tới khi chạm điểm đầu tiên, rồi xoay nửa mặt
+phẳng đó theo chiều kim đồng hồ cho tới khi chạm điểm đầu tiên. Có thể chứng
+minh phép biến đổi này không làm thay đổi tập điểm ở phía được hỏi của nửa mặt
+phẳng.
+
+Dưới phép biến đổi này, với \(B\) điểm chỉ tồn tại \(O(B^2)\) dạng chuẩn nửa
+mặt phẳng khác nhau. Nếu hai nửa mặt phẳng được biến đổi về cùng một dạng
+chuẩn, chúng tương ứng cùng một tập điểm và đáp án truy vấn giống nhau; vì vậy
+chỉ có \(O(B^2)\) đáp án cần tiền xử lý.
+
+Quá trình đường quét xoay là: giả sử hiện có một đường thẳng, độ dốc của nó
+dịch dần từ \(-\infty\) tới \(+\infty\). Với góc hiện tại \(\theta\), duy trì
+thứ tự của mọi điểm \((x,y)\) theo giá trị \(x\cos\theta+y\sin\theta\); cũng có
+thể xem là với độ dốc hiện tại \(k\), duy trì mọi điểm theo tung độ gốc
+\(y-kx\).
+
+Lấy tùy ý một điểm làm gốc, bắn ra một tia, và chiếu vuông góc mọi điểm lên tia
+đó. Ở mọi thời điểm, các dạng chuẩn nửa mặt phẳng khác nhau chính là các đường
+vuông góc từ các điểm xuống tia. Với \(B\) điểm, xét nhiều nhất \(B^2\) đường
+thẳng do từng cặp điểm xác định. Trong quá trình xoay, khi độ dốc trùng với độ
+dốc đường thẳng nối một cặp điểm, hai điểm đó sẽ đổi thứ tự, và xuất hiện thêm
+một dạng chuẩn nửa mặt phẳng. Có tổng cộng \(B^2\) lần đổi chỗ, nên có \(B^2\)
+dạng chuẩn nửa mặt phẳng khác nhau.
+
+Hình 3 trong bản gốc minh họa đường quét xoay: một tia quay quanh gốc, thứ tự
+các hình chiếu của điểm trên tia chỉ thay đổi khi tia vuông góc với đường nối
+của một cặp điểm.
+
+Với một truy vấn phạm vi nửa mặt phẳng, khi đường quét tới độ dốc tương ứng,
+ta nhị phân trong dãy điểm để tìm tiền nhiệm và hậu nhiệm. Khi đó bài toán
+tương đương với hỗ trợ truy vấn tiền tố, hậu tố trên một dãy. Ta duy trì động
+dãy điểm của đường quét xoay hiện tại; mỗi lần đổi chỗ đều là đổi hai phần tử
+kề nhau, nên có thể cập nhật trong \(O(1)\).
+
+Chọn \(B=\sqrt m\), số phép toán trên cấu trúc đại số là \(O(n\sqrt m)\), tổng
+thời gian là \(O(n\sqrt m\log n)\). Nút thắt thời gian nằm ở sắp xếp độ dốc và
+nhị phân định vị điểm. Nếu tử số và mẫu số của các phân số có miền giá trị
+\(V\), có thể dùng số thực độ chính xác \(\operatorname{poly}(V)\) để biểu diễn
+độ dốc. Khi đó mọi độ dốc đều có thể biểu diễn bằng một số thực, và có thể thực
+hiện một lần radix sort theo góc cực cho các đường nối từng cặp điểm, làm cho
+phần sắp xếp không mang thừa số \(\log\).
+
+Cần chú ý khác biệt về độ phức tạp so với bài toán có cập nhật: bài toán
+cập nhật--truy vấn phạm vi có cận dưới \(O(n+m\sqrt n)\), không giảm khi số
+thao tác tăng; còn nếu chỉ hỗ trợ truy vấn thì có thể đạt \(O(n\sqrt m)\), và
+độ phức tạp giảm khi số thao tác nhiều hơn.
+
+Nếu mỗi khối tiền xử lý sẵn \(B^2\) kết quả, và dùng cách hợp lý để nhị phân
+xác định mỗi truy vấn thuộc dạng chuẩn nửa mặt phẳng nào, đường quét xoay có
+thể online.
+
+\subsubsection*{5.3. Cây phân hoạch tập điểm}
+
+Có thể dùng Optimal Partition Tree đã nêu ở trên để đạt độ phức tạp tới cận
+dưới, và đây là thuật toán online. Kết hợp với đường quét xoay, ta thu được một
+số cách làm tốt hơn về lý thuyết:
+
+Trước hết dùng cây phân hoạch tập điểm tối ưu để chia để trị trên tập điểm, sau
+đó dùng đường quét xoay trên các cây con nhỏ hơn để tiền xử lý mọi trường hợp
+có thể. Đặt
+\[
+  B=m^{2/3}n^{-1/3}.
+\]
+Với các cây con kích thước không quá \(B\), chạy đường quét xoay để tiền xử lý
+\(O(m^{4/3}n^{-2/3})\) dạng chuẩn nửa mặt phẳng khác nhau. Khi truy vấn trên
+cây phân hoạch tập điểm, đệ quy truy vấn; đến cây con kích thước không quá
+\(B\) thì truy vấn và dừng đệ quy.
+
+Số phép toán trên cấu trúc đại số là \(O(n^{2/3}m^{2/3})\), tổng thời gian là
+\(O(n^{2/3}m^{2/3}\log^* n)\). Tuy vậy cách này khó cài đặt, \emph{non-practical}.
+
+\subsubsection*{5.4. Mo trên nửa mặt phẳng}
+
+Mo trên nửa mặt phẳng là thuật toán offline, có thể mở rộng thuật toán Mo sang
+các truy vấn nửa mặt phẳng.
+
+\paragraph{\term{Ví dụ 5.1 (Ynoi2003). Helesta}.}
+Cho \(n\) điểm phân biệt \((x_i,y_i)\), \(1\le i\le n\), và \(m\) tập
+\[
+  S_j=\{(x_i,y_i)\mid A_jx_i+B_jy_i+C_j>0\},\qquad 1\le j\le m.
+\]
+Cần tìm một hoán vị \(p_1,p_2,\ldots,p_m\) của \(1,2,\ldots,m\), sao cho
+\[
+  |S_{p_1}|+\sum_{i=2}^{m}|S_{p_i}\oplus S_{p_{i-1}}|\le M.
+\]
+Ở đây \(M\) là hằng số cho trước, và
+\[
+  A\oplus B=(A\cup B)-(A\cap B).
+\]
+\footnote{\url{https://www.luogu.com.cn/problem/P8529}.}
+
+Bài toán chuyển thành: duy trì tập điểm, ban đầu rỗng, hỗ trợ thêm điểm và xóa
+điểm, sao cho mọi tập điểm được một nửa mặt phẳng biểu diễn đều xuất hiện ít
+nhất một lần trong quá trình. Nói cách khác, cần xây dựng một thứ tự Mo trên
+nửa mặt phẳng sao cho số lần thêm và xóa điểm không vượt quá \(M\).
+
+Sau đây là một thứ tự Mo nửa mặt phẳng dựa trên ngẫu nhiên, tối ưu theo kỳ
+vọng. Chọn ngẫu nhiên \(B\) điểm. Với mỗi điểm được chọn, dùng điểm đó làm tâm
+để chạy đường quét xoay; phần này có chi phí \(B\times 2n\), vì cần duy trì cả
+hai phía trên và dưới. \(B\) đường quét xoay đều bắt đầu và kết thúc ở cùng một
+độ dốc, nên chi phí nối chúng lại không vượt quá \(n\).
+
+Với mỗi nửa mặt phẳng truy vấn, chọn tâm xoay gần nó nhất theo chi phí, rồi di
+chuyển từ tập của tâm xoay đó tới nó để trả lời truy vấn. Do các điểm được rải
+ngẫu nhiên, khoảng cách di chuyển kỳ vọng mỗi lần là \(n/B\), nên chi phí kỳ
+vọng của mỗi truy vấn là \(2n/B\).
+
+Tổng chi phí là
+\[
+  n+2nB+\frac{2mn}{B}.
+\]
+Chọn \(B=\sqrt m\), ta được chi phí \(4n\sqrt m\) nếu bỏ qua hạng \(n\) nhỏ
+hơn. Cài đặt trực tiếp cần tìm vét cạn điểm gần nhất cho mỗi truy vấn, thời
+gian \(O(m\sqrt m)\). Với phép chuyển trong Mo nửa mặt phẳng, cần dùng cấu trúc
+dữ liệu đếm điểm nửa mặt phẳng, nhưng chi tiết này không xuất hiện trong bài
+trên.
+
+\subsubsection*{5.5. Trường hợp đặc biệt dữ liệu ngẫu nhiên}
+
+Nếu đề bài bảo đảm mọi điểm được sinh ngẫu nhiên trong một hình chữ nhật cho
+trước, hoặc truy vấn được sinh ngẫu nhiên theo một cách nào đó, và vẫn chỉ có
+thao tác truy vấn thông tin ở một phía nửa mặt phẳng, ta có một số thuật toán
+đặc biệt để giải.
+
+Khi tập điểm trong dữ liệu là ngẫu nhiên, KD-Tree có thể xem gần đúng là cây
+phân hoạch tập điểm tối ưu, nên cây phân hoạch tập điểm tối ưu trong phương
+pháp trên có thể được cài bằng KDT.
+
+Một phương pháp khác là chia khối mặt phẳng. Giả sử có \(n\) điểm, chia mặt
+phẳng thành \(\sqrt n\times\sqrt n\) khối. Vì tập điểm ngẫu nhiên đều, một khối
+kỳ vọng chỉ có hằng số điểm, nên độ phức tạp kỳ vọng của truy vấn trong khối là
+\(O(1)\).
+
+Một nửa mặt phẳng có thể xem như \(O(\sqrt n)\) truy vấn tiền tố hoặc hậu tố
+theo hàng, cùng \(O(\sqrt n)\) truy vấn trong khối. Ta có thể tiền xử lý mọi
+thông tin tiền tố và hậu tố, rồi vét cạn các điểm lẻ.
+
+Số phép toán trên cấu trúc đại số là \(O(n+m\sqrt n)\), tổng thời gian cũng là
+\(O(n+m\sqrt n)\). Chia khối mặt phẳng là cách làm chạy nhanh nhất.
+
+\subsubsection*{5.6. Ứng dụng}
+
+\paragraph{\term{Ví dụ 5.2 (UNR \#4). Tập axit caproic}.}
+
+Cho \(n\) điểm \((x_i,y_i)\) trên mặt phẳng. Có \(m\) truy vấn; mỗi truy vấn
+cho đường tròn tâm \((0,z_i)\), bán kính \(R_i\), và hỏi số điểm nằm trong
+đường tròn.\footnote{\url{https://uoj.ac/problem/553}.}
+
+Điều kiện có thể chuyển thành
+\[
+  x_i^2+y_i^2+z_i^2-2y_iz_i\le R_i^2,
+\]
+tức
+\[
+  2z_iy_i+R_i^2-z_i^2\ge x_i^2+y_i^2.
+\]
+Nếu ánh xạ \((x_i,y_i)\) thành \((y_i,x_i^2+y_i^2)\), bài toán chuyển thành
+hỏi số điểm nguyên nằm dưới đường thẳng
+\[
+  y=2z_i x+R_i^2-z_i^2,
+\]
+và có thể dùng đường quét xoay để giải.
+
+\paragraph{\term{Ví dụ 5.3 (CTS2022). Tất}.}
+
+Cho \(n\) điểm \((x_i,y_i,c_i)\). Có \(m\) truy vấn; mỗi truy vấn cho
+\(A,B,C\), hỏi số cặp có thứ tự \((i,j)\) thỏa
+\[
+  Ax_i+By_i+C<0,\qquad Ax_j+By_j+C<0,\qquad c_i=c_j.
+\]
+Bảo đảm tập điểm được sinh ngẫu nhiên, tức \(c_i,x_i,y_i\) lần lượt được chọn
+ngẫu nhiên trong các khoảng cho trước.\footnote{\url{https://www.luogu.com.cn/problem/P8261}.}
+
+Bài này là truy vấn tổng bình phương số điểm mỗi màu trên một nửa mặt phẳng.
+
+\paragraph{\term{Solution 1. Đường quét xoay}.}
+Sắp xếp điểm theo trọng số màu \(c_i\), rồi chia khối kích thước \(B\). Với mỗi
+truy vấn, hỏi thông tin trong từng khối: số lần xuất hiện của màu đầu tiên và
+màu cuối cùng trong nửa mặt phẳng, cũng như tổng bình phương số lần xuất hiện
+của các màu ở giữa. Thông tin này là thông tin nửa nhóm có thể gộp, nên gộp
+tuần tự đáp án của từng khối sẽ thu được đáp án.
+
+Dùng đường quét xoay để xử lý truy vấn trong mỗi khối. Bài toán chuyển thành
+duy trì một dãy gồm các điểm, thực hiện \(O(B^2)\) lần đổi chỗ hai vị trí kề
+nhau, và duy trì thông tin. Có thể trực tiếp duy trì \(\operatorname{rank}\)
+hiện tại của mỗi điểm trong dãy và dãy điểm hiện tại.
+
+Độ phức tạp thời gian là
+\[
+  O\left(\frac{n}{B}(B^2+m)\log n\right).
+\]
+Chọn \(B=\sqrt m\) thu được \(O(n\sqrt m\log n)\).
+
+\paragraph{\term{Solution 2. Cây phân hoạch tập điểm}.}
+Đảo vai trò tập điểm và phạm vi truy vấn, tính đóng góp của tập điểm cho truy
+vấn. Điểm \((a,b)\) nằm một phía của nửa mặt phẳng \(cx+dy<e\). Giả sử
+\(e\) không âm, điều kiện có thể chuyển thành
+\[
+  \frac{c}{e}x+\frac{d}{e}y<1,
+\]
+tức điểm \((c/e,d/e)\) nằm một phía của nửa mặt phẳng \(ax+by<1\). Như vậy mỗi
+truy vấn được chuyển thành một điểm, và ta xây KDT trên mọi điểm truy vấn.
+
+Với mỗi màu, xét đóng góp của màu đó cho mọi truy vấn. Trên mỗi điểm của KDT
+duy trì một biến \(\mathtt{cnt}\). Liệt kê các điểm có màu \(x\); với nửa mặt
+phẳng tương ứng của điểm đó, trong KDT sẽ truy cập một số cây con, và ta gắn
+tag cộng \(1\) vào \(\mathtt{cnt}\) của các cây con đó.
+
+Sau khi thực hiện xong mọi thao tác của màu này, ta thăm tất cả nút KDT vừa
+được truy cập và cộng đáp án của cây con tương ứng. Do dữ liệu ngẫu nhiên, độ
+phức tạp của KDT là đúng. Nếu dùng cây phân hoạch tập điểm tối ưu, độ phức tạp
+thời gian là \(O(n\sqrt m)\).
+
+\paragraph{\term{Ví dụ 5.4 (Ynoi2000). hpi}.}
+
+Cho \(n\) điểm phân biệt \((x_i,y_i)\). Có \(m\) truy vấn; mỗi truy vấn cho
+\(A,B,C\), hỏi số cặp có thứ tự \((i,j)\) thỏa
+\[
+  x_i<x_j,\qquad y_i<y_j,
+\]
+\[
+  Ax_i+By_i+C>0,\qquad Ax_j+By_j+C>0.
+\]
+Bảo đảm dữ liệu tập điểm là ngẫu nhiên.\footnote{\url{https://www.luogu.com.cn/problem/P9996}.}
+
+Bài này là đếm cặp thống trị trong nửa mặt phẳng. Ta phân loại hướng của nửa
+mặt phẳng truy vấn. Trước hết xử lý riêng nửa mặt phẳng có \(A=0\) hoặc
+\(B=0\).
+
+Nếu \(A\times B>0\), nửa mặt phẳng trong hệ tọa độ Descartes hướng về trái
+dưới hoặc phải trên; hai phần đối xứng nhau, nên chỉ xét trường hợp hướng trái
+dưới. Đặt trọng số điểm \(f_i\) là số điểm ở trái dưới nó, tức số điểm thỏa
+\[
+  x_j<x_i,\qquad y_j<y_i.
+\]
+Nếu nửa mặt phẳng hướng về trái dưới, chỉ cần thống kê tổng \(f_i\) của các
+điểm trong nửa mặt phẳng, trở thành bài toán đếm điểm nửa mặt phẳng.
+
+Nếu \(A\times B<0\), nửa mặt phẳng trong hệ tọa độ Descartes hướng về trái
+trên hoặc phải dưới; hai phần đối xứng nhau, nên chỉ xét trường hợp hướng phải
+dưới. Đặt trọng số điểm \(f_i\) là số điểm ở phải dưới nó, tức số điểm thỏa
+\[
+  x_j>x_i,\qquad y_j<y_i.
+\]
+Khi đó chỉ cần thống kê tổng số cặp điểm trong nửa mặt phẳng, rồi trừ tổng
+\(f_i\) của mọi điểm trong nửa mặt phẳng là được đáp án; đây cũng là bài toán
+đếm điểm nửa mặt phẳng.
+
+Vì dữ liệu của bài là ngẫu nhiên, có thể dùng KDT hoặc chia khối mặt phẳng;
+trong đó chia khối mặt phẳng chạy hiệu quả hơn các thuật toán khác.
+
+\subsection*{6. Tổng kết}
+
+Bài viết trước hết giới thiệu thuật toán chia để trị cho cập nhật--truy vấn
+phạm vi offline tối ưu. Thuật toán này có tính mở rộng khá mạnh, giải được một
+lớp bài toán có thông tin thỏa tính chất hai nửa nhóm.
+
+Bài viết cũng giới thiệu cây phân hoạch tập điểm, đường quét xoay, chia khối
+mặt phẳng và một số thuật toán khác. Các thuật toán này cũng có thể giải một số
+bài toán trong nửa mặt phẳng hoặc không gian nhiều chiều, đồng thời có thể đạt
+độ phức tạp thấp hơn hoặc hỗ trợ bắt buộc online.
+
+Do quy mô chấm hiện nay, trong các bài truyền thống đôi khi chưa phân biệt được
+thuật toán độ phức tạp thấp với thuật toán vét cạn. Bài toán cập nhật--truy vấn
+trong không gian nhiều chiều hiện vẫn xuất hiện rất ít trong OI, và ứng dụng
+của nó còn chờ được khai thác thêm.
+
+Tác giả hy vọng bài viết này có thể gợi mở và đem lại thêm cảm hứng cho các
+bài toán liên quan trong OI.
+
+\subsection*{7. Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+Cảm ơn các huấn luyện viên đội tuyển quốc gia Peng Sijin và Yang Yaoliang đã
+hướng dẫn.
+
+Cảm ơn gia đình đã đồng hành và ủng hộ.
+
+Cảm ơn các thầy Xu Xianyou, Wang Jiahong và Zhou Bang của Trường Trung học Học
+Quân đã quan tâm và hướng dẫn.
+
+Cảm ơn các anh Li Xinlong và Cai Chengze đã trao đổi, thảo luận và gợi ý cho
+tác giả.
+
+Cảm ơn các bạn học ở Trường Trung học Học Quân đã đọc duyệt bài viết.
+
+Cảm ơn các bạn và anh chị trong đội bạn đã giúp đỡ và đồng hành.
+
+Cảm ơn những thầy cô và bạn học khác đã giúp đỡ tác giả.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Timothy M. Chan. \emph{Optimal partition trees}. Proceedings of the
+  26th ACM Symposium on Computational Geometry, pages 1--10, 2010.
+  \item Xinlong Li and Chengze Cai. \emph{Offline optimal range query and update
+  algorithm}. 2021.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục, tập năm 2024 bao phủ các nhóm chủ đề sau:
@@ -3459,6 +4322,12 @@ với ảnh render PDF trang 32--44, tương ứng trang in 24--36; hình minh h
 Tree trong nguồn được diễn giải bằng lời thay vì vẽ lại. Bài thứ tư được dịch
 từ OCR và lớp văn bản PDF tại \texttt{/tmp/oipl-2024-lagrange/}, đối chiếu với
 ảnh render PDF trang 45--61, tương ứng trang in 37--53; một số tên riêng trong
-phần cảm ơn được phiên âm theo kết quả OCR và ảnh trang.
+phần cảm ơn được phiên âm theo kết quả OCR và ảnh trang. Bài thứ năm được dịch
+từ lớp văn bản PDF và ảnh render tại \texttt{/tmp/oipl-2024-range/}, đối chiếu
+với ảnh render PDF trang 62--76, tương ứng trang in 54--68; các hình minh họa
+phân lớp tương đương, chuyển đổi lớp tương đương và đường quét xoay được diễn
+giải bằng lời thay vì nhập ảnh. Công thức biến đổi ở ví dụ UNR \#4 trong nguồn
+có dấu hiệu thiếu nhất quán với mô tả ``bán kính \(R_i\)''; bản dịch dùng phép
+biến đổi đại số theo mô tả hình học đó.
 
 \end{document}
