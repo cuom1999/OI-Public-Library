@@ -21,7 +21,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2023. Tệp được
 tạo bằng LaTeX với lớp văn bản Unicode đọc được; mục lục và các trang thân bài
 đã kiểm tra đều trích xuất tốt bằng \texttt{pdftotext}. Bản LaTeX này chuyển
-ngữ phần nhận diện tập sách, toàn bộ mục lục và mười lăm bài đầu tiên, đồng thời ghi
+ngữ phần nhận diện tập sách, toàn bộ mục lục và mười sáu bài đầu tiên, đồng thời ghi
 lại các chủ đề chính để phục vụ bản dịch chi tiết hơn.
 \end{abstract}
 
@@ -8020,6 +8020,491 @@ hướng dẫn; cảm ơn Guo Yuhao đã đọc kiểm bản thảo.
   \item Michael A. Morrison and John Brillhart. A method of factoring and the
   factorization of \(F_7\). \emph{Mathematics of Computation},
   29(129):183--205, 1975.
+\end{enumerate}
+
+\section{Một lớp cấu trúc dữ liệu xâu con cơ bản}
+
+\begin{center}
+Trường Trung học trực thuộc Đại học Nhân dân Trung Quốc\\
+Xu Tingqiang
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Bài viết giới thiệu một cấu trúc dữ liệu xâu mới: cấu trúc xâu con cơ bản.
+Cấu trúc này mạnh ở chỗ có thể đồng thời xử lý thông tin tiền tố và hậu tố của
+xâu. Bài viết cũng trình bày một số ứng dụng của cấu trúc này trong thi tin
+học.
+\end{abstract}
+
+\subsection{Mở đầu}
+
+Lý thuyết xâu đã phát triển lâu trong OI, từ đó xuất hiện nhiều cấu trúc hậu
+tố nâng cao như suffix array và suffix automaton. Các cấu trúc này phân tích
+sâu tính chất của xâu và giải hiệu quả nhiều bài toán. Tuy nhiên, phần lớn cấu
+trúc hậu tố chỉ có liên hệ một chiều: chúng xử lý tốt quan hệ hậu tố, nhưng
+khó đồng thời xử lý thông tin liên quan tới tiền tố.
+
+Từ bài SDOI 2022 \emph{Thống kê xâu con}, tác giả nghiên cứu một lớp cấu trúc
+có thể đồng thời xử lý tiền tố và hậu tố, rồi viết bài này. Vì cấu trúc này
+trước đó chưa xuất hiện, tác giả gọi nó là \emph{cấu trúc xâu con cơ bản}. Bên
+cạnh đó, trên nền cấu trúc này, bài viết còn khảo sát một dạng phân rã chuỗi
+nặng nhẹ đặc biệt.
+
+\subsection{Quy ước và ký hiệu}
+
+Với xâu \(s=s_1s_2\cdots s_n\), ký hiệu \(s[l,r]\) là xâu con
+\[
+  s_ls_{l+1}\cdots s_r.
+\]
+Kích thước bảng chữ cái mặc định là \(O(1)\). Các kết quả liên quan tới suffix
+automaton và suffix tree có thể xem trong [1]; bài viết mặc định người đọc đã
+biết các kiến thức đó.
+
+\paragraph{Số lần xuất hiện.}
+Với xâu cố định \(s\) và một xâu con \(t\), định nghĩa \(\operatorname{occ}(t)\)
+là số lần \(t\) xuất hiện trong \(s\), tức số cặp \((l,r)\) thỏa
+\[
+  s[l,r]=t.
+\]
+Mỗi \(s[l,r]\) như vậy được gọi là một vị trí xuất hiện của \(t\).
+
+\paragraph{Hai cây hậu tố.}
+Đặt \(T^0\) là cây parent của SAM trên xâu thuận, tức suffix tree của xâu đảo.
+Đặt \(T^1\) là cây parent của SAM trên xâu đảo, tức suffix tree của xâu thuận.
+Khi nói một nút SAM, đôi khi ta cũng hiểu là nút tương ứng trên cây parent.
+
+Với nút \(u\) của SAM xâu thuận, ký hiệu \(s_0(u)\) là tập các xâu mà nút
+\(u\) biểu diễn. Với nút \(v\) của SAM xâu đảo, ký hiệu \(s_1(v)\) tương tự.
+
+\paragraph{Border.}
+Một xâu \(t\) là border của \(s\) khi và chỉ khi \(t\) vừa là tiền tố vừa là
+hậu tố của \(s\).
+
+\subsection{Cấu trúc xâu con cơ bản}
+
+\subsubsection{Dẫn nhập}
+
+Trước hết xét bài toán sau.
+
+\paragraph{Ví dụ mở đầu.}
+Cho xâu \(s\). Có \(q\) truy vấn, mỗi truy vấn cho một nút \(u\) trên cây
+parent \(T^0\) của SAM xâu thuận và một nút \(v\) trên cây parent \(T^1\) của
+SAM xâu đảo. Cần tìm giao
+\[
+  s_0(u)\cap s_1(v).
+\]
+Giới hạn \(n,q\le 5\cdot 10^5\).
+
+Bài toán này buộc ta xét đồng thời hai cây parent của xâu thuận và xâu đảo,
+điều khá khó với suffix array hoặc SAM thông thường. Vì vậy cần một cách ghép
+hai SAM lại với nhau; đó chính là cấu trúc xâu con cơ bản.
+
+\subsubsection{Nội dung và tính chất}
+
+\paragraph{Xâu mở rộng.}
+Với một xâu con \(t\) của \(s\), định nghĩa \(\operatorname{ext}(t)\) là xâu
+con dài nhất \(t'\) của \(s\) sao cho \(t'\) chứa \(t\) và
+\[
+  \operatorname{occ}(t)=\operatorname{occ}(t').
+\]
+Cần chứng minh định nghĩa này là tốt.
+
+\paragraph{Bổ đề.}
+\(\operatorname{ext}(t)\) tồn tại và duy nhất.
+
+\paragraph{Chứng minh.}
+Tồn tại là hiển nhiên vì \(t\) tự thỏa điều kiện. Để chứng minh duy nhất, giả
+sử có hai xâu \(t',t''\) đều thỏa điều kiện. Vì chúng đều chứa \(t\) và có số
+lần xuất hiện bằng \(\operatorname{occ}(t)\), mỗi lần xuất hiện của \(t\) tương
+ứng duy nhất với một lần xuất hiện của \(t'\), và cũng tương ứng duy nhất với
+một lần xuất hiện của \(t''\).
+
+Xét một lần xuất hiện \(s[l,r]=t\). Gọi các lần xuất hiện tương ứng của
+\(t'\), \(t''\) là \(s[l',r']\), \(s[l'',r'']\). Khi đó
+\[
+  l',l''\le l\le r\le r',r''.
+\]
+Đặt
+\[
+  L=\min(l',l''),\qquad R=\max(r',r'').
+\]
+Xâu \(s[L,R]\) cũng xuất hiện kèm mỗi lần xuất hiện của \(t\), nên
+\[
+  \operatorname{occ}(s[L,R])=\operatorname{occ}(t).
+\]
+Do \(\operatorname{ext}(t)\) dài nhất, buộc
+\[
+  R-L=r'-l'=r''-l'',
+\]
+tức \(l'=l''\), \(r'=r''\), và \(t'=t''\).
+
+Từ chứng minh trên có hai hệ quả. Nếu \(t'=\operatorname{ext}(t)\), và một lần
+xuất hiện \(s[l,r]\) của \(t\) tương ứng với \(s[l',r']\) của \(t'\), thì với
+mọi \(l'\le l''\le l\), \(r\le r''\le r'\), đều có
+\[
+  \operatorname{ext}(s[l'',r''])=t'.
+\]
+Ngoài ra,
+\[
+  \operatorname{ext}(\operatorname{ext}(t))=\operatorname{ext}(t).
+\]
+
+\paragraph{Lớp tương đương.}
+Hai xâu con \(x,y\) được gọi là tương đương khi và chỉ khi
+\[
+  \operatorname{ext}(x)=\operatorname{ext}(y).
+\]
+Nếu \(\operatorname{ext}(t)=t\), gọi \(t\) là đại diện của lớp tương đương chứa
+nó, ký hiệu \(\operatorname{rep}(a)\) với \(a\) là lớp đó. Mỗi lớp có đúng một
+đại diện, theo hệ quả vừa nêu.
+
+Nếu hai xâu có cùng \(\operatorname{occ}\) và một xâu chứa xâu còn lại, chúng
+thuộc cùng một lớp tương đương. Thật vậy, nếu \(t_2\) chứa \(t_1\) và
+\(\operatorname{occ}(t_1)=\operatorname{occ}(t_2)\), thì
+\(\operatorname{ext}(t_2)\) cũng chứa \(t_1\) và có cùng số lần xuất hiện, nên
+\[
+  \operatorname{ext}(t_1)=\operatorname{ext}(t_2).
+\]
+
+Với một xâu con \(t\), định nghĩa vị trí xuất hiện đầu tiên của nó là
+\[
+  s[\operatorname{posl}(t),\operatorname{posr}(t)].
+\]
+
+\paragraph{Định lý hình học.}
+Lập hệ tọa độ phẳng với hai trục \(l,r\). Với cùng một lớp tương đương, tập
+các điểm
+\[
+  (\operatorname{posl},\operatorname{posr})
+\]
+của mọi xâu trong lớp tạo thành một lưới bậc thang có cạnh trên và cạnh trái
+thẳng hàng.
+
+\paragraph{Chứng minh.}
+Vị trí xuất hiện đầu tiên của \(t\) tương ứng với vị trí xuất hiện đầu tiên của
+\(\operatorname{ext}(t)\). Trong một lớp, xâu dài nhất là đại diện, nên điểm
+tương ứng là điểm trái-trên của tập. Theo hệ quả của bổ đề về \(\operatorname{ext}\),
+mọi điểm của lớp nằm phía phải-dưới điểm đại diện, và với hai điểm đã có, mọi
+điểm nguyên trong hình chữ nhật tạo bởi chúng cũng thuộc cùng lớp. Vì vậy tập
+điểm tạo thành một hình bậc thang.
+
+Do đó mọi điểm nguyên \(1\le l\le r\le |s|\) được chia thành các hình bậc thang
+không giao nhau. Mỗi lớp tương đương \(a\) ứng với
+\(\operatorname{occ}(\operatorname{rep}(a))\) hình bậc thang giống nhau. Định
+nghĩa chu vi \(\operatorname{per}(a)\) của lớp \(a\) là tổng số hàng và số cột
+trong hình bậc thang của nó.
+
+Vì tính trực quan của định lý này, ta cũng gọi một lớp tương đương là một
+\emph{khối}. Sau đây là quan hệ giữa các khối và SAM.
+
+\paragraph{Định lý.}
+Với mỗi lớp tương đương, trong hình bậc thang tương ứng, mỗi hàng \(r\) cố định
+tương ứng với một nút của cây parent \(T^0\) của SAM xâu thuận; mỗi cột
+\(l\) cố định tương ứng với một nút của cây parent \(T^1\) của SAM xâu đảo.
+Hơn nữa, mọi hàng của mọi khối tương ứng một-một với các nút SAM xâu thuận,
+và mọi cột tương ứng một-một với các nút SAM xâu đảo. Tương ứng ở đây nghĩa là
+tập xâu được biểu diễn giống nhau.
+
+\paragraph{Chứng minh.}
+Chỉ cần xét hàng; cột đối xứng. Trong một hàng của một khối, \(r\) không đổi,
+\(l\) biến thiên liên tiếp và \(\operatorname{occ}\) không đổi, nên các xâu này
+nằm trong cùng một nút SAM xâu thuận. Ngược lại, mọi xâu trong một nút SAM có
+quan hệ chứa nhau, cùng \(r\) và cùng \(\operatorname{occ}\), nên theo bổ đề
+trên chúng thuộc cùng một khối và cùng một hàng.
+
+Suy ra tổng chu vi mọi khối là \(O(n)\). Để hoàn tất cấu trúc, cần thêm các
+cạnh cây parent của hai SAM. Cạnh trong \(T^0\) có thể xem như nối biên trên
+của một cột tới biên dưới của một cột trong khối khác; cạnh trong \(T^1\) đối
+xứng, nối biên trái của một hàng tới biên phải của một hàng khác.
+
+Từ góc nhìn khác, cấu trúc xâu con cơ bản là một đồ thị có hướng chứa mọi xâu
+con khác nhau của \(s\), trong đó xâu con \(t\) nối tới các xâu \(t+c\) và
+\(c+t\), với \(c\) là một ký tự.
+
+\paragraph{Bổ đề.}
+Nếu \(s[l,r_1]\) và \(s[l,r_2]\) thuộc cùng một lớp tương đương, thì với mọi
+\(1\le i<l\), hai xâu \(s[i,r_1]\) và \(s[i,r_2]\) cũng thuộc cùng một lớp.
+
+\paragraph{Chứng minh.}
+Giả sử \(r_1\le r_2\). Do quan hệ chứa nhau,
+\[
+  \operatorname{occ}(s[i,r_2])\le \operatorname{occ}(s[i,r_1]).
+\]
+Mặt khác, mỗi lần xuất hiện của \(s[i,r_1]\) kéo theo một lần xuất hiện của
+\(s[l,r_1]\), mà các lần xuất hiện của \(s[l,r_1]\) và \(s[l,r_2]\) tương ứng
+một-một. Do đó mỗi lần xuất hiện của \(s[i,r_1]\) cũng mở rộng thành một lần
+xuất hiện của \(s[i,r_2]\), nên hai số lần xuất hiện bằng nhau. Theo bổ đề về
+cùng \(\operatorname{occ}\) và chứa nhau, chúng cùng lớp.
+
+\paragraph{Định lý.}
+Nếu hai nút SAM \(u,v\) nằm trong cùng một lớp tương đương, thì hai cây con của
+chúng trên cây parent, bỏ qua gốc cây con, có cấu trúc hoàn toàn giống nhau.
+Cụ thể, có thể song ánh các nút trong hai cây con sao cho hai cây con đẳng cấu
+khi xem như cây vô hướng, và các nút tương ứng chứa cùng số xâu, cùng
+\(\operatorname{occ}\). Hơn nữa, vị trí tương đối trong hình bậc thang của các
+nút tương ứng giống với vị trí tương đối của \(u,v\).
+
+\paragraph{Chứng minh phác thảo.}
+Giả sử \(u,v\) nằm trên SAM xâu thuận. Gọi \(b_u,b_v\) là xâu dài nhất mà
+chúng chứa, và giả sử \(\operatorname{len}(b_u)\le \operatorname{len}(b_v)\).
+Vì \(u,v\) cùng khối và biên trái của hình bậc thang thẳng hàng,
+\[
+  \operatorname{posl}(b_u)=\operatorname{posl}(b_v).
+\]
+Đặt \(\delta=\operatorname{len}(b_v)-\operatorname{len}(b_u)\). Các lần xuất
+hiện của \(b_u\) là \(s[l_i,r_i]\), còn của \(b_v\) là
+\[
+  s[l_i,r_i+\delta].
+\]
+Theo bổ đề trước, với mọi \(j<l_i\), các xâu \(s[j,r_i]\) và
+\(s[j,r_i+\delta]\) nằm trong cùng lớp và giữ nguyên vị trí tương đối. Các xâu
+trong cây con của \(u,v\) chính là các xâu dạng này. Từ đó thu được song ánh
+giữa các trie con; sau khi nén các nút bậc hai, được kết quả cho cây parent.
+
+Một hệ quả là: các cạnh đi ra từ biên trên của một khối có thể chia thành một
+số nhóm; mỗi nhóm nối tới một đoạn liên tiếp và thẳng hàng trên biên dưới của
+một khối khác. Số nhóm chính là số con trong cây parent. Biên trái có kết luận
+đối xứng.
+
+Nhờ hệ quả này, chuỗi trên automaton dễ nhận diện hơn. Với một nút của
+\(T^0\), nếu nút đó không tương ứng với biên trái của khối chứa nó, thì trên
+SAM nó có đúng một cạnh đi ra, tới cột ngay bên trái. Nếu nó nằm ở biên trái,
+mọi cạnh đi ra chính là các biên trái có thể đạt được bằng cạnh parent của
+SAM còn lại.
+
+Đến đây, cấu trúc đã chứa đầy đủ thông tin của hai SAM. Về tổng thể, cấu trúc
+xâu con cơ bản gồm các lớp tương đương và các cạnh parent; lõi của nó là hình
+bậc thang của từng lớp. Cấu trúc automaton dạng DAG của SAM đã được thay bằng
+cây parent của SAM còn lại, vì DAG đó không có tính chất hình học thuận tiện.
+
+\subsubsection{Cách dựng}
+
+SAM có thể dựng trong \(O(n)\); bài viết không chứng minh lại. Cấu trúc xâu
+con cơ bản cũng dựng được trong \(O(n)\).
+
+Trước hết dựng SAM của xâu thuận và xâu đảo. Với một lớp tương đương \(a\),
+\(\operatorname{rep}(a)\) luôn là xâu dài nhất trong một nút SAM. Nhờ tính chất
+về cạnh đi ra, có thể nhận diện xâu dài nhất của một nút có phải đại diện hay
+không bằng cách kiểm tra cạnh automaton. Sau khi tìm mọi đại diện, cũng dựa
+trên cùng tính chất để xác định mỗi nút SAM thuộc lớp nào.
+
+Để ghép các lớp tương đương từ hai SAM, chỉ cần tìm
+\(\operatorname{posl}\), \(\operatorname{posr}\) của đại diện. Hình bậc thang
+trong mỗi khối được dựng bằng cách sắp các nút SAM theo \(r\) hoặc \(l\); thứ
+tự này tự nhiên trùng với thứ tự xuất hiện trong quá trình dựng SAM. Vì vậy
+tổng thời gian là \(O(n)\). Cách cài đặt này ngắn gọn; hằng số có thể lớn,
+nhưng độ phức tạp tốt.
+
+\subsubsection{Ứng dụng}
+
+Quay lại ví dụ mở đầu. Sau khi dựng cấu trúc xâu con cơ bản, nếu hai nút
+\(u,v\) không nằm trong cùng một khối, giao \(s_0(u)\cap s_1(v)\) rỗng. Nếu
+cùng khối, trên hình bậc thang ta chỉ cần tìm giao của một đoạn ngang và một
+đoạn dọc, xử lý được trong \(O(1)\). Tổng thời gian \(O(n+q)\).
+
+\paragraph{Ví dụ: \emph{Đánh trúng lặp lại}.}
+Cho xâu \(s\) dài \(n\). Ký tự thứ \(i\) có hai trọng số: trọng số trái
+\(wl_i\) và trọng số phải \(wr_i\). Với một xâu con \(s[l,r]\), trọng số trái
+\(vl(s[l,r])\) là tổng các \(wl\) tại đầu trái của mọi lần xuất hiện của nó;
+trọng số phải \(vr(s[l,r])\) định nghĩa tương tự theo đầu phải. Độ lặp của
+xâu con là
+\[
+  w(s[l,r])=vl(s[l,r])\cdot vr(s[l,r]).
+\]
+Độ lặp của cả xâu là tổng trên mọi xâu con. Có \(q\) lần sửa một \(wl_i\), sau
+mỗi lần hỏi tổng modulo \(2^{64}\).
+
+Đáp án là một hàm tuyến tính cố định theo các \(wl_i\), nên cần tính hệ số của
+từng \(wl_i\). Sau khi dựng SAM, \(vr(s[l,r])\) là tổng \(wr_i\) trên các
+tiền tố \(s[1,i]\) trong cây con tương ứng; \(vl\) đối xứng. Dựng cấu trúc xâu
+con cơ bản và xét từng khối: trong hình bậc thang, mỗi hàng có một giá trị
+\(vl\), mỗi cột có một giá trị \(vr\), cần tính tổng tích hàng-cột trên mọi ô
+của hình. Dùng tiền tố theo cột để tìm tổng \(vr\) ứng với mỗi \(vl\), rồi quy
+đáp án thành tổ hợp tuyến tính của các \(wl_i\) qua một lần chuyển trên SAM xâu
+đảo. Khi có hệ số, cập nhật điểm xử lý dễ dàng. Tổng thời gian \(O(n+q)\).
+
+\paragraph{Ví dụ: bài toán mẫu về đếm mẫu trong đoạn.}
+Cho xâu \(s\) dài \(n\), \(m\) xâu con của \(s\) làm mẫu. Mỗi truy vấn cho
+\(ql_i,qr_i\), hỏi tổng số lần xuất hiện của mọi mẫu trong \(s[ql_i,qr_i]\).
+
+Số lần \(t_2\) xuất hiện trong \(t_1\) chính là số hậu tố của \(t_1\) có tiền
+tố là \(t_2\). Dựng cấu trúc xâu con cơ bản. Trước hết đánh dấu các mẫu bằng
+1, rồi lấy tổng tiền tố dọc theo cây parent của SAM xâu đảo, tương ứng hướng
+ngang trên hình bậc thang; tiếp tục lấy tổng tiền tố dọc theo cây parent SAM
+xâu thuận, tương ứng hướng dọc. Cuối cùng truy vấn các điểm cần hỏi.
+
+Số điểm xâu con có thể tới \(O(n^2)\), nên cần tối ưu. Trong mỗi hàng của hình
+bậc thang, loại tạm đóng góp của mẫu nằm ngay trên hàng đó, chỉ xét đóng góp
+vào cây con trừ gốc. Sau lần cộng tiền tố đầu, mọi điểm trong một hàng có cùng
+trọng số. Sau lần cộng tiền tố thứ hai, giá trị tại một điểm là tổng trọng số
+của các hàng trước nó, có thể xử lý bằng tiền tố trong khối và chuyển khối.
+Phần đã loại tạm có dạng nhiều đóng góp ``hậu tố của một hàng cộng 1'', trong
+khối trở thành cộng \(1\) trên hình chữ nhật; xử lý offline bằng đếm điểm hai
+chiều. Tổng độ phức tạp
+\[
+  O(n+(m+q)\log n).
+\]
+
+\paragraph{Ví dụ: \emph{Thống kê xâu con}.}
+Cho xâu \(s\) dài \(n\). Đặt \(T_0=s\). Mỗi bước xóa ký tự đầu hoặc cuối của
+\(T_i\) để thu được \(T_{i+1}\), sau \(n-1\) bước còn một ký tự. Có
+\(2^{n-1}\) chuỗi thao tác. Trọng số của một chuỗi là
+\[
+  \prod_{i=1}^{n-1}\operatorname{occ}(T_i).
+\]
+Cần tính tổng trọng số mọi chuỗi thao tác modulo \(998244353\).
+
+DP trực tiếp trên mặt phẳng \((l,r)\) tốn \(O(n^2)\). Đổi thứ tự DP: bắt đầu
+từ xâu rỗng rồi liên tục thêm ký tự vào hai đầu cho tới \(s\). Các vị trí khác
+nhau của cùng một xâu con có cùng giá trị DP. Vì khi thêm ký tự,
+\(\operatorname{occ}\) không tăng, ta duyệt các lớp tương đương theo
+\(\operatorname{occ}\) giảm dần.
+
+Trong một lớp, \(\operatorname{occ}\) không đổi và chuyển DP diễn ra trên hình
+bậc thang. Để chuyển sang lớp tiếp theo, cần tính giá trị DP trên biên trên và
+biên trái của hình. Bài toán trở thành: trên một hình bậc thang, cho các điểm
+khởi đầu trên đường bậc thang phải-dưới, cần tính tổng số đường đi tới từng
+điểm trên biên trên và biên trái. Hàm sinh có dạng gần như
+\[
+  \sum \frac{(\operatorname{occ}\cdot x)^j}{(1-\operatorname{occ}\cdot x)^i},
+\]
+với \(i,j\) đơn điệu và tổng kích thước không vượt \(\operatorname{per}\). Có
+thể dùng chia để trị FFT. Với lớp \(a\), chi phí
+\[
+  O(\operatorname{per}(a)\log^2 n),
+\]
+nên tổng thời gian \(O(n\log^2 n)\).
+
+\paragraph{Ví dụ: truy vấn độ lặp theo tiền tố-hậu tố.}
+Cho xâu \(s\), mỗi ký tự có trọng số trái và phải như ví dụ đầu. Mỗi truy vấn
+cho \(l_1,r_1,l_2,r_2\). Xét tập các cặp \((l,r)\) sao cho \(s[l_1,r_1]\) là
+tiền tố của \(s[l,r]\), \(s[l_2,r_2]\) là hậu tố của \(s[l,r]\), và độ dài
+\(s[l,r]\) đủ lớn. Cần tính tổng \(w(s[l,r])\) trên tập này modulo \(2^{64}\).
+
+Các giá trị \(vl,vr\) được tính bằng DFS trên hai SAM. Trực giác là: các xâu
+có tiền tố \(s[l_1,r_1]\) nằm trong một cây con của SAM xâu đảo, còn các xâu
+có hậu tố \(s[l_2,r_2]\) nằm trong một cây con của SAM xâu thuận. Truy vấn là
+giao của hai cây con, trừ phần nằm trong cùng nút SAM nhưng độ dài chưa đủ.
+Phần cần trừ xử lý bằng đếm điểm hai chiều trong hình bậc thang. Phần giao hai
+cây con được biến đổi bằng thứ tự DFS và hiệu tiền tố, rồi dùng Mo hai lần
+offline nhờ tính chất tốt của các hình bậc thang. Độ phức tạp tổng là
+\[
+  O(n\sqrt q+q\log n),
+\]
+không gian \(O(n+q)\).
+
+\subsection{Phân rã chuỗi nặng nhẹ trên cấu trúc xâu con cơ bản}
+
+\subsubsection{Nội dung}
+
+Phần này xét truy vấn trên một chuỗi của SAM. Mô tả cho cây parent \(T^0\); phía
+còn lại đối xứng.
+
+Với một nút không phải lá \(u\), định nghĩa con nặng \(\operatorname{son}(u)\)
+là con có \(\operatorname{siz}\) lớn nhất; nếu có nhiều con bằng nhau, chọn con
+có \(\operatorname{posr}\) lớn nhất. Cạnh từ \(u\) tới \(\operatorname{son}(u)\)
+là cạnh nặng, các cạnh còn lại là cạnh nhẹ.
+
+\paragraph{Định lý.}
+Trong một nhóm cạnh như hệ quả về biên của khối đã nêu ở trên, các cạnh hoặc
+đồng thời là cạnh nặng, hoặc đồng thời là cạnh nhẹ.
+
+\paragraph{Chứng minh.}
+Theo định lý đẳng cấu cây con, các cây con tương ứng hoàn toàn giống nhau và
+vị trí tương đối của \(\operatorname{posr}\) cũng giống nhau, nên lựa chọn con
+nặng của mọi nút tương ứng là giống nhau.
+
+\paragraph{Hệ quả.}
+Với mỗi lớp tương đương có \(\operatorname{occ}\) vị trí xuất hiện khác nhau,
+có thể chọn một vị trí xuất hiện cho từng lớp sao cho với mọi nút không phải
+lá \(u\), đường ngang của \(u\) trong hình bậc thang có biên trái trùng với
+biên phải của đường ngang ứng với \(\operatorname{son}(u)\).
+
+Chọn đệ quy từ lá lên. Lá chỉ có một cách chọn vì \(\operatorname{occ}=1\).
+Với nút trong, dựa vào vị trí đã chọn của con nặng, chọn vị trí nằm đúng bên
+phải nó.
+
+Như vậy, sau khi gán lại tọa độ cho các điểm trong mỗi lớp, truy vấn một chuỗi
+trên \(T^0\) được chuyển thành truy vấn \(O(\log n)\) đường thẳng có cùng tọa
+độ \(r\). Truy vấn chuỗi trên \(T^1\) đối xứng thành \(O(\log n)\) đường có
+cùng tọa độ \(l\). Lưu ý hai cây dùng hai hệ tọa độ do phân rã nặng nhẹ khác
+nhau.
+
+Nếu đánh số các chuỗi nặng theo \(\operatorname{posr}\) của lá mà chúng chứa,
+thì trong mỗi lớp tương đương, các nút SAM nằm trên các chuỗi nặng có số hiệu
+tạo thành một đoạn liên tiếp. Điều này hiển nhiên vì \(\operatorname{posr}\)
+chính là tọa độ \(r\) của các đường ngang.
+
+\subsubsection{Ứng dụng}
+
+\paragraph{Ví dụ: từ điển border cơ bản.}
+Cho xâu \(s\) dài \(n\). Mỗi truy vấn cho một xâu con của \(s\), cần hỏi border
+ngắn nhất, border dài nhất và số border. \(n,q\) cùng bậc.
+
+Với xâu truy vấn \(s[l,r]\), các border là giao giữa tập hậu tố của \(s[l,r]\)
+và tập tiền tố của \(s[l,r]\). Tập hậu tố là một chuỗi từ nút tương ứng lên
+gốc trên \(T^0\), còn tập tiền tố là một chuỗi lên gốc trên \(T^1\). Vì cần
+giao kèm điều kiện độ dài, chỉ có \(O(\log n)\) cặp chuỗi nặng cần truy vấn.
+
+Mỗi truy vấn con có dạng: có bao nhiêu xâu độ dài không vượt \(L\) vừa nằm
+trên chuỗi nặng số \(x\) của \(T^0\), vừa nằm trên chuỗi nặng số \(y\) của
+\(T^1\). Với một nút của \(T^0\), theo định lý về đoạn liên tiếp, mọi xâu của
+nó nằm trên một đoạn liên tiếp các chuỗi nặng của \(T^1\); trong mặt phẳng
+(số hiệu chuỗi nặng \(T^1\), độ dài), chúng là một đoạn xiên hệ số góc \(1\).
+Bài toán trở thành đếm điểm hai chiều với \(O(q\log n)\) truy vấn và \(O(n)\)
+cập nhật.
+
+Cách này cho một phương pháp khác để lấy dãy border, nhưng tốn thêm một
+\(\log n\). Đổi lại, nó định vị được các border trên SAM. Nếu thay truy vấn
+thành tổng \(\operatorname{occ}\) của mọi border trong đoạn, cách suffix array
+cổ điển không còn trực tiếp dùng được, còn cấu trúc này vẫn thích hợp.
+
+\paragraph{Ví dụ mạnh hơn.}
+Cho xâu \(s\), các dãy \(f_1,\ldots,f_n\) và \(g_1,\ldots,g_n\). Mỗi truy vấn
+cho một xâu con, cần tính tổng
+\[
+  f_{\operatorname{occ}}\cdot g_{\operatorname{len}}
+\]
+trên mọi border của nó.
+
+Như trên, trước hết quy về \(O(q\log n)\) truy vấn giao của hai chuỗi nặng và
+điều kiện độ dài. Lúc này cần giữ đồng thời \(\operatorname{occ}\) và
+\(\operatorname{len}\). Thay vì thống kê theo từng nút SAM, thống kê theo các
+đường chéo trong mỗi hình bậc thang. Trong một lớp \(a\), mọi điểm trên cùng
+một đường \(r-l\) có cùng \(\operatorname{occ}\) và cùng độ dài. Số đường như
+vậy trong lớp không vượt \(O(\operatorname{per}(a))\), nên tổng là \(O(n)\).
+Do đó bài toán vẫn quy về đếm điểm hai chiều với \(O(q\log n)\) truy vấn và
+\(O(n)\) cập nhật.
+
+\subsection{Kết luận}
+
+Bài viết giới thiệu cấu trúc xâu con cơ bản. So với suffix array và SAM thông
+thường, cấu trúc này mạnh hơn ở khả năng xử lý đồng thời các bài toán tiền tố
+và hậu tố. Có thể xem nó là phần mở rộng của SAM nén đối xứng: một điểm của
+SAM nén đối xứng được mở rộng thành một hình bậc thang chi tiết, nhờ đó chứa
+nhiều thông tin hơn và dễ thao tác hơn. Cấu trúc này dễ hiện thực, có độ phức
+tạp tốt và có triển vọng ứng dụng rộng trong thi tin học.
+
+Dù vậy, lý thuyết xâu vẫn còn nhiều vấn đề mở. Tác giả hy vọng bài viết gợi
+hứng thú để người đọc tiếp tục nghiên cứu và hoàn thiện các lý thuyết liên
+quan.
+
+\subsection{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao
+lưu; cảm ơn thầy Ye Jinyi của Trường Trung học trực thuộc Đại học Nhân dân
+Trung Quốc đã quan tâm và hướng dẫn; cảm ơn gia đình, bạn bè đã ủng hộ và
+khích lệ; cảm ơn Dai Jiangqi đã thảo luận và gợi ý; cảm ơn Du Yuhao, Chang
+Ruinian, Ye Zichuan và Wu Hang đã đọc bản thảo.
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item OI Wiki contributors. Suffix automaton, OI Wiki, 2022.
+  \item Trao đổi riêng với Dai Jiangqi, 2022.
+  \item Xu Yixuan. Bàn về suffix automaton nén, tập luận văn đội tuyển quốc gia
+  Trung Quốc IOI 2020.
 \end{enumerate}
 
 \end{document}
