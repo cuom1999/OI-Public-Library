@@ -15,8 +15,8 @@ source documents.
 
 | Priority | Translation | Source pages | Current state | Extraction status | Required work |
 | ---: | --- | ---: | --- | --- | --- |
-| 1 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first two articles translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue from article 3 onward with OCR-backed article translations. |
-| 2 | `sources/ioi/2025-national-training-team-collection.tex` | 168 | ToC plus first two articles translated | `pdftotext` is readable but two-up layout interleaves pages | Continue from article 3 onward, splitting/cropping pages where needed. |
+| 1 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first three articles translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue from article 4 onward with OCR-backed article translations. |
+| 2 | `sources/ioi/2025-national-training-team-collection.tex` | 168 | ToC plus first three articles translated | `pdftotext` is readable but two-up layout interleaves pages | Continue from article 4 onward, splitting/cropping pages where needed. |
 
 ## Article-Coverage Complete Annual Collections
 
@@ -71,6 +71,14 @@ translations, but they should be reviewed after the high-confidence items.
   limited or heavily image-based, provided the file says that clearly.
 - Temporary Microsoft Word lock files such as `~$*.doc` can remain short
   explanatory stubs.
+
+## Diagram and Caption Quality
+
+- Do not leave a standalone translated image caption when the image itself is
+  omitted; either recreate/import the figure, or fold the useful visual
+  information into prose that says it is a description of the original figure.
+- Existing caption-only passages in older translated files should be treated as
+  proofreading issues when those files are revisited.
 
 ## Audit Method
 
