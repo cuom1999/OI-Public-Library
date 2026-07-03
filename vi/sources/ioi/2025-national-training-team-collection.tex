@@ -28,7 +28,8 @@ của Chen Xinyang về cơ sở tuyến tính và các biến thể có hỗ tr
 thứ sáu của Fan Sizhe tổng kết một số ý tưởng cho các bài toán liên quan tới
 dãy, bài thứ bảy của Zheng Jun về dãy Thue--Morse, và bài thứ tám của Chen Nuo
 về nhân ma trận và phép quy giảm, cùng bài thứ chín của Wu Lin về một số bài
-toán kinh điển modulo lũy thừa của số nguyên tố nhỏ.
+toán kinh điển modulo lũy thừa của số nguyên tố nhỏ, và bài thứ mười của Xiao
+Daien về các phương pháp dễ cài đặt để duy trì thông tin trên cây động.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -4216,5 +4217,249 @@ khác đã giúp đỡ.
   \url{https://loj.ac/p/3398}.
   \item Bài \emph{Công thức mũ}. \url{https://loj.ac/p/6737}.
 \end{enumerate}
+
+\section*{Bài 10. Bàn về một lớp phương pháp duy trì thông tin trên cấu trúc cây động dễ cài đặt}
+\addcontentsline{toc}{section}{Bài 10. Bàn về một lớp phương pháp duy trì thông tin trên cấu trúc cây động dễ cài đặt}
+
+\begin{center}
+Xiao Daien, Trường Trường Quận
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Duy trì thông tin trên cấu trúc cây động là một nhóm bài toán dữ liệu quan
+trọng. Nhóm bài toán này có hai hướng giải tự nhiên với độ phức tạp logarithm:
+lời giải amortized dùng splay để duy trì phân rã chuỗi đặc, và lời giải có bảo
+đảm chặt hơn dùng cây cân bằng theo trọng lượng để duy trì phân rã chuỗi nặng
+tuyệt đối động. Bài viết giới thiệu hai cách làm này, cách cài đặt và cách
+nhìn thế năng dùng để phân tích độ phức tạp.
+
+\subsection*{1. Mở đầu}
+
+Bài toán duy trì thông tin trên cây động yêu cầu thao tác trên một rừng có thể
+thêm hoặc xóa cạnh. Trong khi hình dạng cây thay đổi, ta vẫn phải sửa thông tin
+trên một thành phần liên thông hoặc trên một đường đi, đồng thời truy vấn tổng
+thông tin tương ứng. Các lời giải lý thuyết với độ phức tạp logarithm theo
+trường hợp xấu đã có từ lâu, nhưng thường khó cài và hằng số lớn. Bài viết
+xuất phát từ các cấu trúc quen thuộc hơn để đưa ra hai phương án cài đặt thực
+dụng.
+
+\subsection*{2. Quy ước}
+
+Giả sử người đọc đã quen với splay, cây cân bằng theo trọng lượng và phân rã
+chuỗi nặng. Bài viết dùng cây có gốc khi cần nói tới cha, con và cây con.
+
+\subsection*{3. Định nghĩa cơ bản}
+
+Cây là đồ thị vô hướng liên thông, đơn và không có chu trình; rừng là hợp của
+một hoặc nhiều cây. Với cây có gốc, cha của một đỉnh là đỉnh đầu tiên trên
+đường từ đỉnh đó tới gốc; các đỉnh có cha là \(u\) gọi là con của \(u\).
+
+Con nặng tuyệt đối của \(u\) là một con có kích thước cây con lớn hơn một nửa
+kích thước cây con của \(u\). Mỗi đỉnh có nhiều nhất một con như vậy. Các con
+còn lại là con nhẹ tuyệt đối. Cạnh nối tới con nặng gọi là cạnh nặng; cạnh nối
+tới con nhẹ gọi là cạnh nhẹ.
+
+Bài viết mô hình hóa dữ liệu bằng một cấu trúc hai nửa nhóm. Có hai kiểu dữ
+liệu \(D,O\). Kiểu \(O\) tác động lên \(D\), kiểu \(O\) có phép hợp thành, còn
+kiểu \(D\) có phép cộng giao hoán:
+\[
+  \times:O\times D\to D,\qquad
+  \times:O\times O\to O,\qquad
+  +:D\times D\to D.
+\]
+Các phép toán có phần tử đơn vị \(\epsilon_D,\epsilon_O\), phép \(+\) trên
+\(D\) giao hoán và kết hợp, phép \(\times\) trên \(O\) kết hợp, và tác động của
+\(O\) phân phối qua phép cộng trên \(D\). Mô hình này đủ để biểu diễn các thao
+tác gán/cộng lazy và truy vấn tổng thường gặp.
+
+\subsection*{4. Bài toán}
+
+Cần duy trì một rừng; mỗi đỉnh \(x\) có thông tin \(d_x\). Các thao tác gồm:
+\begin{itemize}
+  \item thêm hoặc xóa một cạnh, luôn bảo đảm đồ thị còn là rừng;
+  \item với \(o\in O\) và một thành phần liên thông cực đại hoặc một đường đi
+  \(S\), gán \(d_x\leftarrow o\times d_x\) cho mọi \(x\in S\);
+  \item với một thành phần hoặc đường đi \(S\), truy vấn
+  \(\sum_{x\in S}d_x\).
+\end{itemize}
+
+\subsection*{5. Phân tích thế năng của splay có trọng số}
+
+Thế năng là công cụ chuẩn để phân tích độ phức tạp amortized. Một thao tác
+được xem là có chi phí bằng số bước thực hiện cộng với phần tăng thế năng; nếu
+tổng chi phí này bị chặn, ta thu được độ phức tạp amortized.
+
+Đặt
+\[
+  F(k)=\lceil\log_2 k\rceil .
+\]
+Một splay có trọng số là splay trong đó mỗi nút mang thêm một trọng số. Với
+mỗi nút \(x\), \(\mathrm{size}_x\) là tổng kích thước cây con splay của \(x\)
+cộng với trọng số phụ của các nút trong cây con đó. Nút ``con giữa'' trong mô
+tả gốc chỉ biểu diễn trọng số phụ này, không phải một con thật trong splay.
+
+Thế năng của \(x\) là
+\[
+  h_x=F(\mathrm{size}_x),
+\]
+và thế năng toàn cục là \(\phi=\sum_x h_x\). Nếu sau thao tác thế năng chuyển
+từ \(\phi_{\mathrm{old}}\) sang \(\phi_{\mathrm{new}}\), phần tăng thế năng là
+\[
+  \Delta\phi=\phi_{\mathrm{new}}-\phi_{\mathrm{old}}.
+\]
+
+Với các phép xoay đôi \emph{zig-zig}, \emph{zag-zag}, \emph{zig-zag} và
+\emph{zag-zig}, phân tích trong bài gốc xét các khối cây con bị hoán đổi. Các
+khối đối xứng được gộp trọng số, nên chỉ cần quan tâm tổng kích thước của chúng.
+Trong mọi trường hợp, chi phí xoay cộng với tăng thế năng không vượt quá một
+hằng số nhân với độ tăng thế năng giữa cây lớn sau xoay và cây nhỏ trước xoay,
+cụ thể có thể chặn bởi dạng \(3(F(n)-F(s))\). Phép xoay đơn cuối cùng trong
+một lần splay có thêm một hằng số \(1\). Do đó toàn bộ một lần splay vẫn được
+phân tích bằng thế năng của splay có trọng số.
+
+\subsection*{6. Phân rã chuỗi đặc bằng splay}
+
+Ta phân rã một cây có gốc thành các chuỗi đặc. Mỗi đỉnh có nhiều nhất một con
+đặc; cạnh nối tới con đặc là cạnh đặc, còn các cạnh khác là cạnh ảo. Mỗi chuỗi
+đặc được duy trì bằng một splay: bên trái một nút là các đỉnh nông hơn trên
+chuỗi, bên phải là các đỉnh sâu hơn. Gốc của splay vẫn ghi cha ngoài splay,
+tức cha của đỉnh đầu chuỗi trong cây gốc.
+
+Thao tác then chốt là \(\mathrm{splice}(x)\), biến đỉnh đầu chuỗi chứa \(x\)
+thành con đặc của cha nó. Cách làm:
+\begin{enumerate}
+  \item splay cha của đỉnh đầu chuỗi;
+  \item ngắt con phải hiện tại của cha, tức con đặc cũ;
+  \item đặt gốc splay chứa \(x\) làm con phải mới.
+\end{enumerate}
+Hai bước cuối có thể cài bằng một phép đổi con. Việc ngắt con đặc cũ chỉ làm
+giảm thế năng nên không gây vấn đề trong phân tích.
+
+Thao tác \(\mathrm{access}(x)\) biến đường từ \(x\) tới gốc thành một chuỗi
+đặc. Ta ngắt con đặc hiện tại của \(x\), rồi lặp \(\mathrm{splice}(x)\) cho tới
+khi \(x\) cùng chuỗi với gốc. Trong mỗi lần splice, các kích thước có trọng số
+trước và sau splay tăng theo dạng lồng nhau:
+\[
+  \Delta\phi=h(x_2)-h(x_1)+h(x_4)-h(x_3)+\cdots+h(x_{2k})-h(x_{2k-1}),
+\]
+với \(h(x_i)\le h(x_{i+1})\). Vì vậy tổng chặn bởi
+\(h(x_{2k})-h(x_1)=O(\log n)\). Phần hằng số của số lần splice được xử lý bằng
+cách cấp thêm một đơn vị thế năng cho mỗi cạnh vừa là cạnh ảo vừa là cạnh nặng:
+nếu splice mở một cạnh nặng đang ảo, thế năng đó trả cho chi phí; nếu là cạnh
+nhẹ, số lần như vậy trên một đường chỉ là \(O(\log n)\).
+
+Từ đó, \(\mathrm{access}\) có chi phí amortized \(O(\log n)\). Các thao tác
+link, cut, đổi gốc, sửa đường và hỏi đường đều có thể xây trên access, nên đều
+có độ phức tạp amortized \(O(\log n)\).
+
+\subsection*{7. Duy trì thông tin cây con}
+
+Để duy trì thông tin của các con ảo, bài viết dùng
+\term{splay leafy tree} (SLT), tức splay mà chỉ các lá đại diện dữ liệu thật.
+Với mỗi đỉnh, toàn bộ con ảo của nó được gom trong một SLT riêng; các nút ghép
+do SLT sinh ra vẫn mang thế năng \(F(\mathrm{size}_x)\). Khi đó một nút ngoài
+hai con trái/phải còn có một ``con giữa'' trỏ tới SLT của các con ảo.
+
+Khi \(\mathrm{splice}\) thay đổi con đặc, có hai trường hợp. Nếu cha đang có
+con đặc cũ, ta đưa con cũ về vị trí tương ứng trong SLT rồi splay cha trong
+SLT. Nếu cha không có con đặc cũ, ta xóa nút ghép chứa \(x\), đưa anh em của
+nó lên thay, rồi splay ông của \(x\) trong SLT. Trong cả hai trường hợp, ảnh
+hưởng thế năng bị chặn bởi \(O(h(\mathrm{fa}_x)-h(x))\), nên cộng lại trên một
+access vẫn là \(O(\log n)\). Việc ngắt con đặc ban đầu của access chỉ là chèn
+con đó vào ``con giữa'', cũng có chi phí \(O(\log n)\).
+
+Cách duy trì thông tin là:
+\begin{itemize}
+  \item trên mỗi nút thuộc splay chuỗi đặc, lưu \(d_1,d_2,o_1,o_2\), tương ứng
+  với tổng trên chuỗi, tổng cây con ảo, lazy trên chuỗi và lazy trên cây con ảo;
+  \item trên mỗi nút của SLT, lưu \(d_1,o_1\), tức tổng cây con và lazy của
+  cây con đó.
+\end{itemize}
+Như vậy bài toán ở mục 4 được giải trong \(O((n+q)\log n)\) thời gian
+amortized.
+
+\subsection*{8. Cây lá cân bằng theo trọng lượng}
+
+Một phương án khác là dùng
+\term{weight-balanced leafy tree} (WBLT) để duy trì cả chuỗi đặc lẫn các con
+ảo. Gọi \(\mathrm{ls}_x,\mathrm{rs}_x\) là con trái và con phải của \(x\). Khi
+gộp hai WBLT \(L,R\), giả sử \(\mathrm{size}_L\le\mathrm{size}_R\) sau khi đổi
+vai nếu cần. Có ba trường hợp chính:
+\begin{itemize}
+  \item nếu \(\mathrm{size}_R/(\mathrm{size}_L+\mathrm{size}_R)\le\alpha\), hoặc
+  \(R\) là lá, tạo nút mới nối hai cây;
+  \item nếu \(\mathrm{size}_{\mathrm{rs}_R}/(\mathrm{size}_L+\mathrm{size}_R)
+  \ge 1-\alpha\), hoặc \(\mathrm{ls}_R\) là lá, đệ quy gộp \(L\) với
+  \(\mathrm{ls}_R\), rồi trả về \(R\);
+  \item ngược lại, đệ quy gộp \((L,\mathrm{ls}_{\mathrm{ls}_R})\) và
+  \((\mathrm{rs}_{\mathrm{ls}_R},\mathrm{rs}_R)\), rồi nối lại.
+\end{itemize}
+Phân tích cân bằng cho thấy chi phí gộp là
+\[
+  O(\log \mathrm{size}_R-\log \mathrm{size}_L+1),
+\]
+và khi đi lên ba tầng thì kích thước tăng ít nhất một hệ số \(1/\alpha\). Trong
+thực nghiệm, \(\alpha\) thường lấy khoảng \(0.65\)--\(0.85\), tùy dữ liệu.
+
+\subsection*{9. Phân rã chuỗi nặng tuyệt đối động}
+
+Có thể dùng WBLT thay splay và SLT trực tiếp. Khi chỉ cần tính chất cân bằng
+theo trọng lượng, cách này đã đủ cho một số bài. Để khống chế số lần splice
+một cách chặt, bài viết xét phân rã chuỗi nặng tuyệt đối động: sau mỗi thao
+tác, mọi cạnh nặng đều phải là cạnh đặc. Nếu một đỉnh không có con nặng thì
+cạnh đặc có thể là cạnh nhẹ hoặc không tồn tại.
+
+Sau một lần access, việc sửa/truy vấn thông tin đã xong nhưng phân rã có thể
+không còn tuyệt đối nặng. Chỉ \(O(1)\) chuỗi đặc bị ảnh hưởng. Với một đỉnh
+không nằm ở đáy chuỗi, nếu nó có con nặng nhưng con đó không phải con đặc hiện
+tại, ta ngắt cạnh đặc hiện tại, tìm con nặng trong cây ``con giữa'', rồi ghép
+lại.
+
+Trên WBLT của chuỗi đặc, ta nhị phân để tìm vị trí đầu tiên mà kích thước vượt
+một nửa; cạnh tại đó là cạnh nhẹ đặc đầu tiên từ trên xuống. Cắt WBLT tại đó,
+rồi nhìn vào WBLT của các con ảo của cha cạnh bị cắt. Chỉ cần quét \(O(1)\)
+tầng đầu để kiểm tra có lá nào biểu diễn một con có kích thước vượt một nửa cây
+con của cha hay không. Nếu có, lá đó chính là con nặng; ta tách nó khỏi WBLT
+con ảo, rồi ghép với phần chuỗi cũ. Nếu không, chỉ cần ghép cây chứa con đặc
+nhẹ vào phần con ảo.
+
+Gọi các cây liên quan là \(x,y,z\), trong đó \(y\) là cây chứa con đặc nhẹ cũ,
+còn \(z\) là cây chứa con nặng mới. Chi phí ghép với chuỗi của con nặng có dạng
+\[
+  O\bigl(|\log \mathrm{size}_x-\log \mathrm{size}_z|\bigr).
+\]
+Vì \(\mathrm{size}_y\le\min(\mathrm{size}_x,\mathrm{size}_z)\), chi phí này bị
+chặn bởi
+\[
+  O(\log\max(\mathrm{size}_x,\mathrm{size}_z)-\log \mathrm{size}_y).
+\]
+Sau mỗi bước, kích thước mới của \(x,z\) không vượt quá kích thước cũ của
+\(y\), nên cộng dồn giống phân tích access ở mục 6, tổng vẫn \(O(\log n)\).
+Con nặng tại đáy chuỗi được xử lý tương tự bằng cách quét vài tầng đầu của
+``con giữa'', tách ra nếu tồn tại rồi ghép vào chuỗi.
+
+Nhờ vậy, mỗi thao tác đạt thời gian chặt \(O(\log n)\). Phần phân tích gộp cây
+con ảo phức tạp hơn nên bài gốc không triển khai hết chi tiết. Ưu điểm của
+cách này là vừa có tính cân bằng theo trọng lượng, vừa có thể duy trì thông tin
+dạng khối trên cây, ví dụ những bài tương tự \emph{CTS2022 WBTT}, và cài đặt
+vẫn tương đối trực tiếp.
+
+\subsection*{10. Tổng kết}
+
+Bài viết đưa ra hai cách giải logarithm cho bài toán duy trì thông tin trên cây
+động. Cách thứ nhất dùng phân rã chuỗi đặc và splay, cho độ phức tạp đúng theo
+nghĩa amortized. Cách thứ hai dùng phân rã chuỗi nặng tuyệt đối động với WBLT,
+cho bảo đảm chặt hơn nhưng cài đặt phức tạp và hằng số lớn hơn. Tác giả hy vọng
+các phương pháp này là điểm xuất phát để tìm ra những cách duy trì cây động đơn
+giản và hiệu quả hơn.
+
+\subsection*{Ghi chú trích xuất}
+
+Bài này được dịch từ trang PDF 84--88, tương ứng các trang in 161--168. PDF
+được dàn trang hai trang nội dung trên một trang vật lý; trang PDF 84 chứa nửa
+trái là tài liệu tham khảo của bài trước và nửa phải là phần đầu bài này, còn
+trang PDF 88 chứa nửa phải là phần đầu bài kế tiếp. Các hình minh họa phép xoay
+splay và cây phụ được diễn giải bằng lời, không để lại chú thích rời.
 
 \end{document}
