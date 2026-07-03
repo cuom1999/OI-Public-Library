@@ -19,11 +19,12 @@ PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc n
 dàn trang bằng Adobe InDesign; phần bìa và mục lục có lớp văn bản đọc được,
 nhưng nhiều trang thân bài trích xuất thành mojibake và sinh cảnh báo phông
 chữ. Bản LaTeX này chuyển ngữ phần nhận diện tập sách và toàn bộ mục lục, đồng
-thời dịch năm bài đầu tiên: bài của Zhou Kangyang về bài toán tính tổng hàm nhân
+thời dịch sáu bài đầu tiên: bài của Zhou Kangyang về bài toán tính tổng hàm nhân
 tính, bài của Guo Yuchong về parity của matroid tuyến tính, bài của Huang
 Luotian về hợp nhất--tách cấu trúc dữ liệu, bài của Shi Kaicheng về nhân tử
 Lagrange và đối ngẫu trong OI, cùng bài của Shen Jiyu về cập nhật đoạn và truy
-vấn đoạn, dựa trên OCR và đối chiếu ảnh trang PDF.
+vấn đoạn, và bài của Cao Li về một số phương pháp giải bài toán quy hoạch động
+trong OI, dựa trên OCR và đối chiếu ảnh trang PDF.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -4294,6 +4295,590 @@ Cảm ơn những thầy cô và bạn học khác đã giúp đỡ tác giả.
   algorithm}. 2021.
 \end{enumerate}
 
+\section*{Bài 6. Bàn về một số phương pháp giải bài toán quy hoạch động trong OI}
+\addcontentsline{toc}{section}{Bài 6. Bàn về một số phương pháp giải bài toán quy hoạch động trong OI}
+
+\begin{center}
+Cao Li, Trường Trung học Dư Diêu, Chiết Giang
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài toán quy hoạch động giữ vị trí quan trọng trong OI, nhưng đường lối giải
+lại biến hóa rất nhiều. Bài viết này liệt kê các nguyên tắc thiết kế quy hoạch
+động, thảo luận những cách nghĩ và thủ pháp xử lý có tính phổ biến trong thực
+hành giải bài, rồi thông qua ví dụ minh họa tác dụng và hoàn cảnh áp dụng của
+chúng.
+
+\subsection*{1. Đặc trưng của quy hoạch động}
+
+Trong tin học, quy hoạch động (\emph{dynamic programming}, viết tắt là
+\(\mathrm{dp}\)) là phương pháp chia bài toán ban đầu thành một số bài toán con
+rồi giải đệ quy. Các bài toán tổ hợp có thể giải tốt bằng quy hoạch động thường
+có những tính chất sau.
+
+\begin{itemize}
+  \item Nếu là bài toán tối ưu, nghiệm tối ưu của bài toán gốc được ghép từ
+  nghiệm tối ưu của các bài toán con. Đây là điều kiện cần cho tính đúng đắn.
+  \item Các bài toán con lặp lại. Nhờ ghi nhớ kết quả của một bài toán con, ta
+  tránh giải lại nhiều lần và giảm độ phức tạp so với đệ quy hay chia để trị
+  trực tiếp.
+  \item Không có hậu hiệu: cách tách và giải bài toán gốc không được phụ thuộc
+  trực tiếp hoặc gián tiếp vào chính nó, để thuật toán cuối cùng vận hành bình
+  thường.
+\end{itemize}
+
+Trong thi tin học, ta thường gặp một lớp bài toán định nghĩa một loại đối tượng
+tổ hợp có cấu trúc đặc biệt, rồi yêu cầu thống kê một thông tin nào đó của các
+đối tượng ấy, chẳng hạn tính tồn tại, giá trị lớn nhất hoặc tổng. Một cách nhìn
+hiệu quả là tìm một trình tự khắc họa dần đối tượng: mỗi bước chỉ quyết định
+một phần cục bộ của cấu trúc. Khi đó đối tượng gốc được ghép từ một dãy bước,
+và một đoạn tiền tố hoặc một số bước con trong dãy đó chính là một giai đoạn của
+bài toán.
+
+Từ cách khắc họa này, một thuật toán quy hoạch động thường gồm các phần:
+
+\begin{itemize}
+  \item mô tả đặc trưng cấu trúc của bài toán con, tức những thông tin cần ghi
+  lại tại mỗi giai đoạn, gọi là \term{trạng thái};
+  \item đáp án của bài toán con: với mỗi giai đoạn và trạng thái, thống kê giá
+  trị thu được từ mọi phần đã quyết định phù hợp, gọi là \term{giá trị};
+  \item quan hệ giữa các bài toán con, tức biến đổi trạng thái và giá trị khi
+  quyết định một hoặc nhiều bước, gọi là \term{chuyển trạng thái};
+  \item trường hợp cơ sở, tức giá trị của bài toán con không thể chia nhỏ thêm;
+  \item trường hợp mục tiêu, tức bài toán con tương ứng với bài toán ban đầu.
+\end{itemize}
+
+Tư tưởng cốt lõi là tách mô hình phức tạp thành một tổ hợp các bước đơn giản
+hơn. Khi thiết kế, tư tưởng này thường thể hiện theo hai hướng. Thứ nhất, với
+một bài toán con, ta quyết định một phần trong giai đoạn của nó để tách thành
+nhiều phần hoặc nhiều trường hợp độc lập nhỏ hơn. Đây là cách nghĩ đệ quy. Thứ
+hai, với một bài toán con đã giải, ta quyết định thêm một phần bên ngoài giai
+đoạn hiện tại để tạo bài toán con lớn hơn và tính đóng góp vào giá trị của nó.
+Đây là cách nghĩ gia tăng. Cả hai đều có thể dẫn đến một thiết kế
+\(\mathrm{dp}\); trong từng mô hình cụ thể, nên chọn hướng làm cho trạng thái
+và chuyển trạng thái tự nhiên hơn.
+
+\subsection*{2. Thiết kế quy hoạch động}
+
+Trong phần này, để gọn, ta viết quy hoạch động là \(\mathrm{dp}\). Các biến
+trong ví dụ được xem là số nguyên không âm nếu không nói khác. Do giới hạn dung
+lượng, lời giải ví dụ chỉ nêu định nghĩa bài toán con và ý tưởng chuyển trạng
+thái; các chi tiết cài đặt còn lại để người đọc tự phân tích.
+
+\subsubsection*{2.1. Suy ra trạng thái từ cách khắc họa từng bước}
+
+Trước hết phân tích cấu trúc đối tượng cần đếm hoặc tối ưu, xây dựng một thứ tự
+khắc họa đối tượng đó, rồi chọn một số trạng thái trung gian làm giai đoạn. Sau
+đó trừu tượng hóa đặc trưng đại số của các giai đoạn, xác định trạng thái và
+giá trị, cuối cùng suy ra chuyển trạng thái.
+
+Cách này phù hợp khi cấu trúc đối tượng khá đơn giản, chẳng hạn dãy, cây có
+gốc, tập hợp, hoặc một số tổ hợp đơn giản của chúng. Khi thiết kế nên đi từ thô
+đến mịn: trước hết xác định thứ tự tổng quát, sau đó tinh chỉnh cách chọn giai
+đoạn và thứ tự quyết định nhiều đại lượng cục bộ, rồi mới chỉnh chi tiết trạng
+thái và chuyển trạng thái. Việc chọn thứ tự rất quan trọng, vì các thứ tự khác
+nhau có thể cho số trạng thái khác nhau rất lớn.
+
+\paragraph{\term{Ví dụ 2.1.1 (Wooden Spoon!)}.}
+Cho một cây nhị phân đầy đủ có \(2^n\) lá; trên lá ghi một hoán vị của
+\(1,\ldots,2^n\). Mỗi đỉnh trong ghi giá trị nhỏ hơn trong hai con. Nếu các giá
+trị trên đường từ lá mang số \(i\) đến gốc đôi một khác nhau, gọi \(i\) là
+người đoạt giải. Với mọi \(i\), cần đếm số trường hợp \(i\) đoạt giải, modulo
+998244353.
+
+Nếu xét từ dưới lên, với cây con hiện có \(2^k\) lá, ta phải ghép nó với một cây
+con cùng kích thước có giá trị gốc lớn hơn. Dùng giá trị tuyệt đối buộc phải
+đồng thời liệt kê người đoạt giải và giá trị gốc hiện tại; dùng thứ hạng tương
+đối thì chuyển trạng thái trở thành dạng tích chập. Dù có thể tối ưu bằng NTT,
+cách này nhiều chi tiết và hằng số lớn.
+
+Nếu xét từ trên xuống, giá trị tại một đỉnh trùng với giá trị của một con. Cây
+con đó không thể chứa người đoạt giải và có thể được tính trực tiếp bằng công
+thức; cây con còn lại mới chứa đường đi của người đoạt giải. Vì thế mỗi giai
+đoạn chỉ cần ghi thêm giá trị tại đỉnh hiện tại. Nếu các giá trị trên đường từ
+lá đoạt giải đến gốc lần lượt là \(x_0,\ldots,x_n\), đơn điệu giảm, số phương
+án có dạng
+\[
+  2^n\prod_{i=1}^{n}
+  \binom{2^n-x_i-2^{i-1}}{2^{i-1}-1}(2^{i-1})!.
+\]
+Đặt \(f_{i,j}\) là số phương án khi đang ở đỉnh thứ \(i+1\) theo thứ tự từ gốc
+xuống và \(x_{n-i}=j\). Dùng hậu tố để tối ưu, mỗi lần chuyển là \(O(1)\); số
+trạng thái là \(O(n2^n)\), nên tổng thời gian cũng là \(O(n2^n)\).
+
+\paragraph{\term{Ví dụ 2.1.2 (MEX counting)}.}
+Cho \(n,k\) và dãy \(b_1,\ldots,b_n\). Cần đếm số dãy
+\(a_1,\ldots,a_n\), với \(a_i\in[0,n]\cap\mathbb Z\), sao cho
+\[
+  \left|\operatorname{mex}(a_1,\ldots,a_i)-b_i\right|\le k
+\]
+với mọi \(i\), modulo 998244353.
+
+Đi từ trái sang phải là tự nhiên vì ràng buộc nói về tiền tố. Nhưng nếu trạng
+thái chỉ ghi \(\operatorname{mex}\), để chuyển kín ta phải ghi cả những số lớn
+hơn \(\operatorname{mex}\) đã xuất hiện, dẫn đến số trạng thái mũ.
+
+Cách tránh mâu thuẫn là chưa quyết định phần lớn hơn \(\operatorname{mex}\) cho
+đến khi chúng thật sự ảnh hưởng tới \(\operatorname{mex}\). Đặt \(f_{i,j,c}\)
+là số phương án sau khi đã quyết định \(i\) vị trí, hiện tại
+\(\operatorname{mex}=j\), và trước đó có \(c\) số lớn hơn \(j\). Khi quyết định
+\(a_{i+1}=j\), \(\operatorname{mex}\) tăng; lúc này mới tiếp tục quyết định các
+số chưa quyết định bằng \(j+1,j+2,\ldots\), nếu chúng tồn tại thì sẽ tạo chuỗi
+tăng \(\operatorname{mex}\). Chuyển trạng thái dạng tích chập có thể tối ưu;
+sửa nhẹ định nghĩa \(c\) thành ``số loại giá trị khác nhau lớn hơn \(j\)'' sẽ
+đạt \(O(n^2)\).
+
+Trực quan hơn, nếu xem mỗi \(a_i\) là một điểm \((i,a_i)\), các giai đoạn của
+lời giải đúng chính là các hình chữ nhật có gốc tại \((0,0)\) đã được xác định;
+phần phía trên hình chữ nhật chỉ ghi số loại tung độ. Chỉ đi theo một chiều đơn
+lẻ sẽ thất bại.
+
+\paragraph{\term{Ví dụ 2.1.3 (đường đi biểu diễn với nhiên liệu và năng lượng)}.}
+Cho đồ thị vô hướng có \(n+m+1\) đỉnh và cạnh có trọng số dương. Cần đi một
+chu trình xuất phát và kết thúc tại đỉnh \(0\), lần lượt biểu diễn tại các đỉnh
+\(1,\ldots,n\), trong khi duy trì hai đại lượng nhiên liệu và năng lượng luôn
+không âm. Ở đỉnh \(0\) có thể tốn thời gian để nạp đầy cả hai; ở một số đỉnh
+khác có thể nạp nhiên liệu. Cần tối thiểu hóa tổng thời gian.
+
+Vì giới hạn nhiên liệu và năng lượng đều lớn, không nên ghi trực tiếp chúng
+trong trạng thái. Với năng lượng, chỉ cần kiểm soát đoạn biểu diễn nằm giữa hai
+lần nạp tại đỉnh \(0\); bài toán chuyển thành, với mọi đoạn con của
+\(1,\ldots,n\), tính thời gian ít nhất để từ \(0\) xuất phát với năng lượng đầy,
+hoàn thành đoạn đó rồi quay lại \(0\).
+
+Để tránh ghi nhiên liệu còn lại, giai đoạn nên là thời điểm nạp nhiên liệu:
+\(f_{i,r}\) biểu thị thời gian ít nhất sau khi đã hoàn thành biểu diễn tại
+\(1,\ldots,r\) và vừa nạp nhiên liệu tại đỉnh \(i\). Chuyển thẳng sẽ quá chậm.
+Sau khi tiền xử lý đường đi ngắn nhất giữa các đỉnh, điều kiện một trạng thái
+có thể chuyển đến trạng thái tiếp theo chỉ phụ thuộc vào một số khoảng cách và
+ngưỡng, nên có thể dùng cây đoạn theo giá trị hoặc cây cân bằng để duy trì giá
+trị nhỏ nhất trong các trạng thái đủ điều kiện. Phần chuyển bên trong một đoạn
+vẫn cần tiền xử lý mọi cặp điểm, là nút thắt \(O(n^3)\) của lời giải.
+
+\paragraph{\term{Ví dụ 2.1.4 (RAY)}.}
+Bài toán cho các ràng buộc giữa một hoán vị chưa biết và một dãy giá trị, yêu
+cầu đếm số hoán vị thỏa mãn. Cách trực tiếp theo thứ tự hạng buộc trạng thái
+ghi chỉ số cuối cùng và giá trị cuối cùng, dẫn đến số trạng thái quá lớn.
+
+Sau khi không còn tối ưu rõ ràng ở thứ tự và giai đoạn, cần phân tích mô hình
+để bỏ đại lượng dư thừa. Quan hệ tăng có thể viết lại qua hiệu giữa hai giá
+trị kề nhau theo hạng, chẳng hạn dưới dạng
+\[
+  b_{p_i}-b_{p_{i-1}}
+  =\max(a_{p_i}-a_{p_{i-1}}+[p_i<p_{i-1}],0).
+\]
+Do đó thay vì quyết định trực tiếp giá trị \(b\), ta quyết định hiệu giữa hai
+giá trị \(b\) kề hạng. Cách đổi góc nhìn này cho phép bỏ ``giá trị tổng trước
+đó'' khỏi trạng thái. Đồng thời, nếu tổng còn thiếu nhỏ hơn giới hạn, luôn có
+thể cộng vào giá trị đầu để đạt tổng mục tiêu mà không phá các điều kiện khác;
+vì thế chỉ cần lấy hiệu bằng cận dưới. Kết quả thu được lời giải cỡ
+\(O(n^2m2^n)\).
+
+\paragraph{\term{Ví dụ 2.1.5 (HD)}.}
+Với mỗi \(n=2,\ldots,N\), cần đếm cặp cây có gốc trên cùng tập đỉnh, trong đó
+một cây có cha của mỗi đỉnh nhỏ hơn chính nó, cây kia có cha lớn hơn chính nó,
+và với mỗi nhãn, đỉnh đó là lá trong đúng một cây.
+
+Nếu quyết định trực tiếp, trong một cây phần đã xét tạo một khối liên thông
+chứa gốc và các đỉnh được chia thành nhiều loại; trong cây còn lại chúng tạo
+nhiều khối con. Trạng thái tự nhiên phải ghi quá nhiều số lượng, còn chuyển
+trạng thái phải liệt kê số con của đỉnh mới.
+
+Với điều kiện ``phải có con'', có thể dùng bao hàm--loại trừ để chuyển thành
+``có thể có con''. Một cách nhìn khác là chỉ ghi một biến: hiện có bao nhiêu
+đỉnh trong phần đã quyết định còn cần nối con ở các bước sau. Khi quyết định
+cha của đỉnh mới, đồng thời quyết định liệu đó có phải con cuối cùng của cha
+hay không.
+
+Đối với cây còn lại, thay vì mô tả chi tiết các khối đã quyết định, có thể ghi
+``yêu cầu'' đặt lên phần chưa quyết định, rồi dùng cùng kiểu chuyển trạng thái
+như cây thứ nhất. Bản chất là đổi từ quyết định tập con của mỗi đỉnh sang quyết
+định cha của mỗi đỉnh. Nhờ vậy trạng thái đóng dưới chuyển trạng thái và đạt độ
+phức tạp đa thức theo \(N\) với một thừa số lũy thừa nhỏ.
+
+\subsubsection*{2.2. Suy ra trạng thái từ quan hệ phụ thuộc của bài toán}
+
+Cách thứ hai là bắt đầu từ một bài toán con cố định, thường là chính bài toán
+gốc, chọn một phần cục bộ để quyết định, rồi xét phần còn lại phụ thuộc vào
+quyết định ấy ra sao. Nếu phần còn lại tách thành nhiều phần hoặc nhiều trường
+hợp thì tiếp tục tách. Phân tích đệ quy đến khi dạng bài toán hiện tại trùng
+với các bài toán con phụ thuộc; khi đó trạng thái và chuyển trạng thái cùng
+được xác định.
+
+Cách này hữu ích khi cấu trúc đối tượng phức tạp, điều kiện khó xử lý, hoặc
+định nghĩa trạng thái không hiển nhiên. Mấu chốt là chọn đúng cục bộ để quyết
+định và mô tả đúng cấu trúc phần còn lại.
+
+\paragraph{\term{Ví dụ 2.2.1 (Bracket Insertion)}.}
+Bắt đầu từ dãy ngoặc rỗng, thực hiện \(n\) lần: chọn đều ngẫu nhiên một khe và
+chèn vào đó một cặp ngoặc. Cặp được chèn là \texttt{()} với xác suất \(p\), và
+\texttt{)(} với xác suất \(1-p\). Cần tính xác suất cuối cùng dãy ngoặc hợp lệ,
+modulo 998244353.
+
+Điều kiện hợp lệ là mọi tiền tố có số ngoặc trái không ít hơn số ngoặc phải.
+Xét ngoặc đầu tiên của dãy cuối cùng, nó chắc chắn là ngoặc trái; cùng với nó
+có một ngoặc được chèn trong cùng thao tác. Bỏ cặp ngoặc cùng thao tác này đi,
+dãy bị chia thành hai đoạn. Không có cặp nào được chèn đồng thời mà nằm ở hai
+đoạn khác nhau; các ngoặc trong đoạn thứ nhất phải được chèn sau cặp vừa bỏ,
+còn thứ tự tương đối giữa hai đoạn có thể tính bằng tổ hợp.
+
+Sau khi tách, đoạn thứ nhất phải thỏa điều kiện mọi tiền tố có số ngoặc trái
+không ít hơn số ngoặc phải cộng thêm một ngưỡng; đoạn thứ hai thỏa điều kiện
+ban đầu. Vì vậy bài toán con tự nhiên là: độ dài \(2i\), mọi tiền tố có số
+ngoặc trái không ít hơn số ngoặc phải cộng \(j\). Gọi giá trị là \(f_{i,j}\).
+Chuyển trạng thái thu được từ việc chọn vị trí cặp vừa tách và nhân hệ số tổ
+hợp; chỉ cần xét \(0\le j\le n-i\). Độ phức tạp cơ bản là \(O(n^2)\), có thể
+tối ưu bằng NTT.
+
+\paragraph{\term{Ví dụ 2.2.2 (RF)}.}
+Cho một đa tập gồm các lũy thừa của \(2\). Cần đếm bao nhiêu số \(y\) có thể
+đạt được bằng cách chọn một phần tử con của đa tập rồi chia thành \(k\) nhóm có
+tổng bằng nhau, sao cho tổng mỗi nhóm bằng \(y\).
+
+Xét từng bit nhị phân. Với một \(y\), điều kiện cần và đủ có thể diễn đạt bằng
+các bất đẳng thức tiền tố trên số lượng lũy thừa \(2^i\): nếu lấy \(y_i\) là
+phần thấp \(i\) bit của \(y\), thì ở mỗi mức \(i\), số lượng khả dụng ở các bit
+thấp phải đủ bù cho phần dư \(k-y_i\) theo đơn vị \(2^i\). Tính cần là hiển
+nhiên; tính đủ chứng minh bằng quy nạp: lấy các phần tử lớn nhất đủ tạo
+\(k2^h\) ở bit cao nhất của \(y\), chia đều cho \(k\) nhóm, rồi quy về các bit
+thấp.
+
+Chứng minh này cho một cách tách bài toán: liệt kê bit cao nhất của \(y\), lấy
+ra phần \(k2^h\), phần còn lại lại là cùng dạng bài toán nhưng với giới hạn bit
+nhỏ hơn. Khi một mức bit không đủ hoặc dư quá nhiều, bài toán con tách thành
+``đếm các số có bit cao nhất không quá \(j\)'' cộng với một bài toán đặc biệt
+cùng dạng. Sau \(O(\log V)\) lần phân tách sẽ về trường hợp cơ sở. Vì thế, nếu
+trả lời nhanh truy vấn ``đa tập \(S\) đạt được bao nhiêu số có bit cao nhất
+không quá \(j\)'', ta tính được đáp án trong \(O(\log V)\).
+
+Điểm cần chú ý là nên tìm các bài toán con chỉ phụ thuộc vào thông tin ban đầu
+hoặc phụ thuộc rất ít vào quyết định cục bộ; khi đó số trạng thái mới đủ nhỏ.
+
+\paragraph{\term{Ví dụ 2.2.3 (bài toán tập độc lập trọng số lớn nhất)}.}
+Cho một cây nhị phân, mỗi đỉnh có trọng số. Cần xóa lần lượt mọi cạnh theo thứ
+tự bất kỳ; khi xóa một cạnh, hai đầu mút đổi trọng số cho nhau và chi phí tăng
+bằng tổng hai trọng số ấy. Hãy tối thiểu hóa tổng chi phí.
+
+Chỉ xét một đỉnh có đủ hai con; lá và đỉnh một con đơn giản hơn. Với một đỉnh
+\(u\), gọi cạnh nối với cha là \(f_u\), hai cạnh nối với con trái và con phải
+là \(l_u,r_u\). Nếu phân tích thứ tự xóa ba cạnh kề \(u\), các trường hợp sinh
+ra nhiều dạng bài toán con: có khi cần biết trọng số cha ban đầu và trọng số
+cha cuối cùng, có khi chỉ cần chi phí nhỏ nhất sau khi xóa toàn bộ cạnh trong
+cây con.
+
+Nếu tách quá nhỏ, ta phải liệt kê đồng thời hai trọng số trong các bài toán
+con, dẫn đến \(O(n^3)\) hoặc hơn. Cách giảm bậc là mở rộng ``cục bộ'' được phân
+tích: khi xét một trường hợp, tiếp tục xét ba cạnh kề đỉnh con liên quan. Nhờ
+tính cộng của chi phí và phép lấy \(\min\), phần phụ thuộc vào từng trọng số có
+thể tiền xử lý thành các giá trị nhỏ nhất như
+\[
+  \min_j \{ f(x,j)+d_j+\operatorname{cost}(d_i,d_j)\}.
+\]
+Khi đó các trạng thái đóng dưới chuyển trạng thái và đạt \(O(n^2)\). Ví dụ này
+cho thấy thay đổi phạm vi quyết định cục bộ có thể biến hai biến liệt kê lồng
+nhau thành hai phần độc lập.
+
+\subsubsection*{2.3. Tiểu kết}
+
+Trong thực hành, không nên cố chấp một khuôn mẫu suy nghĩ. Kết hợp nhiều thứ
+tự và góc nhìn thường là cách nhanh nhất tìm ra điểm đột phá, nhất là khi chọn
+giai đoạn và tối ưu trạng thái.
+
+Một dấu hiệu quan trọng của quy hoạch động là \term{tính độc lập}. Nó thể hiện
+ở hai mức. Thứ nhất, quan hệ giữa phần đã quyết định và phần chưa quyết định có
+thể được trừu tượng bằng ít đại lượng; nghĩa là chi tiết bên trong phần đã quyết
+định hầu như không ảnh hưởng đến toàn cục ngoài các đại lượng ấy. Thứ hai,
+nhiều bài toán con độc lập, hoặc quan hệ giữa chúng cũng có thể được mô tả bằng
+ít đại lượng. Tính độc lập giúp ta không cần ghi toàn bộ lịch sử, vẫn bảo đảm
+cấu trúc con tối ưu và không đếm trùng hoặc bỏ sót; nhờ vậy mới xuất hiện các
+bài toán con lặp lại và giảm được độ phức tạp.
+
+\subsection*{3. Kỹ thuật chuyển hóa bài toán}
+
+Một số bài toán không lộ rõ đặc trưng quy hoạch động, hoặc không thể giải trực
+tiếp bằng \(\mathrm{dp}\), nhưng có thể chuyển hóa thành bài toán phù hợp. Các
+thủ pháp dưới đây là những ví dụ khá điển hình.
+
+\subsubsection*{3.1. Liệt kê}
+
+Liệt kê để giảm số điều kiện và lượng thông tin phải xét là kỹ thuật cơ bản.
+
+\paragraph{\term{Ví dụ 3.1.1 (Infinite Game)}.}
+Cho xâu \(s\) gồm các ký tự \texttt{a}, \texttt{b}, \texttt{?}; mỗi dấu hỏi cần
+thay bằng \texttt{a} hoặc \texttt{b}. Xét quá trình dựa trên \(s^\infty\): liên
+tục lấy ký tự đầu làm kết quả một ván giữa \texttt{a} và \texttt{b}; bên tương
+ứng được một điểm, và khi một bên đạt hai điểm thì ván kết thúc, điểm được đặt
+lại. Gọi \(r(s)\) là giới hạn của tỉ lệ số ván \texttt{a} thắng. Cần đếm số
+cách thay dấu hỏi sao cho \(r(s)<1/2\), \(=1/2\), hoặc \(>1/2\).
+
+Chỉ cần xét dấu của hiệu số ván thắng giữa \texttt{a} và \texttt{b}. Khi chạy
+trên \(s^\infty\), quá trình chắc chắn có chu kỳ, nhưng chu kỳ ván không nhất
+thiết trùng với chu kỳ \(s\), vì một ván có thể băng qua cuối xâu. Giữa một ván
+chỉ có bốn trạng thái tỉ số điểm; vì thế với mỗi tỉ số điểm ban đầu, chạy hết
+một vòng \(s\) sẽ cho tỉ số cuối và hiệu số ván thắng. Điều này có thể xem như
+một đồ thị hàm trên bốn trạng thái.
+
+Trạng thái vẫn nhiều nếu ghi toàn bộ. Nhưng ta chỉ cần tổng trên chu trình, nên
+có thể liệt kê trước tập trạng thái nằm trên chu trình, tổng cộng
+\(2^4-1=15\) khả năng. Khi đó trạng thái chỉ cần ghi một hiệu và ánh xạ giữa
+bốn tỉ số điểm; về lý thuyết có \(4^4=256\) ánh xạ nhưng thực tế chỉ 67 ánh xạ
+có thể xuất hiện. Cuối cùng ép ánh xạ phù hợp với tập chu trình đã liệt kê,
+đạt \(O(n^2)\).
+
+\subsubsection*{3.2. Nhị phân}
+
+Nhị phân là tối ưu hóa liệt kê khi một đại lượng có tính đơn điệu, thường dùng
+để biến bài toán tối ưu thành bài toán kiểm tra có thể xử lý bằng
+\(\mathrm{dp}\).
+
+\paragraph{\term{3.2.1. Nhị phân đáp án}.}
+
+\paragraph{\term{Ví dụ 3.2.1 (Assigning Fares)}.}
+Cho một cây \(n\) đỉnh và \(m\) đường đi trên cây. Cần gán trọng số nguyên
+dương \(c_1,\ldots,c_n\) cho các đỉnh sao cho trên mỗi đường đi, trọng số đỉnh
+đều tăng nghiêm ngặt hoặc giảm nghiêm ngặt; cần tối thiểu hóa trọng số lớn
+nhất.
+
+Nếu \(\mathrm{dp}\) trực tiếp, thông tin của một cây con gồm trọng số gốc và
+trọng số lớn nhất trong cây con, không thể chấp nhận. Nhị phân trước giới hạn
+trọng số \(k\). Khi đó giá trị một đỉnh có thể lấy được phụ thuộc vào giá trị
+nhỏ nhất của các con phải nhỏ hơn nó và giá trị lớn nhất của các con phải lớn
+hơn nó. Đặt \(f_u\) là giá trị nhỏ nhất mà \(c_u\) có thể lấy khi \(c_u\) bắt
+buộc nhỏ hơn cha (nếu không có đường nào cùng đi qua hai đỉnh thì không ràng
+buộc). Trường hợp đối xứng có giá trị lớn nhất là \(k+1-f_u\).
+
+Với một đỉnh \(u\), xét các con cùng nằm với \(u\) trên ít nhất một đường đi.
+Ràng buộc phụ có dạng \(c_v<c_u\), hoặc với hai con \(v,w\),
+\[
+  [c_v<c_u]\ne[c_w<c_u].
+\]
+Chúng có thể xử lý bằng DSU có trọng số hoặc DSU phân loại. Cuối cùng, các
+ràng buộc trên \(c_u\) gồm cận trên, cận dưới, và một số khoảng dạng
+\([l,r]\cup[k+1-r,k+1-l]\); lấy giao các ràng buộc sẽ suy ra \(f_u\).
+
+\paragraph{\term{3.2.2. WQS nhị phân}.}
+
+Bài toán tối ưu bằng WQS thường có dạng: biết một hàm lồi hoặc lõm
+\(f(x)\), cho \(a\), cần tính \(f(a)\) nhưng không thể trực tiếp. Cách quen
+dùng trong OI là nhị phân hệ số góc \(k\), tính nhanh
+\[
+  \max_x\{f(x)-kx\}
+\]
+và một \(x_0\) đạt cực trị, rồi điều chỉnh \(k\) theo quan hệ giữa \(x_0\) và
+\(a\). Tuy nhiên trong thực hành, việc phải khôi phục \(x_0\) từ thông tin
+\(\mathrm{dp}\) làm tăng đáng kể độ khó, đặc biệt khi lồng nhiều lớp WQS.
+
+Một cách tránh là xét
+\[
+  g(k)=\max_x\{f(x)-kx\}+ka.
+\]
+Nếu \(f\) là hàm lồi lên theo nghĩa thường dùng cho WQS trong bài viết, thì
+\(g(k)\) là hàm lồi xuống, và giá trị nhỏ nhất của nó là \(f(a)\). Vì vậy bài
+toán chuyển thành tìm cực trị của \(g(k)\), có thể xử lý bằng tam phân hoặc
+nhị phân trên hệ số mà không cần khôi phục phương án. Giải thích chi tiết hơn
+có trong tài liệu tham khảo của bài.
+
+\paragraph{\term{Ví dụ 3.2.2 (Aliens!!!)}.}
+Cho một số ô được đánh dấu trên lưới \(m\times m\), và một số \(k\). Cần chọn
+nhiều nhất \(k\) hình vuông con có đường chéo chính trùng hướng với đường chéo
+chính của cả lưới, sao cho mọi ô được đánh dấu đều được phủ, và tối thiểu hóa
+số ô trong hợp các hình vuông.
+
+Bài toán chuyển thành chọn nhiều nhất \(k\) đoạn trên \([1,m]\) để phủ tất cả
+các đoạn đã cho. Bỏ các đoạn bị đoạn khác chứa; khi đó hai đầu mút trái và phải
+của các đoạn còn lại đều tăng. Trong một nghiệm, các đoạn đã cho được chia
+thành nhiều nhóm liên tiếp, mỗi nhóm do một đoạn chọn phủ. Đặt \(w(x,y)\) là
+chi phí tăng thêm khi nhóm từ \(x+1\) đến \(y\) được phủ, sau khi trừ phần giao
+với nhóm trước. Khi đó
+\[
+  f_{c,i}=\min_j\{f_{c-1,j}+w(j,i)\}.
+\]
+Hàm \(w\) thỏa bất đẳng thức tứ giác, nên \(f_{c,i}\) có tính lồi theo số
+đoạn \(c\). Nhờ vậy có thể WQS trước để bỏ chiều số đoạn khỏi trạng thái; phần
+\(\mathrm{dp}\) cuối cùng dùng hàng đợi nhị phân hoặc tối ưu hóa đường thẳng,
+đạt \(O(n\log n\log m)\) hoặc \(O(n\log^2 m)\) tùy cài đặt.
+
+\subsubsection*{3.3. Bao hàm--loại trừ}
+
+Dùng bao hàm--loại trừ để chuyển hóa bài toán đếm là một kỹ thuật rất thường
+gặp và nhiều tính kỹ xảo. Vì đã có nhiều bài viết chuyên sâu về bao hàm--loại
+trừ phức tạp, bài viết này không triển khai chi tiết.
+
+\subsubsection*{3.4. Chuyển hóa cho một lớp bài toán đếm}
+
+Xét một lớp bài toán có hai loại đối tượng \(X,Y\), cùng ánh xạ
+\(A:X\times Y\to\{0,1\}\). Cần đếm bao nhiêu \(x\in X\) thỏa tồn tại
+\(y\in Y\) sao cho \(A(x,y)=1\). Ở đây \(x\) là đối tượng cần đếm nhưng khó
+tính trực tiếp; \(y\) có thể hiểu là một nghiệm hoặc chứng nhận. Ta thường dễ
+đếm số \(y\) hợp lệ với một \(x\), nhưng cộng trực tiếp theo mọi \(y\) sẽ đếm
+trùng. Một số cách chuyển hóa thường dùng như sau.
+
+\paragraph{\term{3.4.1. Đổi cách kiểm tra}.}
+
+Ta có thể đổi góc nhìn hoặc khai thác tính chất để biến điều kiện ``\(x\) hợp
+lệ'' thành mô tả tĩnh đơn giản hơn, từ đó \(\mathrm{dp}\) trực tiếp.
+
+\paragraph{\term{Ví dụ 3.4.1 (Red and Blue Chips)}.}
+Có các chồng chip đỏ và xanh theo một quy trình ghép cho trước; cần đếm những
+dãy màu cuối cùng có thể thu được. Điều kiện ban đầu có vẻ mang tính quá trình:
+khi thêm một chip mới, phải quyết định đặt nó vào đâu.
+
+Ta mô tả quá trình theo dãy số: ban đầu có một chip xanh; mỗi lần có thể chèn
+một chip màu cho trước vào sau một chip xanh. Nếu số chip đỏ liên tiếp sau các
+chip xanh hiện tại lần lượt là \(x_1,\ldots,x_m\), thì chèn chip đỏ là chọn một
+\(x_i\) và tăng nó lên một; chèn chip xanh là chèn một số \(0\) vào dãy, trừ vị
+trí trước đầu dãy. Từ đó suy ra điều kiện cần và đủ trên dãy cuối cùng: các
+tổng lớn nhất, nhì lớn nhất, v.v. phải vượt các ngưỡng do thứ tự chip đỏ trong
+đầu vào quyết định.
+
+Vì vậy chỉ cần quyết định đa tập \(\{x_1,\ldots,x_m\}\) theo thứ tự giá trị từ
+lớn xuống nhỏ. Đặt \(f_{i,j,c}\) ghi sau khi xét các giá trị lớn, hiện còn bao
+nhiêu vị trí và bao nhiêu phần tử lớn hơn ngưỡng; khi chuyển trạng thái, liệt
+kê số phần tử bằng giá trị hiện tại và nhân tổ hợp để tính số hoán vị. Độ phức
+tạp \(O(n^2)\).
+
+\paragraph{\term{3.4.2. Đếm có trọng số}.}
+
+Nếu \(\mathrm{dp}\) theo \(y\) dễ hơn, ta có thể thiết kế trọng số \(w(y)\) sao
+cho với mọi \(x\),
+\[
+  \sum_{y\in Y} A(x,y)w(y)=\exists y\in Y,\ A(x,y)=1.
+\]
+Khi đó đáp án là tổng của \(w(y)\) nhân số \(x\) mà \(y\) chứng nhận được.
+
+Một cách thiết kế là chọn đúng một đại diện \(y\) cho mỗi \(x\) hợp lệ và đặt
+trọng số đại diện bằng \(1\), các chứng nhận khác bằng \(0\). Một cách khác là
+cho một số trọng số âm, tức dùng bao hàm--loại trừ.
+
+\paragraph{\term{Ví dụ 3.4.2 (Range Argmax)}.}
+Cho \(m\) đoạn con của \([1,n]\). Với một hoán vị \(p\), đặt \(x_i\) là vị trí
+của phần tử lớn nhất trên đoạn thứ \(i\). Cần đếm số dãy
+\((x_1,\ldots,x_m)\) có thể sinh ra.
+
+Với một dãy \(x\) khả dĩ, xét vị trí chứa giá trị lớn nhất \(n\). Tồn tại vị
+trí \(j\) sao cho mọi đoạn chứa \(j\) đều có \(x_i=j\). Nếu dãy khả dĩ có một
+hoán vị chứng nhận mà \(p_j<n\), ta có thể đổi \(p_j\) với giá trị lớn hơn mà
+không làm thay đổi các \(x_i\), lặp lại để đưa \(n\) về \(j\). Vì vậy có thể
+chọn đại diện là vị trí cực đại ngoài cùng bên trái \(j\) có \(p_j=n\).
+
+Sau khi cố định \(j\), mọi đoạn chứa \(j\) bị loại bỏ, hai phía trái và phải
+trở thành hai bài toán con độc lập; các cực đại phía trái còn phải tôn trọng
+điều kiện ``ngoài cùng bên trái''. Đặt \(f_{l,r,t}\) là đáp án chỉ xét các đoạn
+con trong \([l,r]\), với yêu cầu vị trí cực đại ngoài cùng bên trái phải lớn
+hơn \(t\). Độ phức tạp \(O(n^3)\).
+
+\paragraph{\term{3.4.3. Quy hoạch động trên quá trình kiểm tra}.}
+
+Xét một thuật toán kiểm tra một \(x\) có hợp lệ hay không. Thường thuật toán
+nhận \(x\) từng phần và lưu một số biến. Nếu trừu tượng thuật toán này thành
+một DFA, các giá trị trung gian của biến là trạng thái tự động, còn phản ứng
+với ký tự đầu vào là chuyển trạng thái. Khi đó chỉ cần \(\mathrm{dp}\) theo
+phần \(x\) đã xác định và trạng thái hiện tại của tự động. Trường hợp đơn giản
+nhất chỉ cần thêm một biến Boolean; phức tạp hơn, thuật toán kiểm tra chính nó
+cũng là \(\mathrm{dp}\), thường gọi là \(\mathrm{dp}\) lồng \(\mathrm{dp}\).
+
+Không phải mọi bài toán đếm đều có DFA nhỏ. Khi DFA lớn, có thể cắt bỏ trạng
+thái không thể đạt hoặc trạng thái chắc chắn không thể được chấp nhận, gộp các
+lớp trạng thái tương đương, hoặc dùng ý nghĩa tổ hợp để phát hiện những chi
+tiết không cần phân biệt.
+
+\paragraph{\term{Ví dụ 3.4.3 (Phone Numbers)}.}
+Cho xâu \(s\) độ dài \(n\) gồm các chữ số \(1\) đến \(9\). Cần đếm số xâu
+\(t\) cùng giới hạn sao cho tồn tại một cách chia đoạn chung, trong đó mỗi cặp
+đoạn tương ứng của \(s\) và \(t\) có cùng tập chữ số. Trong mỗi đoạn không có
+chữ số lặp, và các chữ số tạo thành một hình chữ nhật kích thước không quá
+\(2\) trên bàn phím số.
+
+Một kiểm tra trực tiếp dùng các giá trị \(f_i\) cho biết tiền tố có thể chia
+hợp lệ hay không, và khi thêm \(t_i\) thì chuyển từ vài giá trị gần nhất. Nếu
+ghi thô, trạng thái gồm một số bit khả thi và các chữ số gần nhất của \(t\),
+có hơn một vạn khả năng.
+
+Quan sát rằng chỉ trong vài trường hợp đặc biệt mới cần ghi đủ hai hoặc ba chữ
+số gần nhất của \(t\): cụ thể khi một tập chữ số gần đây của \(s\) thuộc một
+trong các tập hình chữ nhật hợp lệ và các chữ số của \(t\) nằm trong tập đó.
+Ngoài các trường hợp ấy có thể rút gọn xuống rất ít loại. Hoặc đơn giản hơn,
+dùng chương trình sinh DFA tối thiểu sau khi đưa cả vài chữ số gần nhất của
+\(s\) vào trạng thái. Với mỗi bộ chữ số gần đây của \(s\), số trạng thái hiệu
+dụng chỉ cỡ vài chục, đủ để chạy trên \(n\) lớn.
+
+\paragraph{\term{Ví dụ 3.4.4 (Hoàng lạn kê)}.}
+Cho các tập \(A_i\subseteq\{1,\ldots,m\}\). Cần đếm số dãy
+\(a_i\in A_i\) sao cho với mọi đoạn con không rỗng, trọng số tập độc lập lớn
+nhất trên đường đi đoạn đó không bằng một nửa tổng trọng số.
+
+Với một dãy đơn, có thể kiểm tra bằng hai giá trị \(f_0,f_1\): hiệu lớn nhất
+giữa tổng đã chọn và tổng không chọn, khi vị trí cuối không chọn hoặc được
+chọn. Nếu \(\max(f_0,f_1)=0\) thì không hợp lệ; giá trị này cũng không thể âm.
+Khi thêm trọng số \(w\), chuyển trạng thái là
+\[
+  f'_0=\max(f_0,f_1)-w,\qquad f'_1=f_0+w.
+\]
+
+Nếu quyết định dãy \(a\) từ trái sang phải và duy trì mọi đoạn kết thúc tại vị
+trí hiện tại, số trạng thái quá lớn. Ta bỏ qua mọi cặp \((f_0,f_1)\) mà dù nối
+tiếp thế nào cũng không thể tạo đoạn không hợp lệ. Phân tích cho thấy chỉ cần
+xét các cặp dạng \((-1,1),\ldots,(-m,m)\), tổng cộng \(2^m\) tập trạng thái.
+Đặt \(g_{i,S}\) là số cách sau \(i\) phần tử, với tập các cặp còn cần theo dõi
+là \(S\). Khi chọn \(a\), tập mới có dạng
+\[
+  S'=\{a-x\mid x\in S,\ x<a\}\cup\{a\}.
+\]
+Những giá trị lớn hơn \(a\) không ảnh hưởng đến chuyển trạng thái, nên có thể
+cộng gộp trước; độ phức tạp tối ưu còn \(O(n2^m)\).
+
+\subsection*{4. Tổng kết}
+
+Quá trình giải một bài toán quy hoạch động có thể chia đại khái thành bốn
+bước: quan sát tính chất, chuyển hóa mô hình, thiết kế \(\mathrm{dp}\), và tối
+ưu \(\mathrm{dp}\). Bốn bước này liên hệ và ảnh hưởng lẫn nhau. Do giới hạn
+dung lượng, bài viết chỉ nêu một phần phương pháp ở bước thứ hai và thứ ba; đây
+chỉ là phần rất nhỏ của bức tranh toàn cảnh.
+
+Tác giả tự nhận khuôn khổ trong bài còn mơ hồ và thô. Không có phương thuốc
+vạn năng cho mọi bài toán, nhưng phân tích từng mô hình cụ thể cũng không phải
+là việc hoàn toàn vô chương pháp. Hy vọng bài viết có thể gợi mở để người đọc
+tự rút ra thêm những phương pháp có phạm vi áp dụng nhất định và tìm thấy những
+``tia sáng tư tưởng'' trong thiết kế thuật toán.
+
+\subsection*{Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+Cảm ơn các thầy Wang Xinbo và Zhu Yixing đã hướng dẫn.
+
+Cảm ơn mẹ đã nuôi dưỡng, cảm ơn gia đình đã quan tâm và ủng hộ.
+
+Cảm ơn anh Chang Ruinian, bạn Zhu Juzhe và bạn Lin Shangyu đã thảo luận với tác
+giả về các chủ đề liên quan trong bài và đem lại gợi ý. Cảm ơn anh Chang
+Ruinian và bạn Zhu Juzhe đã đưa ra những góp ý quý báu cho bài viết.
+
+Cảm ơn tất cả các bạn học và phụ huynh đã giúp đỡ, đồng hành trên con đường
+luyện tập.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein.
+  \emph{Introduction to Algorithms}, third edition, chapter on dynamic
+  programming, pages 204--236. China Machine Press, 2009.
+  \item \emph{Dynamic programming}. Wikipedia,
+  \url{https://en.wikipedia.org/wiki/Dynamic_programming}.
+  \item Oleksandr Kulkov (adamant). \emph{Theoretical grounds of lambda
+  optimization}. Codeforces, \url{https://codeforces.com/blog/entry/98334},
+  2021.
+  \item \emph{Tối ưu hóa bằng bất đẳng thức tứ giác}. OI Wiki,
+  \url{https://oi-wiki.org/dp/opt/quadrangle/}.
+  \item FOP. \emph{Bàn về tính lồi của hàm số trong OI}. Tập luận văn đội tuyển
+  dự tuyển quốc gia Trung Quốc năm 2023, 2023.
+  \item Xu Zhe'an. \emph{Bàn về tự động hữu hạn và ứng dụng}. Tập luận văn đội
+  tuyển dự tuyển quốc gia Trung Quốc năm 2021, 2021.
+  \item Cao Li. \emph{Tổng hợp phương pháp cho bài toán dp}. WA,
+  \url{https://www.luogu.com.cn/blog/yeah-potato/dp-ti-fang-fa-zong-hui},
+  2023.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục, tập năm 2024 bao phủ các nhóm chủ đề sau:
@@ -4328,6 +4913,10 @@ với ảnh render PDF trang 62--76, tương ứng trang in 54--68; các hình m
 phân lớp tương đương, chuyển đổi lớp tương đương và đường quét xoay được diễn
 giải bằng lời thay vì nhập ảnh. Công thức biến đổi ở ví dụ UNR \#4 trong nguồn
 có dấu hiệu thiếu nhất quán với mô tả ``bán kính \(R_i\)''; bản dịch dùng phép
-biến đổi đại số theo mô tả hình học đó.
+biến đổi đại số theo mô tả hình học đó. Bài thứ sáu được dịch từ OCR tại
+\texttt{/tmp/oipl-2024-dp/} và đối chiếu với ảnh render PDF trang 77--92,
+tương ứng trang in 69--84; lớp văn bản nhúng bị mojibake nên các công thức và
+tên bài ví dụ dài chỉ được giữ ở mức xác nhận được từ ảnh trang, còn các công
+thức quá nhiễu được diễn giải bằng lời.
 
 \end{document}
