@@ -21,7 +21,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2023. Tệp được
 tạo bằng LaTeX với lớp văn bản Unicode đọc được; mục lục và các trang thân bài
 đã kiểm tra đều trích xuất tốt bằng \texttt{pdftotext}. Bản LaTeX này chuyển
-ngữ phần nhận diện tập sách, toàn bộ mục lục và tám bài đầu tiên, đồng thời ghi
+ngữ phần nhận diện tập sách, toàn bộ mục lục và chín bài đầu tiên, đồng thời ghi
 lại các chủ đề chính để phục vụ bản dịch chi tiết hơn.
 \end{abstract}
 
@@ -4844,6 +4844,304 @@ và cảm ơn gia đình, bạn bè đã ủng hộ.
   of computer algebra systems, 2009.
   \item Wikipedia. Finite field arithmetic.
   \item Wikipedia. Schwartz--Zippel lemma.
+\end{enumerate}
+
+\section{Bàn về một lớp bài toán thống kê trên cây}
+
+\begin{center}
+Trường Trung học Chư Kỵ, Chiết Giang\\
+Zhu Yikai
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Bài viết xuất phát từ một bài tập do tác giả ra cho đội tuyển quốc gia Trung
+Quốc IOI 2023, từ đó dẫn ra một lớp bài toán thống kê trên cây. Tác giả giới
+thiệu một thuật toán có tính tổng quát nhất định cho lớp bài toán này, rồi đưa
+ra vài bài ví dụ và lần lượt dùng thuật toán đó để giải.
+\end{abstract}
+
+\subsection{Dẫn nhập}
+
+Bài toán trên cây luôn là một chủ đề quen thuộc trong các kỳ thi thuật toán, và
+các dạng bài liên quan cũng rất phong phú. Bài viết này giới thiệu một trong số
+các dạng đó, kèm ví dụ và lời giải, với hy vọng giúp người đọc có thêm góc nhìn
+khi gặp những bài thống kê trên cây tương tự.
+
+Nếu không nói khác, trong các bài toán dưới đây ta luôn giả sử kích thước cây
+và số truy vấn, nếu có nhiều truy vấn, đều là \(O(n)\).
+
+\subsection{Kiến thức chuẩn bị}
+
+\subsubsection{Phân rã nặng nhẹ}
+
+Phân rã đường trên cây dùng để chia cây thành một số đường, từ đó thuận tiện
+duy trì thông tin trên các đường đi. Phân rã nặng nhẹ là một dạng quen thuộc
+của kỹ thuật này.
+
+\paragraph{Định nghĩa 2.1.1 (con nặng).}
+Trong các con của một đỉnh, đỉnh con có cây con lớn nhất được gọi là con nặng.
+Nếu có nhiều con cùng có cây con lớn nhất, chọn tùy ý một đỉnh. Nếu đỉnh không
+có con thì không có con nặng.
+
+\paragraph{Định nghĩa 2.1.2 (con nhẹ).}
+Các con không phải con nặng đều được gọi là con nhẹ.
+
+\paragraph{Định nghĩa 2.1.3 (cạnh nặng).}
+Cạnh nối một đỉnh với con nặng của nó là cạnh nặng.
+
+\paragraph{Định nghĩa 2.1.4 (cạnh nhẹ).}
+Cạnh nối một đỉnh với con nhẹ của nó là cạnh nhẹ.
+
+\paragraph{Định nghĩa 2.1.5 (đường nặng).}
+Một số cạnh nặng nối tiếp đầu cuối với nhau tạo thành một đường nặng.
+
+Nếu coi cả đỉnh đơn lẻ là một đường nặng, toàn bộ cây được phân hoạch thành các
+đường nặng. Trong hình minh họa của bản gốc, cạnh nét đứt là cạnh nhẹ, cạnh
+nét liền là cạnh nặng, và đầu mỗi đường nặng được đánh dấu bằng vòng tròn rỗng.
+
+\subsubsection{Tính chất của phân rã nặng nhẹ}
+
+\paragraph{Tính chất 2.2.1.}
+Mọi đường đi trên cây có thể tách thành \(O(\log n)\) đường nặng.
+
+\paragraph{Chứng minh.}
+Khi đi xuống qua một cạnh nhẹ, kích thước cây con hiện tại ít nhất giảm một
+nửa. Vì vậy, với một đường đi bất kỳ trên cây, nếu tách nó thành các đoạn đi
+từ LCA của hai đầu mút xuống hai phía bằng cách nhảy qua các đường nặng, mỗi
+phía chỉ nhảy nhiều nhất \(O(\log n)\) lần. Do đó mỗi đường đi trên cây có thể
+tách thành không quá \(O(\log n)\) đường nặng.
+
+\paragraph{Tính chất 2.2.2.}
+Tổng kích thước cây con của tất cả các con nhẹ của tất cả các đỉnh là
+\(O(n\log n)\).
+
+\paragraph{Chứng minh.}
+Mỗi đỉnh đóng góp đúng bằng số cạnh nhẹ trên đường từ nó tới gốc. Theo tính
+chất trước, số lượng này là \(O(\log n)\). Cộng trên \(n\) đỉnh ta được
+\(O(n\log n)\).
+
+\subsection{Bài toán}
+
+\subsubsection{Mô tả}
+
+Cho một cây có \(n\) đỉnh. Ký hiệu \(x\to y\) là đường đi đơn từ \(x\) tới
+\(y\) trên cây, và khoảng cách \(\operatorname{dis}(x,y)\) là số cạnh trên
+đường đi đó. Khoảng cách từ một đỉnh \(u\) tới đường đi đơn \(x\to y\) được
+định nghĩa là
+\[
+  \min_{v\in x\to y}\operatorname{dis}(u,v).
+\]
+
+Có \(q\) truy vấn. Truy vấn thứ \(i\) cho ba số nguyên \(x_i,y_i,d_i\), thỏa
+\(1\le x_i,y_i\le n\), \(0\le d_i<n\). Cần tính số đỉnh có khoảng cách tới
+đường đi \(x_i\to y_i\) không vượt quá \(d_i\).
+
+\subsubsection{Giới hạn}
+
+Với toàn bộ dữ liệu, \(1\le n,q\le 2\cdot 10^5\). Giới hạn thời gian là
+3 giây, bộ nhớ 1024 MB.
+
+\subsection{Phân tích bài toán}
+
+\subsubsection{Biến đổi ban đầu}
+
+Giả sử cây được gốc hóa tại \(1\). Gọi \(z_i\) là LCA của \(x_i\) và \(y_i\).
+Ta tách bài toán theo hai đoạn \(z_i\to x_i\) và \(z_i\to y_i\).
+
+Trước hết tính số đỉnh có khoảng cách tới \(z_i\) không vượt quá \(d_i\). Đây
+là bài toán kinh điển, có thể giải bằng phân trị điểm trong \(O(n\log n)\).
+
+Phần còn lại trên đoạn \(x_i\to z_i\) cần thống kê
+\[
+  \sum_{u\in z_i'\to x_i} f_{u,d_i},
+\]
+trong đó \(z_i'\) là đỉnh thứ hai trên đường từ \(z_i\) tới \(x_i\), còn
+\(f_{u,j}\) là số đỉnh trong cây con của \(u\) có khoảng cách tới \(u\) bằng
+\(j\). Đoạn \(z_i\to y_i\) xử lý tương tự.
+
+Vì vậy vấn đề trở thành tính nhanh các tổng dạng
+\[
+  \sum_{u\in z_i'\to x_i} f_{u,d_i}.
+\]
+Một cách xử lý quen thuộc là lấy hiệu theo đường từ gốc:
+\[
+  \sum_{u\in 1\to x_i} f_{u,d_i}
+  -
+  \sum_{u\in 1\to z_i} f_{u,d_i}.
+\]
+
+\subsubsection{Một lời giải hơi kém hơn}
+
+Ta cần tính nhanh \(\sum_{u\in 1\to x}f_{u,d_i}\). Để trình bày thuận tiện,
+thay vào đó ta tính số đỉnh có khoảng cách tới đường \(1\to x\) không vượt quá
+\(d\). Do đang dùng hiệu, phần thừa phát sinh trong biến đổi này sẽ tự triệt
+tiêu, nên đáp án cuối vẫn đúng.
+
+Trước hết tính kích thước đường \(1\to x\). Sau đó chỉ cần xét đóng góp của
+các cây con khác của từng đỉnh trên đường này.
+
+Dùng phân rã nặng nhẹ. Trước hết tính đóng góp của cây con con nặng của mỗi
+đỉnh đối với các truy vấn nằm trong các cây con khác. Phần này tạo ra
+\(O(n\log n)\) truy vấn dạng: trong một cây con, có bao nhiêu đỉnh có khoảng
+cách tới gốc cây con không vượt quá \(d\). Có thể dùng phân rã đường dài để
+giải trong \(O(n\log n)\).
+
+Còn lại là các cây con của các con nhẹ trên đường từ \(x\) về gốc, trừ đi cây
+con chứa \(x\). Trong hình của bản gốc, các cây con cần tính được tô xanh, còn
+phần đã tính ở bước đầu được tô vàng.
+
+Theo tính chất của phân rã nặng nhẹ, tổng kích thước cây con của các con nhẹ là
+\(O(n\log n)\). Ta chèn một bản sao của truy vấn \(x\) vào mỗi đỉnh được tô
+đen trong hình, tức các đỉnh gặp khi đi từ \(x\) lên trên mà bước vừa đi lên
+đến từ con nặng. Sau đó xử lý riêng từng đường nặng; bản chất vẫn là một bài
+toán đếm điểm hai chiều. Cuối cùng cần trừ đóng góp bị tính lặp của các cây con
+được tô đỏ trong hình.
+
+Độ phức tạp là \(O(n\log^2 n)\), đủ để qua bài này.
+
+\subsubsection{Lời giải cuối}
+
+Nút thắt của lời giải trên nằm ở việc tính đóng góp của các cây con con nhẹ.
+Sau đây là cách cải thiện.
+
+Với mỗi đường nặng, quét từ trên xuống dưới. Khi tới một đỉnh, lần lượt thêm
+tất cả các cây con con nhẹ của đỉnh đó, đồng thời duy trì một mảng tổng tiền
+tố. Nếu cây con con nhẹ đang thêm có độ sâu \(h\), ta cập nhật \(h\) vị trí
+đầu của mảng tổng tiền tố: vị trí \(i\) được cộng số đỉnh trong cây con đó có
+độ sâu không vượt quá \(i\).
+
+Khi gặp truy vấn, trả lời trực tiếp bằng \(O(1)\) trên mảng tổng tiền tố. Cách
+làm này có thời gian \(O(n\log n)\), nhưng còn thiếu một phần đóng góp.
+
+Phân tích thêm một chút, nếu \(d_i=d\), phần thiếu chính là tổng kích thước của
+các cây con nhẹ đã được quét tới và có độ sâu nhỏ hơn \(d\).
+
+Để xử lý phần này, nhóm các cây con theo độ sâu. Cụ thể, cây con có độ sâu nằm
+trong \([2^i,2^{i+1})\) được đưa vào nhóm \(i\). Với từng nhóm và với toàn bộ
+nhóm, ta đều duy trì mảng tổng tiền tố. Với mảng tổng tiền tố của toàn bộ nhóm,
+mỗi lần thêm một cây con nhẹ tốn \(O(\log n)\), và mỗi đỉnh chỉ được thêm một
+lần, nên phần này tốn \(O(n\log n)\). Với mảng trong nhóm \(i\), mỗi lần thêm
+tốn \(O(2^i)\). Nếu tổng kích thước các cây con trong nhóm này là \(A\), chi
+phí cập nhật không vượt quá \(A\cdot 2^i/2^i=A\). Tổng các \(A\) là
+\(O(n\log n)\), nên phần này cũng tốn \(O(n\log n)\).
+
+Mỗi truy vấn chỉ cần đọc hai mảng tiền tố trong \(O(1)\). Do đó bài toán được
+giải trong \(O(n\log n)\).
+
+\subsection{Tổng kết bài toán}
+
+Sau một số biến đổi, bài toán ban đầu trở thành bài toán đếm số cặp gồm một
+đỉnh và một truy vấn, trong đó hai đối tượng này thỏa một số ràng buộc liên
+quan tới LCA.
+
+Với dạng bài này, ta thường chia đóng góp thành hai phần:
+\begin{itemize}
+  \item sau phân rã nặng nhẹ, các cây con con nặng của những đỉnh nằm trên
+  đường từ đỉnh truy vấn tới gốc;
+  \item sau phân rã nặng nhẹ, các cây con con nhẹ của những đỉnh nằm trên
+  đường từ đỉnh truy vấn tới gốc, đồng thời trừ đi các cây con nhẹ chứa chính
+  đỉnh truy vấn.
+\end{itemize}
+Nếu cả cập nhật và truy vấn đều làm được trong \(O(1)\), độ phức tạp của thuật
+toán là \(O(n\log n)\).
+
+\subsection{Ví dụ}
+
+\subsubsection{Ví dụ 1: Codeforces 1098F \emph{Zh-function}}
+
+Cho một xâu \(S\). Ký hiệu \(S[l\ldots r]\) là xâu con từ ký tự thứ \(l\) tới
+ký tự thứ \(r\). Định nghĩa
+\[
+  F(S)=\sum_{i=1}^{|S|}\operatorname{lcp}(S,S[i\ldots |S|]),
+\]
+trong đó \(\operatorname{lcp}(S,T)\) là độ dài tiền tố chung dài nhất của hai
+xâu \(S,T\). Cho xâu \(T\) dài \(n\), có \(q\) truy vấn, mỗi truy vấn cho
+\(l,r\) và hỏi giá trị \(F(T[l\ldots r])\).
+
+Với toàn bộ dữ liệu, \(1\le n,q\le 2\cdot 10^5\). Giới hạn thời gian là
+6 giây, bộ nhớ 512 MB.
+
+Dựng cây hậu tố của xâu đảo của \(T\). Khi đó \(\operatorname{lcp}\) của hai
+hậu tố \(i,j\) chính là độ dài tương ứng với LCA của hai đỉnh trên cây hậu tố.
+Suy ra
+\[
+  \operatorname{lcp}(T[l\ldots r],T[i\ldots r])
+  =
+  \min(r-i+1,\operatorname{len}_{\operatorname{lca}(i,l)}).
+\]
+Công thức này rất giống lớp bài toán vừa trình bày.
+
+Cần xét hai phần đóng góp. Phần thứ nhất là đóng góp của cây con con nặng của
+mỗi đỉnh đối với các truy vấn nằm trong những cây con nhẹ khác. Giả sử đỉnh
+hiện tại đại diện cho độ dài \(\operatorname{len}\). Nếu
+\(i\in [l,r-\operatorname{len})\), đóng góp là \(\operatorname{len}\), nên chỉ
+cần đếm số phần tử trong cây con có vị trí thuộc đoạn đó. Nếu
+\(i\in [r-\operatorname{len},r]\), đóng góp là \(r-i+1\), nên cần thống kê cả
+tổng và số lượng trong đoạn. Cả hai đều là bài toán đếm điểm hai chiều đơn
+giản, có thể giải bằng gộp cây đoạn, thời gian \(O(n\log^2 n)\).
+
+Phần thứ hai là đóng góp của cây con con nhẹ đối với truy vấn trong cây con con
+nặng. Tương tự, phần này biến thành một bài toán thứ tự bộ phận ba chiều: một
+chiều yêu cầu vị trí nằm trong \([l,r]\), một chiều là độ sâu trên đường nặng,
+và chiều còn lại đến từ phép lấy \(\min\) trong LCP. Với bài toán ba chiều, sắp
+xếp theo một chiều, rồi dùng CDQ chia để trị kết hợp Fenwick tree cho hai chiều
+còn lại. Phần này có độ phức tạp \(O(n\log^3 n)\) với hằng số nhỏ.
+
+Cũng có thể thay phân rã nặng nhẹ bằng cây nhị phân cân bằng toàn cục để bỏ một
+thừa số \(\log\) của phần thứ hai, nhưng thực nghiệm không tốt bằng thuật toán
+trên nên bài viết gốc không trình bày chi tiết.
+
+\subsubsection{Ví dụ 2: Luogu P4482 \emph{[BJWC2018] Border} bốn cách giải}
+
+Cho một xâu \(S\) dài \(n\), có \(q\) truy vấn. Mỗi truy vấn cho hai số dương
+\(l,r\) và hỏi border của \(S[l\ldots r]\). Border của một xâu \(S\) là số
+lớn nhất \(i\) thỏa \(i<|S|\) và
+\[
+  S[1\ldots i]=S[|S|-i+1\ldots |S|].
+\]
+
+Với toàn bộ dữ liệu, \(1\le n,q\le 2\cdot 10^5\). Giới hạn thời gian là
+5 giây, bộ nhớ 512 MB.
+
+Dựng cây hậu tố cho \(S\). Bài toán tương đương tìm \(i\) lớn nhất thỏa
+\[
+  i<r,\qquad i-\operatorname{len}_{\operatorname{lca}(i,r)}+1\le l.
+\]
+Nếu giá trị tìm được nhỏ hơn \(l\), tức là không tồn tại border.
+
+Vẫn tách thành hai phần. Phần thứ nhất tương đương truy vấn giá trị lớn nhất
+trong cây con có vị trí trên xâu gốc thuộc
+\([1,\min(r-1,l+\operatorname{len}-1)]\). Phần này vẫn có thể xử lý bằng gộp
+cây đoạn trong \(O(n\log^2 n)\).
+
+Phần thứ hai cần thỏa hai ràng buộc: \(i<r\) và
+\(i-\operatorname{len}_{\operatorname{lca}(i,r)}+1\le l\). Ta duy trì một cây
+đoạn; mỗi lần chèn giá trị
+\(i-\operatorname{len}_{\operatorname{lca}(i,r)}+1\) vào vị trí \(i\). Mỗi nút
+của cây đoạn lưu giá trị nhỏ nhất trong đoạn hiện tại, nhờ đó khi truy vấn có
+thể nhị phân trên cây đoạn. Cần chú ý thông tin của bài này không có tính giảm,
+vì vậy phải xử lý riêng một chút. Phần này cũng có độ phức tạp
+\(O(n\log^2 n)\).
+
+\subsection{Kết luận}
+
+Qua các ví dụ trên có thể thấy thuật toán này có tính tổng quát khi xử lý một
+lớp bài toán thống kê trên cây. Hy vọng bài viết đóng vai trò gợi mở và đem
+lại thêm cảm hứng cho các bài toán cây liên quan trong OI.
+
+\subsection{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao
+lưu; cảm ơn huấn luyện viên đội tuyển quốc gia Yang Yaoliang đã hướng dẫn; cảm
+ơn Dong Yehua, Chen Heli và Yuan Rongle đã bồi dưỡng, chỉ dạy; cảm ơn cha mẹ
+đã thấu hiểu và ủng hộ.
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item OI Wiki. Heavy-light decomposition.
+  \item Codeforces Round 530 Tutorial.
 \end{enumerate}
 
 \end{document}
