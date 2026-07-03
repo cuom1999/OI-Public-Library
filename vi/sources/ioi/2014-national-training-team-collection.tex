@@ -2516,6 +2516,454 @@ Hongxiang đã giúp đỡ tác giả trong một thời gian dài.
 
 Cảm ơn Yu Yili và Dong Honghua đã giúp đỡ tác giả.
 
+\section{Bàn về bài toán xâu con palindrome}
+
+\begin{center}
+Xu Yi, Trường Trung học cao cấp Thường Châu, Giang Tô
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết trước hết điểm lại ngắn gọn cách dùng mảng hậu tố để tính bán kính
+palindrome, sau đó giới thiệu chi tiết thuật toán Manacher. Trên nền tảng này,
+tác giả phân tích một số dạng bài xâu con palindrome qua các ví dụ, rồi tổng
+kết cách suy nghĩ chung khi giải loại bài này.
+
+\subsection{Dẫn nhập}
+
+Những năm gần đây, khi các thuật toán và cấu trúc dữ liệu xử lý xâu ngày càng
+phổ biến trong nước, các bài toán liên quan tới xâu cũng xuất hiện ngày càng
+nhiều.
+
+Bài toán xâu con palindrome là một trong những chủ đề khá được quan tâm trong
+nhóm bài xâu. Vì xâu con palindrome có nhiều tính chất đẹp, các bài thuộc loại
+này thường có độ linh hoạt cao. Bài viết này phân tích và tổng kết một phần chủ
+đề ấy, với hy vọng gợi mở thêm cho người đọc.
+
+\subsection{Khái niệm cơ bản}
+
+\begin{itemize}
+  \item Một tập hữu hạn khác rỗng các ký tự được gọi là bảng chữ cái.
+  \item Một dãy hữu hạn các ký tự trong bảng chữ cái được gọi là xâu.
+  \item Số ký tự trong xâu được gọi là độ dài của xâu.
+  \item Một đoạn liên tiếp trong xâu được gọi là xâu con.
+  \item Một xâu con không đổi sau khi đảo ngược được gọi là xâu con palindrome.
+  \item Xâu con palindrome dài nhất trong một xâu được gọi là xâu con
+  palindrome dài nhất.
+  \item Một nửa độ dài lớn nhất của xâu con palindrome có tâm tại vị trí \(i\)
+  được gọi là bán kính palindrome tại vị trí \(i\).
+\end{itemize}
+
+\subsection{Các thuật toán thường dùng}
+
+Khi xử lý bài toán xâu con palindrome, thông thường ta cần tính bán kính
+palindrome tại mọi vị trí của xâu.
+
+Để tránh bàn riêng chẵn lẻ và biên, từ đó giảm độ phức tạp của mã nguồn, ta
+chèn cùng một ký tự đặc biệt vào hai bên mỗi ký tự của xâu, chèn thêm một ký tự
+đặc biệt khác trước ký tự đầu tiên, và một ký tự đặc biệt khác nữa sau ký tự
+cuối cùng. Chẳng hạn, \texttt{abbabcba} được đổi thành
+\texttt{\$\#a\#b\#b\#a\#b\#c\#b\#a\#@}.
+
+Như vậy ta thu được một xâu mới \(S[1\ldots n]\). Để tính mảng bán kính
+palindrome \(R[1\ldots n]\) của xâu này, thường có hai cách sau.
+
+\begin{center}
+\begin{tabular}{c|ccccccccccccccccc}
+\(S\) & \# & a & \# & b & \# & b & \# & a & \# & b & \# & c & \# & b & \# & a & \# \\
+\hline
+\(R\) & 1 & 2 & 1 & 2 & 5 & 2 & 1 & 4 & 1 & 2 & 1 & 6 & 1 & 2 & 1 & 2 & 1
+\end{tabular}
+\end{center}
+
+\subsubsection{Mảng hậu tố}
+
+Cách dựng mảng hậu tố đã rất quen thuộc nên không nhắc lại ở đây. Cách dùng
+mảng hậu tố để tính bán kính palindrome tại từng vị trí cũng đã được nhiều tài
+liệu trước đây giới thiệu; ta chỉ điểm lại ý tưởng.
+
+Rõ ràng \(R[i]\) bằng LCP của \(S[i\ldots n]\) và xâu \(S[1\ldots i]\) sau khi
+đảo ngược. Vì vậy, ta viết xâu gốc bị đảo ngược vào sau xâu gốc, ngăn cách bằng
+một ký tự đặc biệt. Bài toán trở thành tìm LCP của hai hậu tố trong xâu mới,
+nên có thể xử lý thuận tiện bằng mảng hậu tố.
+
+\begin{itemize}
+  \item Nếu dựng mảng hậu tố bằng thuật toán nhân đôi và tiền xử lý RMQ trong
+  \(O(n\log n)\), tổng độ phức tạp thời gian là \(O(n\log n)\).
+  \item Nếu dựng mảng hậu tố bằng DC3 và tiền xử lý RMQ trong \(O(n)\), tổng độ
+  phức tạp thời gian là \(O(n)\).
+\end{itemize}
+
+\subsubsection{Thuật toán Manacher}
+
+Muốn giải trơn tru các bài toán xâu con palindrome, thường cần tính
+\(R[1\ldots n]\) trong \(O(n)\). Cách hiện thực dựa trên mảng hậu tố khá dài,
+nên ta nên tận dụng tính chất riêng của bài toán và dùng thành thạo thuật toán
+Manacher ngắn gọn dưới đây.
+
+\paragraph{Quy trình thuật toán.}
+Trong thuật toán Manacher, ta thêm hai biến phụ \(mx\) và \(p\), lần lượt biểu
+thị biên phải xa nhất đã được một palindrome hiện có phủ tới và vị trí tâm
+tương ứng.
+
+Khi tính \(R[i]\), trước hết đặt cho nó một cận dưới. Gọi \(j=2p-i\) là điểm
+đối xứng của \(i\) qua \(p\). Có ba trường hợp:
+\begin{itemize}
+  \item Nếu \(mx<i\), chỉ biết được \(R[i]\ge1\).
+  \item Nếu \(mx-i>R[j]\), palindrome tâm \(j\) nằm trọn trong palindrome tâm
+  \(p\). Do \(i\) và \(j\) đối xứng qua \(p\), palindrome tâm \(i\) cũng nằm
+  trọn trong palindrome tâm \(p\), nên \(R[i]=R[j]\).
+  \item Nếu \(mx-i\le R[j]\), palindrome tâm \(j\) không nhất thiết nằm trọn
+  trong palindrome tâm \(p\). Tuy vậy, do đối xứng, palindrome tâm \(i\) chắc
+  chắn mở rộng sang phải ít nhất tới \(mx\), nên \(R[i]\ge mx-i\).
+\end{itemize}
+
+Ba hình trong bản gốc minh họa lần lượt các trường hợp \(mx<i\),
+\(mx-i>R[j]\) và \(mx-i\le R[j]\): đường phía trên biểu diễn xâu, đường giữa
+biểu diễn \(R[p]\), đường phía dưới bên trái biểu diễn \(R[j]\), còn đường phía
+dưới bên phải biểu diễn cận dưới của \(R[i]\).
+
+Với phần vượt quá cận dưới, ta chỉ cần tiếp tục so khớp từng ký tự. Mỗi lần so
+khớp thành công đều làm \(mx\) dịch sang phải, mà \(mx\) chỉ có thể dịch sang
+phải nhiều nhất \(n\) lần. Vì vậy thuật toán Manacher có độ phức tạp thời gian
+\(O(n)\).
+
+\paragraph{Giả mã.}
+Giả mã trong bản gốc khởi tạo \(p=0,mx=0\), duyệt \(i\) từ trái sang phải, đặt
+\[
+  R[i]=
+  \begin{cases}
+    \min(R[2p-i],mx-i), & mx>i,\\
+    1, & mx\le i,
+  \end{cases}
+\]
+rồi mở rộng bằng cách so sánh \(S[i+R[i]]\) và \(S[i-R[i]]\). Nếu
+\(i+R[i]>mx\), thuật toán cập nhật \(p=i\) và \(mx=i+R[i]\). Mảng \(R\) thu
+được chính là kết quả cần tìm.
+
+\subsection{Phân tích ví dụ}
+
+\subsubsection{Ví dụ một: Luyện tập đội cổ vũ}
+
+\paragraph{Tóm tắt đề bài.}
+Cho một xâu độ dài \(n(1\le n\le10^6)\). Hãy tính tích độ dài của \(k\)
+\((1\le k\le10^{12})\) xâu con palindrome độ dài lẻ dài nhất, lấy dư
+\(19930726\), hoặc xác định rằng số xâu con palindrome độ dài lẻ không đủ
+\(k\). Nguồn bài: đợt thi chọn đội tuyển quốc gia năm 2011.
+
+\paragraph{Phân tích.}
+Trước hết dùng Manacher để tính bán kính palindrome tại mọi vị trí.
+
+Rõ ràng độ dài xâu con palindrome chỉ có không quá \(n\) loại, nên ta có thể
+thống kê số lượng \(cnt[1\ldots n]\) của từng độ dài. Giả sử các độ dài
+palindrome có thể xuất hiện quanh tâm \(i\) tạo thành đoạn \([l_i,r_i]\). Khi
+đó cần cộng \(1\) cho toàn bộ \(cnt[l_i\ldots r_i]\). Đây là bài toán hiệu phân
+kinh điển: mỗi lần chỉ cần cộng \(1\) tại \(cnt[l_i]\), trừ \(1\) tại
+\(cnt[r_i+1]\), rồi lấy tổng tiền tố một lần.
+
+Sau đó xử lý các độ dài palindrome từ lớn xuống nhỏ, chỉ xét độ dài lẻ. Mỗi lần
+dùng lũy thừa nhanh để nhân độ dài tương ứng vào đáp án, cho tới khi tổng số
+xâu con palindrome độ dài lẻ đã đạt \(k\). Độ phức tạp thời gian là
+\(O(n\log n)\).
+
+\subsubsection{Ví dụ hai: Palisection}
+
+\paragraph{Tóm tắt đề bài.}
+Cho một xâu độ dài \(n(1\le n\le2\cdot10^6)\). Hãy tính số cặp xâu con
+palindrome giao nhau. Nguồn bài: Codeforces Beta Round \#17.
+
+\paragraph{Phân tích.}
+Trước hết dùng Manacher để tính bán kính palindrome tại mọi vị trí, đồng thời
+tính tổng số xâu con palindrome, từ đó suy ra tổng số cặp xâu con palindrome.
+
+Dùng tư tưởng chuyển sang phần bù, ta có thể đổi bài toán thành tính số cặp xâu
+con palindrome không giao nhau. Lấy tổng số cặp trừ đi số cặp không giao nhau
+sẽ được số cặp giao nhau.
+
+Gọi \(S_1[i]\) là số xâu con palindrome kết thúc tại vị trí \(i\), và
+\(S_2[i]\) là tổng số xâu con palindrome kết thúc tại một vị trí
+\(j(1\le j\le i)\). Rõ ràng \(S_2[i]=S_2[i-1]+S_1[i]\). Khi đang xét các xâu
+con palindrome có tâm tại \(i\), số cặp không giao nhau với các palindrome bên
+trái là
+\[
+  \sum_{j=i-R[i]}^{i-1} S_2[j].
+\]
+Để tính nhanh giá trị này, lấy thêm tổng tiền tố
+\(S_3[i]=S_3[i-1]+S_2[i]\). Khi đó biểu thức trên bằng
+\[
+  S_3[i-1]-S_3[i-R[i]-1].
+\]
+Vì vậy mỗi tâm được xử lý trong \(O(1)\). Độ phức tạp thời gian là \(O(n)\).
+
+\subsubsection{Tiểu kết một}
+
+Với các bài đếm đơn giản liên quan tới xâu con palindrome như ví dụ một và ví
+dụ hai, cách làm thường là dùng Manacher để tính bán kính palindrome tại mọi vị
+trí, rồi dùng tổng tiền tố hoặc những kỹ thuật quen thuộc tương tự để giải phần
+cốt lõi trong \(O(n)\).
+
+\subsubsection{Ví dụ ba: Xâu song palindrome dài nhất}
+
+\paragraph{Tóm tắt đề bài.}
+Cho một xâu độ dài \(n(2\le n\le10^5)\). Hãy tìm độ dài lớn nhất của một xâu
+con song palindrome \(T\). Ở đây song palindrome nghĩa là \(T\) có thể được
+tách thành hai phần liên tiếp không rỗng \(X,Y\), và cả \(X\) lẫn \(Y\) đều là
+palindrome. Nguồn bài: trại huấn luyện Thanh Hoa năm 2012 của đội tuyển quốc
+gia.
+
+\paragraph{Phân tích.}
+Trước hết dùng Manacher để tính bán kính palindrome tại mọi vị trí.
+
+Xét việc liệt kê điểm chia \(i\). Ta cần palindrome dài nhất có biên phải ở
+\(i\) và palindrome dài nhất có biên trái ở \(i\), tức là cần tìm ở hai phía
+trái và phải của \(i\) vị trí xa \(i\) nhất mà bán kính palindrome vẫn phủ được
+tới \(i\).
+
+Lấy việc tìm vị trí tốt nhất bên trái làm ví dụ. Ta quét từ trái sang phải và
+duy trì biên phải hiện đang xử lý. Khi quét tới \(i\), ta cập nhật vị trí tốt
+nhất bên trái cho mọi vị trí trong đoạn từ sau biên phải hiện tại tới
+\(i+R[i]\), rồi cập nhật biên phải thành \(i+R[i]\). Tính đúng đắn là hiển
+nhiên: nếu hai vị trí bên trái đều phủ được cùng một điểm, chọn vị trí trái hơn
+luôn tốt hơn. Phía phải làm tương tự.
+
+Sau khi có vị trí tốt nhất bên trái và bên phải, ta biết độ dài song palindrome
+dài nhất có điểm chia \(i\); lấy giá trị lớn nhất là đáp án. Độ phức tạp thời
+gian là \(O(n)\).
+
+\subsubsection{Ví dụ bốn: Palindrome gấp đôi}
+
+\paragraph{Tóm tắt đề bài.}
+Cho một xâu độ dài \(n(1\le n\le5\cdot10^5)\). Hãy tìm độ dài lớn nhất của một
+xâu con palindrome gấp đôi \(T\). Ở đây palindrome gấp đôi nghĩa là \(T\) là
+palindrome có độ dài chia hết cho \(4\), đồng thời nửa trước và nửa sau của
+\(T\) cũng đều là palindrome. Nguồn bài: Shanghai Team Selection Contest 2011.
+
+\paragraph{Phân tích.}
+Trước hết dùng Manacher để tính bán kính palindrome tại mọi vị trí.
+
+Xét việc liệt kê tâm \(i\) từ trái sang phải. Ta cần tìm tâm con nhỏ nhất
+\(j(j<i)\) sao cho bán kính palindrome tại \(j\) phủ được tới \(i\), đồng thời
+hai lần khoảng cách từ \(i\) tới \(j\) không vượt quá \(R[i]\).
+
+Ta dễ dàng suy ra biên trái của các \(j\) thỏa điều kiện khoảng cách là
+\[
+  k=i-\left\lfloor\frac{R[i]}{2}\right\rfloor.
+\]
+Vì vậy cần tìm bên phải vị trí \(k\) một vị trí \(j\) gần \(k\) nhất mà bán kính
+palindrome của nó phủ được tới \(i\).
+
+Duy trì một bảng các vị trí còn có thể tối ưu. Trong bảng này, tìm vị trí chưa
+bị xóa gần nhất bên phải \(k\). Nếu bán kính palindrome tại vị trí ấy không phủ
+được tới \(i\), xóa nó khỏi bảng, vì nó cũng không thể được các tâm ở bên phải
+sử dụng nữa. Lặp lại cho tới khi tìm được vị trí phủ được tới \(i\), hoặc đã
+tới \(i\).
+
+Bảng này chỉ cần hỗ trợ xóa và tìm vị trí chưa xóa gần nhất bên phải một vị trí
+cho trước, nên có thể duy trì dễ dàng bằng DSU. Lấy giá trị lớn nhất trên mọi
+tâm là đáp án. Độ phức tạp thời gian là \(O(n\alpha(n))\).
+
+\subsubsection{Ví dụ năm: Tricky and Clever Password}
+
+\paragraph{Tóm tắt đề bài.}
+Một palindrome \(T\) có độ dài \(l\) lẻ có thể được mã hóa thành
+\[
+  A+T[1\ldots x]+B+T[x+1\ldots l-x]+C+T[l-x+1\ldots l],
+\]
+trong đó \(+\) là phép nối xâu, \(x\) là số nguyên không âm bất kỳ thỏa
+\(2x<l\), còn \(A,B,C\) là các xâu bất kỳ, có thể rỗng. Cho mật văn \(S\) độ dài
+\(n(1\le n\le10^5)\). Hãy tìm độ dài lớn nhất có thể của \(T\). Nguồn bài:
+Codeforces Beta Round \#30.
+
+\paragraph{Phân tích.}
+Trước hết dùng Manacher để tính bán kính palindrome tại mọi vị trí.
+
+Nhận xét rằng \(T[x+1\ldots l-x]\) cũng là một palindrome độ dài lẻ, và tâm của
+nó chính là tâm của \(T\). Xét việc liệt kê tâm \(i\). Đặt
+\[
+  T[x+1\ldots l-x]=S[i-R[i]+1\ldots i+R[i]-1]
+\]
+luôn là tối ưu; điều này có thể chứng minh dễ dàng bằng cách xét \(B,C\) có rỗng
+hay không.
+
+Tiếp theo cần tối đa hóa \(x\), tức là cần tìm độ dài khớp lớn nhất của xâu
+\(S[i+R[i]\ldots n]\) sau khi đảo ngược trong đoạn \(S[1\ldots i-R[i]]\). Gọi
+xâu đảo của \(S\) là \(S'\). Ta dùng KMP tiền xử lý \(S_1[i]\), trong đó
+\(S_1[i]\) là \(k\) lớn nhất thỏa
+\[
+  S[i-k+1\ldots i]=S'[1\ldots k],
+\]
+rồi lấy cực đại tiền tố \(S_2[i]=\max\{S_2[i-1],S_1[i]\}\). Khi đó độ dài lớn
+nhất có thể của \(T\) với tâm \(i\) là
+\[
+  2\left(R[i]+\min\{S_2[i-R[i]],\, n-i-R[i]+1\}\right)-1.
+\]
+Lấy lớn nhất trên mọi tâm là đáp án. Độ phức tạp thời gian là \(O(n)\).
+
+\subsubsection{Tiểu kết hai}
+
+Với các bài tối ưu một xâu liên quan tới palindrome như ví dụ ba, bốn và năm,
+cách làm thường là dùng Manacher để tính bán kính palindrome tại mọi vị trí,
+rồi liệt kê tâm hoặc điểm chia trong \(O(n)\). Sau khi phân tích ràng buộc của
+đề, ta kết hợp thêm cấu trúc dữ liệu hoặc thuật toán phụ để xử lý nhanh mỗi
+lần liệt kê.
+
+\subsubsection{Ví dụ sáu: Palindromic Substring}
+
+\paragraph{Tóm tắt đề bài.}
+Cho một xâu chữ thường độ dài \(n(1\le n\le10^5)\). Có \(m(1\le m\le20)\) truy
+vấn; ở truy vấn thứ \(i\), mỗi chữ cái nhận một trọng số trong \([0,25]\). Hãy
+tìm trọng số của xâu con palindrome có trọng số nhỏ thứ \(k_i\), bảo đảm tồn
+tại. Trọng số của một xâu con palindrome được định nghĩa bằng cách lấy nửa đầu
+của xâu con ấy, thay mỗi ký tự bằng trọng số tương ứng, xem dãy này như một số
+cơ số \(26\), rồi lấy dư \(777777777\). Nguồn bài: Asia Changchun Regional
+Contest 2012.
+
+\paragraph{Định lý 1.}
+Một xâu chỉ có \(O(n)\) xâu con palindrome khác nhau về bản chất.
+
+\paragraph{Chứng minh.}
+Trong thuật toán Manacher, chỉ khi \(mx\) dịch sang phải mới sinh ra xâu con
+palindrome mới; nếu không, nhất định đã tồn tại một xâu con palindrome đối xứng
+tương ứng. Mà \(mx\) chỉ dịch sang phải không quá \(n\) lần, nên một xâu chỉ có
+\(O(n)\) xâu con palindrome khác nhau về bản chất. Chứng minh xong.
+
+\paragraph{Phân tích.}
+Theo định lý trên, ta có thể dùng Manacher trong \(O(n)\) để lấy ra vị trí của
+tất cả xâu con palindrome khác nhau về bản chất.
+
+Với mỗi truy vấn, dùng cách tính tương tự hash xâu để nhận được trọng số của
+từng loại xâu con palindrome. Để tìm phần tử nhỏ thứ \(k\), còn cần biết số lần
+xuất hiện của từng loại xâu con palindrome trong xâu; việc này có thể giải
+bằng cách dựng mảng hậu tố rồi tìm kiếm nhị phân.
+
+Sau đó sắp các loại xâu con palindrome theo trọng số tăng dần, cộng dồn số lần
+xuất hiện cho tới khi không nhỏ hơn \(k\); trọng số tương ứng chính là đáp án.
+Độ phức tạp thời gian là \(O(mn\log n)\).
+
+\subsubsection{Ví dụ bảy: Palindromic Equivalence}
+
+\paragraph{Tóm tắt đề bài.}
+Cho một xâu chữ thường \(S\) độ dài \(n(1\le n\le10^6)\). Hãy tính số xâu \(T\)
+có cùng tính chất palindrome với \(S\), nghĩa là \(T[i\ldots j]\) là palindrome
+khi và chỉ khi \(S[i\ldots j]\) là palindrome. Nguồn bài: 11th POI Training
+Camp.
+
+\paragraph{Phân tích.}
+Ta nhận thấy tính chất palindrome của \(S\) và \(T\) có thể được biểu diễn bằng
+một số quan hệ bằng nhau và khác nhau. Với palindrome tâm \(i\), rõ ràng có
+\[
+  T[i-k]=T[i+k]\quad(1\le k<R[i]),
+\]
+và thêm quan hệ
+\[
+  T[i-R[i]]\ne T[i+R[i]].
+\]
+Để đếm, chắc chắn cần thu được các quan hệ bằng nhau và khác nhau này.
+
+\paragraph{Định lý 2.}
+Tính chất palindrome của một xâu có thể được biểu diễn bằng \(O(n)\) quan hệ
+bằng nhau và khác nhau.
+
+\paragraph{Chứng minh.}
+Trong thuật toán Manacher, chỉ khi \(mx\) dịch sang phải mới sinh ra quan hệ
+bằng nhau mới; nếu không, nhất định đã tồn tại quan hệ bằng nhau đối xứng. Mà
+\(mx\) dịch sang phải không quá \(n\) lần, nên số quan hệ bằng nhau là
+\(O(n)\).
+
+Vì mỗi tâm chỉ sinh ra một quan hệ khác nhau, số quan hệ khác nhau cũng là
+\(O(n)\). Do đó tính chất palindrome của một xâu có thể được biểu diễn bằng
+\(O(n)\) quan hệ bằng nhau và khác nhau. Chứng minh xong.
+
+Theo đó, ta có thể dùng Manacher trong \(O(n)\) để gộp các vị trí bằng nhau,
+chỉ giữ vị trí xuất hiện sớm nhất, rồi nối cạnh giữa các vị trí khác nhau. Việc
+này tương đương tạo ra một xâu mới; mỗi cạnh biểu diễn một quan hệ khác nhau.
+
+Bài toán còn lại trở thành: cho một đồ thị vô hướng, hãy tô màu các đỉnh bằng
+26 màu sao cho hai đầu của mỗi cạnh có màu khác nhau, và đếm số cách tô. Tuy
+nhiên với đồ thị vô hướng tổng quát, bài toán này không có thuật toán hiệu quả,
+nên cần tiếp tục khai thác tính chất đặc biệt của đồ thị này.
+
+\paragraph{Định lý 3.}
+Sau khi gộp các vị trí bằng nhau trong một xâu \(T\), chỉ giữ vị trí xuất hiện
+sớm nhất, ta thu được xâu mới \(T'\). Nếu tồn tại các quan hệ khác nhau
+\[
+  T'[i]\ne T'[j]\quad(j<i),\qquad T'[i]\ne T'[k]\quad(k<i),
+\]
+thì nhất định cũng tồn tại quan hệ khác nhau \(T'[j]\ne T'[k]\).
+
+\paragraph{Chứng minh.}
+Vẫn suy nghĩ theo quy trình của Manacher. Khi tính \(R[i]\), gọi \(j=2p-i\) là
+điểm đối xứng của \(i\) qua \(p\), rồi xét các trường hợp:
+\begin{itemize}
+  \item Nếu \(mx<i\), \(mx\) dịch sang phải. Điều này tương đương thêm ký tự
+  \(T[mx]\) vào cuối \(T'\), khiến nó trở thành ký tự đang hoạt động hiện tại,
+  và sinh quan hệ khác nhau ban đầu \(T[i-R[i]]\ne T[mx]\).
+  \item Nếu \(mx-i>R[j]\), quan hệ khác nhau thu được
+  \(T[i-R[i]]\ne T[i+R[i]]\) là dư thừa, vì nhất định tồn tại một quan hệ khác
+  nhau đối xứng; do đó không cần xét.
+  \item Nếu \(mx-i\le R[j]\), khi \(mx\) dịch sang phải thì giống trường hợp
+  \(mx<i\). Nếu \(mx\) không dịch sang phải, ta làm cho ký tự đang hoạt động
+  hiện tại có thêm một quan hệ khác nhau \(T[i-R[i]]\ne T[mx]\).
+\end{itemize}
+
+Giả sử ký tự đang hoạt động hiện tại là \(T[i]\), và tồn tại các quan hệ khác
+nhau \(T[i]\ne T[j]\) với \(j<i\) và \(T[i]\ne T[k]\) với \(k<i\). Không mất
+tính tổng quát, giả sử \(k<j\). Khi đó \(T[k+1\ldots i-1]\) và
+\(T[j+1\ldots i-1]\) đều là xâu con palindrome. Từ tính đối xứng, suy ra
+\[
+  T[j]=T[k+i-j],
+\]
+và \(T[k+1\ldots k+i-j-1]\) là một xâu con palindrome.
+
+Vì vậy trong thuật toán Manacher nhất định sẽ có bước so sánh \(T[k]\) với
+\(T[k+i-j]\). Lại do \(T[j]=T[k+i-j]\), nên \(T[j]\) và \(T[k]\) hoặc nhất định
+bằng nhau, hoặc nhất định khác nhau. Nếu chúng nhất định bằng nhau, thì
+\(T[k]\) và \(T[j]\) là cùng một vị trí trong \(T'\). Suy ra nếu tồn tại hai
+quan hệ khác nhau từ \(T'[i]\) tới các vị trí \(T'[j]\) và \(T'[k]\) ở bên
+trái, thì nhất định cũng tồn tại quan hệ khác nhau \(T'[j]\ne T'[k]\). Chứng
+minh xong.
+
+Sau khi có tính chất này, số chữ cái có thể đặt tại \(T'[i]\) chính là \(26\)
+trừ đi số quan hệ khác nhau \(T'[i]\ne T'[j]\) với \(j<i\). Vì thế việc tính
+toán trở nên trực tiếp. Độ phức tạp thời gian là \(O(n)\).
+
+\subsubsection{Tiểu kết ba}
+
+Với các bài liên quan tới xâu con palindrome nhưng khó tấn công trực tiếp như
+ví dụ sáu và bảy, ta thường cần phân tích điểm nghẽn của bài toán, rồi dùng
+chính quy trình Manacher để chứng minh cấp độ số lượng của một đối tượng nào đó
+\(O(n)\), đồng thời thu được một số tính chất hữu ích để tiếp tục đơn giản hóa
+bài toán.
+
+\subsection{Tổng kết}
+
+Với bài toán xâu con palindrome, trước hết ta phải nắm chắc các thuật toán cơ
+bản để tính bán kính palindrome, đặc biệt là hiểu sâu thuật toán Manacher. Điều
+này là thiết yếu khi phân tích nhiều tính chất của xâu con palindrome.
+
+Trên nền tảng ấy, cần nắm bắt điều kiện của đề và phân tích cẩn thận, biết tận
+dụng tính chất của xâu con palindrome để đơn giản hóa bài toán, đồng thời kết
+hợp được nhiều thuật toán và cấu trúc dữ liệu khác nhau.
+
+\subsection{Lời cảm ơn}
+
+\begin{itemize}
+  \item Cảm ơn CCF đã cung cấp nền tảng học tập và giao lưu.
+  \item Cảm ơn nhà trường đã hỗ trợ và thầy Cao Wen đã bồi dưỡng tác giả.
+  \item Cảm ơn nhiều bạn học đã giúp tác giả trong quá trình hoàn thành luận
+  văn.
+  \item Cuối cùng, cảm ơn cha mẹ đã nuôi dưỡng tác giả.
+\end{itemize}
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Maxime Crochemore, Wojciech Rytter Mokhtar, ``Text Algorithms'',
+  Oxford University Press.
+  \item Luo Suiqian, \emph{Mảng hậu tố: công cụ mạnh để xử lý xâu}, Tập luận
+  văn đội tuyển quốc gia năm 2009.
+\end{enumerate}
+
 \section*{Ghi chú về nguồn}
 
 Tệp PDF có 228 trang. \texttt{pdftotext} đọc tốt phần mục lục nhưng phần thân
@@ -2547,6 +2995,12 @@ lý PDF 61--68); trang vật lý PDF 69 được kiểm tra là trang in 65 và 
 kế tiếp \emph{Bàn về bài toán xâu con palindrome}. Các hình bao lồi 2D, ví dụ
 sai trong 3D và minh họa gói quà 3D được chuyển thành mô tả văn bản; các công
 thức hình chiếu, tích có hướng và độ phức tạp được đối chiếu lại bằng ảnh
-render vì OCR nhầm nhiều ký hiệu nguyên âm, dấu phẩy và chỉ số phẩy.
+render vì OCR nhầm nhiều ký hiệu nguyên âm, dấu phẩy và chỉ số phẩy. Bài
+\emph{Bàn về bài toán xâu con palindrome} được dịch từ các trang in 65--76
+(trang vật lý PDF 69--80); trang vật lý PDF 81 được kiểm tra là trang in 77 và
+bắt đầu bài kế tiếp. Riêng bài này có lớp văn bản trích xuất được bằng
+\texttt{pdftotext}, các công thức và quan hệ \(\ne\) trong phần ví dụ cuối được
+đối chiếu lại với ảnh render vì lớp văn bản chuyển một số dấu khác nhau thành
+dấu phẩy.
 
 \end{document}

@@ -26,8 +26,9 @@ hoạch tuyến tính cùng bài toán đối ngẫu, bài thứ tư của Wang 
 một số thuật toán cùng ứng dụng cho bài toán cắt nhỏ nhất trên đồ thị vô
 hướng, bài thứ năm của Zou Xiaoyao về ứng dụng của quy hoạch tuyến tính trong
 thi tin học, và bài thứ sáu của Ji Ruyi về phép toán cực trị trên đoạn cùng
-bài toán cực trị lịch sử. Phần thân các bài được dựng từ OCR và đối chiếu
-công thức với lớp văn bản PDF.
+bài toán cực trị lịch sử, và bài thứ bảy của Mao Xiao về việc xét lại biến
+đổi Fourier nhanh. Phần thân các bài được dựng từ OCR và đối chiếu công thức
+với lớp văn bản PDF.
 \end{abstract}
 
 \section{Trạng thái và ghi chú trích xuất}
@@ -40,9 +41,10 @@ cách trước bài kế tiếp. Bài 3 bắt đầu ở trang vật lý 37, tư
 lý 67--84, tương ứng trang in 63--80. Bài 5 dùng trang vật lý 85--102, tương
 ứng trang in 81--98. Bài 6 dùng trang vật lý 103--126, tương ứng trang in
 99--122; trang vật lý 126, tương ứng trang in 122, là trang trắng ngăn cách
-trước bài kế tiếp, và bài kế tiếp bắt đầu ở trang vật lý 127, tương ứng trang
-in 123. Phần thân các bài 2, 3, 4, 5 và 6 có lớp văn bản bị mojibake, nên được
-OCR bằng
+trước bài kế tiếp. Bài 7 dùng trang vật lý 127--144, tương ứng trang in
+123--140; bài kế tiếp bắt đầu ở trang vật lý 145, tương ứng trang in 141.
+Phần thân các bài 2, 3, 4, 5, 6 và 7 có lớp văn bản bị mojibake, nên được OCR
+bằng
 \texttt{pdftoppm} và \texttt{tesseract -l chi\_sim+eng}, rồi lọc nhiễu thủ
 công khi dựng bản dịch.
 
@@ -5154,6 +5156,746 @@ về loại bài này, tác giả cũng hoan nghênh trao đổi.
   \item Lời giải bài \emph{Gorgeous Sequence} trong đợt huấn luyện liên
   trường:
   \href{http://blog.sina.com.cn/s/blog_15139f11a10102vnz1.html}{blog.sina.com.cn}.
+\end{enumerate}
+
+\section*{Bài 7. Xét lại biến đổi Fourier nhanh}
+\addcontentsline{toc}{section}{Bài 7. Xét lại biến đổi Fourier nhanh}
+
+\begin{center}
+Mao Xiao, Trường Yali
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết này chủ yếu giới thiệu cách cài đặt biến đổi Fourier nhanh cùng một
+số kỹ thuật và tối ưu hữu ích trong thi thuật toán. Biến đổi Fourier nhanh là
+một thuật toán đã thịnh hành từ lâu trong thi tin học, nên với mọi người nó
+không hề xa lạ; vì vậy bài viết được đặt tên là ``xét lại'' biến đổi Fourier
+nhanh. Nói là xét lại, dĩ nhiên bài viết vẫn giới thiệu nhiều phương pháp và
+kiến thức đã phổ biến, nhưng cũng dành một phần đáng kể cho một số phương pháp
+hiện chưa quá phổ biến trong thi thuật toán, tuy rất đơn giản và hiệu quả.
+Chẳng hạn, khi nhân hai đa thức thực có bậc không quá \(10^5\) dưới modulo
+\(10^9+7\), cách truyền thống hiện nay thường tính kết quả dưới ba modulo có
+thể dùng biến đổi số học, rồi dùng định lý phần dư Trung Quốc để thu được đáp
+án cuối cùng; cách đó cần 9 lần biến đổi Fourier rời rạc theo nghĩa modulo.
+Nếu dùng phương pháp ở Mục 3.3 của bài viết này, ta chỉ cần 4 lần biến đổi
+Fourier rời rạc trên số phức.
+
+\subsection*{Lời nói đầu}
+
+Vài năm gần đây, đủ loại thuật toán dựa trên FFT nở rộ. Trong phần giao lưu
+học viên của trại mùa đông NOI 2014 đã xuất hiện nội dung về phép chia đa
+thức; sau đó Codeforces cũng có bài yêu cầu dùng phép chia đa thức. Rồi những
+thuật toán dựa trên lặp Newton lần lượt trở nên phổ biến, chẳng hạn trên
+Universal Online Judge có bài dùng lặp Newton để giải phương trình vi phân. Ở
+bài giảng thứ nhất của trại mùa đông NOI 2016, \emph{Dẫn luận đa thức}, các
+thuật toán này lại được phổ biến thêm; gần đây UOJ còn có bài về tính giá trị
+đa điểm. Sự xuất hiện của các thuật toán dựa trên FFT đem lại rất nhiều thuận
+lợi cho việc giải bài.
+
+Tuy vậy, tất cả các thuật toán ấy đều không tách khỏi một thứ: FFT. Nếu không
+nắm chắc thuật toán cơ bản nhất này, các thuật toán dựa trên FFT chắc chắn sẽ
+càng khó nắm hơn. Tựa như xây nhà cao tầng: nếu nhà xây rất cao nhưng móng
+không vững, nhà sập thì cao đến đâu cũng vô ích. Một cây lớn có cành lá sum
+suê nhưng rễ hỏng thì cũng chỉ còn lại một tán cành khô. Chỉ khi nền tảng
+vững thì mới đi xa được. Tác giả viết bài này chính từ suy nghĩ đó, mong cùng
+độc giả quay lại điểm xuất phát và nghiên cứu lại FFT, thuật toán vừa cơ bản
+vừa kỳ diệu này.
+
+Thế nào là nắm vững một thuật toán? Theo tác giả, nắm vững không chỉ là đã
+viết, thậm chí học thuộc thuật toán đó, mà còn là hiểu nguyên lý cơ bản, biết
+các ứng dụng, tối ưu và kỹ thuật quanh nó.
+
+\subsection*{1. Giới thiệu cơ bản}
+
+Biến đổi Fourier nhanh, tiếng Anh là Fast Fourier Transform (FFT), là một
+trong những thuật toán khá thịnh hành hiện nay. Thuật toán này được phổ biến
+từ năm 1965, nhưng một số phương pháp đã xuất hiện từ năm 1805. Thuật toán
+thực hiện việc chuyển đổi tín hiệu giữa miền gốc, thường là miền thời gian
+hoặc không gian, và miền tần số bằng cách tính biến đổi Fourier rời rạc
+(Discrete Fourier Transform, DFT) của một dãy. Trong thi thuật toán ngày nay,
+thuật toán này đã rất thường gặp, chủ yếu được dùng để tính tích chập của hai
+dãy.
+
+\subsubsection*{1.1. Dẫn nhập}
+
+Xét bài toán sau.
+
+Cho hai dãy hữu hạn \(a_i,b_i\). Hãy tìm dãy \(c\) sao cho
+\[
+  c_i=\sum_{k=0}^{i}a_k b_{i-k}.
+\]
+Rõ ràng độ dài của \(c\) bằng tổng độ dài của \(a,b\) trừ đi một. Trong bài
+viết này, chỉ số dãy đều bắt đầu từ \(0\).
+
+\subsubsection*{1.2. Biến đổi Fourier rời rạc}
+
+Ta chọn một số \(n\) lớn hơn độ dài của \(c\), đồng thời là một lũy thừa của
+\(2\). Vì sao cần lũy thừa của \(2\) sẽ được nhắc tới sau. Với một dãy \(s\)
+có độ dài \(|s|\), mọi \(s_k\) với \(k\notin[0,|s|)\) được xem là \(0\).
+
+Khi đó
+\[
+  c_r=\sum_{p,q}[(p+q)\bmod n=r]a_p b_q. \tag{1.1}
+\]
+Đặt \(\omega^n=1\), tức \(\omega\) là căn đơn vị bậc \(n\). Trong bài viết
+này, khi nói tới căn đơn vị, ta hiểu là căn nguyên thủy, nghĩa là \(n\) là số
+nhỏ nhất làm cho \(\omega^n=1\). Dễ biết rằng
+\[
+  \frac{1}{n}\sum_{k=0}^{n-1}\omega^{vk}=[v\bmod n=0]. \tag{1.2}
+\]
+Do đó
+\[
+\begin{aligned}
+[(p+q)\bmod n=r]
+  &= [(p+q-r)\bmod n=0]\\
+  &= \frac{1}{n}\sum_{k=0}^{n-1}\omega^{(p+q-r)k}\\
+  &= \frac{1}{n}\sum_{k=0}^{n-1}\omega^{-rk}\omega^{pk}\omega^{qk}.
+\end{aligned}
+\]
+Suy ra
+\[
+\begin{aligned}
+c_r
+  &= \sum_{p,q}[(p+q)\bmod n=r]a_p b_q\\
+  &= \frac{1}{n}\sum_{k=0}^{n-1}\omega^{-rk}
+     \sum_p\omega^{pk}a_p\sum_q\omega^{qk}b_q.
+\end{aligned}
+\]
+
+Ta thấy xuất hiện hai dạng quan hệ:
+\[
+  a_m=\sum_{k=0}^{n-1}\omega^{mk}b_k, \tag{1.3}
+\]
+\[
+  c_m=\frac{1}{n}\sum_{k=0}^{n-1}\omega^{-mk}d_k. \tag{1.4}
+\]
+Nói cách khác, với mỗi dạng quan hệ, nếu biết vế phải và tính nhanh được vế
+trái thì bài toán tích chập sẽ được giải.
+
+Xét tiếp đa thức
+\[
+  A(x)=\sum_{k=0}^{n-1}b_kx^k.
+\]
+Khi đó \(a_m=A(\omega^m)\). Điều này tương đương: cho biểu diễn hệ số của một
+đa thức, hãy tính giá trị của nó tại mọi điểm \(\omega^k\). Đây chính là quá
+trình biến đổi giữa biểu diễn hệ số và biểu diễn điểm giá trị, tức DFT.
+
+Từ đây trở đi, khi nói tới quan hệ giữa đa thức và dãy hệ số, ta đều hiểu như
+quan hệ giữa \(A(x)\) và \(b_k\) ở trên. Nói thực hiện DFT trên \(A(x)\), thực
+ra là thực hiện DFT trên \(b_k\); nói DFT của một đối tượng thu được \(A(x)\),
+thực ra là thu được dãy \(b_k\).
+
+\subsubsection*{1.3. Biến đổi Fourier nhanh}
+
+Mục trước đã nêu công thức DFT, nhưng nếu tính theo công thức thì hiển nhiên
+vẫn quá chậm. Lúc này cần dùng tính chất của căn đơn vị phức để tăng tốc DFT,
+tức dùng Fast Fourier Transform (FFT).
+
+Sau đây chỉ xét công thức (1.3): biết \(b\), cần tìm \(a\).
+
+Nhớ rằng \(n\) là lũy thừa của \(2\). Dùng \(\omega_n^k\) để biểu thị căn đơn
+vị bậc \(n\), ta có
+\[
+  \omega_{2n}^{2m}=\omega_n^m, \tag{1.5}
+\]
+\[
+  \omega_{2n}^{m+n}=-\omega_{2n}^{m}. \tag{1.6}
+\]
+Gọi \(A_0(x)\) là tổng các hạng tử bậc chẵn của \(A(x)\), và \(A_1(x)\) là
+tổng các hạng tử bậc lẻ. Khi đó
+\begin{align*}
+A(\omega_n^m)
+  &= A_0\bigl((\omega_n^m)^2\bigr)
+     +\omega_n^m A_1\bigl((\omega_n^m)^2\bigr) \tag{1.7}\\
+  &= A_0(\omega_{n/2}^m)+\omega_n^m A_1(\omega_{n/2}^m), \tag{1.8}
+\end{align*}
+\begin{align*}
+A(\omega_n^{m+n/2})
+  &= A_0\bigl((\omega_n^m)^2\bigr)
+     +\omega_n^{m+n/2} A_1\bigl((\omega_n^m)^2\bigr) \tag{1.9}\\
+  &= A_0(\omega_{n/2}^m)-\omega_n^m A_1(\omega_{n/2}^m). \tag{1.10}
+\end{align*}
+Vì vậy, chỉ cần tính DFT của \(A_0(x)\) và \(A_1(x)\), ta có thể tính DFT của
+\(A(x)\) trong thời gian tuyến tính. Hai công thức (1.8), (1.10) thường được
+gọi là thao tác ``bướm''.
+
+Gọi độ phức tạp khi DFT một dãy độ dài \(n\) là \(T(n)\). Khi đó
+\[
+  T(n)=2T\left(\frac{n}{2}\right)+O(n). \tag{1.11}
+\]
+Theo định lý chủ, \(T(n)=O(n\log n)\).
+
+Nếu cài đặt đúng như mô tả trên, ta phải tách được phần bậc lẻ và bậc chẵn của
+một đa thức. Trong đệ quy điều này làm được, nhưng hằng số khá lớn. FFT là
+thuật toán được dùng thường xuyên; nếu hằng số cài đặt quá lớn thì không tốt.
+
+Quan sát thứ tự hệ số đi vào mỗi lời gọi. Với độ dài \(8\), ta có:
+\[
+\begin{gathered}
+(a_0,a_1,a_2,a_3,a_4,a_5,a_6,a_7),\\
+(a_0,a_2,a_4,a_6)\quad(a_1,a_3,a_5,a_7),\\
+(a_0,a_4)\quad(a_2,a_6)\quad(a_1,a_5)\quad(a_3,a_7),\\
+(a_0)\quad(a_4)\quad(a_2)\quad(a_6)\quad(a_1)\quad(a_5)\quad(a_3)\quad(a_7).
+\end{gathered}
+\]
+Thứ tự chỉ số là \((0,4,2,6,1,5,3,7)\), có biểu diễn nhị phân
+\[
+  (000,100,010,110,001,101,011,111).
+\]
+Đây chính là thứ tự thu được bằng cách đảo bit từng biểu diễn nhị phân trong
+\[
+  (000,001,010,011,100,101,110,111).
+\]
+Thao tác này thường gọi là hoán vị đảo bit. Nếu trước hết đổi dãy sang thứ tự
+đảo bit, thì trong quá trình tính, mỗi lần xử lý đều là một đoạn liên tiếp,
+rất dễ cài đặt FFT không đệ quy, và tốc độ cũng nhanh hơn bản đệ quy.
+
+Ngoài ra, để tối ưu hằng số hơn nữa, ta nên tiền xử lý căn đơn vị.
+
+Có thể tiền xử lý căn đơn vị bằng truy hồi
+\(\omega^{k+1}=\omega^k\omega\), nhưng sai số chính xác của cách này hơi lớn.
+Trong nhiều tình huống vẫn chấp nhận được, nhưng phương pháp FFT ở Mục 3 đòi
+hỏi độ chính xác tới khoảng \(10^{-14}\), nên cách tiền xử lý đó có thể gây
+vấn đề nghiêm trọng.
+
+Một cách khác là với căn đơn vị bậc \(n\), dùng trực tiếp
+\[
+  \omega_n^k=\cos\frac{2\pi k}{n}+i\sin\frac{2\pi k}{n},
+\]
+trong đó \(i=\sqrt{-1}\). Cách này chậm hơn truy hồi một chút, nhưng sai số
+nhỏ hơn và đáp ứng được yêu cầu độ chính xác \(10^{-14}\).
+
+Quá trình làm tích chập chỉ là thực hiện DFT một lần cho hai mảng \(a,b\), sau
+đó nhân từng điểm, rồi thực hiện một lần biến đổi ngược IDFT (Inverse Discrete
+Fourier Transform), tức công thức (1.4). Cách làm tương tự nên không trình bày
+chi tiết.
+
+Có thể tốt hơn nữa không? Dĩ nhiên là có. Nhờ phương pháp ở Mục 3, ta có thể
+tính tích chập của dãy thực bằng hai lần DFT, thậm chí còn ít hơn theo cách
+đếm tương đương.
+
+\subsubsection*{1.4. Biến đổi số học}
+
+Trong thi thuật toán hiện nay, bài toán thường yêu cầu lấy modulo một số. Nếu
+modulo đó là một số nguyên tố \(p\), và \(p-1\) là bội của một lũy thừa của
+\(2\) lớn hơn độ dài DFT cần dùng, ta có thể tìm căn nguyên thủy \(g\) trong
+\(\mathbb F_p\), rồi dùng \(g^{(p-1)/n}\) để thay cho căn đơn vị phức
+\(\omega\). Đây là biến đổi số học, Number Theoretic Transform (NTT).
+
+Nếu modulo không phải là số nguyên tố thỏa điều kiện trên, có thể tham khảo
+Mục 3.3.
+
+Với phép nhân đa thức trên các trường khác, có thuật toán
+\(O(n\log n\log\log n)\). Do giới hạn dung lượng, bài viết không trình bày
+thêm; độc giả quan tâm có thể xem nội dung liên quan trong bài giảng
+\emph{Dẫn luận đa thức} ở trại mùa đông NOI 2016.
+
+\subsubsection*{1.5. Thuật toán Bluestein}
+
+Trong công thức (1.1), nếu xét cả phần modulo, thực chất ta đang làm tích chập
+vòng độ dài \(n\). Đôi khi đề bài yêu cầu đúng loại thao tác tích chập vòng
+này. Chẳng hạn, nếu cần lũy thừa nhanh trong nghĩa tích chập vòng, và nếu độ
+dài dãy là lũy thừa của \(2\), thì ta có thể DFT trực tiếp, lũy thừa nhanh
+từng điểm, rồi IDFT trở lại. Nhưng nếu đề yêu cầu tích chập vòng với độ dài
+\(n\) không phải lũy thừa của \(2\) thì sao?
+
+Một cách là tính một tích chập thông thường để được đáp án \(c\), cuối cùng
+cộng \(c_{k+n}\) vào \(c_k\).
+
+Chú ý cách này chỉ làm được một lần tích chập vòng. Nếu cần làm nhiều lần
+tích chập vòng, ta phải tính từng lần. Nếu còn cần lũy thừa nhanh trong nghĩa
+tích chập vòng thì lại thêm một hệ số \(O(\log n)\), điều ta tất nhiên muốn
+tránh.
+
+Nếu miền đang xét khá đặc biệt và tồn tại căn đơn vị bậc \(n\), chẳng hạn
+\(\mathbb C\) hoặc một số trường hữu hạn \(\mathbb F_p\), ta có thể cân nhắc
+tính trực tiếp DFT của dãy độ dài \(n\).
+
+Ở đây chỉ giới thiệu thuật toán Bluestein, một thuật toán tương đối dễ hiểu
+và hiện vẫn chưa quá phổ biến trong thi thuật toán.
+
+Tiếp tục xét công thức (1.3):
+\[
+\begin{aligned}
+a_m
+  &= \sum_{k=0}^{n-1}\omega^{mk}b_k\\
+  &= \omega^{m^2/2}\sum_{k=0}^{n-1}\omega^{k^2/2}b_k
+     \omega^{-(m-k)^2/2}.
+\end{aligned}
+\]
+Đặt
+\[
+  B_k=\omega^{k^2/2}b_k,\qquad D_k=\omega^{-k^2/2}.
+\]
+Khi đó
+\begin{align*}
+a_m
+  &= \omega^{m^2/2}\sum_{k=0}^{n-1}B_kD_{m-k} \tag{1.12}\\
+  &= \omega^{m^2/2}\sum_{k=0}^{m+n}B_kD_{m-k}. \tag{1.13}
+\end{align*}
+Việc mở rộng cận tổng dùng tính chất \(B_k\) chỉ có thể khác \(0\) khi
+\(0\le k<n\). Như vậy, ta đã đưa bài toán về dạng tích chập. Nói cách khác,
+bình thường ta dùng DFT để làm tích chập, còn ở đây ta dùng tích chập để làm
+DFT.
+
+Vì vậy, chỉ cần một lần FFT thông thường là có thể tính DFT độ dài tùy ý. Đây
+là quá trình của thuật toán Bluestein.
+
+Thuật toán Bluestein thực ra tính Chirp Z-Transform (CZT), một dạng tổng quát
+của DFT. Nói đơn giản, thuật toán này không chỉ thực hiện DFT với độ dài tùy
+ý, mà còn có thể thay \(\omega\) trong công thức (1.3) bằng một số bất kỳ
+khác, miễn các phép toán tương ứng có nghĩa.
+
+\subsection*{2. Ứng dụng cơ bản}
+
+Tác dụng lớn nhất của FFT là tính tích chập. Tích chập không chỉ dùng trong
+nhân đa thức, mà còn xuất hiện trong nhiều dạng bài khác. Mục này giới thiệu
+một số ứng dụng thường gặp.
+
+\subsubsection*{2.1. Ứng dụng cơ bản nhất}
+
+\paragraph{\term{Ví dụ 1. Force}.}
+Cho \(n\) điểm, điểm thứ \(i\) có đại lượng \(q_i\). Với mỗi \(i\), cần tính
+một đại lượng có dạng
+\[
+  E_i=\sum_{j\ne i}\frac{q_j}{(i-j)^2}
+\]
+với dấu phụ thuộc vào phía trái hay phía phải của \(i\). Dữ liệu bảo đảm
+\(n\le 100000\). Nguồn: ZJOI 2014.
+
+Biểu thức trong đề chỉ khác tích chập thông thường một chút. Một kỹ thuật là
+đặt một dãy phụ \(P\) theo chỉ số lệch:
+\[
+P_i=
+\begin{cases}
+(i-n)^{-2}, & i>n,\\
+-(i-n)^{-2}, & i<n,\\
+0, & i=n.
+\end{cases}
+\]
+Khi đó, theo định nghĩa của \(P\), giá trị cần tính có thể xem là một đoạn
+trong tích chập giữa dãy \(q\) và dãy \(P\). Vì vậy dùng FFT là đủ.
+
+\paragraph{\term{Ví dụ 2. Fuzzy Search}.}
+Cho xâu mẹ và xâu mẫu, bảng chữ cái có kích thước \(4\). Cho thêm \(K\). Xâu
+mẫu khớp tại một vị trí nếu với mọi vị trí trong xâu mẫu, trong đoạn dài
+\(K\) ký tự về hai phía của vị trí tương ứng trong xâu mẹ có một ký tự bằng
+nó. Hãy đếm số vị trí khớp. Độ dài xâu không vượt quá \(200000\).
+
+Ta dễ tính trước, với mỗi vị trí của xâu mẹ và mỗi loại ký tự, vị trí đó có
+thể khớp với ký tự này hay không. Với mỗi ký tự, đặt các vị trí của xâu mẹ có
+thể khớp ký tự đó và các vị trí trong xâu mẫu bằng ký tự đó là \(1\), còn lại
+là \(0\). Nếu tại một vị trí cả xâu mẹ và xâu mẫu đều là \(1\), đóng góp là
+\(1\), ngược lại không đóng góp. Một vị trí khớp khi tổng đóng góp của bốn ký
+tự bằng độ dài xâu mẫu.
+
+Kỹ thuật thường dùng tiếp theo là đảo ngược xâu mẫu hoặc xâu mẹ. Sau khi đảo,
+việc tính đóng góp trở thành một phép tích chập, nên có thể dùng FFT trực
+tiếp. Bài này thể hiện kỹ thuật quen thuộc: đảo xâu mẫu hoặc xâu mẹ trong bài
+toán khớp xâu để chuyển về tích chập.
+
+\subsubsection*{2.2. Ứng dụng ở tầng cao hơn}
+
+Sau đây là một số ứng dụng FFT ở tầng cao hơn.
+
+\paragraph{\term{Ví dụ 3. Kyoya and Train}.}
+Cho đồ thị có \(n\) đỉnh và \(m\) cạnh, cùng đỉnh xuất phát và đỉnh kết thúc.
+Nếu không đến được đích trong thời gian \(T\), ta phải trả một khoản phạt cho
+trước. Đi qua mỗi cạnh có một chi phí cho trước; thời gian đi qua cạnh là một
+biến ngẫu nhiên với phân bố xác suất cho trước. Cần cực tiểu hóa kỳ vọng chi
+phí phải trả. Dữ liệu bảo đảm \(n\le 50\), \(m\le 100\), \(T\le 20000\).
+
+Trước hết xét quy hoạch động bạo lực. Đặt \(DP_{x,t}\) là kỳ vọng chi phí nhỏ
+nhất để từ đỉnh \(x\), khi thời gian đã trôi qua là \(t\), đi tới đích. Gọi
+\(P_{e,k}\) là xác suất cạnh \(e\) mất thời gian \(k\). Với mỗi cạnh \(e\) đi
+tới đỉnh \(y\), chuyển tiếp sẽ dùng
+\[
+  c_e+\sum_k DP_{y,t+k}P_{e,k}
+\]
+để cập nhật đáp án. Nếu \(t+k>T\), giá trị cụ thể của \(t+k\) không còn ảnh
+hưởng, nên có thể đồng nhất tất cả về trạng thái \(T+1\).
+
+Với một cạnh \(e:x\to y\), đặt
+\[
+  S_{e,t}=c_e+\sum_k DP_{y,t+k}P_{e,k}.
+\]
+Khi đó \(DP_{x,t}\) là giá trị nhỏ nhất của \(S_{e,t}\) trên các cạnh đi ra
+từ \(x\).
+
+Xét tối ưu bằng chia để trị. Nếu cần tính mọi \(DP_{x,t}\) và \(S_{e,t}\) với
+\(l\le t<r\), đặt \(mid=\lfloor(l+r)/2\rfloor\). Trước hết tính xong các đáp
+án với \(mid<t<r\). Sau đó chú ý tổng
+\[
+  \sum_k DP_{y,t+k}P_{e,k}
+\]
+rất dễ chuyển thành dạng tích chập; có thể dùng FFT để tính đóng góp của đoạn
+DP bên phải vào mọi giá trị \(S\) ở bên trái, rồi đệ quy xử lý \(l\le t\le
+mid\). Nếu \(l=r\), cập nhật trực tiếp \(DP\) bằng \(S\). Theo định lý chủ,
+độ phức tạp thời gian là \(O(mT\log^2T)\).
+
+Bài này khéo léo dùng FFT trong chia để trị. Thực tế, chia để trị FFT là một
+phương pháp giải bài rất thường gặp. Nó cũng xuất hiện trong nội suy đa điểm,
+tính giá trị đa điểm và các bài toán tương tự; vì các nội dung đó lệch khỏi
+mục tiêu giới thiệu ứng dụng cơ bản của FFT trong bài này, ta không trình bày
+chi tiết.
+
+\paragraph{\term{Ví dụ 4. Transforming Sequence}.}
+Đếm số dãy \(k\) bit độ dài \(n\) sao cho các tiền tố theo phép OR bit đơn
+điệu tăng. Mỗi vị trí là một số nguyên trong đoạn \([0,2^k-1]\). Dữ liệu bảo
+đảm \(k\le 30000\), và đáp án cần xuất modulo \(10^9+7\).
+
+Tiếp tục bắt đầu từ thuật toán bạo lực. Có thể đặt \(DP_{i,j}\) là số dãy hợp
+lệ độ dài \(i\) mà giá trị OR hiện tại đã có \(j\) bit bằng \(1\). Khi đó
+\(DP_{i,j}\) đóng góp
+\[
+  DP_{i,j}\binom{k-j}{l}
+\]
+cho \(DP_{i+1,j+l}\).
+
+Để tối ưu, giả sử đã biết mọi \(DP_{i,x}\) và \(DP_{j,y}\), và muốn tính nhanh
+mọi \(DP_{i+j,z}\). Với một \(z\) cố định, đóng góp từ \(DP_{i,x}\) tới
+\(DP_{i+j,x+y}\) có dạng
+\[
+  DP_{i,x}\cdot 2^{jx}\cdot DP_{j,y}\cdot \binom{k-x}{y},
+\]
+trong đó hệ số \(2^{jx}\) xuất hiện vì các bit đã có trong phần đầu có thể
+được điền tùy ý ở phần sau. Đây là một dạng tích chập, nên có thể dùng FFT để
+tính nhanh.
+
+Như vậy, bằng lũy thừa nhanh đơn giản và FFT, bài toán được giải trong
+\(O(k\log^2 k)\).
+
+Ứng dụng của FFT còn xa mới chỉ có từng ấy. Do giới hạn dung lượng, tác giả
+tạm thời chỉ giới thiệu đến đây.
+
+\subsubsection*{2.3. Một số kỹ thuật tối ưu}
+
+\paragraph{\term{2.3.1. Giảm số lần DFT}.}
+Xét việc tính
+\[
+  A(x)=B(x)C(x)+D(x)E(x).
+\]
+Nếu làm riêng rẽ, ta cần tính tích \(B(x)C(x)\) và \(D(x)E(x)\). Nhưng dễ
+thấy rằng sau khi DFT, nếu kết hợp từng điểm bằng phép nhân, chia tương ứng
+rồi IDFT trở lại, ta sẽ thu được đúng phép kết hợp nhân, chia của các đa thức
+tương ứng, miễn độ dài không vượt quá giới hạn. Vì vậy ta chỉ cần DFT
+\(B(x),C(x),D(x),E(x)\) để được các dãy \(b,c,d,e\), rồi với mỗi \(k\) đặt
+\[
+  a_k=b_kc_k+d_ke_k,
+\]
+cuối cùng IDFT dãy \(a\) để thu được \(A(x)\).
+
+Phương pháp này rất hữu ích trong các phép toán đa thức phức tạp. Nhược điểm
+là khó tương thích với kỹ thuật gộp DFT được giới thiệu ở Mục 3.
+
+Còn một kỹ thuật đơn giản khác: nếu một dãy được dùng nhiều lần cho DFT, hiển
+nhiên có thể tiền xử lý DFT của nó, rồi mỗi lần dùng trực tiếp kết quả đã
+tiền xử lý.
+
+\paragraph{\term{2.3.2. Lợi dụng tích chập vòng}.}
+Xét hai dãy \(a,b\) độ dài \(n\), cần tính các hệ số từ khoảng \([0.5n]\) tới
+\([1.5n]\) của tích chập \(c\). Cách truyền thống là bù \(0\) để mở rộng thành
+dãy độ dài \(2n\), rồi dùng FFT tính tích chập. Nhưng vì thứ FFT tính thực ra
+là tích chập vòng như đã nói ở Mục 1.5, nếu chỉ bù \(0\) tới độ dài lớn hơn
+\([1.5n]\) rồi gọi FFT, thì các hệ số từ \([0.5n]\) tới \([1.5n]\) không bị
+ảnh hưởng.
+
+Hai tối ưu trên thường xuất hiện trong thuật toán dựa trên lặp Newton, và có
+tác dụng giảm hằng số khá lớn.
+
+\paragraph{\term{2.3.3. Bạo lực phạm vi nhỏ trong chia để trị FFT}.}
+Trong thuật toán chia để trị FFT, do FFT có hằng số tương đối lớn, khi độ dài
+dãy nhỏ, chuyển sang bạo lực thường đem lại tối ưu đáng kể. Thực ra tối ưu
+này không chỉ dùng trong chia để trị FFT, mà còn hữu dụng trong mọi thuật toán
+chia để trị.
+
+Tối ưu trên có tác dụng lớn trong các thuật toán như nội suy đa điểm và tính
+giá trị đa điểm.
+
+\paragraph{\term{2.3.4. Tối ưu số lần nhân trong lũy thừa nhanh}.}
+Nếu cần tính lũy thừa bậc \(n\) của một đa thức, trong điều kiện cho phép có
+thể lấy \(\ln\) đa thức, nhân với \(n\), rồi lấy \(\exp\) đa thức; độ phức tạp
+giảm đi một hệ số \(O(\log n)\). Phương pháp tính \(\ln\) và \(\exp\) đa thức
+không thuộc trọng tâm ứng dụng cơ bản của FFT trong bài này, nên không trình
+bày.
+
+Nếu đối tượng cần lũy thừa nhanh không thể tối ưu bằng cách trên, có một kỹ
+thuật hiện chưa quá phổ biến: dùng addition chain.
+
+Định nghĩa một addition chain là một dãy bắt đầu bằng \(1\), và hiệu giữa một
+phần tử với phần tử đứng ngay trước nó bằng một phần tử nào đó xuất hiện trước
+phần tử đó trong dãy. Ta nói addition chain này có thể thu được mọi số trong
+dãy.
+
+Ví dụ, \(1,2,4,6\) là một addition chain: \(6-4=2\) đã xuất hiện trước \(6\),
+và \(4-2=2\) đã xuất hiện trước \(4\). Chuỗi này thu được các số
+\(\{1,2,4,6\}\). Từ đó ta thiết kế được cách dùng phép nhân để thu các lũy
+thừa \(1,2,4,6\): muốn có lũy thừa bậc \(6\), bắt đầu từ bậc \(1\), nhân bậc
+\(1\) với bậc \(1\) để được bậc \(2\), nhân bậc \(2\) với bậc \(2\) để được
+bậc \(4\), rồi nhân bậc \(4\) với bậc \(2\) để được bậc \(6\).
+
+Tìm addition chain tối ưu cho một số là bài toán NP-khó, nhưng có các thuật
+toán xấp xỉ tốt. Chẳng hạn, có thể BFS và ghi lại addition chain ứng với mỗi
+số. Ban đầu từ \(1\), addition chain của \(1\) chỉ gồm số \(1\). Mỗi lần xét
+số hiện tại \(x\), liệt kê mọi số \(y\) trong addition chain của \(x\); nếu
+\(x+y\) chưa được thăm thì đưa nó vào hàng đợi, và đặt addition chain của nó
+bằng addition chain của \(x\) nối thêm \(x+y\). Trường hợp xấu nhất, phương
+pháp này tốt hơn lũy thừa nhanh rất nhiều; nhược điểm là cần tiền xử lý tuyến
+tính.
+
+Nếu cần tính lũy thừa bậc \(n\) với \(n\) rất lớn, ví dụ \(10^{1000}\), có thể
+dùng Method of Four Russians để giảm số lần nhân từ khoảng \(2\log_2 n+C\)
+xuống còn \(\log_2 n+O(\sqrt{\log n})\). Cụ thể, đặt \(m=\sqrt{\log n}\), tiền
+xử lý mọi lũy thừa từ \(0\) tới \(2^m-1\), độ phức tạp là
+\(O(2^m)=O(\sqrt n)\) theo cách đếm trên số bit. Sau đó mỗi lần nhân đôi theo
+khối; sau mỗi khối, nhân thêm lũy thừa ứng với phần dư hiện tại modulo \(2^m\).
+Số lần nhân trong phần nhân đôi là \(\log_2 n+C\), còn phần nhân thêm có cấp
+\(O(\log n/m)=O(\sqrt{\log n})\).
+
+Nếu số lần hỏi rất nhiều thì có thể chọn \(m\) lớn hơn.
+
+Những phương pháp trên tuy chỉ là tối ưu hằng số, nhưng cài đặt rất đơn giản
+và hiệu quả thực tế khá tốt.
+
+\subsection*{3. Một kỹ thuật mới}
+
+Tiếp theo, ta nghiên cứu một kỹ thuật có thể giảm đáng kể số lần DFT, từ đó
+tối ưu hằng số rất mạnh.
+
+Thực ra kỹ thuật này hiện chưa hoàn toàn phổ biến trong thi thuật toán, nhưng
+cũng đã có một số người từng nghe qua. Tác giả giới thiệu ở đây với hy vọng
+giúp phổ biến thêm kỹ thuật này.
+
+Kỹ thuật này là cách tối ưu được dùng trong bài CodeChef MGCH3D. Trên thực tế,
+enot1.10, tức Vladimir Smykalov từ Codeforces Nga, từng nói với tác giả trong
+một cuộc trao đổi về một phương pháp tối ưu trông có vẻ khác. Nhưng sau vài
+suy luận có thể thấy phương pháp ấy về bản chất gần giống với cách tối ưu
+trong lời giải CodeChef MGCH3D. Vì vậy ở đây chỉ mô tả theo lời giải của
+CodeChef MGCH3D; bản gốc được liệt kê trong tài liệu tham khảo.
+
+Khi thảo luận số lần DFT, đôi khi ta không phân biệt DFT và IDFT; chẳng hạn
+3 lần IDFT cộng 3 lần DFT được gọi là 6 lần DFT.
+
+\subsubsection*{3.1. Giới thiệu cơ bản}
+
+Xét việc DFT hai đa thức thực \(A(x),B(x)\) độ dài \(n\). Giả sử \(n\) đã được
+chỉnh thành lũy thừa của \(2\).
+
+Định nghĩa
+\[
+  P(x)=A(x)+iB(x), \tag{3.1}
+\]
+\[
+  Q(x)=A(x)-iB(x). \tag{3.2}
+\]
+Ở đây \(i=\sqrt{-1}\). Gọi \(F_P[k]=P(\omega^k)\), \(F_Q[k]=Q(\omega^k)\) là
+hai dãy thu được sau khi DFT \(P,Q\), trong đó \(\omega\) là căn đơn vị bậc
+\(2L\). Sau đây suy ra quan hệ giữa hai dãy này. Do vấn đề trình bày, dùng
+\(X\) để thay cho góc trong biểu thức lượng giác; ý nghĩa của mỗi \(X\) ứng
+với chỉ số \(k\) có thể thấy từ ngữ cảnh. Ký hiệu \(\operatorname{conj}(z)\)
+là số phức liên hợp của \(z\).
+
+\[
+\begin{aligned}
+F_P[k]
+  &= A(\omega^k)+iB(\omega^k)\\
+  &= \sum_j (A_j+iB_j)(\cos X+i\sin X),
+\end{aligned}
+\]
+trong khi
+\[
+\begin{aligned}
+F_Q[k]
+  &= A(\omega^k)-iB(\omega^k)\\
+  &= \sum_j(A_j-iB_j)(\cos X+i\sin X)\\
+  &= \operatorname{conj}\left(
+      \sum_j(A_j+iB_j)(\cos(-X)+i\sin(-X))
+     \right)\\
+  &= \operatorname{conj}(F_P[2L-k]).
+\end{aligned}
+\]
+Vì vậy chỉ cần 1 lần DFT là có thể tính được cả hai dãy \(F_P,F_Q\).
+
+Gọi \(\operatorname{DFT}(A)[k]\) là phần tử thứ \(k\) của dãy thu được sau khi
+DFT \(A\). Ta có
+\[
+  \operatorname{DFT}(A)[k]=\frac{F_P[k]+F_Q[k]}{2}, \tag{3.3}
+\]
+\[
+  \operatorname{DFT}(B)[k]=\frac{F_P[k]-F_Q[k]}{2i}. \tag{3.4}
+\]
+Như vậy, ta gộp 2 lần DFT thành 1 lần DFT, giảm được một lần biến đổi.
+
+\subsubsection*{3.2. Tích chập nhanh hơn}
+
+Có thể tiếp tục tối ưu xuống dưới 2 lần DFT không? Dĩ nhiên là có.
+
+Ở trên đã nhắc tới kỹ thuật tách đa thức thành phần bậc chẵn và bậc lẻ. Tiếp
+tục dùng kỹ thuật này để tối ưu.
+
+Theo định nghĩa trước đó, đặt \(A_0(x)\) là tổng các hạng tử bậc chẵn của
+\(A(x)\), \(A_1(x)\) là tổng các hạng tử bậc lẻ. Khi đó
+\[
+  A(x)=A_0(x^2)+xA_1(x^2).
+\]
+Giả sử cần tính tích của \(A(x)\) và \(B(x)\), trong đó cả hai đa thức đều có
+bậc không quá \(n-1\). Tương tự viết \(B(x)=B_0(x^2)+xB_1(x^2)\). Khi đó
+\begin{align*}
+A(x)B(x)
+  &= \bigl(A_0(x^2)+xA_1(x^2)\bigr)
+     \bigl(B_0(x^2)+xB_1(x^2)\bigr)\\
+  &= A_0(x^2)B_0(x^2)
+     +x\bigl(A_0(x^2)B_1(x^2)+A_1(x^2)B_0(x^2)\bigr)\\
+  &\qquad +x^2A_1(x^2)B_1(x^2). \tag{3.5}
+\end{align*}
+
+Giả sử sau khi tách chẵn lẻ, mỗi đa thức con có bậc không quá \(m-1\). Ban đầu
+ta cần 4 lần DFT độ dài \(m\); gộp từng đôi theo Mục 3.1 thì giảm còn 2 lần.
+
+Xét IDFT. Thoạt nhìn cần 3 lần IDFT, nhưng thực ra không phải. Hai hạng đầu và
+cuối ở vế phải (3.5) chỉ có hệ số ở bậc chẵn, còn hạng giữa chỉ có hệ số ở
+bậc lẻ. Vì vậy ta xét gộp hạng đầu và hạng cuối.
+
+Việc gộp hạng đầu và hạng cuối cũng có thể xem là một đa thức theo \(x^2\).
+Điều cần làm là từ DFT của \(A(x)\), suy ra DFT của \(xA(x)\). Dễ thấy DFT của
+\(xA(x)\) chính là dãy thu được bằng cách nhân phần tử thứ \(k\) trong DFT của
+\(A(x)\) với \(\omega^k\).
+
+Vì vậy chỉ cần 2 lần IDFT độ dài \(m\); nếu gộp từng đôi thì còn 1 lần.
+
+Xét tất cả các dãy cần IDFT. Các phần tử của chúng không nhất thiết đều là số
+thực, nhìn qua có vẻ khó gộp. Nhưng chú ý kết quả sau IDFT của chúng là dãy
+thực. Dù dãy trước IDFT có thuần thực hay không, IDFT vẫn là nghịch đảo của
+DFT. Từ hai công thức (3.3), (3.4), biết vế phải thì tính được vế trái; biết
+vế trái cũng khôi phục được vế phải. Ta chỉ cần với mọi \(k\) khôi phục các
+dãy tương ứng, rồi phục hồi \(P(x)\) hoặc \(Q(x)\). Vì kết quả IDFT là thực,
+có thể trực tiếp lấy phần thực và phần ảo để thu được kết quả IDFT. Như vậy,
+số lần IDFT giảm còn 1 lần.
+
+Tóm lại, ta chỉ cần 3 lần DFT độ dài \(m\), tức độ dài đơn. Trong khi đó cách
+trước cần 2 lần DFT độ dài gấp đôi. Nếu vẫn dùng độ dài gấp đôi làm đơn vị đo,
+thậm chí có thể mô tả tối ưu vừa nêu là ``1.5 lần DFT''.
+
+\subsubsection*{3.3. Tích chập modulo tùy ý}
+
+Tiếp theo, xét cách làm tích chập dưới modulo tùy ý. Ở đây giả sử modulo
+\(M\) có cỡ \(10^9\), và độ dài dãy cần tích chập có cỡ \(10^5\).
+
+Xét tích chập của hai dãy độ dài cỡ \(10^5\). Nếu xét kết quả tích chập trên
+trường số thực, mỗi hệ số có thể có cỡ \(10^{23}\). Kiểu số thực thông thường
+hiển nhiên có sai số. Ta có thể dùng số thực độ chính xác cao hơn, chẳng hạn
+\texttt{decimal} trong Python, nhưng Python có hiệu suất thấp và hiện không
+được dùng trong các kỳ NOI trong nước Trung Quốc; C++ và nhiều ngôn ngữ khác
+lại không có kiểu số thực chính xác cao tương tự \texttt{decimal}. Nếu tự viết
+thì rất phiền và hiệu suất cũng không khả quan.
+
+\paragraph{\term{3.3.1. NTT ba modulo}.}
+Một cách là tìm ba modulo cỡ \(10^9\) thỏa tính chất NTT, lần lượt tính kết
+quả tích chập dưới ba modulo này. Vì mỗi hệ số có cỡ \(10^{23}\), theo định lý
+phần dư Trung Quốc, ta có thể xác định duy nhất từng hệ số. Nội dung cụ thể
+của định lý phần dư Trung Quốc không nhắc lại ở đây.
+
+Cài đặt cụ thể có hai hướng. Một là dùng số nguyên 128 bit hoặc số nguyên lớn.
+Số nguyên 128 bit nhiều nơi không dùng được, còn số nguyên lớn vừa rườm rà vừa
+chậm.
+
+Hướng khác khéo hơn là dùng định lý phần dư Trung Quốc theo từng bước. Giả sử
+ba modulo lần lượt là \(\mathrm{mod}_0,\mathrm{mod}_1,\mathrm{mod}_2\). Trước
+hết hợp nhất hai modulo đầu, tức tìm kết quả dưới modulo
+\(\mathrm{mod}_0\mathrm{mod}_1\). Sau đó dùng nghịch đảo để biểu diễn kết quả
+dưới modulo \(\mathrm{mod}_0\mathrm{mod}_1\mathrm{mod}_2\) thành dạng
+\[
+  x+k\,\mathrm{mod}_0\mathrm{mod}_1.
+\]
+Ta không cần thật sự tính số khổng lồ này, mà chỉ cần tính nó modulo \(M\).
+Như vậy chỉ cần số nguyên 64 bit; kiểu này hầu như lúc nào cũng dùng được và
+nhanh hơn nhiều so với hai cách trước.
+
+Nhưng phương pháp trên cần 9 lần DFT theo nghĩa modulo, nên hiệu suất chỉ có
+thể xem là bình thường.
+
+\paragraph{\term{3.3.2. FFT tách hệ số}.}
+Đặt \(M_0=\lfloor\sqrt M\rfloor\). Với mỗi hệ số \(x\), viết
+\[
+  x=\left\lfloor\frac{x}{M_0}\right\rfloor M_0+(x\bmod M_0).
+\]
+Lần lượt gọi hai phần cao và thấp của các dãy \(a,b\) là
+\(a_h,a_l,b_h,b_l\).
+
+Ta cần tính bốn tích chập:
+\[
+  a_h*b_h,\quad a_h*b_l,\quad a_l*b_h,\quad a_l*b_l.
+\]
+Do mỗi hệ số sau khi tách chỉ có cỡ \(\sqrt M\), các hệ số trung gian của
+những tích chập này nhỏ hơn nhiều so với tích chập ban đầu; dùng phương pháp
+tiền xử lý căn đơn vị theo lượng giác ở Mục 1.3 là đủ chính xác. Sau khi tính
+xong, nhân từng kết quả với hệ số \(M_0^2\), \(M_0\), \(M_0\), \(1\) tương ứng
+rồi cộng vào đáp án. Như kỹ thuật ở Mục 2.3.1, có thể tiền xử lý DFT của bốn
+dãy, rồi gộp trực tiếp các tích chập có cùng hệ số. Khi đó cần 7 lần DFT.
+
+Có thể giảm số lần DFT tiếp không? Dĩ nhiên là có.
+
+Trong quá trình vừa mô tả, bước đầu tiên là DFT bốn dãy riêng rẽ. Ta thấy có
+thể dùng kỹ thuật gộp DFT ở trên để gộp từng đôi, giảm tổng số lần DFT xuống
+5.
+
+Phần IDFT vốn cần 3 lần; gộp từng đôi thì giảm xuống 2 lần.
+
+Như vậy tổng số lần DFT được giảm thành công xuống 4 lần.
+
+Bản cài đặt C++ của tác giả có thể xem tại
+\href{http://uoj.ac/submission/49836}{http://uoj.ac/submission/49836}.
+
+Tương tự, phương pháp tối ưu tích chập thông thường xuống 3 lần DFT độ dài đơn
+ở trên rõ ràng cũng có thể áp dụng cho tích chập modulo tùy ý, tức đạt cái
+gọi là ``3.5 lần DFT'' cho tích chập modulo tùy ý. Tuy nhiên công thức quá
+phức tạp mà hiệu quả tối ưu không nổi bật, nên ở đây không trình bày thêm.
+
+\subsubsection*{3.4. Tổng kết}
+
+Mục này giới thiệu một phương pháp giảm số lần DFT rất mạnh nhưng hiện vẫn
+chưa thật phổ biến. Cuối cùng ta thấy rằng, hai DFT có thể gộp nếu dãy đầu
+vào của chúng đều là dãy thực; hai IDFT có thể gộp nếu kết quả của chúng đều
+là dãy thực. Tối ưu này gần như không làm tăng lượng mã, nhưng đem lại cải
+thiện hiệu suất rất đáng kể.
+
+Tuy nhiên tối ưu này cũng có hạn chế: nó chỉ áp dụng cho FFT trên trường số
+thực, không áp dụng được cho NTT trên \(\mathbb F_p\). Nếu có ai tìm được cách
+làm cho phương pháp này dùng được với NTT, tác giả rất hoan nghênh trao đổi.
+
+\subsection*{Lời cảm ơn}
+
+\begin{enumerate}
+  \item Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và
+  giao lưu.
+  \item Xin cảm ơn thầy Wang Xingming ở Trường Yali đã quan tâm và chỉ dẫn
+  trong nhiều năm.
+  \item Xin cảm ơn bạn Du Yuhao đã giúp đỡ rất nhiều trong quá trình tác giả
+  viết bài này.
+  \item Xin cảm ơn bạn Jin Ce đã đọc kiểm tra bản thảo.
+  \item Xin cảm ơn các bạn khác trong phòng máy đã giúp rà lỗi và sửa sai.
+  \item Xin cảm ơn Vladimir Smykalov, tác giả bài MGCH3D và những người đầu
+  tiên đề xuất kỹ thuật gộp DFT được nêu trong bài.
+  \item Xin cảm ơn tất cả những người cung cấp các tư liệu mà bài viết đã tham
+  khảo.
+  \item Xin cảm ơn những thầy cô và bạn học khác từng giúp đỡ và gợi mở cho
+  tác giả.
+  \item Xin cảm ơn cha mẹ đã quan tâm và chăm sóc.
+  \item Xin cảm ơn mọi người đã dành thời gian quý báu để đọc bài viết.
+\end{enumerate}
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Bài viết của vflea về phép chia đa thức và ứng dụng:
+  \href{http://vfleaking.blog.uoj.ac/blog/87}{http://vfleaking.blog.uoj.ac/blog/87}.
+  \item \emph{Fast Fourier Transform}, phần 2:
+  \href{http://picks.logdown.com/posts/177631-fast-fourier-transform}{http://picks.logdown.com/posts/177631-fast-fourier-transform}.
+  \item Lời giải CodeChef MGCH3D:
+  \href{https://discuss.codechef.com/questions/74772/mgch3d-editorial}{https://discuss.codechef.com/questions/74772/mgch3d-editorial}.
+  \item Trang Wikipedia tiếng Anh về CZT:
+  \href{https://en.wikipedia.org/wiki/Chirp_Z-transform}{Chirp Z-transform}.
 \end{enumerate}
 
 \end{document}

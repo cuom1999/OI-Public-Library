@@ -19,7 +19,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2015. Tệp được
 tạo bằng pdfTeX nhưng lớp văn bản không ánh xạ đúng về Unicode: ngay cả mục
 lục khi trích xuất bằng \texttt{pdftotext} cũng trở thành mojibake. Bản dịch
-này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và sáu
+này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và bảy
 bài đầu tiên của tập sách, được OCR từ ảnh trang.
 \end{abstract}
 
@@ -42,7 +42,10 @@ trắng; trang PDF vật lý 71, trang in 67, là đầu bài kế tiếp về s
 Các bài tiếp theo dùng cùng cách xử lý OCR và đối chiếu trang render.
 Bài thứ sáu, ``Báo cáo ra đề \emph{ydc's bonus}'', dùng các trang PDF vật lý
 107--116, tương ứng trang in 103--112; trang PDF vật lý 117, trang in 113, là
-đầu bài kế tiếp về chia khối.
+đầu bài kế tiếp về chia khối. Bài thứ bảy, ``Bàn về ứng dụng chia khối trong
+một lớp bài toán trực tuyến'', dùng các trang PDF vật lý 117--131, tương ứng
+trang in 113--127; trang PDF vật lý 132, trang in 128, là trang trắng; trang
+PDF vật lý 133, trang in 129, là đầu bài kế tiếp về cactus.
 
 \section{Mục lục đã dịch}
 
@@ -4340,5 +4343,548 @@ Tới đây bài toán được giải quyết hoàn chỉnh.
   trình ra đề.
   \item Xin cảm ơn tất cả các bạn học đã từng giúp đỡ tôi.
 \end{itemize}
+
+\section{Bàn về ứng dụng chia khối trong một lớp bài toán trực tuyến}
+
+\begin{center}
+\textbf{Zou Daoyao}\\
+Trường Trung học Trấn Hải, Ninh Ba
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Chia khối là một phương pháp có tính thích dụng cao, dễ cài đặt và độ khó tư
+duy thấp. Nó có thể dùng để xử lý một số bài mà thông tin không thể hợp nhất
+nhanh. Bài viết giới thiệu vài cách chia khối thường gặp, rồi thông qua một số
+ví dụ trình bày sơ lược ứng dụng của chia khối trong các bài toán cần duy trì
+hoặc truy vấn trực tuyến.
+
+\subsection{Dẫn nhập}
+
+Trong thi đấu và thực hành thường xuất hiện một lớp bài yêu cầu duy trì dãy
+hoặc cấu trúc cây, hơn nữa thường có thao tác sửa đổi. Có rất nhiều cấu trúc dữ
+liệu có thể duy trì các trường hợp đơn giản với độ phức tạp cấp \(\log\). Tuy
+nhiên khi gặp yêu cầu phức tạp hơn, các cấu trúc dữ liệu này thường vướng khó
+khăn: cần lồng ghép nhiều cấu trúc, cần khai thác tính chất sâu của thông tin
+cần duy trì, thậm chí có lúc hoàn toàn không xử lý được.
+
+Khi gặp lớp bài như vậy, ưu thế của chia khối thể hiện rất rõ: không cần phân
+tích bài toán quá sâu, nhưng một phương pháp có thể duy trì rất nhiều yêu cầu
+khác nhau. Dù độ phức tạp của chia khối thường ở cấp căn hoặc cao hơn, độ phức
+tạp tư duy và độ phức tạp mã nguồn của nó thường thấp hơn nhiều so với các cấu
+trúc dữ liệu có độ phức tạp lý thuyết tốt hơn, nên trong thực tế rất hữu dụng.
+
+Dĩ nhiên lớp bài này cũng có một số thuật toán offline tốt, chẳng hạn thuật
+toán Mo, chia để trị CDQ, v.v. Nhưng nếu đề bài bắt buộc trực tuyến thì những
+thuật toán đó không còn phát huy được.
+
+Bài viết này giới thiệu ngắn gọn vài cách thường dùng để duy trì cấu trúc chia
+khối trực tuyến hoặc tiền xử lý cấu trúc chia khối để trả lời truy vấn trực
+tuyến. Mục 1 chủ yếu nói về cách trực tiếp chia dãy hoặc cây thành nhiều khối
+để duy trì. Mục 2 chủ yếu nói về cách tách thông tin hoặc tách truy vấn theo
+kích thước để xử lý riêng. Mục 3 chủ yếu nói về ý tưởng xây dựng lại định kỳ.
+
+Nếu không nói riêng, các bài toán dưới đây đều yêu cầu thuật toán trực tuyến.
+
+\subsection{Chia khối trực tiếp}
+
+\subsubsection{Chia khối trên dãy}
+
+Chia khối trên dãy là một trong những loại bài chia khối thường gặp nhất và dễ
+cài đặt nhất trong thi thuật toán.
+
+Ý tưởng cơ bản là trên dãy, cứ cách \(H(N)\) điểm chọn một điểm mốc. Khi đó một
+truy vấn đoạn bất kỳ có thể bị tách thành \(O(N/H(N))\) đoạn và \(O(H(N))\)
+điểm lẻ. Lúc truy vấn không cần quét toàn bộ mảng, và lúc sửa đổi cũng không
+cần sửa toàn bộ mảng.
+
+\paragraph{Ví dụ 1: \emph{Bouncing Sheep}.}
+Cho \(N\) số \(a_i\), thỏa \(i<a_i\le N+1\), và \(N\) thao tác. Mỗi thao tác có
+thể:
+\begin{itemize}
+  \item sửa một số, sau khi sửa vẫn thỏa điều kiện trên;
+  \item hỏi nếu bắt đầu từ \(x=i\), mỗi lần đổi \(x\) thành \(a_x\), thì cần bao
+  nhiêu lần đổi để tới \(x=N+1\).
+\end{itemize}
+
+Bài này có thể dùng link-cut tree để giải trong \(O(N\log N)\), nhưng điều đó
+không liên quan nhiều tới bài viết này nên bỏ qua.
+
+Trước hết xét hai cách vét cạn. Một là sửa thì chỉ sửa vị trí đó, hỏi thì mô
+phỏng \(O(N)\). Hai là lúc sửa tính lại đáp án cho mọi vị trí trong \(O(N)\),
+hỏi thì trả lời \(O(1)\).
+
+Ta có thể dùng chia khối để cân bằng hai độ phức tạp này. Trước hết chia dãy
+thành các khối liên tiếp, mỗi khối có \(H(N)\) phần tử; chẳng hạn khi \(N=18\)
+và \(H(N)=4\), các phần tử cùng màu trong hình nguồn thuộc cùng một khối.
+
+Với mỗi khối, dùng cách vét cạn thứ hai để tính đáp án cho mọi vị trí trong
+khối. Khi sửa, chỉ cần tính lại toàn bộ khối đó, mất \(O(H(N))\). Khi hỏi, dùng
+cách vét cạn thứ nhất; nhờ thông tin tiền xử lý, mỗi lần ít nhất nhảy qua được
+một đoạn, nên thời gian là \(O(N/H(N))\).
+
+Chú ý rằng trong tiền xử lý chỉ cần tính với mỗi vị trí: cần bao nhiêu bước để
+nhảy ra khỏi khối chứa nó, và sau khi nhảy ra thì rơi vào vị trí nào. Khi đó lúc
+truy vấn, từ điểm hiện tại có thể nhảy qua cả đoạn trong \(O(1)\).
+
+Để cân bằng sửa đổi và truy vấn, chọn \(H(N)=\sqrt N\). Khi đó bài toán được
+giải trong \(O(N\sqrt N)\).\footnote{Nguồn bài: HNOI 2010.}
+
+\paragraph{Ví dụ 2: \emph{Chef and Churu}.}
+Cho \(N\) số \(a_i\) và \(N\) hàm \(f_i\). Mỗi hàm biểu diễn tổng của \(a_i\)
+trên một đoạn, tức
+\[
+  f_i=\sum_{x=l_i}^{r_i}a_x,
+\]
+và giá trị của \(f_i\) thay đổi theo các giá trị \(a_i\). Có \(N\) thao tác, mỗi
+thao tác có thể:
+\begin{itemize}
+  \item sửa một số \(a_i\);
+  \item hỏi \(\sum_{x=l}^{r} f_x\).
+\end{itemize}
+
+Nếu duy trì một mảng cây, ta có thể tính một giá trị \(f_i\) trong
+\(O(\log N)\), nên có thể cân nhắc chia khối theo \(f_i\).
+
+Tương tự bài trước, cứ cách \(H(N)\) hàm \(f_i\) chia thành \(N/H(N)\) khối. Với
+mỗi khối, tiền xử lý số lần mỗi \(a_i\) xuất hiện trong khối đó, cùng tổng các
+\(f_i\) của khối ở trạng thái ban đầu. Thời gian tiền xử lý là \(O(NH(N))\).
+
+Với mỗi sửa đổi, cập nhật tổng \(f_i\) của từng đoạn là được; vì đã tiền xử lý
+số lần xuất hiện của \(a_i\), điều này rất dễ làm. Thời gian là \(O(N/H(N))\).
+Với mỗi truy vấn, tách đoạn hỏi thành \(O(H(N))\) điểm lẻ và \(O(N/H(N))\)
+đoạn nguyên khối. Mỗi điểm lẻ có thể giải trong \(O(\log N)\) bằng mảng cây,
+mỗi đoạn nguyên khối giải trong \(O(1)\).
+
+Tuy nhiên duy trì mảng cây là \(O(\log N)\)--\(O(\log N)\), trong khi lúc sửa
+đổi ta hoàn toàn có thể chấp nhận độ phức tạp cao hơn mà không ảnh hưởng độ
+phức tạp tổng thể. Vì vậy có thể dùng một cấu trúc \(O(\sqrt N)\)--\(O(1)\) hỗ
+trợ sửa điểm và hỏi tổng đoạn để duy trì \(a_i\).
+
+Do chỉ cần hỏi tổng đoạn, tính chất trừ được cho phép đổi tổng đoạn thành hiệu
+hai tổng tiền tố. Sửa một điểm sẽ ảnh hưởng tới các truy vấn tiền tố tạo thành
+một hậu tố, nên bài toán sửa điểm, hỏi tiền tố có thể đổi thành sửa hậu tố, hỏi
+điểm. Cụ thể, chia \(a_i\) thành \(O(\sqrt N)\) khối, mỗi khối \(O(\sqrt N)\)
+phần tử. Mỗi lần sửa chỉ cần sửa \(O(\sqrt N)\) khối và \(O(\sqrt N)\) điểm lẻ;
+mỗi lần hỏi chỉ cần cộng đáp án trong khối với đáp án điểm lẻ.
+
+Như vậy truy vấn và sửa đổi đều đạt
+\[
+  O\left(\frac{N}{H(N)}+H(N)\right).
+\]
+Khi \(H(N)=\sqrt N\), thời gian là \(O(N\sqrt N)\), bộ nhớ là
+\(O(N\sqrt N)\).\footnote{Nguồn bài: CodeChef November 2014 Challenge.}
+
+\paragraph{Ví dụ 3: \emph{Chef and Problems}.}
+Cho \(N\) số \(a_i\) và \(N\) truy vấn. Mỗi lần cho \(l,r\), hỏi giá trị lớn nhất
+của \(j-i\) sao cho \(a_i=a_j\) và \(l\le i,j\le r\).
+
+Trước hết xét cách vét cạn \(O(N)\) cho mỗi truy vấn: quét đoạn hỏi, dùng mỗi số
+và vị trí xuất hiện đầu tiên của số đó trong đoạn để cập nhật đáp án. Dùng dấu
+thời gian khi cập nhật sẽ tránh được việc mỗi lần phải quét cả mảng, chỉ cần
+quét độ dài đoạn hỏi.
+
+Ta có thể làm như bài trước: cứ mỗi \(H(N)\) phần tử của \(a_i\) chia thành
+\(N/H(N)\) khối, rồi dùng vét cạn tính đáp án bên trong từng khối. Thời gian là
+\(O(N)\).
+
+Nhưng bài này không thể trực tiếp hợp nhất thông tin trong khối như bài trước;
+còn cần tính đáp án cho một đoạn gồm nhiều khối. Trước hết tiền xử lý với mỗi
+\(a_i\), vị trí nhỏ nhất \(j\) có cùng giá trị và \(j>kH(N)\); tương tự tính vị
+trí lớn nhất \(j\) có cùng giá trị và \(j\le kH(N)\). Thời gian là
+\(O(N\cdot N/H(N))\). Từ đó có thể tính đáp án lớn nhất khi \(i\) nằm ở khối
+thứ \(x\), \(j\) nằm trong các khối từ \(x\) đến \(y\); ký hiệu là
+\(\mathrm{calc}(x,y)\), mất \(O(NH(N))\).
+
+Đáp án từ khối thứ \(x\) đến khối thứ \(y\) còn có thể có hai đầu mút không nằm
+ở khối \(x\) hoặc khối \(y\), nên cần dùng một DP theo đoạn để tính phần này.
+Gọi \(f(i,j)\) là đáp án giữa khối \(i\) và khối \(j\). Khi đó
+\[
+  f(i,j)=\max\{f(i+1,j), f(i,j-1), \mathrm{calc}(i,j)\}.
+\]
+
+Sau đó xử lý truy vấn trở nên thuận tiện hơn. Mỗi đoạn có thể tách thành một
+đoạn gồm các khối đã tính đáp án và không quá \(2H(N)\) điểm lẻ. Quét các điểm
+thừa trong \(O(H(N))\) để tính đáp án có cả hai đầu ở bên ngoài; rồi dùng thông
+tin tiền xử lý để tính đáp án lớn nhất giữa mỗi điểm ngoài và điểm trong đoạn
+khối. Lấy lớn nhất của ba phần là được. Thời gian mỗi truy vấn là \(O(H(N))\).
+
+Tổng thời gian là
+\[
+  O\left(N\left(H(N)+\frac{N}{H(N)}\right)\right)-O(H(N)),
+\]
+bộ nhớ là \(O(N\cdot N/H(N))\). Khi \(H(N)=\sqrt N\), thời gian là
+\(O(N\sqrt N)\). Tuy nhiên để tiết kiệm bộ nhớ, có thể chọn \(H(N)\) lớn hơn
+một chút.
+
+Những bài như ví dụ 3 không thuận tiện để thêm thao tác sửa, vì mỗi lần sửa có
+thể làm thay đổi \(O((N/H(N))^2)\) giá trị tiền xử lý. Nhưng nếu thêm sửa đổi,
+có thể chọn \(H(N)=O(N^{3/5})\) để đạt độ phức tạp \(O(N^{7/5})\).\footnote{Nguồn
+bài: CodeChef March 2015 Challenge.}
+
+\subsubsection{Chia khối trên cây}
+
+Nhiều bài rất dễ cài đặt khi chia khối trên đường thẳng, nhưng trên cây thì
+phiền hơn. Mục này giới thiệu một cách chia khối trên cây rất dễ cài đặt, có
+thể xử lý một loạt bài chỉ truy vấn thông tin trên đường đi hoặc quan hệ tổ
+tiên.
+
+\paragraph{Giải truy vấn thông tin trên đường đi.}
+\textbf{Ví dụ 4: \emph{Children Trips}.} Cho một cây \(N\) đỉnh, mỗi cạnh có
+độ dài \(1\) hoặc \(2\). Có \(N\) truy vấn; mỗi lần cho \(x,y,z\), yêu cầu tìm
+ít điểm nhất \(a_1,\ldots,a_n\) sao cho
+\[
+  \mathrm{dis}(x,a_1),\ \mathrm{dis}(a_1,a_2),\ldots,\mathrm{dis}(a_n,y)
+\]
+đều không vượt quá \(z\). Ở đây \(\mathrm{dis}(i,j)\) là khoảng cách giữa đỉnh
+\(i\) và đỉnh \(j\) trên cây.\footnote{Nguồn bài: CodeChef October 2014
+Challenge.}
+
+Thông tin của bài này rất khó hợp nhất, vì phép hợp nhất không có tính kết hợp,
+chỉ có thể hợp nhất từ trước ra sau. Nhưng có thể quan sát hai tính chất sau.
+
+\paragraph{Tính chất 1.}
+Nếu chọn \(a_i\) theo thứ tự tăng dần của \(i\), mỗi lần chọn điểm xa nhất trên
+đường từ \(a_{i-1}\) tới \(y\) thỏa điều kiện làm \(a_i\) (đặt \(x=a_0\),
+\(y=a_{n+1}\)), thì số điểm chọn được là nhỏ nhất. Nói cách khác, mỗi lần đi
+bước dài nhất có thể không làm đáp án xấu đi.
+
+\paragraph{Tính chất 2.}
+Nếu một số điểm đầu được chọn xa nhất theo thứ tự tăng của \(i\) đến \(a_x\),
+còn một số điểm cuối được chọn xa nhất theo thứ tự giảm của \(i\) đến \(a_x\),
+thì cách chọn này cũng cho số điểm nhỏ nhất. Nói cách khác, đồng thời đi từ hai
+đầu vào trong không làm đáp án xấu đi.
+
+Xét cách chọn một số điểm mốc trên cây giống chia khối trên dãy. Trước hết tính
+độ sâu \(\mathrm{dep}_i\) của mỗi đỉnh (gốc có độ sâu \(0\)) và kích thước cây
+con \(\mathrm{size}_i\), rồi chọn các đỉnh thỏa
+\(\mathrm{dep}_i\bmod H(N)=0\).
+
+Tuy nhiên cách này có thể chọn ra quá nhiều điểm, chẳng hạn một đường dài
+\(H(N)-1\) lại mọc thêm \(O(N)\) điểm ở một đoạn của đường. Vì thế cần loại bỏ
+các điểm có kích thước cây con không quá \(H(N)\). Hình nguồn minh họa các điểm
+mốc còn lại.
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình b.} Bản gốc vẽ cây theo tầng sâu; các điểm được chọn làm điểm mốc
+nằm ở những độ sâu chia hết cho \(H(N)\) và có cây con đủ lớn.
+\end{minipage}}
+\end{center}
+
+Sau đó lấy toàn bộ điểm mốc dựng thành một cây, gọi là ``cây mốc''. Trong cây
+mốc, cha của một điểm là điểm mốc đầu tiên gặp được khi đi lên trên cây gốc;
+mỗi cạnh tương ứng với một đường đi giữa hai điểm mốc trong cây gốc. Đồng thời
+mỗi điểm mốc đại diện cho một tập điểm: tập này chứa mọi điểm mà khi đi về gốc,
+điểm mốc đầu tiên gặp được là nó. Hình nguồn phân loại các tập điểm; điểm đặc
+là điểm mốc, các điểm cùng màu thuộc cùng một tập.
+
+Ta phân tích các tính chất của cấu trúc này.
+
+\paragraph{Tính chất 3.}
+Hai điểm mốc kề nhau bất kỳ trên cây mốc cách nhau \(H(N)\) trên cây gốc.
+
+\paragraph{Tính chất 4.}
+Tập điểm do mỗi điểm mốc đại diện có kích thước không nhỏ hơn \(H(N)\).
+
+\paragraph{Chứng minh.}
+Nếu điểm mốc này là lá trong cây mốc, thì mọi con cháu của nó trong cây gốc đều
+thuộc tập điểm này, nên theo định nghĩa tính chất đúng. Nếu nó không phải lá
+trong cây mốc, thì đường từ nó tới một con của nó trong cây mốc có \(H(N)\)
+điểm, và các điểm đó hiển nhiên thuộc tập mà nó đại diện.
+
+\paragraph{Tính chất 5.}
+Số điểm mốc được chọn nhiều nhất là \(O(N/H(N))\).
+
+\paragraph{Tính chất 6.}
+Mỗi điểm đi lên nhiều nhất \(2H(N)\) bước sẽ gặp một điểm mốc.
+
+\paragraph{Chứng minh.}
+Giả sử đi \(2H(N)\) bước vẫn chưa gặp điểm mốc. Khi đó trong các điểm đã đi qua
+có ít nhất hai điểm có độ sâu chia hết cho \(H(N)\). Điểm gần gốc hơn trong hai
+điểm đó rõ ràng có cây con lớn hơn \(H(N)\), nên chắc chắn được chọn làm điểm
+mốc, mâu thuẫn.
+
+\paragraph{Tính chất 7.}
+Đường đi giữa hai điểm bất kỳ có thể tách thành \(O(H(N))\) cạnh của cây gốc và
+\(O(N/H(N))\) cạnh của cây mốc.
+
+\paragraph{Chứng minh.}
+Không thể có một điểm đi liên tiếp lên cha \(2H(N)\) bước mà chưa gặp điểm mốc,
+nên phần cạnh cây gốc nhiều nhất chỉ có \(4H(N)\) cạnh. Còn tổng số cạnh trên
+cây mốc chỉ là \(O(N/H(N))\), nên không thể nhiều hơn mức này.
+
+Nếu đã tiền xử lý đáp án giữa hai điểm mốc kề nhau trên cây mốc, truy vấn sẽ dễ
+xử lý. Chú ý rằng ở đây chỉ cần duy trì đáp án khi \(z=1,\ldots,2H(N)\). Nếu
+\(z>2H(N)\), đoạn đó sẽ bị nhảy qua trực tiếp nên không cần tính. Trước hết,
+với mỗi điểm và mỗi bước \(z\), tính điểm đầu tiên đạt được khi đi lên với độ
+dài bước là \(z\), cần bao nhiêu bước để nhảy tới điểm mốc gần nhất, và sau khi
+nhảy tới đó thì bước cuối còn dư bao nhiêu. Độ phức tạp tiền xử lý là
+\(O(NH(N))\).
+
+Khi truy vấn, chỉ cần dùng tính chất 2 và làm tương tự thuật toán nhảy bội để
+tìm LCA, liên tục đưa hai điểm về phía gốc. Chú ý LCA không nhất thiết là điểm
+mốc, nên nếu nhảy thêm một bước sẽ vượt quá LCA thì dùng vét cạn để nhảy nốt
+đoạn cuối. Trong quá trình di chuyển, duy trì số bước đã đi và độ dài còn lại
+của bước cuối. Khi di chuyển một bước lớn, trước hết dùng hết phần độ dài còn
+dư, rồi dùng thông tin tiền xử lý để đi một bước tới điểm mốc phía trên. Thời
+gian là \(O(N/H(N))\).
+
+Khi \(H(N)=\sqrt N\), thời gian là \(O(N\sqrt N)\), bộ nhớ là
+\(O(N\sqrt N)\).
+
+\paragraph{Giải truy vấn quan hệ tổ tiên.}
+\textbf{Ví dụ 5: \emph{Regions}.} Cho một cây \(N\) đỉnh, mỗi đỉnh có một màu.
+Mỗi lần cho \(x,y\), hỏi có bao nhiêu cặp \(i,j\) thỏa màu của \(i\) là \(x\),
+màu của \(j\) là \(y\), và \(i\) là tổ tiên của \(j\).\footnote{Nguồn bài:
+IOI 2009.}
+
+Ta dựng một cây mốc như bài trước, nhưng cây mốc này chưa có những tính chất dễ
+phân hoạch theo quan hệ tổ tiên, nên cần mở rộng nó.
+
+Trước hết, như bài trước, chọn các điểm mốc ``ban đầu'' thỏa
+\(\mathrm{dep}_i\bmod H(N)=0\) và \(\mathrm{size}_i\ge H(N)\). Sau đó chọn thêm
+mọi điểm là LCA của hai điểm mốc ban đầu, đưa vào tập điểm mốc cuối cùng.
+
+\paragraph{Tính chất 1.}
+Số điểm mốc tăng nhiều nhất gấp đôi.
+
+\paragraph{Chứng minh.}
+Sắp xếp các điểm mốc ban đầu theo thứ tự DFS, rồi lần lượt xét từng điểm mốc
+ban đầu. Với mỗi điểm, liên tục đi lên phía gốc cho tới khi gặp một điểm mốc
+ban đầu khác hoặc một điểm đã được thăm. Nếu dừng ở một điểm mốc ban đầu, thì
+phần đi lên tiếp theo hoàn toàn giống với trường hợp của điểm đó, không cần đi
+nữa. Nếu dừng ở một điểm đã thăm, thêm điểm đó vào tập điểm mốc; phần đi lên
+tiếp theo hoàn toàn giống với trường hợp mà điểm lần đầu ghé tới nó đã gặp,
+cũng không cần đi nữa. Vì vậy mỗi điểm nhiều nhất chỉ đóng góp một điểm mới.
+
+Thực ra cách làm này chính là dựng một ``cây ảo''. Khi cài đặt có thể thêm trực
+tiếp LCA của mọi cặp điểm kề nhau theo thứ tự DFS rồi khử trùng. Thảo luận chi
+tiết về cây ảo có thể xem trong luận văn đội tuyển quốc gia năm 2014 của Xu
+Yinzhan.
+
+Sau khi mở rộng tập điểm mốc, định nghĩa cây mốc vẫn như trước: cha của mỗi
+điểm là tổ tiên mốc gần nhất của nó trên cây gốc; cạnh trong cây mốc đại diện
+cho tập điểm nằm trên một đường trong cây gốc. Lúc này cây thỏa thêm các tính
+chất sau.
+
+\paragraph{Tính chất 2.}
+Hai cạnh bất kỳ của cây mốc, khi xét các đường mà chúng đại diện trong cây gốc,
+chỉ giao nhau ở đầu mút.
+
+\paragraph{Tính chất 3.}
+Đường đi giữa hai điểm bất kỳ trong cây có thể chia thành \(O(H(N))\) cạnh và
+\(O(N/H(N))\) đường giữa hai điểm mốc kề nhau.
+
+\paragraph{Tính chất 4.}
+Độ dài đường giữa hai điểm mốc kề nhau bất kỳ không vượt quá \(H(N)\), và số
+điểm mốc không vượt quá \(2N/H(N)\).
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình c.} Bản gốc minh họa các điểm mốc mới: màu hồng là điểm mốc ban
+đầu, màu xanh là điểm mốc thêm vào, màu nâu là các điểm nằm trên cạnh của cây
+mốc.
+\end{minipage}}
+\end{center}
+
+Nhờ các tính chất này, bài toán trở nên dễ xử lý. Chia mọi điểm thành hai loại:
+điểm nằm trên cạnh của cây mốc, kể cả điểm mốc, gọi là ``điểm trong''; các điểm
+còn lại gọi là ``điểm ngoài''. Khi đó các trường hợp cần thống kê được chia
+thành ba loại:
+\begin{itemize}
+  \item cả hai điểm đều là điểm trong;
+  \item điểm tổ tiên là điểm trong, điểm con cháu là điểm ngoài, nhưng điểm tổ
+  tiên không nằm trên đường từ điểm con cháu đi lên điểm mốc đầu tiên;
+  \item điểm tổ tiên là điểm trong, điểm con cháu là điểm ngoài, và điểm tổ
+  tiên nằm trên đường từ điểm con cháu đi lên điểm mốc đầu tiên.
+\end{itemize}
+
+Trường hợp thứ ba rất dễ xử lý: vì mỗi điểm đi lên nhiều nhất \(2H(N)\) bước sẽ
+gặp một điểm mốc, chỉ cần vét cạn là tiền xử lý được đáp án cho trường hợp này.
+
+Trên cây mốc, gom mỗi điểm mốc và các điểm trên đường từ nó tới cha của nó
+thành một khối; khối của gốc chỉ chứa chính gốc. Với mỗi khối, tiền xử lý số
+lượng của từng màu bên trong khối. Việc này có thể làm trong thời gian
+\(O(N\cdot N/H(N))\).
+
+Dễ chứng minh nếu điểm mốc \(x\) là tổ tiên của điểm mốc \(y\), thì mọi điểm
+trong khối của \(x\) đều là tổ tiên của mọi điểm trong khối của \(y\). Vì vậy
+lúc truy vấn, chỉ cần duyệt cây mốc một lần là giải được trường hợp thứ nhất.
+
+Cuối cùng xét trường hợp thứ hai. Tiền xử lý với mỗi điểm ngoài: điểm mốc đầu
+tiên gặp được khi đi lên, rồi đưa điểm ngoài này vào tập của điểm mốc đó. Khi
+đó có thể xử lý tương tự trường hợp thứ nhất: tiền xử lý số lần xuất hiện của
+mỗi màu trong tập điểm ngoài do từng điểm mốc đại diện. Lúc truy vấn, khi DFS
+tới một điểm, dùng số lượng màu \(x\) trên đường từ điểm đó tới gốc và số lượng
+màu \(y\) trong tập của điểm đó để cập nhật đáp án.
+
+Khi \(H(N)=\sqrt N\), thời gian của bài này là \(O(N\sqrt N)\), bộ nhớ là
+\(O(N\sqrt N)\).
+
+\subsection{Thảo luận theo kích thước}
+
+Ý tưởng cơ bản của thảo luận theo kích thước là chia truy vấn, sửa đổi, bậc,
+v.v. thành hai loại: lớn hơn \(H(N)\) và không lớn hơn \(H(N)\), rồi xử lý
+riêng. Tức là kết hợp hai cách vét cạn kiểu \(O(\mathrm{size})\), hoặc
+\(O(\mathrm{size}\log\mathrm{size})\), với \(O(N/\mathrm{size})\). Vì vậy độ
+khó tư duy thấp, và do kết hợp hai cách vét cạn nên trong phòng thi cũng dễ
+cài.
+
+\subsubsection{\texorpdfstring{Ví dụ 4: \emph{Children Trips}}{Ví dụ 4: Children Trips}}
+
+Vẫn là bài trên cây \(N\) đỉnh, mỗi cạnh dài \(1\) hoặc \(2\); mỗi truy vấn cho
+\(x,y,z\), yêu cầu tìm ít điểm nhất để khoảng cách giữa hai điểm liên tiếp
+trên đường từ \(x\) tới \(y\) đều không vượt quá \(z\).
+
+Xét cách vét cạn: mỗi lần nhị phân vị trí của \(a_i\) tiếp theo. Cách này là
+\(O(N\log N)\), vì số \(a_i\) có thể nhiều nhất \(O(N)\). Nhưng khi
+\(z>H(N)\), số \(a_i\) nhiều nhất chỉ là \(O(N/H(N))\), có thể vét cạn trực
+tiếp; còn khi \(z\le H(N)\), chỉ có không quá \(H(N)\) loại \(z\). Nếu tiền xử
+lý đáp án cho các \(z\) nhỏ này thì xong.
+
+Với mỗi \(z\) nhỏ, tiền xử lý với từng điểm: đi về gốc một đoạn dài \(z\) sẽ
+tới điểm nào; nếu không có điểm cách đúng \(z\) thì chọn điểm cách \(z-1\).
+Sau đó dùng nhảy bội để biết mỗi điểm đi lên \(2^k\) bước, mỗi bước dài \(z\),
+thì tới đâu. Việc này cần thời gian và bộ nhớ \(O(NH(N)\log N)\). Khi truy vấn,
+có thể như thuật toán nhảy bội thông thường: đi lên tới khi nhảy tiếp sẽ vượt
+quá LCA thì dừng; đoạn dư cuối cùng vét cạn trong \(O(H(N))\).
+
+Chọn \(H(N)=\sqrt N\), bài toán được giải trong thời gian
+\(O(N\sqrt N\log N)\) và bộ nhớ \(O(N\sqrt N\log N)\).
+
+Đây là lời giải chính thức của bài, độ khó tư duy khá thấp và dễ nghĩ ra. Tuy
+nhiên nhị phân giữa hai điểm trên cây tương đối phiền và không dễ cài đặt. Cách
+ở mục 1 có thể giải bài này thuận tiện hơn.
+
+\subsubsection{\texorpdfstring{Ví dụ 5: \emph{Regions}}{Ví dụ 5: Regions}}
+
+Vẫn là bài cây \(N\) đỉnh có màu; mỗi truy vấn cho \(x,y\), hỏi số cặp
+\(i,j\) sao cho màu của \(i\) là \(x\), màu của \(j\) là \(y\), và \(i\) là tổ
+tiên của \(j\).
+
+Trước hết xét trường hợp đặc biệt: trong mọi truy vấn, \(x\) đều giống nhau.
+Khi đó chỉ cần một DFS đơn giản để tính đáp án cho từng \(y\); trong quá trình
+DFS, ghi lại trên đường từ điểm hiện tại tới gốc có bao nhiêu điểm màu \(x\).
+
+Tiền xử lý thứ tự DFS, khi đó các điểm của mỗi cây con là một đoạn có đầu trái
+là chính đỉnh đó. Đồng thời với mỗi màu, tiền xử lý các đầu trái và đầu phải
+của các đoạn đại diện bởi những điểm mang màu đó, rồi sắp xếp.
+
+Với mỗi truy vấn, giả sử hai màu có lần lượt \(A\) và \(B\) điểm. Ta tính mỗi
+điểm nằm trong bao nhiêu đoạn rồi cộng đáp án. Vì các danh sách đã sắp xếp, có
+thể trộn chúng trong \(O(A+B)\), sau đó quét một lần để nhận đáp án.
+
+Tiếp theo xét một cách vét cạn cho trường hợp số màu ít. Với mỗi màu \(x\), DFS
+một lần có thể tiền xử lý đáp án cho mọi truy vấn trong \(O(NC)\), với \(C\) là
+số màu; chỉ cần trong DFS ghi lại từ điểm hiện tại tới gốc có bao nhiêu màu
+\(x\). Tương tự, nếu cố định \(y\), quét mọi điểm một lần cũng tính được đáp
+án; chỉ cần tiền xử lý tổng tiền tố thì hỏi đoạn trong \(O(1)\).
+
+Kết hợp hai cách vét cạn: với những màu xuất hiện quá \(H(N)\) lần, tiền xử lý
+đáp án khi màu đó làm một trong hai màu \(x\) hoặc \(y\). Với những màu còn lại,
+lúc truy vấn dùng cách vét cạn thứ nhất để trả lời trực tiếp.
+
+Khi \(H(N)=\sqrt N\), thời gian là \(O(N\sqrt N)\), bộ nhớ là \(O(N\sqrt N)\).
+Lời giải chính thức còn nêu một cách phân loại khác, đạt thời gian
+\(O(N\sqrt N\log N)\) và bộ nhớ \(O(N)\). Cách này đã được Wang Yuetong nhắc
+tới trong luận văn năm 2014, nên ở đây không trình bày thêm.
+
+\subsection{Xây dựng lại định kỳ}
+
+Ý tưởng của xây dựng lại định kỳ là chia khối theo thao tác: cứ sau \(H(N)\)
+thao tác thì xây lại trạng thái một lần. Khi truy vấn, dựa vào lần xây lại gần
+nhất và mọi sửa đổi trong khoảng giữa để tính đáp án.
+
+Chú ý rằng chia khối theo thao tác không cần offline; chỉ cần sau một khoảng
+thời gian cố định lại tiền xử lý một lượt.
+
+\subsubsection{\texorpdfstring{Ví dụ 2: \emph{Chef and Churu}}{Ví dụ 2: Chef and Churu}}
+
+Vẫn là bài \(N\) số \(a_i\), \(N\) hàm \(f_i\), trong đó mỗi hàm là tổng của
+một đoạn \(a_i\):
+\[
+  f_i=\sum_{x=l_i}^{r_i}a_x.
+\]
+Có \(N\) thao tác, mỗi thao tác có thể sửa một số \(a_i\) hoặc hỏi một tổng
+\(\sum_{x=l}^{r}f_x\).
+
+Trước hết chia các thao tác thành khối; cứ \(H(N)\) thao tác xây lại một lần.
+Mỗi lần xây lại, dùng \(O(N)\) tính tổng tiền tố của mảng gốc và \(O(N)\) tính
+giá trị mọi \(f_i\). Tổng chi phí là \(O(N\cdot N/H(N))\).
+
+Tiếp theo chỉ cần tính đóng góp của mỗi thao tác cho các truy vấn trong cùng
+khối thao tác. Vì truy vấn có tính trừ được, có thể tách mỗi truy vấn thành các
+truy vấn tiền tố, rồi sắp xếp các truy vấn tiền tố theo độ dài.
+
+Sau khi sắp xếp, quét theo đầu phải tăng dần và duy trì một cấu trúc hỗ trợ
+cộng đoạn \(O(\sqrt N)\), hỏi điểm \(O(1)\). Cấu trúc này đã nhắc tới phía
+trước: chia \(a_i\) thành các khối cỡ \(H(N)\); mỗi lần sửa chỉ cần sửa
+\(O(N/H(N))\) khối và \(O(H(N))\) điểm lẻ, còn hỏi chỉ cần cộng đáp án trong
+khối và đáp án điểm lẻ.
+
+Với mỗi truy vấn, liệt kê các sửa đổi nằm trong cùng khối thao tác và đứng
+trước nó, nhiều nhất \(O(H(N))\) thao tác. Vì có thể hỏi trong \(O(1)\) ảnh
+hưởng của một vị trí lên truy vấn đó, phần đóng góp này được tính trong
+\(O(NH(N))\) trên toàn khối.
+
+Tổng thời gian là \(O(N\sqrt N)\), bộ nhớ là \(O(N)\).
+
+Nếu bắt buộc trực tuyến, có thể thay thao tác sắp xếp rồi quét bằng cách tiền xử
+lý và ghi vào một cây đoạn bền vững. Khi đó thêm một hệ số \(\log\) là hoàn
+thành thuật toán trực tuyến, thời gian \(O(N\sqrt N\log N)\), nhưng bộ nhớ cũng
+cần \(O(N\sqrt N\log N)\).
+
+\subsubsection{Ví dụ 6: bài toán phần tử lớn thứ k trên cây có hỗ trợ \texttt{link}, \texttt{cut}}
+
+Cho một rừng \(N\) đỉnh và \(N\) thao tác. Mỗi lần có thể thêm một cạnh hoặc
+xóa một cạnh, bảo đảm sau thao tác vẫn là rừng; hoặc hỏi phần tử lớn thứ \(k\)
+trên một đường đi.\footnote{Một bài kinh điển.}
+
+Trước hết xét trường hợp không có thao tác \texttt{link}, \texttt{cut}. Có thể
+dùng cây đoạn bền vững: mỗi đỉnh duy trì một cây đoạn bền vững xây từ cây của
+cha nó rồi thêm trọng số của chính đỉnh đó. Khi truy vấn, mỗi đường có thể tách
+thành hai đường từ một điểm tới gốc, rồi dùng tổng của hai đường này để nhị
+phân trên cây đoạn bền vững.
+
+Giả sử ta duy trì cây đoạn bền vững của thời điểm cách đây \(K\) thao tác. Khi
+đó có thể dùng link-cut tree để tách một đường trên cây hiện tại thành nhiều
+nhất \(O(K)\) đường trên cây ở thời điểm cách đây \(K\) thao tác. Dùng tổng của
+các đường này để nhị phân trên cây đoạn bền vững là được.
+
+Vậy cứ mỗi \(\sqrt N\) thao tác xây lại cây đoạn bền vững một lần, thời gian là
+\(O(N\sqrt N\log N)\).
+
+\subsection{Tổng kết}
+
+Ưu thế của chia khối nằm ở tính thông dụng cao: nó có thể hỗ trợ duy trì nhiều
+loại thông tin. Các ví dụ ở những mục trước hầu như đều dùng hai ý tưởng khác
+nhau để giải. Tuy nhiên độ phức tạp thời gian cao là nhược điểm chí mạng của
+chia khối. Dù vậy, khi chưa nghĩ ra lời giải tốt hơn, thử chia khối là hoàn
+toàn đáng làm.
+
+\subsection{Lời cảm ơn}
+
+\begin{itemize}
+  \item Xin cảm ơn China Computer Federation đã cung cấp cho tôi nền tảng học
+  tập và giao lưu.
+  \item Xin cảm ơn thầy Li Jian vì nhiều năm quan tâm và chỉ dẫn.
+  \item Xin cảm ơn các bạn Cen Ruoxu, Zhang Yuhao, Du Yuhan và những bạn khác
+  đã giúp đỡ trong quá trình viết bài này.
+\end{itemize}
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Mugurel Ionut Andreica, ``Novel \(O(H(N)+N/H(N))\) Algorithmic
+  Techniques for Several Types of Queries and Updates on Rooted Trees and
+  Lists''.
+  \item ``21-st International Olympiad in Informatics Tasks and Solutions'',
+  từ \texttt{www.ioi2009.org}.
+  \item Wang Yuetong, ``Thuật toán căn: không chỉ là chia khối'', luận văn đội
+  tuyển quốc gia năm 2014, Trường Ngoại ngữ Nam Kinh.
+  \item Xu Yinzhan, ``Ứng dụng cây đoạn trên một lớp bài toán chia để trị'',
+  luận văn đội tuyển quốc gia năm 2014, Trường Học Quân Hàng Châu.
+\end{enumerate}
 
 \end{document}
