@@ -19,7 +19,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2014. Phần
 mục lục và đầu sách có lớp văn bản đọc được, nhưng thân bài dùng ánh xạ phông
 chữ khiến kết quả trích xuất bị biến dạng. Bản dịch này chuyển ngữ phần đầu
-sách, mục lục và mười bài đầu tiên bằng cách kết hợp mục lục trích xuất được
+sách, mục lục và mười một bài đầu tiên bằng cách kết hợp mục lục trích xuất được
 với OCR từ các trang đã render.
 \end{abstract}
 
@@ -4395,6 +4395,754 @@ tính chất căn bậc hai xuất hiện tự nhiên.
   tuyển quốc gia năm 2013.
 \end{enumerate}
 
+\section{Bàn về các vấn đề liên quan tới cây động và một số mở rộng đơn giản}
+
+\begin{center}
+Huang Zhi'ao, Trường Yali, Trường Sa
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Cây động là một lớp bài toán rất thường gặp trong OI. Các thuật toán xử lý cây
+động như phân rã nặng-nhẹ, chia để trị trên cây và link/cut tree đã được biết
+và học rộng rãi. Đồng thời, các cách dùng thứ tự DFS của cây hoặc Euler tour
+tree để duy trì thông tin cây con cũng đã trở nên quen thuộc. Bài viết này tổng
+kết một số vấn đề liên quan và đưa ra vài cách giải mang tính sáng tạo. Cuối
+cùng, bài viết giới thiệu hai mở rộng của LCT: top tree và link/cut cactus, dùng
+để giải các bài toán liên quan.
+
+\subsection{Bài toán cây động}
+
+Bài toán cây động là bài toán duy trì động thông tin trên cây. Tuy nhiên, khi
+nhắc tới cây động, đôi khi người ta dùng riêng cụm này để chỉ LCT.
+
+Trong một bài toán cây động điển hình, các thao tác sau có thể xuất hiện.
+
+\begin{enumerate}
+  \item Thêm hoặc xóa một cạnh để duy trì hình dạng của cây.
+  \item Thực hiện một phép biến đổi trên trọng số của một đường đi trong cây,
+  đồng thời duy trì trọng số của từng đỉnh.
+  \item Truy vấn thông tin trên một đường đi trong cây.
+  \item Thực hiện một phép biến đổi trên trọng số của một cây con.
+  \item Truy vấn thông tin cây con.
+\end{enumerate}
+
+\subsection{Những bài toán cây động cổ điển}
+
+Trong thi thuật toán đã xuất hiện rất nhiều bài toán liên quan tới cây. Cách giải
+thường cũng dùng nhiều cấu trúc dạng cây, chẳng hạn cây cân bằng.
+
+Trong các bài cũ hơn, hình dạng của cây thường tương đối cố định. Khi đó người
+giải không phải dành quá nhiều chú ý cho việc duy trì hình dạng cây, mà tập
+trung hơn vào cách tổ chức thông tin trên cây để hỗ trợ cập nhật và truy vấn.
+
+\subsubsection{Phân rã nặng-nhẹ}
+
+Cốt lõi của phân rã nặng-nhẹ là chia các cạnh của cây thành cạnh nặng và cạnh
+nhẹ theo một quy tắc nhất định, rồi dùng cấu trúc dữ liệu thích hợp để duy trì
+các chuỗi do cạnh nặng tạo thành. Có thể chứng minh rằng đường đi từ một đỉnh
+tới gốc được chia thành nhiều nhất \(O(\log n)\) chuỗi nặng và \(O(\log n)\)
+cạnh nhẹ. Do đó ta có thể hoàn thành các thao tác trong
+\[
+  O(\log n\cdot \text{độ phức tạp của một truy vấn trên chuỗi}).
+\]
+
+\subsubsection{Chia để trị theo đỉnh}
+
+Chia để trị theo đỉnh tách cây bằng trọng tâm, nhờ đó sau mỗi tầng chia để trị
+kích thước cây giảm ít nhất một nửa.
+
+Kỹ thuật này thường xử lý các bài toán liên quan tới đường đi trên cây hoặc cặp
+đỉnh. Trong cách làm trực tiếp, ta hay thống kê thông tin một đường đi bằng cách
+liệt kê LCA của hai đầu mút. Trong cách chia để trị theo đỉnh, chỉ cần liệt kê
+trọng tâm được chọn ở mỗi tầng chia để trị để đạt hiệu quả tương tự.
+
+\subsection{Link/cut tree}
+
+\subsubsection{LCT là gì}
+
+Có thể tham khảo tài liệu kinh điển về LCT. Nói cụ thể hơn, có thể xem cây động
+như một phép phân rã nặng-nhẹ mà mọi chuỗi cạnh thực đều được duy trì bằng
+Splay. Nhờ thao tác \texttt{access}, ta lấy được chuỗi từ một đỉnh tới gốc. Nhờ
+phép đảo trong Splay, ta thực hiện được đổi gốc. Nhờ hai lần \texttt{access}, ta
+lấy được LCA của hai đỉnh.
+
+Theo phân tích khấu hao, mỗi thao tác có độ phức tạp \(O(\log n)\), vì vậy LCT
+có thể giải quyết rất nhiều bài toán.
+
+\subsubsection{Thông tin cạnh và thông tin đỉnh}
+
+Một số bài toán cần duy trì cả thông tin cạnh lẫn thông tin đỉnh. Thường có hai
+cách xử lý.
+
+Cách thứ nhất là chẻ mỗi cạnh \((u,v)\): thêm một đỉnh mới \(u'\), thay cạnh
+\((u,v)\) bằng hai cạnh \((u,u')\) và \((u',v)\), rồi lưu thông tin cạnh ban đầu
+trên đỉnh mới này.
+
+Cách thứ hai là đồng thời ghi nhận, đối với mỗi chuỗi và mỗi đỉnh, hai cạnh liên
+quan với đỉnh đó. Khi đổi gốc, ta duy trì lại các thông tin tương ứng.
+
+\subsubsection{Cách dùng LCT}
+
+Xét một bài toán đơn giản:
+\begin{enumerate}
+  \item mỗi lần thêm hoặc xóa một cạnh;
+  \item cộng một số vào mọi đỉnh trên một chuỗi;
+  \item hỏi tổng trọng số trên một chuỗi.
+\end{enumerate}
+
+Có thể hiện thực bằng LCT như sau.
+
+\begin{itemize}
+  \item Thêm cạnh: đặt một đỉnh làm gốc của cây hiện tại của nó, rồi thiết lập
+  một cạnh ảo nối nó tới cha.
+  \item Xóa cạnh: thực hiện \texttt{access} trên một đầu mút để biến cạnh ấy
+  thành cạnh ảo, sau đó xóa trực tiếp.
+  \item Cộng trên chuỗi: đặt một đầu mút của chuỗi làm gốc, \texttt{access} đầu
+  mút còn lại để toàn bộ chuỗi nằm trong một Splay, rồi dùng lazy tag của Splay.
+  \item Hỏi tổng chuỗi: cũng lấy Splay tương ứng với chuỗi, rồi hỏi tổng của cả
+  cây cân bằng.
+\end{itemize}
+
+Vì vậy, chỉ cần một bài toán dãy có thể duy trì bằng cây cân bằng, ta thường có
+thể đẩy nó lên cây bằng LCT. Ví dụ, phép cộng/trừ đoạn có thể đổi thành gán
+đoạn; thông tin truy vấn cũng không nhất thiết là tổng mà có thể là giá trị lớn
+nhất hoặc nhiều đại lượng khác trên chuỗi.
+
+\subsubsection{Một số ứng dụng đơn giản của LCT}
+
+\paragraph{Bài toán cây động rõ ràng.}
+Nhiều bài chỉ cần dùng trực tiếp LCT. Ví dụ, BZOJ 3091 \emph{City Travel} yêu
+cầu duy trì một cây, hỗ trợ thêm/xóa cạnh, cộng/trừ trọng số trên chuỗi và hỏi
+tổng đoạn con lớn nhất trên chuỗi.
+
+Rõ ràng LCT duy trì được hình dạng cây; phần còn lại chỉ là bài toán gán/cộng
+đoạn và hỏi tổng đoạn con lớn nhất trên dãy. Tổng đoạn con lớn nhất có thể duy
+trì bằng cách lưu tổng tiền tố lớn nhất và tổng hậu tố lớn nhất rồi gộp thông
+tin, đây là kỹ thuật rất kinh điển.
+
+\paragraph{Cấu trúc cây ẩn.}
+Có nhiều bài không cho cây một cách hiển nhiên, nhưng sau khi phân tích lại thấy
+một cấu trúc cây rõ ràng, nên có thể dùng LCT. Chẳng hạn bài \emph{Elephant} của
+IOI 2011: chỉ cần nhận ra mỗi điểm có một cha duy nhất, hoặc những tính chất
+tương tự của cây, thì bài toán trở nên tự nhiên.
+
+\subsubsection{Ứng dụng trong một số bài đồ thị đơn giản}
+
+Cây là công cụ quan trọng để mô tả đồ thị. Tính linh hoạt của cây động cho phép
+dùng nó để xử lý một số bài đồ thị.
+
+\paragraph{Cây khung nhỏ nhất khi chỉ thêm cạnh.}
+Cây khung nhỏ nhất là bài toán kinh điển, còn duy trì động cây khung nhỏ nhất là
+một bài toán khá khó.
+
+Nếu dùng chia để trị offline, có thể đạt \(O(n\log^2 n)\); có thể tham khảo lời
+giải HNOI 2010. Nhưng cách này là offline. Nếu bắt buộc online, các thuật toán
+tổng quát thường phức tạp và hằng số không đẹp.
+
+Nếu chỉ có thao tác thêm cạnh và vẫn phải duy trì online, ta có thể dùng LCT.
+Tính chất vòng-cắt của cây khung nhỏ nhất đảm bảo rằng sau khi thêm một cạnh,
+chỉ cần xóa cạnh có trọng số lớn nhất trên vòng vừa tạo thì kết quả vẫn là cây
+khung nhỏ nhất. Truy vấn cạnh lớn nhất trên đường đi là thao tác cơ bản của LCT.
+
+\paragraph{Đường đi có khoảng chênh nhỏ nhất.}
+Cho một đồ thị vô hướng có trọng số, cần tìm một đường đi từ \(S\) tới \(T\) sao
+cho hiệu giữa trọng số lớn nhất và nhỏ nhất trên đường đi là nhỏ nhất.
+
+Có thể giải bằng LCT. Sắp xếp các cạnh, rồi liệt kê giá trị lớn nhất của cạnh
+trên đường đi theo thứ tự tăng dần. Với các cạnh có trọng số không vượt quá giá
+trị hiện tại, ta cần một đường đi mà cạnh nhỏ nhất trên đường đi là lớn nhất.
+Đây là một phần của bài toán cây khung cổ chai nhỏ nhất, và cây khung nhỏ nhất
+cũng là cây khung cổ chai nhỏ nhất. Vì vậy ta có thể dùng lại cách duy trì cây
+khung ở trên.
+
+\paragraph{Duy trì động tính hai phía của đồ thị.}
+Cho một đồ thị, cho phép thêm hoặc xóa cạnh; sau mỗi thời điểm cần biết đồ thị có
+phải đồ thị hai phía hay không. Các thao tác có thể xử lý offline.
+
+Bài này giống duy trì offline tính liên thông động của đồ thị, có thể dùng chia
+để trị theo thời gian. Một cách khác là xử lý trước thời điểm xóa của mỗi cạnh,
+rồi duy trì cây khung lớn nhất theo thời điểm xóa: khi thêm cạnh mà tạo thành
+vòng, ta xóa khỏi vòng cạnh bị xóa sớm nhất. Khi xóa một cạnh, cần hỏi cạnh ấy
+cùng các cạnh cây có tạo chu trình lẻ hay không; nếu có thì đưa nó vào một tập
+đánh dấu. Khi xóa cạnh, nếu nó là cạnh cây thì xóa trực tiếp, còn nếu nó nằm
+trong tập đánh dấu thì loại khỏi tập ấy. Nếu tại một thời điểm tập đánh dấu rỗng
+thì đồ thị là hai phía, ngược lại thì không. Tính đúng đắn không quá hiển nhiên
+nhưng có thể chứng minh.
+
+Các thao tác cần thiết đều có thể duy trì trực tiếp bằng LCT.
+
+\subsection{Thứ tự DFS và ETT}
+
+Có thể thấy các bài cây động ở trên hầu như đều liên quan tới thông tin trên
+chuỗi, vì bản thân LCT dùng chuỗi để duy trì cấu trúc cây. Tuy nhiên, nhiều bài
+liên quan tới thông tin cây con; nếu chỉ dùng LCT thì sẽ gặp khó khăn.
+
+Khi đó có một công cụ mạnh khác: thứ tự DFS của cây. Trong DFS, chỉ khi duyệt
+xong toàn bộ cây con của một đỉnh ta mới đi sang đỉnh khác. Vì vậy, nếu ghi các
+đỉnh theo thứ tự DFS, cây con của một đỉnh luôn là một đoạn liên tiếp. Ta có thể
+dùng nhiều cấu trúc dữ liệu khác nhau để duy trì đoạn này.
+
+\subsubsection{Bài toán cây con đơn giản}
+
+Nhiều bài có thao tác truy vấn cây con rất rõ ràng và có thể giải trực tiếp bằng
+thứ tự DFS.
+
+\paragraph{\emph{Tree}.}
+Bài lấy từ đợt luyện tập đội tuyển quốc gia Trung Quốc cho IOI 2012. Cho một
+cây, cần hỗ trợ:
+\begin{enumerate}
+  \item đổi gốc;
+  \item sửa trọng số đỉnh;
+  \item hỏi trọng số nhỏ nhất trong cây con.
+\end{enumerate}
+
+Sau khi phân tích đơn giản, có thể thấy xuất phát từ LCT không phải hướng tốt.
+Dù thao tác đổi gốc rất linh hoạt, hình dạng của cây không hề thay đổi.
+
+Ta dùng thứ tự DFS và cây đoạn để duy trì giá trị nhỏ nhất trên đoạn. Vậy đổi gốc
+và truy vấn xử lý thế nào? Dù gốc hiện tại là đâu, cây con cần hỏi hoặc chính là
+cây con của đỉnh đó khi gốc là \(1\), hoặc là phần bù của cây con ấy. Trường hợp
+đầu hỏi trực tiếp đoạn DFS; trường hợp sau hỏi giá trị nhỏ nhất trên phần bù của
+đoạn đó.
+
+\subsubsection{Dùng cây cân bằng duy trì thứ tự DFS}
+
+Trước khi có thứ tự DFS của một cây, ta phải DFS toàn cây. Nếu hình dạng cây thay
+đổi thì sao?
+
+Nếu cố định gốc, sau khi thêm hoặc xóa một đỉnh, thay đổi trong thứ tự DFS tương
+đương với chèn hoặc xóa một phần tử. Chỉ cần tìm được vị trí của phần tử này là
+cây cân bằng có thể duy trì được, mà việc này không khó.
+
+Tương tự, nếu thêm hoặc xóa cả một cây con, thay đổi trong thứ tự DFS chỉ là chèn
+hoặc xóa một đoạn. Có thể dùng Splay hoặc Treap không xoay. Nhờ cây cân bằng, ta
+có thể giải một số bài không còn quá đơn giản.
+
+\paragraph{\emph{Mashmokh's Designed Problem}.}
+Bài từ Codeforces Round 240 Div1 E. Cho một cây có gốc; các cạnh đi ra từ mỗi
+đỉnh có thứ tự. Các thao tác gồm:
+\begin{enumerate}
+  \item hỏi khoảng cách giữa hai đỉnh;
+  \item tách cây con gốc \(z\) khỏi cây, rồi thêm cạnh nối cây con ấy tới một tổ
+  tiên nào đó, đặt nó làm con cuối cùng của tổ tiên này;
+  \item từ một đỉnh, duyệt DFS theo thứ tự cạnh và hỏi đỉnh được duyệt cuối cùng
+  ở độ sâu \(k\).
+\end{enumerate}
+
+Bài này không dễ giải đẹp bằng LCT, nhưng nhìn từ thứ tự DFS thì rất rõ ràng.
+Thêm/xóa cạnh tương ứng với thao tác trên đoạn. Còn lại cần xử lý vài việc:
+\begin{enumerate}
+  \item Tìm phần tử cuối cùng trong thứ tự DFS có độ sâu \(k\). Do độ sâu trong
+  thứ tự DFS thay đổi liên tục, nếu duy trì trong mỗi đoạn đỉnh sâu nhất và nông
+  nhất, ta biết đoạn ấy có chứa độ sâu \(k\) hay không, rồi nhị phân vị trí xuất
+  hiện cuối cùng.
+  \item Cùng phương pháp đó cũng truy vấn được tổ tiên ở độ sâu bất kỳ của một
+  đỉnh.
+  \item Trong loại truy vấn thứ nhất cần LCA của hai đỉnh \(x,y\). Cách nhân đôi
+  cho \(O(\log^2 n)\), nhưng có thể xét đỉnh có độ sâu nhỏ nhất giữa \(x\) và
+  \(y\) trong thứ tự DFS; cha của đỉnh ấy chính là LCA. Vì vậy bài toán chuyển
+  thành truy vấn nhỏ nhất trên đoạn và xử lý trong \(O(\log n)\).
+\end{enumerate}
+
+\paragraph{Thứ tự DFS và khả năng lưu phiên bản.}
+Cây cân bằng duy trì thứ tự DFS có thể làm persistent, dẫn tới bài sau. Cho một
+cây gốc \(0\), cần hỗ trợ:
+\begin{enumerate}
+  \item thêm một đỉnh trọng số \(0\) vào cây;
+  \item cộng một giá trị vào toàn bộ cây con;
+  \item hỏi trọng số của một đỉnh;
+  \item hỏi tổng trọng số của một cây con;
+  \item đưa trạng thái cây hiện tại về trạng thái sau một thao tác trước đó.
+\end{enumerate}
+
+Cộng cây con, thêm đỉnh và truy vấn cây con đều là các thao tác đoạn cơ bản trên
+cây cân bằng. Nhưng yêu cầu persistent gây khó khăn: muốn truy vấn đoạn tương
+ứng với một đỉnh, ta thường phải đi theo cha của đỉnh đó; nếu cây cân bằng cũng
+duy trì con trỏ cha thì gần như không thể persistent được. Persistent hóa cả bộ
+nhớ cấp phát chỉ có ý nghĩa lý thuyết, còn trong thực tế hằng số và độ phức tạp
+cài đặt đều khó chấp nhận.
+
+Vì vậy phải dùng cây cân bằng không duy trì cha, nhưng vẫn cần truy vấn tới đúng
+một đỉnh. Cách giải đưa vào khái niệm nhãn động: mỗi nút trong cây cân bằng có
+một nhãn, đồng thời persistent hóa cả nhãn lẫn cây cân bằng. Để duy trì nhãn,
+cần dùng cây cân bằng theo trọng lượng. Nếu dùng Treap persistent, sau khi chèn
+một đỉnh ta sửa nhãn của toàn bộ cây con tương ứng. Nhờ tính chất của cây cân
+bằng theo trọng lượng, kích thước kỳ vọng của cây con bị sửa là \(O(\log n)\).
+Để persistent hóa nhãn, ta dùng thêm một mảng persistent; nếu hiện thực bằng cây
+đoạn thì độ phức tạp là \(O(\log^2 n)\).
+
+\subsubsection{Euler tour tree}
+
+Tiếp theo là Euler tour tree, viết tắt là ETT.
+
+\paragraph{Euler tour là gì.}
+Gọi \(T\) là một cây vô hướng. Tách mỗi cạnh của \(T\) thành hai cạnh có hướng,
+rồi chọn tùy ý một đỉnh \(s\) làm điểm bắt đầu để DFS. Quá trình đó gọi là một
+Euler tour của \(T\). Chú ý rằng chọn đỉnh bắt đầu nào cũng có thể thu được kết
+quả tương đương, vì Euler tour tương ứng với một vòng.
+
+\paragraph{Dãy Euler tour.}
+Đó là dãy các cạnh có hướng đi qua trong Euler tour.
+
+\paragraph{Euler tour tree.}
+Đây là cây tìm kiếm nhị phân duy trì dãy Euler tour, thường hiện thực bằng Splay
+hoặc Treap.
+
+ETT chú trọng duy trì thông tin tổng thể của một cây. Khác với thứ tự DFS, nó có
+thể duy trì thông tin cây con khi chọn bất kỳ đỉnh nào làm gốc, nên xử lý được
+đổi gốc, thao tác vốn hơi khó với thứ tự DFS tĩnh.
+
+\paragraph{Một số chi tiết hiện thực.}
+Thực chất chỉ cần hỗ trợ hai thao tác: thêm cạnh và xóa cạnh.
+
+\begin{itemize}
+  \item Thêm cạnh, tức nối hai cây: có thể xem là ghép hai vòng. Ta cắt hai vòng
+  ra ở vị trí thích hợp rồi nối lại.
+  \item Xóa cạnh, tức tách một cây thành hai cây: có thể xem là cắt một vòng
+  thành hai vòng. Thao tác này cũng không khó.
+\end{itemize}
+
+\subsubsection{Ứng dụng đơn giản của ETT}
+
+Cho một đồ thị, mỗi lần có thể thêm cạnh, xóa cạnh, hoặc hỏi tính liên thông giữa
+hai đỉnh bất kỳ.
+
+Cách giải bài này khá phức tạp, ở đây chỉ mô tả ngắn gọn. Vì cần biết hai đỉnh
+có liên thông hay không, ta tự nhiên nghĩ tới rừng khung; nhưng rừng khung đơn
+thuần không xử lý được xóa cạnh.
+
+Dùng thuật toán chia tầng: gán cho mỗi cạnh một nhãn \(e_i\), sao cho với các
+cạnh có nhãn không vượt quá \(e\), kích thước thành phần liên thông được khống
+chế theo tầng; nhãn lớn nhất chỉ cỡ \(\log n\). Với mỗi tầng \(e\), dùng ETT để
+duy trì cây khung nhỏ nhất theo nhãn trong đồ thị gồm các cạnh có nhãn không vượt
+quá \(e\).
+
+Khi thêm cạnh, đặt nhãn của nó là \(\log n\) rồi thêm vào cây khung nhỏ nhất của
+tầng ấy, mất \(O(\log n)\). Khi hỏi liên thông, kiểm tra ở tầng cao nhất, cũng
+mất \(O(\log n)\).
+
+Điểm mấu chốt là xóa cạnh. Trước hết tìm nhãn của cạnh này. Nếu nó không nằm
+trong cây khung nhỏ nhất của tầng hiện tại thì xóa trực tiếp. Nếu có, giả sử hai
+đầu mút là \(x,y\); trong mọi đồ thị ở tầng không nhỏ hơn nhãn của cạnh, cần tìm
+một cạnh thay thế nối hai cây con bị tách. Lấy cây con nhỏ hơn, quét các cạnh
+của nhãn hiện tại đi ra ngoài nó; nếu cạnh nối sang cây con còn lại thì ta tìm
+được cạnh thay thế. Nếu không, hạ nhãn các cạnh đã quét xuống \(1\) và đưa chúng
+vào đồ thị tầng thấp hơn. Vì cây con được quét có kích thước không quá một nửa
+thành phần cũ, tính chất phân tầng không bị phá vỡ.
+
+Số lần hạ nhãn quyết định tổng độ phức tạp; tổng các nhãn là \(O(m\log n)\), nên
+tổng thời gian vào khoảng \(O(n\log^2 n)\). Các việc như duy trì kích thước cây
+con, thêm/xóa cạnh và tìm cạnh của nhãn hiện tại nối ra ngoài một cây đều có thể
+hiện thực bằng ETT.
+
+\subsection{Một số mở rộng của LCT}
+
+LCT không chỉ làm được các thao tác chuỗi đơn giản mà còn có thể giải một số vấn
+đề thú vị hơn. Dưới đây là hai ví dụ.
+
+\subsubsection{LCT và duy trì thông tin cây con}
+
+Ở trên, thứ tự DFS và ETT đã được dùng cho truy vấn cây con. Vậy LCT có hoàn
+toàn không xử lý được cây con hay không?
+
+Chẳng hạn bài \emph{Tree} ở mục trước, liệu có thể dùng LCT không? Thực ra là
+có.
+
+Xét cách duy trì trong cây động: với mỗi đỉnh, lưu giá trị lớn nhất trong các
+cây con đi ra từ mọi cạnh ảo của đỉnh đó, thường tính cả chính đỉnh để tiện cài
+đặt. Nếu biết giá trị lớn nhất của từng cây con tương ứng với cạnh ảo, ta có thể
+duy trì bằng heap; gọi đại lượng này là giá trị \(A\).
+
+Tương tự, định nghĩa giá trị lớn nhất của một chuỗi là giá trị lớn nhất trong
+các giá trị \(A\) của mọi đỉnh trên chuỗi, tức là lớn nhất trong các cây con đi
+ra từ cạnh ảo của các đỉnh trên chuỗi. Đại lượng này rất dễ duy trì trong Splay.
+Vì vậy, muốn hỏi giá trị lớn nhất trong cây con lấy gốc tại một đỉnh nào đó trên
+chuỗi, chỉ cần hỏi giá trị \(A\) lớn nhất trên đoạn tương ứng trong Splay.
+
+Còn giá trị \(A\) thay đổi thế nào? Thao tác then chốt của LCT là
+\texttt{access}. Trong một bước của \texttt{access}, một cạnh thực biến thành
+cạnh ảo, và một cạnh ảo biến thành cạnh thực. Khi cạnh thực chuyển thành cạnh
+ảo, ta đưa giá trị lớn nhất của cây con ở phía con vào cấu trúc \(A\) của cha;
+khi cạnh ảo chuyển thành cạnh thực thì xóa nó khỏi đó. Khi \texttt{access} chạy,
+các thông tin trên đường từ đỉnh tới gốc được cập nhật tương ứng. Vì LCT đảm bảo
+độ phức tạp khấu hao \(O(\log n)\), nhân thêm chi phí heap để duy trì \(A\), bài
+toán được giải trong \(O(\log^2 n)\) khấu hao.
+
+Về đổi gốc, cần nói thêm rằng cách duy trì \(A\) hoàn toàn không phụ thuộc vào
+gốc, nên thao tác đổi gốc không làm phương pháp mất hiệu lực.
+
+\subsubsection{Một biến thể LCT}
+
+Xét bài \emph{Lord} từ một đợt chọn đội IOI 2012. Cần hỏi tổng các số trong một
+cây con và hỗ trợ:
+\begin{enumerate}
+  \item hỏi, khi lấy \(x\) làm gốc, tổng các số trong cây con của \(y\);
+  \item đảo các số trên đường đi \(x,y\);
+  \item đổi giá trị của \(x\) thành \(y\);
+  \item nối \(x\) với \(y\);
+  \item khi lấy \(x\) làm gốc, xóa cạnh nối \(y\) với cha của nó.
+\end{enumerate}
+
+Bài này chỉ hỏi tổng cây con, nhưng vì có thao tác đảo trên chuỗi nên không thể
+dùng ETT. Ta buộc phải nghĩ tới cây động.
+
+Dùng cách vừa nêu có thể duy trì thông tin cây con, nhưng làm sao hiện thực thao
+tác đảo trọng số trên đường đi? Một cách là không duy trì trực tiếp trọng số trên
+cây động. Thay vào đó, với mỗi chuỗi trên cây động, dùng một Splay mới để duy
+trì các trọng số trên chuỗi ấy; khi đó phép đảo chuỗi có thể thực hiện được. Trên
+cây động, với mỗi đỉnh chỉ cần duy trì tổng trọng số của các cây con đi ra từ
+cạnh ảo. Nhìn ban đầu độ phức tạp có vẻ là \(O(n\log^2 n)\), nhưng hai loại thao
+tác Splay là tương đương trong phân tích khấu hao, nên tổng thời gian vẫn nên ở
+mức \(O(n\log n)\).
+
+\subsection{Bài toán tổng hợp}
+
+\subsubsection{Phát biểu}
+
+Cho một cây, cần hỗ trợ:
+\begin{enumerate}
+  \item cộng hoặc gán một giá trị cho mọi đỉnh trong một cây con;
+  \item cộng hoặc gán một giá trị cho mọi đỉnh trên một chuỗi;
+  \item hỏi giá trị lớn nhất, nhỏ nhất hoặc tổng trọng số trong một cây con;
+  \item hỏi giá trị lớn nhất, nhỏ nhất hoặc tổng trọng số trên một chuỗi;
+  \item thêm cạnh và xóa cạnh.
+\end{enumerate}
+
+\subsubsection{Cách làm bằng ETT}
+
+Bài này có thao tác trên chuỗi, còn ETT vốn không thể thao tác trực tiếp trên
+chuỗi. Nếu dùng LCT mà lại có tag cây con, cài đặt cũng rất phức tạp.
+
+Tuy nhiên vẫn có cách giải. Xét Euler tour của một cây. Trong ETT, sau lần xuất
+hiện đầu tiên của một đỉnh, một đoạn liên tiếp biểu diễn đường đi bắt đầu từ
+đỉnh đó và liên tục đi xuống người con đầu tiên. Điều này cho thấy việc biểu
+diễn đường đi trong ETT là khả thi.
+
+Ta kết hợp với LCT: đặt người con đầu tiên của mỗi đỉnh thành đứa con duy nhất
+nối bằng cạnh thực trong LCT. Thay đổi thứ tự cây con trong ETT chỉ tương ứng
+với thay đổi thứ tự các đoạn.
+
+Nếu LCT thực hiện một lần \texttt{access}, một số cạnh lần lượt trở thành cạnh
+thực; ta thực hiện các sửa đổi tương ứng trong ETT. Đổi gốc cũng được cả LCT và
+ETT hỗ trợ tốt nên xử lý được. Độ phức tạp của LCT là \(O(n\log n)\), vì thế số
+thao tác tương ứng trong ETT cũng là \(O(n\log n)\), tổng thời gian
+\(O(n\log^2 n)\).
+
+Với truy vấn và cập nhật, vì cả chuỗi lẫn cây con đều đã tương ứng với các đoạn
+trong ETT, ta chỉ cần dùng cây cân bằng trong ETT để duy trì thông tin.
+
+\subsubsection{Một cách làm bằng LCT}
+
+Chỉ dùng cây động thông thường thì không thể làm thao tác cây con, trong khi
+trọng tâm của bài này lại là sửa và hỏi cây con. Vì thế độ khó tăng lên nhiều
+bậc. Dù vậy, vẫn có thể dùng LCT để đạt \(O(n\log n)\).
+
+\paragraph{Một mẹo đơn giản.}
+Các thao tác sửa hoặc cộng thêm một số, hoặc gán thành một số. Ta có thể thống
+nhất tag dưới dạng \(a x+b\), chỉ cần lưu \(a,b\); khi viết chương trình sẽ rất
+tiện.
+
+\paragraph{Một hình minh họa.}
+Nếu dùng LCT truyền thống, vấn đề nằm ở việc đẩy tag xuống và kéo thông tin lên.
+Hình trong bản gốc vẽ các cạnh thực bằng nét liền và cạnh ảo bằng nét đứt; các
+đỉnh được sắp theo độ sâu từ trên xuống dưới.
+
+\paragraph{Gộp thông tin.}
+Một Splay duy trì chuỗi nối bởi cạnh thực, vì thế thông tin lớn nhất, nhỏ nhất
+trên chuỗi rất dễ thống kê.
+
+Tiếp theo xét cạnh ảo. Vì cần gộp thông tin cây con, ta dùng thông tin của cây
+con đi ra từ mỗi cạnh ảo để cập nhật thông tin trên chuỗi thực. Với một chuỗi
+cần duy trì ba loại thông tin:
+\begin{enumerate}
+  \item \texttt{chain}: thông tin của các đỉnh nằm bên trong chuỗi;
+  \item \texttt{tree}: tổng thông tin của mọi cây con đi ra từ cạnh ảo của các
+  đỉnh trên chuỗi, không tính bản thân chuỗi;
+  \item \texttt{all}: tổng của hai loại trên, tức thông tin cây con của đỉnh cao
+  nhất của chuỗi.
+\end{enumerate}
+
+Vì chuỗi được duy trì bằng Splay, mỗi nút Splay đều lưu các giá trị này, không
+khác nhiều so với cây động thông thường. Bản gốc minh họa bằng cách xoay các
+chuỗi nằm ngang: \texttt{chain} được Splay duy trì trực tiếp; nếu tính được
+\texttt{tree} thì \texttt{all} chỉ là phép gộp đơn giản.
+
+\paragraph{AAA tree.}
+Vấn đề còn lại là tính \texttt{tree}. Nếu với mỗi đỉnh ta lưu thô mọi cạnh ảo đi
+ra, có thể liệt kê các chuỗi tương ứng và dùng \texttt{all} của chúng để cập
+nhật \texttt{tree}; nhưng cách này quá chậm. Vì vậy cần sửa đổi LCT ban đầu.
+
+AAA tree được đưa vào cho mục đích này: với các cạnh ảo đi ra từ mỗi đỉnh, cũng
+dùng Splay để duy trì các điểm tương ứng. Để cài đặt tiện hơn, ta thêm một số nút
+nội bộ, gọi là \emph{inner}. Bản gốc vẽ các nút đỏ là nút nội bộ mới thêm; mọi
+lá màu đen chính là các đỉnh tương ứng với cạnh ảo trong cây gốc. Số nút nội bộ
+không vượt quá số nút lá, nên không làm đổi độ phức tạp.
+
+Rõ ràng mỗi chuỗi chỉ thuộc một AAA tree, và AAA tree của một đỉnh chứa mọi cạnh
+ảo đi ra từ đỉnh ấy. Nhờ AAA tree, ta thực hiện được hai thao tác:
+\begin{enumerate}
+  \item \texttt{add}: nối gốc của một chuỗi vào một đỉnh của chuỗi khác. Chỉ cần
+  chèn gốc chuỗi vào AAA tree của đỉnh đó như chèn Splay thông thường; để bảo
+  đảm nó là lá, cần thêm nút nội bộ nếu cần.
+  \item \texttt{del}: cắt một chuỗi đi ra từ cạnh ảo. Dùng xóa Splay thông
+  thường; nếu sau khi xóa có nút nội bộ có quá ít con đen, cũng xóa nút nội bộ
+  ấy, hoặc nếu nó chỉ còn một con thì để con ấy thay nó nối lên cha.
+\end{enumerate}
+
+Khi cần cập nhật thông tin của một đỉnh trên chuỗi thực, ta chỉ dùng thông tin ở
+gốc AAA tree tương ứng.
+
+\paragraph{AAA tree và \texttt{access}.}
+Xét \texttt{access} dưới cấu trúc này. Đây là thao tác quan trọng nhất của cây
+động; có nó thì về cơ bản các bài cây động đều xử lý được.
+
+Sau khi có hai thao tác \texttt{add} và \texttt{del}, \texttt{access} không bị
+ảnh hưởng. Trong mỗi vòng lặp của \texttt{access}, ta chỉ làm các việc:
+\begin{enumerate}
+  \item tìm cha của chuỗi hiện tại, có thể tìm thông qua cha của gốc AAA tree của
+  chuỗi ấy;
+  \item biến một cạnh thực thành cạnh ảo, tức là thao tác \texttt{add};
+  \item biến một cạnh ảo thành cạnh thực, tức là thao tác \texttt{del}.
+\end{enumerate}
+
+Nhờ vậy việc gộp thông tin trong LCT trở nên khả thi.
+
+\paragraph{Tag.}
+Cần hiện thực các thao tác sửa, tức là tag và đẩy tag xuống. Có hai loại tag rõ
+ràng.
+
+Loại thứ nhất là \texttt{treeflag}, biểu thị sửa đổi trong cây con tương ứng với
+chuỗi này, chú ý không bao gồm sửa đổi trên chính chuỗi. Loại thứ hai là
+\texttt{chainflag}, tức sửa đổi trên chuỗi.
+
+Đẩy \texttt{chainflag} xuống là việc đơn giản và quen thuộc. Còn
+\texttt{treeflag} có hai tình huống:
+\begin{enumerate}
+  \item Nếu ở trong Splay của chuỗi thực hoặc đẩy xuống nút nội bộ, cứ đẩy trực
+  tiếp, không cần sửa đổi.
+  \item Nếu đẩy từ AAA tree xuống nút ngoài, cần tách \texttt{treeflag} thành
+  \texttt{chainflag} cộng \texttt{treeflag}, vì \texttt{treeflag} không bao gồm
+  phần sửa đổi trên chuỗi.
+\end{enumerate}
+
+\paragraph{Chi tiết hiện thực.}
+AAA tree nhìn có vẻ rắc rối, nhưng thực ra chỉ cần đổi mảng hai con
+\texttt{ch[2]} trong nút LCT thành bốn con \texttt{ch[4]}. Truyền thêm một biến
+\texttt{type} để quyết định thao tác hiện tại đang xét trong LCT hay trong AAA
+tree. Đặt thêm một cờ \texttt{inner} cho nút nội bộ để tiện xử lý tag.
+
+\paragraph{Độ phức tạp.}
+Theo phân tích không quá nghiêm ngặt, độ phức tạp của cách làm này không vượt quá
+\(O(\log n)\) khấu hao mỗi thao tác. Trong bài báo về self-adjusting top tree,
+độ phức tạp khấu hao cũng được chứng minh là \(O(\log n)\), tuy có một hằng số
+96. Trong thực tế, cách làm này vẫn chạy khá nhanh.
+
+\paragraph{Tên gọi.}
+Trong tài liệu của Tarjan và Werneck, cấu trúc này được gọi là
+\emph{self-adjusting top tree}. Nhưng nếu xem nó như một mở rộng đơn giản của
+LCT thì sẽ dễ hiểu hơn.
+
+\subsubsection{Phương pháp rake và compress}
+
+Trong một tài liệu khác có nhắc tới một cấu trúc dữ liệu thú vị: RC tree.
+
+Cụ thể, với một cây, có thể dùng hai kiểu nút để chia nó thành các cây con nhỏ
+hơn. Nút \emph{rake} đại diện cho cây con gốc tại một đỉnh trong cây ban đầu.
+Nút \emph{compress} đại diện cho toàn bộ cây con của các đỉnh trên một chuỗi
+trong cây ban đầu.
+
+Dùng hai loại nút này để phân rã cây có thể đạt hiệu quả tương tự cây động. Kết
+hợp chiến lược ngẫu nhiên, độ sâu kỳ vọng là \(O(\log n)\). Tuy nhiên, trong bài
+báo về top tree có nêu hạn chế của cách này: nó yêu cầu số đỉnh trong mỗi cụm là
+hằng số. Nếu hy sinh một phần độ phức tạp thời gian, có lẽ vẫn giải được bài cây
+động ban đầu; tác giả chưa hiện thực nên không dám khẳng định.
+
+\subsection{Cây xương rồng động}
+
+Phần này tri ân Lu Kaifeng. Ở đây bài viết giới thiệu ngắn về bài toán cây xương
+rồng động và lời giải liên quan.
+
+\subsubsection{Tóm tắt bài toán}
+
+Đồ thị xương rồng là đồ thị trong đó mỗi cạnh thuộc nhiều nhất một chu trình đơn.
+Bài toán xương rồng động yêu cầu duy trì động một đồ thị xương rồng. Do kỹ thuật
+còn hạn chế, hiện tại chủ yếu xét cập nhật và truy vấn trên đường đi.
+
+Trong xương rồng, giữa hai đỉnh có thể có nhiều đường đi đơn; khi nói tới đường
+đi \((u,v)\), ta thường chọn đường đi ngắn hơn hoặc đường đi theo quy ước của
+bài toán.
+
+Bài toán xương rồng động được chia thành ba biến thể có độ khó tăng dần:
+\begin{enumerate}
+  \item thêm/xóa cạnh và hỏi độ dài đường đi ngắn nhất;
+  \item trên cơ sở biến thể trước, mỗi cạnh có thêm một trọng số cố định, cần
+  hỏi giá trị nhỏ nhất trên một đường đi;
+  \item trên cơ sở đó, hỗ trợ thêm các phép sửa đổi trên một đoạn đường đi.
+\end{enumerate}
+
+\subsubsection{Một thuật toán xuất sắc}
+
+Cách rõ ràng nhất là dùng LCT để duy trì cây khung của xương rồng. Có thể đạt
+độ phức tạp \(O(n\log n)\), tức mức tối ưu về lý thuyết.
+
+Nhưng hiện thực cụ thể của cách này quá phức tạp, nên bài viết không bàn tiếp.
+Bạn đọc quan tâm có thể xem lời giải liên quan của Lu Kaifeng.
+
+\subsubsection{Link/cut cactus}
+
+Vì sao duy trì cây khung lại phiền như vậy? Vì áp thẳng một thuật toán trên cây
+vào đồ thị xương rồng sẽ không tránh khỏi nhiều phân tích trường hợp phức tạp.
+Để có một cách dễ viết hơn, cần thoát khỏi khuôn khổ cây. Hãy nghĩ cách sửa cấu
+trúc link/cut tree để nó thích ứng với đồ thị xương rồng; từ đó thu được một cấu
+trúc mới: link/cut cactus.
+
+\subsubsection{Phân rã đồ thị xương rồng}
+
+Bắt chước LCT, để có LCC trước hết phải xét cách chia đồ thị xương rồng thành
+nhiều chuỗi không giao nhau. Chọn tùy ý một đỉnh làm gốc.
+
+Nếu không có chu trình, mọi khái niệm định nghĩa giống LCT. Nếu có chu trình thì
+sao?
+
+Trước hết, cần bảo đảm mỗi chuỗi thu được là một đường đi hợp lệ, tức đường đi
+ngắn nhất giữa hai đầu mút của nó. Nếu xem một chu trình như một đỉnh trong LCT,
+còn phải bảo đảm với mỗi chu trình, theo hướng đi xuống xa gốc chỉ có nhiều nhất
+một cạnh đi ra.
+
+Thứ hai, mặc dù một đỉnh có thể thuộc rất nhiều chu trình, nó chỉ được thuộc một
+chuỗi.
+
+Gọi các cạnh trong chuỗi là cạnh thực, còn các cạnh khác là cạnh ảo. Với một
+chu trình, gọi đỉnh gần gốc nhất là gốc của chu trình. Nếu từ một đỉnh trên chu
+trình có cạnh đi xuống, chu trình có thể được phân rã theo hai kiểu trong hình
+gốc. Mô tả bằng lời: bỏ gốc ra, một chu trình nhiều nhất tách thành hai chuỗi;
+chỉ một trong hai phần có thể có một đầu mút nối tiếp xuống dưới bằng cạnh thực.
+Phần đó gọi là chuỗi \(b\), phần còn lại gọi là chuỗi \texttt{other}.
+
+Điểm khác nhau giữa hai kiểu phân rã nằm ở việc gốc có nối với các đỉnh khác
+trên chu trình hay không. Có thể thấy một đỉnh có thể làm gốc của nhiều chu
+trình, nhưng nhiều nhất chỉ thuộc chuỗi \(b\) hoặc \texttt{other} của một chu
+trình. Vì vậy có thể duy trì trực tiếp tất cả các chuỗi.
+
+\subsubsection{\texttt{access}}
+
+Tiếp theo xét \texttt{access}. Với cây động, chỉ cần thực hiện được
+\texttt{access} thì bài toán về cơ bản được giải quyết.
+
+Ý nghĩa của nó là nối đường đi ngắn nhất từ một đỉnh tới gốc thành một chuỗi.
+Giả sử trong quá trình \texttt{access}, đỉnh hiện tại là \(u\). Ta tìm cạnh đi
+trước \(u\) trong LCC, có thể dùng định nghĩa chuỗi và đường đi ngắn nhất. Nếu
+cạnh này không nằm trong chu trình, cách làm giống LCT.
+
+Nếu cạnh ấy nằm trong một chu trình, tìm chu trình chứa nó. Chắc chắn \(u\) không
+phải gốc của chu trình, gọi gốc là \(a\). Ta thực hiện thao tác sau: nối chuỗi
+\(b\) và chuỗi \texttt{other}, rồi cắt tại \(u\), sao cho \(u\) nằm trên chuỗi
+ngắn hơn; thu được các chuỗi \(b\) và \texttt{other} mới, đồng thời \(u\) đúng là
+một đầu mút của \(b\). Gọi thao tác này là \emph{Expand}. Sau đó nối chuỗi đi
+xuống từ \(u\) với chuỗi \(b\) mới là hoàn thành xử lý đỉnh \(u\).
+
+Cần chú ý đỉnh \(a\): nếu \(a\) nối với chuỗi \(b\) ban đầu, cuối cùng phải nối
+\(a\) với chuỗi \(b\) mới; nếu không, trước hết thực hiện \emph{Expand} trên
+\(a\), rồi mới nối với chuỗi \(b\) mới.
+
+\subsubsection{Đổi gốc}
+
+May mắn là đổi gốc rất đơn giản. Thực hiện \texttt{access} trên gốc mới để lấy
+đường đi, rồi đảo đường đi đó.
+
+LCC yêu cầu với mỗi chu trình phải duy trì các chuỗi \(b\) và \texttt{other}
+tương ứng. Sau khi đảo, các giá trị này có thể thay đổi. Cách xử lý đơn giản là:
+mỗi khi đi qua một chu trình, kiểm tra thứ tự của \(b\) trên đường đi; nếu thứ
+tự khác trước, đảo chuỗi tương ứng trong chu trình và hoán đổi các giá trị liên
+quan.
+
+\subsubsection{Các thao tác khác}
+
+Sau khi đã có \texttt{access} và đổi gốc, các thao tác còn lại trở nên rất đơn
+giản.
+
+\subsubsection{Một vài chi tiết nhỏ}
+
+Vì trọng số trong bài nằm trên cạnh, với mỗi đỉnh cần duy trì hai cạnh của chuỗi
+kề với nó, để sau khi đảo vẫn lấy được đúng tập cạnh.
+
+Bài toán còn yêu cầu phán đoán đường đi ngắn nhất có duy nhất hay không. Cách xử
+lý là với mỗi chu trình ghi nhận độ dài chuỗi \(b\) và chuỗi \texttt{other} có
+bằng nhau hay không, rồi dùng thông tin đó để đánh dấu các đường đi tương ứng.
+
+\subsubsection{Độ phức tạp}
+
+Vì việc chuyển đổi cạnh thực và cạnh ảo trong LCC tương tự LCT, tổng số lần sẽ
+không vượt quá bậc \(n\log n\). Tính thêm Splay, độ phức tạp là
+\(O(n\log^2 n)\). Theo thử nghiệm, hiệu suất cũng khá tốt.
+
+\subsubsection{Một số hướng mở rộng}
+
+LCC cũng là một cấu trúc dữ liệu linh hoạt như LCT. Có thể suy nghĩ tiếp các
+hướng sau:
+\begin{enumerate}
+  \item liệu có thể persistent hóa hay không;
+  \item liệu có thể kết hợp self-adjusting top tree với LCC để xử lý thao tác và
+  truy vấn trên ``xương rồng con'' hay không;
+  \item liệu có thể mở rộng thứ tự DFS sang đồ thị xương rồng hay không;
+  \item dùng LCC thế nào để tối ưu các bài thống kê và tối ưu hóa trên đồ thị
+  xương rồng.
+\end{enumerate}
+
+Bạn đọc quan tâm được khuyến khích tiếp tục suy nghĩ về các vấn đề này.
+
+\subsection*{Hậu ký}
+
+Bài viết đã giới thiệu sơ lược các bài toán cây động trong thi tin học.
+
+Tác giả chọn chủ đề này có lẽ vì bản thân khá hứng thú với các vấn đề liên quan.
+Hai năm gần đây, cây động trở thành đề tài nóng trong nhiều kỳ thi mô phỏng; độ
+khó tăng dần và dạng bài cũng ngày càng nhiều. Vì vậy tác giả muốn tổng kết lại
+lớp vấn đề này.
+
+Do thời gian gấp và năng lực tác giả có hạn, nhiều vấn đề chưa được đề cập. Dù
+vậy, hy vọng bài viết có thể giúp những OIer sắp học hoặc đang học cây động; nếu
+được như vậy thì bài viết cũng đã có ý nghĩa.
+
+\subsection*{Lời cảm ơn}
+
+Cảm ơn thầy Liao Xiaogang đã quan tâm và chăm sóc trong học tập cũng như đời
+sống. Cảm ơn các thầy Zhu Quanmin và Qu Yunhua đã chỉ dạy. Cảm ơn các huấn luyện
+viên đội tuyển quốc gia vì sự cống hiến vất vả. Cảm ơn CCF đã cung cấp nền tảng
+và cơ hội.
+
+Cảm ơn các bạn Gan Zhengfei, Liu Yanyi, Mao Xuan, Peng Yuxiang, Yang Dingcheng,
+Liu Jiancheng, Tan Bowen, Yang Zhanglin, Su Yufeng và nhiều bạn khác đã góp ý và
+giúp đỡ. Cảm ơn Chen Lijie, từ bạn ấy tác giả học được top tree và nhiều thuật
+toán thú vị khác. Cảm ơn Lu Kaifeng vì nghiên cứu tiên phong về bài toán xương
+rồng động. Cảm ơn các bạn trong đội tuyển đã cùng tác giả trải qua một khoảng
+thời gian vui vẻ.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Liu Rujia, Huang Liang, \emph{Nghệ thuật thuật toán và thi tin học}, Nhà
+  xuất bản Đại học Thanh Hoa.
+  \item Liu Rujia, \emph{Nhập môn kinh điển thi thuật toán}, Nhà xuất bản Đại
+  học Thanh Hoa.
+  \item Cen Ruoxu, \emph{Bàn về các bài toán xây dựng đơn giản trong thi thuật
+  toán}.
+  \item Yang Zhe, \emph{Một số nghiên cứu về lời giải SPOJ375 QTREE}, bài tập
+  đội tuyển quốc gia năm 2007.
+  \item tthe, \emph{Báo cáo lời giải HNOI 2010}, bài tập đội tuyển quốc gia năm
+  2011.
+  \item Chen Lijie, \emph{Ứng dụng của cây cân bằng theo trọng lượng và cây cân
+  bằng hậu tố trong Olympic Tin học}, luận văn đội tuyển quốc gia năm 2013.
+  \item \emph{6.851: Advanced Data Structures}, bài giảng 20.
+  \item Một tài liệu trại đông Olympic Tin học 2014, \emph{Hai thuật toán đồ thị
+  ít gặp}.
+  \item Robert E. Tarjan, Renato F. Werneck, \emph{Self-Adjusting Top Trees}.
+  \item Chen Shouyuan, \emph{Duy trì tính liên thông của rừng: cây động}.
+  \item Một tài liệu về \emph{Dynamic Trees Problem and its Applications}.
+  \item Lu Kaifeng, \emph{Loạt lời giải về xương rồng động}.
+\end{enumerate}
+
 \section*{Ghi chú về nguồn}
 
 Tệp PDF có 228 trang. \texttt{pdftotext} đọc tốt phần mục lục nhưng phần thân
@@ -4453,5 +5201,13 @@ bài kế tiếp \emph{Bàn về các vấn đề liên quan tới cây động 
 đơn giản}. Bài này phải dùng OCR từ ảnh render vì \texttt{pdftotext} tạo
 mojibake; các công thức quy hoạch động, hàm Mobius và các ngưỡng căn bậc hai
 được đối chiếu bằng ảnh render khi OCR bị nhiễu.
+Bài \emph{Bàn về các vấn đề liên quan tới cây động và một số mở rộng đơn giản}
+được dịch từ các trang in 115--136 (trang vật lý PDF 119--140); trang vật lý
+PDF 141 được kiểm tra là trang in 137 và bắt đầu bài kế tiếp \emph{Ứng dụng
+thuật toán ngẫu nhiên trong thi tin học}. Bài này phải dùng OCR từ ảnh render
+vì \texttt{pdftotext} tạo mojibake; các hình minh họa AAA tree và link/cut
+cactus được chuyển thành mô tả văn bản, còn các dòng độ phức tạp và phần tài
+liệu tham khảo có tên riêng bị OCR nhiễu được đối chiếu lại bằng ảnh render khi
+cần.
 
 \end{document}

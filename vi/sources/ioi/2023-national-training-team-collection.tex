@@ -21,7 +21,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2023. Tệp được
 tạo bằng LaTeX với lớp văn bản Unicode đọc được; mục lục và các trang thân bài
 đã kiểm tra đều trích xuất tốt bằng \texttt{pdftotext}. Bản LaTeX này chuyển
-ngữ phần nhận diện tập sách, toàn bộ mục lục và mười ba bài đầu tiên, đồng thời ghi
+ngữ phần nhận diện tập sách, toàn bộ mục lục và mười bốn bài đầu tiên, đồng thời ghi
 lại các chủ đề chính để phục vụ bản dịch chi tiết hơn.
 \end{abstract}
 
@@ -6691,6 +6691,782 @@ ngữ Nam Kinh đã giảng dạy; cảm ơn cha mẹ đã quan tâm và hỗ tr
   gia Trung Quốc IOI 2019.
   \item Lin Haohan. Báo cáo ra đề \emph{Đi dạo công viên}, tập luận văn đội
   tuyển quốc gia Trung Quốc IOI 2021.
+\end{enumerate}
+
+\section{Bước đầu về hypercube và các thuật toán liên quan}
+
+\begin{center}
+Trường Trung học phổ thông số 2 trực thuộc Đại học Sư phạm Hoa Đông\\
+Guan Yanru
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Hypercube là một loại đồ thị vô hướng đặc biệt, có định nghĩa ngắn gọn và cấu
+trúc đẹp. Bài viết hệ thống nhiều cách định nghĩa và các tính chất của
+hypercube, khảo sát những thuật toán có bản chất liên quan tới hypercube, và
+thảo luận các ví dụ, mô hình gần gũi với thi tin học. Tác giả hy vọng bài viết
+gợi mở để người đọc tiếp tục học và nghiên cứu các bài toán trên hypercube.
+\end{abstract}
+
+\subsection{Dẫn nhập}
+
+Hypercube là đồ thị vô hướng gồm \(2^n\) đỉnh và \(2^{n-1}n\) cạnh, có tính đối
+xứng cao. Trong toán học, việc nghiên cứu hypercube có thể truy ngược tới thập
+niên 1980. Mô hình này cũng từng xuất hiện trong tuyển chọn tỉnh Giang Tô năm
+2013 và eJOI 2021, nhưng đến nay vẫn chưa thật sự quen thuộc với nhiều thí
+sinh.
+
+Bài viết này tổng kết các tính chất của hypercube và khai thác giá trị ứng
+dụng của nó trong thi tin học. Nội dung gồm: các định nghĩa và đặc điểm cấu
+trúc; tính chất khi xem hypercube như đồ thị vô hướng; tính chất khi xem nó như
+một tập có thứ tự bán phần, bao gồm định lý Dilworth và đảo Mobius; các đồ thị
+con đặc biệt như chu trình và lưới; và cuối cùng là bài toán tồn tại, xây dựng
+Magic Labeling trên hypercube.
+
+\subsection{Định nghĩa}
+
+\subsubsection{Quy ước ký hiệu}
+
+Ký hiệu \(K_n\) là đồ thị đầy đủ gồm \(n\) đỉnh; \(C_n\) là chu trình gồm
+\(n\) đỉnh và \(n\) cạnh; \(P_n\) là đường đi gồm \(n\) đỉnh. Với đồ thị vô
+hướng, \(N(v)\) là tập hàng xóm của \(v\), và
+\[
+  N(V)=\bigcup_{v\in V} N(v).
+\]
+Với hai tập \(A,B\), tích Descartes là
+\[
+  A\times B=\{(x,y)\mid x\in A,\ y\in B\}.
+\]
+Với hai đồ thị đơn vô hướng \(G_1=(V_1,E_1)\) và \(G_2=(V_2,E_2)\), tích
+Descartes của hai đồ thị là \(G_1\times G_2=(V,E)\), trong đó
+\[
+  V=V_1\times V_2,
+\]
+và
+\[
+  E=\{((x,y),(z,w))\mid x=z,\ (y,w)\in E_2
+  \text{ hoặc } (x,z)\in E_1,\ y=w\}.
+\]
+Nếu không xét dấu ngoặc trong bộ nhiều thành phần, tích Descartes có tính kết
+hợp.
+
+\subsubsection{Định nghĩa trực tiếp của hypercube}
+
+Với \(n\in\mathbb Z_+\), định nghĩa đồ thị vô hướng \(Q_n=(V,E)\) bởi
+\[
+  V=\{0,1,\ldots,2^n-1\},
+\]
+\[
+  E=\{(x,y)\mid \operatorname{popcount}(x\oplus y)=1,\ x,y\in V\}.
+\]
+Nói cách khác, hai đỉnh có cạnh nối khi và chỉ khi biểu diễn nhị phân của
+chúng khác nhau đúng một bit. Đồ thị \(Q_n\) như vậy được gọi là hypercube bậc
+\(n\).
+
+Dễ thấy mọi đỉnh của \(Q_n\) đều có bậc \(n\), nên
+\[
+  |E|=\frac12 n|V|=2^{n-1}n.
+\]
+Với \(n=1,2,3\), ta lần lượt có \(Q_1\simeq K_2\), \(Q_2\simeq C_4\), và
+\(Q_3\) là khung của lập phương ba chiều. Trong phần sau, cạnh nối \(x\) với
+\(x\oplus 2^k\) được gọi là cạnh có hướng \(k\), có tổng cộng \(n\) hướng khác
+nhau.
+
+\subsubsection{Định nghĩa quy nạp}
+
+Dùng tích Descartes của đồ thị, ta có thể định nghĩa hypercube quy nạp.
+
+\paragraph{Bổ đề.}
+Đặt \(Q_1=K_2\), \(Q_n=Q_{n-1}\times K_2\). Định nghĩa này tương đương với định
+nghĩa trực tiếp ở trên.
+
+\paragraph{Chứng minh.}
+Quy nạp theo \(n\). Giả sử \(Q_{n-1}\) đã là hypercube bậc \(n-1\), có thể gán
+nhãn từ \(0\) tới \(2^{n-1}-1\) sao cho cạnh thỏa điều kiện khác đúng một bit.
+Theo \(Q_n=Q_{n-1}\times K_2\), \(Q_n\) tách thành hai phần \(G_0,G_1\), mỗi
+phần đẳng cấu với \(Q_{n-1}\). Gán cho đỉnh trong \(G_0\) nhãn cũ \(v\), còn
+đỉnh tương ứng trong \(G_1\) nhãn \(v+2^{n-1}\). Khi đó cạnh trong từng phần và
+cạnh nối hai phần đều thỏa điều kiện khác đúng một bit.
+
+Khai triển kết luận trên ta được
+\[
+  Q_n=\underbrace{K_2\times K_2\times\cdots\times K_2}_{n\text{ lần}}.
+\]
+
+\subsubsection{Các góc nhìn cấu trúc}
+
+Từ định nghĩa quy nạp, \(Q_n\) có thể được xem là hai bản sao của
+\(Q_{n-1}\), nối nhau bởi các cạnh ghép cặp tương ứng. Thực ra, ta có thể chọn
+bất kỳ bit nào để phân lớp. Đặt
+\[
+  V_{i,k}=\{v\in V\mid \text{bit thứ }i\text{ của }v\text{ bằng }k\},
+\]
+và \(G_{i,k}\) là đồ thị con cảm sinh bởi \(V_{i,k}\), với
+\(0\le i<n,\ k\in\{0,1\}\).
+
+Tổng quát hơn,
+\[
+  Q_n=Q_{n-m}\times Q_m.
+\]
+Ví dụ khi \(m=2\), có thể xem \(Q_n\) gồm bốn bản sao \(Q_{n-2}\); các cạnh
+giữa các bản sao tạo thành \(2^{n-2}\) chu trình \(Q_2=C_4\).
+
+Một góc nhìn khác là chia các đỉnh theo \(\operatorname{popcount}(v)\). Các
+đỉnh \(0\le v<2^n\) được chia thành \(n+1\) tầng. Khi đó:
+\begin{enumerate}
+  \item tầng \(i\) có \(\binom ni\) đỉnh;
+  \item cạnh chỉ nối giữa hai tầng kề nhau;
+  \item mỗi đỉnh ở tầng \(i\) nối \(i\) cạnh xuống tầng \(i-1\) và \(n-i\)
+  cạnh lên tầng \(i+1\).
+\end{enumerate}
+Trong bài viết, góc nhìn này được gọi là góc nhìn ``hình cầu'', và \(S_i\) ký
+hiệu tập đỉnh tầng \(i\).
+
+\subsection{Tính chất trên đồ thị vô hướng}
+
+\subsubsection{Tính chất cơ bản}
+
+\paragraph{Đồ thị hai phía.}
+Tô các đỉnh theo tính chẵn lẻ của \(\operatorname{popcount}\). Mỗi cạnh làm
+thay đổi đúng một bit, nên luôn nối một đỉnh đen với một đỉnh trắng. Vì vậy
+\(Q_n\) là đồ thị hai phía liên thông.
+
+\paragraph{Đường kính.}
+Với mọi \(x,y\in V\),
+\[
+  \operatorname{dist}(x,y)=\operatorname{popcount}(x\oplus y),
+\]
+nên đường kính của \(Q_n\) bằng \(n\).
+
+\paragraph{Tập độc lập lớn nhất.}
+Lấy toàn bộ đỉnh có \(\operatorname{popcount}\) chẵn, hoặc toàn bộ đỉnh có
+\(\operatorname{popcount}\) lẻ, ta được một tập độc lập kích thước \(2^{n-1}\).
+Ngược lại, nếu chọn hơn \(2^{n-1}\) đỉnh thì theo nguyên lý Dirichlet, tồn tại
+hai đỉnh được chọn giống nhau ở mọi bit trừ bit thấp nhất. Chúng kề nhau, mâu
+thuẫn với tập độc lập. Do đó kích thước tập độc lập lớn nhất là \(2^{n-1}\).
+
+\paragraph{Phủ đỉnh nhỏ nhất.}
+Lấy toàn bộ đỉnh có \(\operatorname{popcount}\) chẵn hoặc lẻ, ta được phủ đỉnh
+kích thước \(2^{n-1}\). Mặt khác, \(Q_n\) có \(n2^{n-1}\) cạnh và mỗi đỉnh có
+bậc \(n\), nên cần ít nhất \(2^{n-1}\) đỉnh để phủ hết cạnh. Vậy phủ đỉnh nhỏ
+nhất cũng có kích thước \(2^{n-1}\).
+
+\paragraph{Matching hoàn hảo.}
+Chọn bất kỳ một trong \(n\) hướng rồi tách \(Q_n\) thành hai tầng theo bit
+tương ứng; các cạnh giữa hai tầng tạo thành một matching hoàn hảo, tức ghép
+mỗi \(v\) với \(v\oplus 2^i\). Ngoài ra, ở phần sau ta sẽ thấy \(Q_n\) có chu
+trình Hamilton, nên lấy các cặp đỉnh kề nhau xen kẽ trên chu trình Hamilton
+cũng tạo matching hoàn hảo. Vì vậy matching hoàn hảo của hypercube rất đa
+dạng.
+
+\paragraph{Tự đẳng cấu.}
+Hypercube có tính đối xứng tốt. Nếu đồng thời xor mọi nhãn đỉnh với một
+\(\Delta\), \(0\le\Delta<2^n\), đồ thị thu được vẫn là \(Q_n\). Tương tự, với
+một hoán vị \(p_0,p_1,\ldots,p_{n-1}\) của các bit, ánh xạ
+\[
+  f(v)=\sum_{i=0}^{n-1} [\text{bit }p_i\text{ của }v\text{ bằng }1]2^i
+\]
+là song ánh từ \(V\) tới \(V\) và cũng bảo toàn cấu trúc hypercube.
+
+\subsubsection{Ví dụ: JSOI 2013, \emph{Hypercube}}
+
+Cho một đồ thị vô hướng \(N\) đỉnh, \(m\) cạnh. Cần kiểm tra nó có đẳng cấu với
+một hypercube hay không; nếu có, đưa ra một cách gán nhãn thỏa điều kiện hai
+đỉnh kề khác đúng một bit. Giới hạn \(2\le N\le 32768\).
+
+Trước hết kiểm tra các điều kiện cơ bản: số đỉnh, số cạnh, bậc của mọi đỉnh và
+tính liên thông. Giả sử \(N=2^n\), \(m=2^{n-1}n\), và mọi đỉnh đều có bậc
+\(n\). Nhờ tính tự đẳng cấu, có thể giả sử một đỉnh tùy ý mang nhãn \(0\), và
+theo một thứ tự tùy ý gán các hàng xóm của nó là
+\[
+  2^0,2^1,\ldots,2^{n-1}.
+\]
+
+Từ đỉnh \(0\), chạy BFS để lấy khoảng cách tới mọi đỉnh, tức thu được các tầng
+hình cầu. Nếu đồ thị hợp lệ, với mọi \(v\in S_k\), \(2\le k\le\lfloor n/2\rfloor\),
+nhãn của \(v\) phải là siêu tập của nhãn các đỉnh
+\[
+  u\in S_{k-1}\cap N(v),
+\]
+và thực tế bằng phép OR của các nhãn này. Làm lần lượt với
+\(k=2,3,\ldots,\lfloor n/2\rfloor\) sẽ gán được nửa trên.
+
+Phần còn lại đối xứng và có thể gán từ tầng \(n-2\) trở xuống. Vì thứ tự của
+\(2^0,\ldots,2^{n-1}\) đã cố định, các hàng xóm của đỉnh \(2^n-1\), tức
+\[
+  2^n-1-2^0,\ldots,2^n-1-2^{n-1},
+\]
+không còn được chọn tùy ý. Có thể từ mỗi đỉnh \(2^i\) chạy BFS để tìm đỉnh có
+khoảng cách đúng \(n\), rồi gán nó là \(2^n-1-2^i\). Nếu không tồn tại duy nhất
+một đỉnh như vậy, cấu trúc hình cầu không hợp lệ. Cuối cùng quét mọi cạnh để
+kiểm tra. Độ phức tạp \(O(mn)\). Thực ra khi \(k\ge\lceil n/2\rceil\), vẫn có
+thể lấy phép OR nhãn của \(S_{k-1}\cap N(v)\), nên có thể gán từ trên xuống
+với độ phức tạp \(O(m)\).
+
+Một cách khác là đặt \(\operatorname{ans}[i]\) là đỉnh mang nhãn \(i\). Giả sử
+\(\operatorname{ans}[0]\) và \(\operatorname{ans}[2^i]\) đã biết. Duyệt \(i\)
+tăng dần để xác định các \(\operatorname{ans}[i]\) còn lại. Khi
+\(\operatorname{popcount}(i)>1\), chọn hai nhãn nhỏ hơn \(i\), gọi là
+\(j_1,j_2\), khác \(i\) đúng một bit. Khi đó \(\operatorname{ans}[i]\) phải là
+hàng xóm chung chưa gán nhãn của \(\operatorname{ans}[j_1]\) và
+\(\operatorname{ans}[j_2]\). Trong hypercube, cặp này có đúng hai hàng xóm
+chung; một đã được gán trước đó, nên hàng xóm chưa gán là duy nhất. Nếu ở bước
+nào không tồn tại hoặc không duy nhất, đồ thị không phải hypercube. Cách này
+tốn \(O(2^n n)=O(m)\).
+
+Từ lập luận trên cũng suy ra hai kết luận tổng quát:
+\begin{enumerate}
+  \item với \(x,y\in V\), \(x\ne y\), nếu
+  \(\operatorname{popcount}(x\oplus y)=2\) thì \(x,y\) có đúng hai hàng xóm
+  chung; ngược lại chúng không có hàng xóm chung;
+  \item \(Q_n\) có \(n!2^n\) cách gán nhãn khác nhau thỏa điều kiện hai đỉnh
+  kề khác đúng một bit.
+\end{enumerate}
+
+\subsubsection{Ví dụ: Codeforces 1543E, \emph{The Final Pursuit}}
+
+Tiếp nối ví dụ trước, cho \(Q_n\), cần tô mỗi đỉnh bằng một trong \(n\) màu sao
+cho hàng xóm của mỗi đỉnh có màu đôi một khác nhau. In một phương án hoặc báo
+vô nghiệm. Giới hạn \(1\le n\le 16\), tổng kích thước không vượt \(2^{16}\).
+
+Dùng các số \(0,\ldots,n-1\) biểu diễn màu và giả sử nhãn của \(Q_n\) đã đúng
+định nghĩa. Vì mỗi đỉnh có bậc \(n\), hàng xóm của nó phải nhận đủ \(n\) màu.
+Đếm hai lần cho thấy mỗi màu xuất hiện đúng \(2^n/n\) lần. Do đó cần
+\(n\mid 2^n\), tức \(n=2^k\). Nếu \(n\) không là lũy thừa của \(2\), báo vô
+nghiệm.
+
+Khi \(n=2^k\), đặt
+\[
+  \operatorname{col}(v)=
+  \bigoplus_{\text{bit }i\text{ của }v\text{ bằng }1} i.
+\]
+Các hàng xóm của \(v\) là \(v\oplus 2^i\), \(0\le i<n\), nên màu của chúng là
+\(\operatorname{col}(v)\oplus i\). Khi \(i\) chạy từ \(0\) tới \(2^k-1\), các
+giá trị này lấy đủ mọi màu.
+
+\subsection{Tính chất trên tập thứ tự bán phần}
+
+\subsubsection{Tập thứ tự bán phần}
+
+Với một quan hệ \(A\subseteq V\times V\) trên tập \(V\), viết
+\[
+  x\preceq y \Longleftrightarrow (x,y)\in A.
+\]
+Quan hệ \(A\) là quan hệ thứ tự bán phần nếu thỏa:
+\begin{enumerate}
+  \item phản xạ: \(x\preceq x\);
+  \item phản đối xứng: \(x\preceq y\) và \(y\preceq x\) suy ra \(x=y\);
+  \item bắc cầu: \(x\preceq y\) và \(y\preceq z\) suy ra \(x\preceq z\).
+\end{enumerate}
+Các ví dụ thường gặp là \((\mathbb R,\le)\) và \((\mathbb Z_+, \mid)\).
+
+Trên hypercube, ta định nghĩa \(x\preceq y\) khi tập bit \(1\) của \(x\) là
+tập con của tập bit \(1\) của \(y\). Do đó có thể xem tập đỉnh của \(Q_n\) là
+họ tập
+\[
+  2^{\{0,1,\ldots,n-1\}}.
+\]
+Các cạnh của hypercube chính là sơ đồ Hasse của quan hệ thứ tự này; để được
+tập thứ tự bán phần đầy đủ, cần thêm toàn bộ cạnh trong bao đóng bắc cầu. Trong
+phần này, ta xét các bài toán trên
+\[
+  (2^{\{0,1,\ldots,n-1\}},\subseteq).
+\]
+Góc nhìn hình cầu vẫn áp dụng và đóng vai trò quan trọng.
+
+\subsubsection{Định lý Dilworth}
+
+Với một quan hệ thứ tự bán phần \((V,A)\), một tập con \(V'\subseteq V\) được
+gọi là phản dây nếu không tồn tại hai phần tử khác nhau \(x,y\in V'\) sao cho
+\(x\preceq y\). Phản dây lớn nhất là phản dây có kích thước lớn nhất.
+
+Một phân hoạch \(V_1,V_2,\ldots,V_k\) của \(V\) là phủ bằng dây nếu trong mỗi
+\(V_i\), các phần tử có thể sắp theo thứ tự
+\[
+  d_1\preceq d_2\preceq\cdots\preceq d_t.
+\]
+Phủ bằng dây nhỏ nhất là phủ có \(k\) nhỏ nhất. Định lý Dilworth nói rằng kích
+thước phản dây lớn nhất bằng số dây trong phủ bằng dây nhỏ nhất.
+
+\subsubsection{Định lý Dilworth trên hypercube}
+
+Trước hết xây dựng phủ bằng dây nhỏ nhất trên hypercube. Mỗi tầng trong góc
+nhìn hình cầu là một phản dây, nên phủ bằng dây cần ít nhất
+\[
+  |S_{\lfloor n/2\rfloor}|
+\]
+dây.
+
+\paragraph{Bổ đề.}
+Với \(0\le i\le n-1\), đồ thị hai phía tạo bởi \(S_i\) và \(S_{i+1}\) có
+matching hoàn hảo đối với phía ít đỉnh hơn.
+
+\paragraph{Chứng minh.}
+Trong đồ thị hai phía này, mỗi đỉnh ở phía \(S_i\) có bậc \(n-i\), còn mỗi
+đỉnh ở phía \(S_{i+1}\) có bậc \(i+1\). Đây là đồ thị hai phía chính quy theo
+từng phía và thỏa điều kiện Hall đối với phía ít đỉnh hơn, nên matching mong
+muốn tồn tại.
+
+Bắt đầu từ tầng \(\lfloor n/2\rfloor\), cho mỗi phần tử tạo một dây riêng rồi
+mở rộng về phía tầng \(0\) bằng các matching trên. Tương tự, từ tầng
+\(\lceil n/2\rceil\) mở rộng xuống phía còn lại. Khi \(n\) lẻ, giữa hai tầng
+giữa cũng có matching hoàn hảo. Vì vậy ta dựng được phủ bằng dây kích thước
+\(|S_{\lfloor n/2\rfloor}|\). Mặt khác, trong phủ này, một phản dây giao mỗi
+dây nhiều nhất một phần tử, nên các tầng giữa đạt kích thước phản dây lớn
+nhất.
+
+\paragraph{Định lý Sperner.}
+Phản dây lớn nhất của \((Q_n,\subseteq)\) có kích thước không vượt
+\[
+  \binom n{\lfloor n/2\rfloor}.
+\]
+
+\paragraph{Chứng minh.}
+Giả sử \(S=\{v_1,\ldots,v_m\}\) là một phản dây, trong đó mỗi \(v_i\) được xem
+như một tập con của \(\{0,1,\ldots,n-1\}\). Đặt
+\[
+  F(v_i)=\{\pi\mid \{\pi_0,\pi_1,\ldots,\pi_{|v_i|-1}\}=v_i\},
+\]
+trong đó \(\pi\) là một hoán vị của \(0,\ldots,n-1\). Vì \(S\) là phản dây,
+các tập \(F(v_i)\) đôi một rời nhau, nên
+\[
+  \sum_{i=1}^m |F(v_i)|\le n!.
+\]
+Mặt khác,
+\[
+  |F(v_i)|=(n-|v_i|)!\,|v_i|!,
+\]
+và giá trị này nhỏ nhất khi \(|v_i|=\lfloor n/2\rfloor\) hoặc
+\(\lceil n/2\rceil\). Do đó
+\[
+  m\le
+  \frac{n!}{(n-\lfloor n/2\rfloor)!\lfloor n/2\rfloor!}
+  =\binom n{\lfloor n/2\rfloor}.
+\]
+Đây là một chứng minh cổ điển của định lý Sperner.
+
+\subsubsection{Khái niệm đảo Mobius}
+
+Với tập thứ tự bán phần \((V,A)\), xét các hàm
+\[
+  f:V\times V\to\mathbb R
+\]
+thỏa \(f(x,y)\ne 0\) chỉ khi \(x\preceq y\). Có thể xem \(f\) như một ma trận
+\(|V|\times |V|\).
+
+\paragraph{Bổ đề.}
+Nếu ma trận \(\alpha\) thuộc lớp trên và khả nghịch, thì
+\(\alpha^{-1}\) cũng thuộc lớp đó.
+
+\paragraph{Chứng minh.}
+Sắp các phần tử \(V\) theo một thứ tự topo, khi đó \(\alpha\) có thể xem là ma
+trận tam giác trên. Nếu \(\alpha\) khả nghịch thì các phần tử đường chéo chính
+đều khác \(0\), và \(\alpha^{-1}\) cũng là tam giác trên. Với \(x\not\preceq y\),
+có thể chọn một thứ tự topo hợp lệ đặt \(y\) trước \(x\), chẳng hạn thêm ràng
+buộc \(y\) trước \(x\). Trong thứ tự này, vị trí \((x,y)\) nằm dưới đường chéo,
+nên \(\alpha^{-1}(x,y)=0\). Kết luận không phụ thuộc vào thứ tự topo được chọn.
+
+Gọi \(Z\) là ma trận đặc trưng của quan hệ thứ tự:
+\[
+  Z(x,y)=[x\preceq y].
+\]
+Theo bổ đề, \(\mu=Z^{-1}\) tồn tại trong lớp hàm trên; đây chính là hàm Mobius
+của tập thứ tự bán phần.
+
+\subsubsection{Tính chất của ma trận Mobius}
+
+Từ \(Z\mu=I\), với mọi \(x,y\in V\) có
+\[
+  \sum_{x\preceq z\preceq y} \mu(z,y)=[x=y].
+\]
+Suy ra \(\mu(x,x)=1\), và nếu \(x\not\preceq y\) thì
+\(\mu(x,y)=0\). Có thể điền \(\mu(x,y)\) theo thứ tự tăng dần của khoảng cách
+từ \(x\) tới \(y\).
+
+Ý nghĩa của \(\mu\) là: với mọi hàm \(f:V\to\mathbb R\), nếu
+\[
+  g(x)=\sum_{y\preceq x} f(y),
+\]
+thì
+\[
+  f(x)=\sum_{y\preceq x}\mu(y,x)g(y).
+\]
+Đôi khi tính trực tiếp \(f\) khó, nhưng tính \(g\) dễ hơn; khi đó đảo Mobius
+cho phép khôi phục \(f\).
+
+Ứng dụng quen thuộc là các hàm số học, tương ứng với tập thứ tự
+\((\mathbb Z_+,\mid)\). Nếu giới hạn \(V\) là tập các ước của
+\[
+  n=\prod_{i=1}^k p_i^{\alpha_i},
+\]
+thì cấu trúc thứ tự này đẳng cấu với
+\[
+  P_{\alpha_1+1}\times P_{\alpha_2+1}\times\cdots\times P_{\alpha_k+1}.
+\]
+Ở nghĩa này, số học có thể được nhìn như một trường hợp đặc biệt của tập thứ
+tự bán phần.
+
+\subsubsection{Đảo Mobius trên hypercube}
+
+Trên \(Q_n\), nếu \(A\subseteq B\), khoảng giữa \(A\) và \(B\) đẳng cấu với
+\(Q_{n-|A|}\), nên
+\[
+  \mu(A,B)=\mu(\emptyset,B\setminus A).
+\]
+Vì vậy chỉ cần xét \(\mu(\emptyset, ?)\). Điền theo các tầng
+\(i=1,2,\ldots,n\). Do đối xứng, các giá trị trên cùng một tầng bằng nhau; ký
+hiệu là \(\mu(\emptyset,S_i)\). Từ đẳng thức
+\[
+  \sum_{j=0}^i (-1)^j\binom ij=0\qquad (i>0),
+\]
+có thể quy nạp được
+\[
+  \mu(\emptyset,S_i)=(-1)^i.
+\]
+Tổng quát, nếu \(A\subseteq B\), thì
+\[
+  \mu(A,B)=(-1)^{|B|-|A|}.
+\]
+Kết luận này chính là bản chất của nguyên lý bao hàm--loại trừ thường dùng.
+
+\subsection{Các đồ thị con của hypercube}
+
+\subsubsection{Chu trình}
+
+\paragraph{Bổ đề.}
+\(Q_n\) có chu trình Hamilton.
+
+\paragraph{Chứng minh.}
+Chu trình Hamilton trên \(Q_n\) chính là mã Gray. Đặt \(G_n\) là dãy Gray dài
+\(2^n\), với \(G_1=\{0,1\}\). Với \(n\ge 2\), dựng
+\[
+  G_n=
+  G_{n-1}(0),G_{n-1}(1),\ldots,G_{n-1}(2^{n-1}-1),
+\]
+rồi nối tiếp với
+\[
+  G_{n-1}(2^{n-1}-1)+2^{n-1},\ldots,G_{n-1}(0)+2^{n-1}.
+\]
+Ví dụ \(G_2=\{0,1,3,2\}\), \(G_3=\{0,1,3,2,6,7,5,4\}\). Dãy thu được là một
+hoán vị và hai phần tử kề nhau, kể cả cặp cuối-đầu, luôn khác đúng một bit.
+
+Từ đó, trong \(Q_n\) có thể tìm được đường đi đơn với mọi độ dài nhỏ hơn
+\(2^n\). Với chu trình đơn, do \(Q_n\) là đồ thị hai phía nên độ dài lẻ là
+không thể. Ngược lại, mọi độ dài chẵn đều làm được.
+
+\paragraph{Bổ đề.}
+Với mọi \(4\le \ell\le 2^n\), nếu \(\ell\) chẵn thì trong \(Q_n\) tồn tại một
+chu trình đơn \(C_\ell\).
+
+\paragraph{Chứng minh.}
+Đặt \(l=\ell/2\). Lấy \(l\) phần tử đầu của \(G_{n-1}\), gọi là
+\[
+  d_0,d_1,\ldots,d_{l-1}.
+\]
+Khi đó
+\[
+  d_0,d_1,\ldots,d_{l-1},d_{l-1}+2^{n-1},\ldots,d_1+2^{n-1},d_0+2^{n-1}
+\]
+là một chu trình đơn độ dài \(\ell\).
+
+\subsubsection{Ví dụ về chu trình Hamilton xen kẽ matching}
+
+Cho một matching hoàn hảo trên \(Q_n\), gọi là các cạnh đỏ. Cần chọn thêm một
+matching hoàn hảo khác, gọi là cạnh xanh, sao cho cạnh đỏ và xanh xen kẽ tạo
+thành một chu trình Hamilton. Có thể chứng minh khi \(n\ge 2\) luôn có nghiệm.
+
+Thực ra có thể chứng minh mệnh đề mạnh hơn: các cặp đỏ không cần là cạnh của
+\(Q_n\), chỉ cần là một cách ghép đôi \(2^{n-1}\) cặp đỉnh. Gọi \(\operatorname{mat}[v]\)
+là đỉnh ghép với \(v\). Chứng minh bằng quy nạp theo \(n\).
+
+Tách \(Q_n\) thành hai tầng \(G_0,G_1\), mỗi tầng là \(Q_{n-1}\). Đặt
+\[
+  S_i=\{v\in G_i\mid \operatorname{mat}[v]\in G_{i\oplus 1}\},
+\]
+và \(T_i\) là tập các cặp đỏ nằm hoàn toàn trong \(G_i\). Khi
+\(|S_0|>0\), ghép tùy ý các đỉnh trong \(S_0\) thành cặp, kết hợp với \(T_0\),
+rồi áp dụng giả thiết quy nạp trong \(G_0\) để thu được một chu trình xen kẽ.
+Thứ tự các cặp trong \(S_0\) trên chu trình đó quyết định cách ghép các đỉnh
+tương ứng trong \(S_1\); áp dụng quy nạp cho \(G_1\), rồi cắt các cặp giả và
+thay bằng các cặp đỏ thật nối giữa \(S_0\) và \(S_1\). Nếu ban đầu
+\(S_0=S_1=\emptyset\), chọn lại hướng tách tầng theo một bit mà một cặp đỏ
+bất kỳ khác nhau để đưa về trường hợp trên.
+
+\subsubsection{Lưới}
+
+Ở đây ``lưới'' là đồ thị
+\[
+  P_{x_1}\times P_{x_2}\times\cdots\times P_{x_k}.
+\]
+Đặt \(y_i=\lceil\log_2 x_i\rceil\). Nếu
+\[
+  n\ge \sum_{i=1}^k y_i,
+\]
+có thể nhúng trực tiếp lưới vào \(Q_n\) bằng mã Gray: điểm
+\((\alpha_1,\ldots,\alpha_k)\), với \(0\le\alpha_i<x_i\), được ánh xạ thành
+chuỗi bit ghép nối
+\[
+  (G_{y_1}(\alpha_1))_2
+  (G_{y_2}(\alpha_2))_2
+  \cdots
+  (G_{y_k}(\alpha_k))_2.
+\]
+
+\paragraph{Ví dụ: eJOI 2021, \emph{Chép bài}.}
+Cho \(n,m\). Cần điền các số nguyên không âm đôi một khác nhau vào lưới
+\(n\times m\), sao cho hai ô kề cạnh có hai số khác nhau đúng một bit trong
+nhị phân. Đồng thời, giá trị lớn nhất trên lưới phải nhỏ nhất. Giới hạn
+\(1\le n,m\le 2000\).
+
+Cách phóng \(n,m\) lên lũy thừa của \(2\) gần nhất rồi dùng mã Gray là hợp lệ
+nhưng giá trị lớn nhất có thể không tối ưu. Thực ra, việc nhúng lưới không yêu
+cầu dãy Gray phải nối hợp lệ giữa phần tử cuối và đầu, nên có thể dựng dãy
+Gray độ dài tùy ý, chỉ cần các phần tử kề ở giữa hợp lệ.
+
+\paragraph{Bổ đề.}
+Với mọi \(n\in\mathbb Z_+\), tồn tại một hoán vị \(p\) của
+\(\{0,\ldots,n-1\}\) sao cho
+\[
+  \operatorname{popcount}(p_{i-1}\oplus p_i)=1
+\]
+với mọi \(1\le i<n\).
+
+\paragraph{Chứng minh.}
+Viết
+\[
+  n=\sum_{i=1}^k 2^{d_i},\qquad 0\le d_1<d_2<\cdots<d_k.
+\]
+Ghép nối các khối Gray \(G_{d_i}\), mỗi khối cộng thêm tổng kích thước các
+khối trước nó. Để điểm nối giữa hai khối hợp lệ, chọn khi \(i\) chẵn thì
+\(G_{d_i}\) bắt đầu bằng \(0\), kết thúc bằng \(1\), còn khi \(i\) lẻ thì
+ngược lại. Nhờ tính đối xứng của hypercube, luôn có thể chọn được dạng như
+vậy; cũng có thể lấy chu trình Gray đã dựng ở trên rồi quay vòng.
+
+Sau đó cần kết hợp dãy \(p_n\) và \(p_m\) để điền vào bảng. Cách ghép nhị phân
+trực tiếp vẫn có thể chưa tối ưu. Thực tế, ta có thể chọn \(\lceil\log_2 n\rceil\)
+bit nào dành cho dãy theo hàng và các bit còn lại dành cho dãy theo cột, không
+bắt buộc là hai đoạn tiền tố-hậu tố. Cách chọn tối ưu có thể tìm bằng DP hai
+chiều, hoặc tham lam từ bit cao nhất: mỗi lần chọn phương án còn lại có thứ tự
+từ điển nhỏ hơn.
+
+Tính đúng đắn dựa trên tính độc lập của hai chiều. Với một cách điền hợp lệ
+\(A(i,j)\), xét bốn ô của một hình vuông đơn vị:
+\[
+  A(i,j),\ A(i+1,j),\ A(i,j+1),\ A(i+1,j+1).
+\]
+Hai ô chéo là hai hàng xóm chung của hai ô chéo còn lại trong hypercube, nên
+\[
+  A(i,j)\oplus A(i+1,j)=A(i,j+1)\oplus A(i+1,j+1).
+\]
+Suy ra trên mỗi cặp hàng kề, giá trị xor giữa hai hàng là hằng theo cột; tương
+tự cho cột. Gọi các hằng này là \(H_i\) và \(L_j\), đều là lũy thừa của \(2\).
+Nếu một bit \(k\) được dùng đồng thời cho một hàng và một cột, tức
+\(H_i=L_j=2^k\), thì bốn ô ở giao điểm sẽ cho
+\[
+  A(i,j)=A(i+1,j)\oplus 2^k=A(i,j+1)\oplus 2^k=A(i+1,j+1),
+\]
+mâu thuẫn với yêu cầu các số đôi một khác nhau. Vì vậy hai chiều dùng các bit
+độc lập.
+
+\subsection{Magic Labeling}
+
+Phần này xét một dạng gán nhãn đặc biệt cho đỉnh hoặc cạnh, gọi là Magic
+Labeling. Ràng buộc trong bài viết mạnh hơn một số định nghĩa thông thường,
+nên đôi khi cũng được gọi là Super Magic Labeling.
+
+\subsubsection{Magic Labeling trên đỉnh}
+
+Với đồ thị vô hướng \(G=(V,E)\), một ánh xạ
+\[
+  f:V\to \{0,1,\ldots,|V|-1\}
+\]
+là Magic Labeling trên đỉnh nếu \(f\) là song ánh và tồn tại \(\Delta\) sao cho
+\[
+  \forall v\in V,\qquad \sum_{(u,v)\in E} f(u)=\Delta.
+\]
+
+\paragraph{Bổ đề.}
+Nếu \(n\) lẻ, \(Q_n\) không có Magic Labeling trên đỉnh.
+
+\paragraph{Chứng minh.}
+Nếu tồn tại, thì
+\[
+  |V|\Delta=\sum_{v\in V}\deg(v)f(v),
+\]
+nên
+\[
+  \Delta=\frac12(2^n-1)n.
+\]
+Khi \(n\) lẻ, \(\Delta\) không nguyên, mâu thuẫn.
+
+Dễ thấy \(n=2\) có nghiệm. Xét \(n\ge 4\) chẵn.
+
+\paragraph{Bổ đề.}
+Nếu \(4\mid n\), \(Q_n\) không có Magic Labeling trên đỉnh.
+
+\paragraph{Chứng minh.}
+Giả sử tồn tại. Đặt
+\[
+  F(i)=\sum_{v\in S_i} f(v).
+\]
+Đếm hai lần trên cấu trúc hình cầu được
+\[
+  F(i-1)(n-i+1)+F(i+1)(i+1)=\Delta |S_i|
+\]
+với \(1\le i<n\). Thay \(i=1\) và \(i=n-1\) cho thấy
+\[
+  F_0=F_n \Longleftrightarrow F_2=F_{n-2}.
+\]
+Lặp lại suy ra
+\[
+  F_0=F_n \Longleftrightarrow F_{2i}=F_{n-2i}.
+\]
+Khi \(4\mid n\), điều này dẫn tới \(F_{n/2}=F_{n/2}\) và buộc
+\(f(0)=f(2^n-1)\), mâu thuẫn với tính đơn ánh.
+
+\paragraph{Định lý.}
+\(Q_n\) có Magic Labeling trên đỉnh khi và chỉ khi
+\[
+  n\equiv 2\pmod 4.
+\]
+
+\paragraph{Chứng minh phác thảo.}
+Với ví dụ \(n=6\), cần dựng \(6\) vector nhị phân độ dài \(6\), độc lập tuyến
+tính, và ở mỗi tọa độ có đúng ba số \(0\), ba số \(1\). Gọi các vector này khi
+xem như số nhị phân là \(v_0,\ldots,v_5\), rồi đặt
+\[
+  f(v)=\bigoplus_{\text{bit }i\text{ của }v\text{ bằng }1} v_i.
+\]
+Do \(v_0,\ldots,v_5\) độc lập tuyến tính, các \(f(v)\) đôi một khác nhau. Đồng
+thời mỗi tọa độ xuất hiện đúng \(n/2\) lần trong tổng trên hàng xóm, nên tổng
+hàng xóm là hằng. Với mọi \(n\ge 6\), \(n\equiv 2\pmod 4\), có thể dựng các
+vector bằng ngẫu nhiên kết hợp kiểm tra cơ sở tuyến tính. Khi \(4\mid n\), yêu
+cầu mỗi tọa độ có đúng \(n/2\) bit \(1\) làm xor của mọi vector bằng \(0\), nên
+chúng phụ thuộc tuyến tính, phù hợp với bổ đề vô nghiệm.
+
+\subsubsection{Magic Labeling trên cạnh}
+
+Với đồ thị vô hướng \(G=(V,E)\), một ánh xạ
+\[
+  f:E\to \{0,1,\ldots,|E|-1\}
+\]
+là Magic Labeling trên cạnh nếu \(f\) là song ánh và tồn tại \(\Delta\) sao cho
+\[
+  \forall v\in V,\qquad \sum_{(u,v)\in E} f(u,v)=\Delta.
+\]
+Dễ thấy \(Q_1\) có nghiệm trên cạnh, còn \(Q_2\) không có. Sau đây giả sử
+\(n>2\).
+
+\paragraph{Bổ đề.}
+Nếu \(n\) lẻ, \(Q_n\) không có Magic Labeling trên cạnh.
+
+\paragraph{Chứng minh.}
+Nếu tồn tại thì
+\[
+  2^n\Delta=m(m-1),\qquad m=n2^{n-1},
+\]
+suy ra
+\[
+  \Delta=\frac n2(n2^{n-1}-1).
+\]
+Khi \(n\) lẻ, \(\Delta\) không nguyên.
+
+\paragraph{Bổ đề.}
+Nếu đồ thị hai phía \(G=(V,E)\) là hợp của hai chu trình Hamilton, thì tồn tại
+Magic Labeling trên cạnh.
+
+\paragraph{Chứng minh.}
+Đặt \(n=|V|\), khi đó \(n\) chẵn. Gọi hai chu trình Hamilton là \(C_0,C_1\),
+và giả sử \(C_0\) đi qua các đỉnh \(0,1,\ldots,n-1\). Trên \(C_0\), gán
+\[
+  f(2i,2i+1)=i,\qquad
+  f(2i-1,2i)=n-i
+\]
+với chỉ số lấy modulo \(n\). Khi đó tổng nhãn cạnh kề của đỉnh \(0\) là
+\(n/2\); các đỉnh chẵn khác có tổng \(n\), còn các đỉnh lẻ có tổng \(n-1\).
+
+Trên \(C_1\), cũng dựng tương tự từ đỉnh \(0\), nhưng giá trị \(x\) được thay
+bằng \(2n-1-x\). Vì đồ thị hai phía không có chu trình lẻ, phần tăng thêm sẽ
+bù đúng các sai khác trên \(C_0\), và mọi đỉnh có cùng tổng
+\[
+  2(2n-1).
+\]
+
+\paragraph{Bổ đề.}
+\(Q_4\) có Magic Labeling trên cạnh.
+
+\paragraph{Chứng minh.}
+Bản gốc đưa ra một cách tách \(Q_4\) thành hai chu trình Hamilton. Áp dụng bổ
+đề trên là được một cách gán nhãn cạnh.
+
+\paragraph{Bổ đề.}
+Nếu \(Q_n\) với \(n\) chẵn có Magic Labeling trên cạnh, thì \(Q_{n+2}\) cũng
+có.
+
+\paragraph{Chứng minh phác thảo.}
+Dựa vào nhãn đỉnh modulo \(4\), tách \(Q_{n+2}\) thành bốn bản sao của
+\(Q_n\), gọi là \(G_0,G_1,G_2,G_3\). Trong mỗi \(G_i\), dùng lại cách gán nhãn
+của \(Q_n\), nhưng với mỗi cạnh hướng \(j\) cộng thêm \(d_{i,j}T\). Các hằng
+\(d_{i,j}\) được chọn sao cho với mỗi \(j\), bốn giá trị \(d_{i,j}\) lấy đủ
+\(\{0,1,2,3\}\), và các tổng hàng \(s_i=\sum_j d_{i,j}\) thỏa
+\[
+  s_0-1=s_1=s_2=s_3+1.
+\]
+Với \(n=4\), bài gốc đưa ra một ma trận \(d\) cụ thể; với \(n\) chẵn tổng quát,
+chỉ cần thêm luân phiên hai cột \([0,1,2,3]^T\) và \([3,2,1,0]^T\).
+
+Chọn
+\[
+  T=(n+2)2^{n-1}
+\]
+để bốn bản sao dùng các khoảng nhãn rời nhau; phần nhãn còn lại dành cho các
+chu trình \(C_4\) nối giữa bốn bản sao. Ghép đầu-cuối các khoảng còn trống sẽ
+làm mọi tổng \(x+y\) trên các cạnh nối giữa bản sao bằng nhau, hoàn tất bước
+quy nạp.
+
+Từ các bổ đề trên:
+
+\paragraph{Định lý.}
+Với \(n>2\), \(Q_n\) có Magic Labeling trên cạnh khi và chỉ khi \(n\) chẵn.
+
+\subsection{Kết luận}
+
+Bài viết bắt đầu từ định nghĩa cơ bản của hypercube, trình bày các tính chất
+đẹp của nó khi xem như đồ thị vô hướng và khi xem như tập thứ tự bán phần, rồi
+phân tích một số ví dụ thi tin học liên quan mật thiết. Phần cuối khảo sát chi
+tiết bài toán xây dựng Magic Labeling trên hypercube, kết hợp các ý tưởng toán
+học và thuật toán, đồng thời cho thấy sự hữu ích của nhiều góc nhìn cấu trúc
+khác nhau.
+
+Tác giả hy vọng bài viết giúp nhiều thí sinh biết tới hypercube như một mô
+hình toán học đặc sắc và tiếp tục nghiên cứu sâu hơn.
+
+\subsection{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng giao lưu và học
+tập; cảm ơn cha mẹ và gia đình đã quan tâm, ủng hộ trong nhiều năm; cảm ơn
+thầy Jin Jing của Trường Trung học phổ thông số 2 trực thuộc Đại học Sư phạm
+Hoa Đông đã hướng dẫn; cảm ơn Wang Youjia và Yang Ningyuan đã đọc bản thảo.
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Frank Harary. A survey of the theory of hypercube graphs, 1988.
+  \item Oliver Bernardi. On the spanning trees of the hypercube and other
+  products of graphs, 2018.
+  \item D. Lubell. A short proof of Sperner's lemma.
+  \item Youcef Saad and Martin H. Schultz. Topological properties of
+  hypercubes. Research Report YALEU/DCS/RR-389, 1985.
+  \item W. D. Wallis, Edy T. Baskoro, Mirka Miller and Slamin. Edge-magic total
+  labelings, 2000.
+  \item Petr Gregor and Petr Kovar. Distance magic labelings of hypercubes,
+  2013.
+  \item Curtis Greene. The Mobius function of a partially ordered set, 1982.
+  \item R. P. Dilworth. A decomposition theorem for partially ordered sets.
+  \emph{Annals of Mathematics}, Second Series, 51(1):161--166, 1950.
+  \item Peng Bo. Báo cáo lời giải \emph{Matching tập con}, tập huấn đội tuyển
+  năm 2021.
 \end{enumerate}
 
 \end{document}
