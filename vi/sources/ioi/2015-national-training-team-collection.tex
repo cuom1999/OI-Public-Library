@@ -19,7 +19,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2015. Tệp được
 tạo bằng pdfTeX nhưng lớp văn bản không ánh xạ đúng về Unicode: ngay cả mục
 lục khi trích xuất bằng \texttt{pdftotext} cũng trở thành mojibake. Bản dịch
-này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và tám
+này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và chín
 bài đầu tiên của tập sách, được đọc bằng OCR hoặc đối chiếu với trang render.
 \end{abstract}
 
@@ -48,7 +48,10 @@ trang in 113--127; trang PDF vật lý 132, trang in 128, là trang trắng; tra
 PDF vật lý 133, trang in 129, là đầu bài kế tiếp về cactus. Bài thứ tám,
 ``Thuật toán liên quan tới cactus và ứng dụng'', dùng các trang PDF vật lý
 133--152, tương ứng trang in 129--148; trang PDF vật lý 153, trang in 149, là
-đầu bài kế tiếp về matching trên đồ thị.
+đầu bài kế tiếp về matching trên đồ thị. Bài thứ chín, ``Bàn về thuật toán
+matching trên đồ thị và ứng dụng'', dùng các trang PDF vật lý 153--178, tương
+ứng trang in 149--174; trang PDF vật lý 179, trang in 175, là đầu bài kế tiếp
+về các bài toán vật lý trong thi tin học.
 
 \section{Mục lục đã dịch}
 
@@ -5602,6 +5605,738 @@ thời gian cho mỗi thao tác.
   \item Huang Zhi'ao, ``Bàn về các bài toán liên quan tới cây động và một số mở
   rộng đơn giản'', luận văn đội tuyển quốc gia năm 2014.
   \item Tarjan, Robert E., and Renato F. Werneck. ``Self-adjusting top trees.''
+\end{enumerate}
+
+\section{Bàn về thuật toán matching trên đồ thị và ứng dụng}
+
+\begin{center}
+\textbf{Chen Haobo}\\
+Trường Trường Quận, Trường Sa, Hồ Nam
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Thuật toán matching trên đồ thị là một lớp thuật toán thường dùng trong thi tin
+học và có phạm vi ứng dụng rất rộng. Bài viết này tổng kết các thuật toán
+matching trên đồ thị, chia đại thể thành hai phần: matching cực đại và matching
+trọng số lớn nhất. Trong mỗi phần, trước hết trình bày cách làm trên đồ thị hai
+phía, sau đó mở rộng sang đồ thị tổng quát, đồng thời nêu một số mở rộng và ứng
+dụng.
+
+\subsection{Các định nghĩa liên quan tới matching}
+
+Trong lý thuyết đồ thị, xét đồ thị \(G=(V,E)\), trong đó \(V\) là tập đỉnh và
+\(E\) là tập cạnh.
+
+Một tập cạnh \(M\subseteq E\) sao cho không có hai cạnh nào chung đỉnh được gọi
+là một \emph{matching} của đồ thị. Kích thước của matching là số cạnh trong
+matching. Matching có số cạnh nhiều nhất là \emph{matching cực đại}. Khi cạnh có
+trọng số, matching có tổng trọng số cạnh lớn nhất là \emph{matching trọng số lớn
+nhất}.
+
+Cạnh thuộc matching gọi là cạnh matching; cạnh không thuộc matching gọi là cạnh
+không matching. Một đỉnh được xem là nằm trong matching khi và chỉ khi nó là đầu
+mút của một cạnh matching. Đỉnh như vậy gọi là đỉnh đã ghép; đỉnh còn lại gọi là
+đỉnh chưa phủ. Đặc biệt, nếu mọi đỉnh đều đã ghép thì matching được gọi là
+matching hoàn hảo. Với một cạnh matching \((u,v)\), ta nói \(u\) và \(v\) là bạn
+ghép của nhau.
+
+Nếu không nói rõ thêm, sau đây dùng \(n\) để chỉ số đỉnh của đồ thị và \(m\) để
+chỉ số cạnh.
+
+\subsection{Đường tăng}
+
+Giả sử \(P\) là một đường đi đơn trong đồ thị. Nếu:
+\begin{enumerate}
+  \item hai đầu của \(P\) đều là đỉnh chưa phủ;
+  \item các cạnh trên \(P\) luân phiên là cạnh matching và cạnh không matching,
+\end{enumerate}
+thì \(P\) được gọi là một \emph{đường tăng}. Đường đi đơn chỉ thỏa mãn điều kiện
+thứ hai được gọi là \emph{đường luân phiên}.
+
+Trên một đường tăng, số cạnh không matching nhiều hơn số cạnh matching đúng một
+cạnh. Nếu đảo trạng thái các cạnh trên đường này, tức biến cạnh matching thành
+cạnh không matching và ngược lại, kích thước matching hiện tại tăng thêm \(1\)
+mà vẫn hợp lệ. Thao tác này gọi là \emph{tăng} theo đường tăng.
+
+Khi tăng theo một đường tăng, mọi đỉnh trên đường đó đều trở thành đỉnh đã ghép;
+vì vậy quá trình tăng liên tục mở rộng tập đỉnh đã ghép.
+
+\paragraph{Định lý 1.}
+Một matching \(M\) là matching cực đại của đồ thị \(G\) khi và chỉ khi trong
+\(G\) không tồn tại đường tăng.
+
+\paragraph{Chứng minh.}
+Vì đảo một đường tăng làm kích thước matching tăng thêm \(1\), chiều cần thiết là
+hiển nhiên.
+
+Xét một matching \(M'\) lớn hơn \(M\), và xét hiệu đối xứng
+\[
+  D=M\oplus M'=(M\cup M')\setminus(M\cap M').
+\]
+Theo định nghĩa matching, trong \(D\), bậc của mỗi đỉnh không quá \(2\); nếu một
+đỉnh có bậc \(2\), hai cạnh kề của nó lần lượt đến từ \(M\) và \(M'\). Vì vậy
+\(D\) gồm một số chu trình và đường đi, trong đó các cạnh của \(M\) và \(M'\)
+luân phiên xuất hiện. Mỗi chu trình luân phiên có độ dài chẵn và chứa số cạnh
+của \(M\) bằng số cạnh của \(M'\).
+
+Bỏ mọi chu trình luân phiên đi, vì \(|M'|>|M|\), trong \(D\) vẫn phải có một
+đường luân phiên mà số cạnh thuộc \(M'\) nhiều hơn số cạnh thuộc \(M\). Với
+matching \(M\), đường đó chính là một đường tăng. Do đó hễ tồn tại matching lớn
+hơn thì tồn tại đường tăng, suy ra chiều đủ.
+
+Từ định lý trên, ta có một khung thuật toán tìm matching cực đại: lặp lại việc
+duyệt các đỉnh chưa phủ, tìm một đường tăng rồi tăng theo nó, cho tới khi không
+còn tìm được đường tăng.
+
+Thực ra, nếu tại một thời điểm không tìm được đường tăng xuất phát từ một đỉnh
+chưa phủ \(x\), thì sau nhiều lần tăng khác, vẫn không tồn tại đường tăng xuất
+phát từ \(x\). Giả sử sau một lần tăng theo đường \(a-b\), xuất hiện đường tăng
+\(P_x\) xuất phát từ \(x\). Khi đó \(P_x\) phải giao với đường \(a-b\). Xét lần
+đầu \(P_x\) gặp \(a-b\); vì \(a-b\) là đường luân phiên nên kiểu cạnh ở hai phía
+điểm giao khác nhau, nghĩa là trước khi tăng, từ \(x\) đã có thể đi tới một
+trong các đỉnh \(a,b\), tức một đỉnh chưa phủ. Điều này mâu thuẫn.
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình a.} Bản gốc minh họa một đường tăng mới xuất hiện sau khi đảo
+đường \(a-b\). Đường mới từ \(x\) buộc phải cắt \(a-b\), nên trước khi đảo cũng
+đã có đường tăng xuất phát từ \(x\).
+\end{minipage}}
+\end{center}
+
+Vì vậy có thể tối ưu khung thuật toán: với mỗi đỉnh chưa phủ, chỉ cần tìm một
+lần đường tăng xuất phát từ nó.
+
+\subsection{Matching cực đại trên đồ thị hai phía}
+
+\subsubsection{Thuật toán đường tăng cơ bản}
+
+Để mô tả thuận tiện, chia đỉnh của đồ thị hai phía thành hai phần trái và phải;
+mọi cạnh đều nối từ trái sang phải.
+
+Vì đường tăng có độ dài lẻ, hai đầu của nó nằm ở hai phía khác nhau. Không mất
+tính tổng quát, ta tìm đường tăng từ từng đỉnh chưa phủ bên trái. Trên đường
+tăng, bước thứ lẻ đi qua cạnh không matching, bước thứ chẵn đi qua cạnh
+matching. Do đó nếu định hướng cạnh không matching từ trái sang phải và cạnh
+matching từ phải sang trái, bài toán trở thành: trong đồ thị có hướng, từ đỉnh
+đã cho tìm một đường đơn đi tới một đỉnh chưa phủ. Trong đồ thị có hướng, ``tới
+được bằng đường đơn'' tương đương với ``tới được'', nên chỉ cần xét bài toán khả
+đạt.
+
+Sau khi định hướng như trên, với một đỉnh chưa phủ \(u\) bên trái, chạy DFS từ
+\(u\), đánh dấu mỗi đỉnh đã thăm để mỗi đỉnh được thăm nhiều nhất một lần; khi
+gặp một đỉnh chưa phủ thì dừng. Một lần tìm đường tăng tốn \(O(m)\). Khi không
+tìm được đường tăng, cây DFS sinh ra còn được gọi là \emph{cây luân phiên}. Vì
+có \(O(n)\) đỉnh chưa phủ cần thử, tổng độ phức tạp là \(O(nm)\).
+
+\subsubsection{Dùng Dinic tìm matching cực đại}
+
+Matching cực đại trên đồ thị hai phía có thể chuyển thành mô hình luồng mạng.
+Thêm nguồn và đích; nối nguồn tới mỗi đỉnh bên trái bằng cung dung lượng \(1\),
+nối mỗi đỉnh bên phải tới đích bằng cung dung lượng \(1\), và thay mỗi cạnh ban
+đầu bằng một cung từ trái sang phải dung lượng \(1\). Luồng cực đại chính là
+matching cực đại; các cung giữa hai phía có luồng đầy tương ứng với cạnh
+matching.
+
+Dùng thuật toán Dinic có thể tìm matching cực đại trong \(O(m\sqrt n)\) thời
+gian. Mỗi vòng Dinic gồm BFS \(O(m)\) xây đồ thị mức và DFS đa tăng \(O(m)\) vì
+mọi dung lượng đều bằng \(1\). Trong \(\sqrt n\) vòng đầu, tổng thời gian là
+\(O(m\sqrt n)\).
+
+Sau \(\sqrt n\) vòng, độ dài đường tăng ngắn nhất từ nguồn tới đích đã tăng
+nghiêm ngặt qua các vòng. Xét hiệu đối xứng giữa matching cực đại và matching
+hiện tại; nó gồm các chu trình luân phiên và đường luân phiên rời nhau. Mỗi
+đường luân phiên tương ứng với một đường tăng và có độ dài ít nhất \(\sqrt n\),
+nên số đường như vậy không quá \(O(\sqrt n)\). Vì thế phần còn lại của Dinic
+cũng chỉ cần \(O(\sqrt n)\) vòng, tổng độ phức tạp vẫn là \(O(m\sqrt n)\).
+
+\subsubsection{Một số mở rộng}
+
+Trong đồ thị bất kỳ, xét hai matching cực đại khác nhau \(M,M'\) và hiệu đối
+xứng \(D=M\oplus M'\). \(D\) gồm các chu trình luân phiên và đường luân phiên.
+Vì \(M,M'\) đều cực đại, các chu trình và đường này đều có độ dài chẵn; nếu có
+đường luân phiên lẻ thì đó là một đường tăng. Như vậy, từ một matching cực đại
+có thể nhận được một matching cực đại khác bằng cách xor với một số đường chẵn
+và chu trình chẵn rời nhau. Đặc biệt, hiệu đối xứng của hai matching hoàn hảo
+chỉ gồm các chu trình luân phiên rời nhau.
+
+\paragraph{Đỉnh bắt buộc trong matching cực đại hai phía.}
+Một đỉnh bắt buộc là đỉnh chắc chắn nằm trong mọi matching cực đại. Do hai phía
+đối xứng, chỉ xét các đỉnh bên trái.
+
+Tìm một matching cực đại \(M\). Các đỉnh bắt buộc cần tìm chắc chắn là đỉnh đã
+ghép trong \(M\). Một đỉnh đã ghép \(p\) có thể trở thành chưa ghép trong một
+matching cực đại khác khi và chỉ khi từ \(p\) có một đường luân phiên bắt đầu
+bằng cạnh matching và kết thúc ở một đỉnh chưa phủ cùng phía.
+
+Xét ngược lại: định hướng cạnh matching từ phải sang trái, cạnh không matching
+từ trái sang phải. Từ mọi đỉnh chưa phủ bên trái chạy DFS, đánh dấu các đỉnh
+tới được. Cuối cùng, mỗi đỉnh đã ghép bên trái mà không được đánh dấu là đỉnh
+bắt buộc. Độ phức tạp là \(O(n+m)\).
+
+\paragraph{Cạnh bắt buộc trong matching cực đại hai phía.}
+Cần tìm các cạnh chắc chắn nằm trong mọi matching cực đại. Tìm một matching cực
+đại \(M\); cạnh bắt buộc chỉ có thể là cạnh thuộc \(M\). Với một cạnh
+\(e\in M\), nếu có một matching cực đại khác không chứa \(e\), thì \(e\) nằm
+trong hiệu đối xứng của hai matching, tức nằm trên một đường luân phiên chẵn
+hoặc một chu trình luân phiên chẵn.
+
+Nếu \(e\) nằm trên đường luân phiên chẵn, một đầu của đường phải là đỉnh chưa
+phủ, nên một đầu của \(e\) là đỉnh không bắt buộc. Vì thế chỉ cần kiểm tra hai
+đầu của \(e\) có đỉnh không bắt buộc hay không. Nếu \(e\) nằm trên chu trình
+luân phiên chẵn, định hướng cạnh matching từ trái sang phải, cạnh không matching
+từ phải sang trái, rồi dùng Tarjan tìm thành phần liên thông mạnh để biết \(e\)
+có nằm trong một chu trình hay không. Tổng thời gian là \(O(n+m)\).
+
+\paragraph{Tập độc lập lớn nhất trong đồ thị hai phía.}
+Tập độc lập lớn nhất là tập chọn được nhiều đỉnh nhất sao cho không có cạnh nào
+nối giữa hai đỉnh được chọn. Gọi \(M\) là matching cực đại. Mỗi cạnh trong
+\(M\) buộc có ít nhất một đầu không thuộc tập độc lập, nên kích thước tập độc
+lập không vượt quá \(n-|M|\).
+
+Sau đây là cách dựng tập độc lập đạt đúng cận này. Đưa mọi đỉnh chưa phủ vào
+tập độc lập. Với mỗi cạnh matching \(e=(u,v)\), để đạt cận trên, đúng một trong
+hai đầu \(u,v\) phải được chọn; xem quyết định ``chọn trái hay chọn phải'' là
+một biến \(x_e\). Các cạnh không matching giữa đầu mút của những cạnh matching
+khác nhau sinh ra quan hệ kéo theo giữa các biến này. Ngoài ra, khi một đỉnh
+chưa phủ đã được chọn, mọi cạnh nối từ nó tới đỉnh đã ghép sẽ ép giá trị biến
+của cạnh matching chứa đỉnh đó.
+
+Nếu đồ thị kéo theo sinh mâu thuẫn thì từ hai cách ép trái ngược sẽ khôi phục
+được một đường tăng, mâu thuẫn với việc \(M\) đã cực đại. Do đó có thể gán giá
+trị: từ các biến bị đỉnh chưa phủ ép, DFS lan truyền giá trị; các biến còn lại
+chọn tùy ý. Số biến là \(O(|M|)=O(n)\), số quan hệ được dựng từ cạnh của đồ thị
+gốc là \(O(m)\), nên thời gian là \(O(n+m)\).
+
+Mặt khác, tập độc lập lớn nhất cũng có thể mô hình hóa bằng luồng và lát cắt
+nhỏ nhất. Điều này dẫn tới đẳng thức kinh điển trong đồ thị hai phía:
+\[
+  \text{tập độc lập lớn nhất}=n-\text{matching cực đại}.
+\]
+
+\paragraph{Phủ đỉnh nhỏ nhất trong đồ thị hai phía.}
+Phủ đỉnh là tập đỉnh sao cho mọi cạnh của đồ thị đều có ít nhất một đầu mút nằm
+trong tập này. Theo định nghĩa, phần bù của mọi phủ đỉnh là một tập độc lập, và
+phần bù của mọi tập độc lập là một phủ đỉnh. Vì vậy bỏ đi tập độc lập lớn nhất
+sẽ thu được phủ đỉnh nhỏ nhất. Suy ra trong đồ thị hai phía:
+\[
+  \text{phủ đỉnh nhỏ nhất}=n-\text{tập độc lập lớn nhất}
+  =\text{matching cực đại}.
+\]
+
+\paragraph{Matching hoàn hảo từ điển nhỏ nhất trong đồ thị hai phía.}
+Gọi \(\mathrm{match}_i\) là chỉ số đỉnh bên phải ghép với đỉnh thứ \(i\) bên
+trái. Cần cực tiểu hóa từ điển dãy \(\mathrm{match}_1,\ldots,\mathrm{match}_n\).
+
+Trước hết tìm một matching hoàn hảo bất kỳ. Vì hiệu đối xứng của hai matching
+hoàn hảo chỉ gồm các chu trình luân phiên, ta duyệt các đỉnh trái theo thứ tự
+tăng dần, quyết định \(\mathrm{match}_u\) bằng tham lam. Với một cạnh hiện có
+\((u,v)\), kiểm tra liệu có thể đổi matching sao cho \(u\) ghép với \(v\) hay
+không. Điều này tương đương với việc cạnh \((u,v)\) nằm trên một chu trình
+luân phiên, tức hai đỉnh tương ứng thuộc cùng một thành phần liên thông mạnh
+trong đồ thị định hướng cạnh matching và không matching luân phiên. Chọn \(v\)
+nhỏ nhất thỏa mãn rồi xóa \(u\) khỏi đồ thị để khóa quyết định này.
+
+Matching chỉ thay đổi \(O(n)\) lần nên chỉ cần tính thành phần liên thông mạnh
+\(O(n)\) lần; mỗi lần tìm chu trình có thể dùng DFS. Độ phức tạp là \(O(nm)\).
+
+\subsubsection{Ứng dụng}
+
+Trong đồ thị hai phía, ta đã có
+\[
+  \text{matching cực đại}
+  =\text{phủ đỉnh nhỏ nhất}
+  =n-\text{tập độc lập lớn nhất}.
+\]
+Nhờ đó các mô hình hai phía như bàn cờ theo hàng-cột, tô màu đen trắng thủ công,
+hoặc các đồ thị chứng minh được không có chu trình lẻ, đều thường giải được bằng
+matching.
+
+\paragraph{Problem 1. Chessboard.}
+Cho một bàn cờ \(n\times n\) và \(n\) quân xe; cần đặt chúng sao cho mỗi hàng và
+mỗi cột có nhiều nhất một quân. Với mỗi quân, tọa độ được giới hạn trong một
+hình chữ nhật. Hỏi vị trí của những quân nào là xác định duy nhất.
+
+Tọa độ \(x,y\) độc lập, chỉ cần xét một chiều. Bài toán trở thành: với một hoán
+vị \(P\), vị trí xuất hiện của số \(x\) bị giới hạn trong đoạn \([l_x,r_x]\);
+cần tìm số nào có vị trí cố định. Dựng đồ thị hai phía, bên trái là các số, bên
+phải là các vị trí, nối số \(x\) tới mọi vị trí trong đoạn cho phép. Ta cần tìm
+các cạnh bắt buộc trong matching hoàn hảo.
+
+Vì đề đảm bảo có nghiệm nên có matching hoàn hảo, bước tìm đỉnh bắt buộc có thể
+bỏ qua. Định hướng cạnh matching về bên trái, cạnh không matching về bên phải,
+rồi dùng Tarjan tìm thành phần liên thông mạnh. Nếu thành phần liên thông mạnh
+chứa một đỉnh bên trái có kích thước lớn hơn \(1\), cạnh ra của đỉnh đó nằm trên
+chu trình, nên vị trí của số tương ứng không xác định.
+
+Do cạnh nối theo đoạn và chỉ cần xét liên thông, dùng cây đoạn trên phía vị trí
+để tối ưu dựng cạnh, tổng số cạnh \(O(n\log n)\). Matching hoàn hảo ban đầu có
+thể tìm bằng tham lam kinh điển: sắp các số theo \(l\), quét vị trí từ trái sang
+phải và luôn chọn số có \(r\) nhỏ nhất. Tổng thời gian \(O(n\log n)\).
+
+\paragraph{Problem 2. Minimum Diameter.}
+Cho \(n\le 1000\) điểm trên mặt phẳng, cần xóa \(k<n\), \(k<30\) điểm sao cho
+khoảng cách lớn nhất giữa hai điểm còn lại là nhỏ nhất.
+
+Liệt kê cặp điểm \(a,b\) sẽ trở thành cặp xa nhất còn lại. Lấy \(|ab|\) làm bán
+kính, vẽ hai đường tròn tâm \(a,b\). Mọi điểm còn lại phải nằm trong giao của
+hai hình tròn này. Trong các điểm nằm bên trong, nối cạnh giữa mọi cặp có khoảng
+cách lớn hơn \(|ab|\), nghĩa là hai điểm đó không thể cùng giữ lại. Cần giữ lại
+nhiều điểm nhất, tức tìm tập độc lập lớn nhất; kiểm tra số điểm phải xóa có
+vượt \(k\) hay không.
+
+Mỗi cạnh cấm như vậy đều băng qua đường trung trực của \(ab\), vì hai điểm nằm
+cùng một phía không thể cách nhau hơn \(|ab|\). Vì thế đây là bài toán tập độc
+lập lớn nhất trên đồ thị hai phía. Khi matching cực đại vượt \(k\), tập độc lập
+quá nhỏ và vòng kiểm tra hiện tại có thể dừng. Một lần tìm đường tăng tốn
+\(O(n^2)\), tối đa thử \(k\) đường tăng, cộng với liệt kê cặp \(a,b\), thu được
+thuật toán đa thức \(O(kn^4)\). Thuật toán đầy đủ của bài gốc còn cần tối ưu
+khác; ở đây ý tưởng matching là phần đáng chú ý.
+
+\paragraph{Problem 3. The Square Div One.}
+Cho ma trận \(n\times m\), \(n,m<50\). Cần điền mỗi ô một số từ
+\(1\) tới \(\max(n,m)\) sao cho trong mỗi hàng và mỗi cột không có số lặp. Hãy
+tìm phương án có thứ tự từ điển nhỏ nhất, so sánh theo thứ tự từng hàng.
+
+Một ý tưởng trực tiếp là điền từng hàng từ trên xuống. Ở hàng hiện tại, với mỗi
+cột đã biết các số đã xuất hiện, nối vị trí với các số còn có thể điền rồi tìm
+matching từ điển nhỏ nhất. Tuy nhiên cách đó có thể khiến các hàng sau vô nghiệm:
+mỗi số phải xuất hiện \(\max(n,m)\) lần; nếu một số xuất hiện quá ít ở các hàng
+đầu, các hàng còn lại không đủ để bù.
+
+Khi đang điền một hàng, đặt \(m'=\max(n,m)\). Gọi \(r_x\) là số lần số \(x\) còn
+cần xuất hiện, và \(h\) là số hàng chưa xác định. Điều kiện cần và đủ để còn có
+nghiệm là
+\[
+  \sum_x r_x=h m,\qquad r_x\le h\quad\text{với mọi }x.
+\]
+Tính cần thiết hiển nhiên. Với tính đủ, nếu \(h=1\) thì rõ; nếu \(h>1\), ép điền
+tất cả các số có \(r_x=h\) trong hàng hiện tại. Do tổng \(\sum r_x=hm\) và mỗi
+\(r_x\le h\), số vị trí là đủ; sau khi điền xong, điều kiện vẫn đúng cho hàng
+kế tiếp, nên quy nạp được.
+
+Vì thế mỗi hàng chỉ cần bảo đảm mọi số có \(r_x=h\) được điền một lần. Dựng đồ
+thị hai phía: bên trái là vị trí của hàng, bên phải là các số. Nối vị trí với
+số nếu số đó có thể điền ở vị trí ấy; nếu \(r_x=h\), ép số \(x\) phải được chọn,
+còn nếu \(r_x<h\) thì có thể bỏ qua. Dùng cách đã nêu để tìm matching hoàn hảo
+từ điển nhỏ nhất.
+
+\subsection{Matching cực đại trên đồ thị tổng quát}
+
+\subsubsection{Thuật toán blossom}
+
+Khác biệt duy nhất giữa đồ thị tổng quát và đồ thị hai phía là đồ thị tổng quát
+có thể có chu trình lẻ. Điều này khiến ta không thể chuyển bài toán thành khả
+đạt trong đồ thị có hướng.
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình b.} Bản gốc minh họa một chu trình lẻ có các mũi tên luân phiên:
+dù từ \(s\) tới được \(t\), đường đi không đơn giản làm một số đỉnh bị dùng bởi
+hai cạnh matching sau khi đảo, nên không thể chỉ xét khả đạt.
+\end{minipage}}
+\end{center}
+
+Vấn đề nằm ở chu trình lẻ. Nếu chu trình trong hình là chẵn, việc chỉ xét khả
+đạt không quay lại cùng một đỉnh với cùng trạng thái, vì đi một số chẵn cạnh trở
+về sẽ không đổi loại cạnh cần đi tiếp.
+
+Ta vẫn bắt đầu như trên đồ thị hai phía: mỗi lần chọn một đỉnh chưa ghép \(s\),
+từ \(s\) tìm đường tăng bằng BFS/DFS theo quy tắc luân phiên. Trên cây luân
+phiên sinh ra, đánh dấu chẵn-lẻ cho các đỉnh, gốc là đỉnh chẵn. Đỉnh chẵn được
+đưa vào cây bằng cạnh matching từ một đỉnh lẻ, và mỗi lần ta duyệt các cạnh ra
+từ đỉnh chẵn.
+
+Giả sử đang ở đỉnh \(u\), xét cạnh tới \(v\).
+\begin{itemize}
+  \item Nếu \(v\) chưa thăm: nếu \(v\) là đỉnh chưa phủ thì tìm được đường
+  tăng; nếu không, đưa bạn ghép của \(v\) vào cây.
+  \item Nếu \(v\) đã thăm: cạnh đang xét là cạnh không thuộc cây của cây luân
+  phiên, tạo thành một chu trình. Nếu đó là chu trình chẵn thì bỏ qua; trường
+  hợp chỉ có chu trình chẵn chính là đồ thị hai phía. Nếu đó là chu trình lẻ,
+  co toàn bộ chu trình thành một \emph{blossom}, tức một đỉnh mới, rồi tiếp tục
+  tìm đường tăng trên đồ thị mới.
+\end{itemize}
+
+Ta phân tích vì sao việc co blossom là đúng. Gọi đồ thị ban đầu là \(G\), đồ thị
+sau khi co là \(G'\). Cần chứng minh hai mệnh đề:
+\begin{enumerate}
+  \item Nếu \(G\) có đường tăng, thì \(G'\) cũng có đường tăng.
+  \item Nếu \(G'\) có đường tăng, thì \(G\) cũng có đường tăng.
+\end{enumerate}
+
+Trong cây luân phiên, xét một cạnh không thuộc cây \((u,v)\) sinh ra chu trình
+lẻ, và đặt \(h=\mathrm{LCA}(u,v)\). Chu trình lẻ này là chu trình luân phiên,
+chỉ riêng tại \(h\) có hai cạnh kề cùng kiểu, đều là cạnh không matching. Cạnh
+cây đi vào \(h\) là cạnh matching; ngoài \(h\), mọi cạnh từ đỉnh trên chu trình
+đi ra ngoài đều là cạnh không matching. Vì vậy nếu đi vào \(h\) bằng cạnh
+matching, ta có thể đi tới bất kỳ đỉnh nào khác trên chu trình rồi đi ra bằng
+cạnh không matching, theo một trong hai chiều; chiều ngược lại cũng đúng.
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình c.} Bản gốc vẽ cây luân phiên, cạnh ngoài cây \((u,v)\), và đỉnh
+\(h=\mathrm{LCA}(u,v)\). Phần chu trình lẻ được co thành một đỉnh mới; chu trình
+trước khi co gọi là blossom cũ.
+\end{minipage}}
+\end{center}
+
+Với mệnh đề thứ nhất, gọi đoạn đường màu đỏ từ \(s\) tới \(h\) trong hình gốc là
+\(S\). Gọi \(G_S,G'_S\) là các đồ thị thu được sau khi đảo trạng thái cạnh trên
+\(S\) trong \(G,G'\). Matching trong hai đồ thị này vẫn hợp lệ và cùng kích
+thước với matching ban đầu. Nếu \(G\) có đường tăng, matching trong \(G_S\)
+không cực đại, nên theo định lý đường tăng, \(G_S\) có đường tăng. Nếu đường
+tăng đó không đi qua blossom cũ, nó cũng tồn tại trong \(G'_S\). Nếu có đi qua,
+ta cho nó vừa vào blossom thì đi thẳng trong blossom tới \(h\); theo tính chất
+vừa phân tích, đó vẫn là đường tăng hợp lệ. Khi ánh xạ sang \(G'_S\), đoạn qua
+blossom tương ứng với việc đi qua đỉnh mới. Vì \(G'_S\) có đường tăng và kích
+thước matching của \(G'\) không đổi, \(G'\) cũng có đường tăng.
+
+Với mệnh đề thứ hai, nếu đường tăng trong \(G'\) không đi qua đỉnh mới thì nó
+cũng là đường tăng trong \(G\). Nếu nó đi qua đỉnh mới, nó chỉ có một cạnh vào
+và một cạnh ra, một cạnh matching và một cạnh không matching. Ánh xạ hai cạnh
+đó về \(G\); cạnh matching nhất định là cạnh nối với \(h\). Như đã phân tích,
+từ \(h\) có thể đi trong blossom tới mọi vị trí cần thiết rồi đi ra bằng cạnh
+không matching, hoặc ngược lại. Nhờ đó khôi phục được một đường tăng trong
+\(G\).
+
+Hơn nữa, nếu đang tìm đường tăng từ \(s\) và gặp chu trình lẻ, thì hễ trước khi
+co có đường tăng xuất phát từ \(s\), sau khi co vẫn có đường tăng xuất phát từ
+\(s\). Vì vậy điểm bắt đầu không đổi.
+
+Khi cài đặt, thường không co đỉnh một cách tường minh. Dùng DSU để ghi mỗi đỉnh
+hiện thuộc blossom có gốc nào. Ngoài mảng ghép đôi, dùng mảng \texttt{next} ghi
+đỉnh kế tiếp trên đường tăng cuối cùng; trong mỗi blossom, các \texttt{next}
+tạo thành một danh sách hai chiều mô tả cách đi bên trong blossom. Chương trình
+chính dùng BFS mở rộng cây luân phiên, hàng đợi chứa mọi đỉnh chẵn. Khi gặp
+chu trình lẻ, dùng DSU co blossom và đánh dấu các đỉnh lẻ trên chu trình thành
+đỉnh chẵn để đưa vào hàng đợi. Một lần tìm đường tăng tốn \(O(m)\); cần
+\(O(n)\) lần, nên tổng thời gian là \(O(nm)\).
+
+\subsubsection{Ứng dụng}
+
+\paragraph{Problem 1. Trò chơi trên đồ thị vô hướng.}
+Alice và Bob chơi trên một đồ thị vô hướng đơn có \(n\le 200\) đỉnh, Alice đi
+trước. Ban đầu có một quân ở đỉnh \(s\). Mỗi lượt, nếu quân đang ở đỉnh \(u\),
+người chơi phải chuyển quân tới một đỉnh kề với \(u\). Các đỉnh đã đi qua bị
+xóa vĩnh viễn khỏi đồ thị. Ai không đi được thì thua. Biết hai người đều chơi
+tối ưu, hỏi có bao nhiêu đỉnh \(s\) là trạng thái thắng cho người đi trước.
+
+Kết luận: \(s\) là trạng thái thắng khi và chỉ khi \(s\) nằm trong mọi matching
+cực đại.
+
+Nếu tồn tại matching cực đại mà \(s\) chưa ghép, thì sau khi người đi trước đi
+từ \(s\) tới \(v\), người đi sau chỉ cần đi tiếp tới bạn ghép của \(v\). Người
+đi sau luôn có nước đi, trừ khi tới một đỉnh chưa phủ; nhưng nếu điều đó xảy ra
+thì ta đã tìm được một đường luân phiên nối hai đỉnh chưa phủ, tức một đường
+tăng, mâu thuẫn với matching cực đại.
+
+Ngược lại, nếu \(s\) nằm trong mọi matching cực đại, lấy một matching cực đại
+bất kỳ và để người đi trước dùng đúng chiến lược vừa mô tả cho người đi sau. Nếu
+người đi trước hết nước, đã sinh ra một đường luân phiên chỉ có một đầu chưa
+phủ; đảo đường này sẽ làm \(s\) không còn được ghép mà kích thước matching không
+đổi, mâu thuẫn với điều kiện \(s\) bắt buộc.
+
+Vì vậy bài toán trở thành: trong đồ thị tổng quát, xác định các đỉnh nằm trong
+mọi matching cực đại. Tìm một matching cực đại bất kỳ. Với mỗi đỉnh đã ghép
+\(u\), tạm xóa nó khỏi đồ thị và kiểm tra có đường tăng hay không. Nếu có, \(u\)
+không bắt buộc.
+
+Chú ý sau khi xóa \(u\), nếu tồn tại đường tăng thì bạn ghép \(v\) của \(u\) là
+một đầu của đường tăng. Nếu không, sau khi xóa \(u\), matching giảm \(1\), tăng
+theo đường tăng lại tăng \(1\), rồi vẫn có thể ghép \(u\) với \(v\) để tạo
+matching lớn hơn matching cực đại ban đầu, mâu thuẫn. Do đó khi xét \(u\), chỉ
+cần tìm đường tăng từ \(v\). Tìm matching cực đại ban đầu tốn \(O(nm)\); sau đó
+duyệt \(O(n)\) đỉnh, mỗi lần blossom kiểm tra đường tăng từ một điểm tốn
+\(O(m)\), tổng \(O(nm)\).
+
+\paragraph{Problem 2. Lấy điểm trên đồ thị topo.}
+Cho một DAG có \(n\le 200\) đỉnh. Mỗi lượt có thể lấy đồng thời nhiều nhất hai
+đỉnh có bậc vào \(0\); bậc vào chỉ được tính lại sau khi lượt kết thúc, và hai
+đỉnh được lấy cùng lượt không được có quan hệ topo với nhau. Hỏi ít nhất bao
+nhiêu lượt để lấy hết mọi đỉnh.
+
+Với hai đỉnh \(u,v\), nếu một đỉnh tới được đỉnh kia thì chúng không thể lấy
+cùng lượt. Dựng đồ thị vô hướng \(G'\), nối cạnh giữa mọi cặp đỉnh không có
+quan hệ topo, biểu thị rằng cặp đó có thể lấy cùng một lượt. Vì số đỉnh cố
+định, cực tiểu số lượt tương đương cực đại số lượt lấy được hai đỉnh, gọi là
+\(R\). Matching cực đại trong \(G'\) hiển nhiên là cận trên của \(R\); ta chứng
+minh cận này luôn đạt được.
+
+Xét các đỉnh bậc vào \(0\) của DAG ban đầu và quan hệ ghép trong \(G'\). Nếu một
+đỉnh không có bạn ghép, lấy nó ngay. Nếu bạn ghép của nó cũng có bậc vào \(0\),
+lấy cả hai. Trường hợp còn lại, mọi đỉnh bậc vào \(0\) đều có bạn ghép bị
+``đè'' bởi quan hệ topo. Xét các bạn ghép ấy theo thứ tự topo; trong số chúng,
+phải có ít nhất hai đỉnh cực đại, tức không bị bạn ghép khác đè. Nếu chỉ có một
+đỉnh cực đại \(z\), vì \(z\) không có bậc vào \(0\), phải có một đỉnh bậc vào
+\(0\) tới được \(z\); điều này kéo theo chuỗi đè ngược và mâu thuẫn với tính cực
+đại duy nhất.
+
+Lấy hai đỉnh cực đại đó là \(z,t\), và bạn ghép bậc vào \(0\) của chúng là
+\(x,y\). Từ các cạnh matching \(x-z\) và \(y-t\), đổi thành \(x-y\) và \(z-t\):
+\(z,t\) có thể ghép với nhau do không có quan hệ topo, và \(x,y\) đều có bậc
+vào \(0\) nên có thể lấy cùng lượt. Như vậy luôn điều chỉnh được matching cực
+đại mà kích thước không đổi và có một cạnh ghép hai đỉnh bậc vào \(0\). Lặp lại
+sẽ đạt đúng \(R\) lượt lấy hai đỉnh. Chứng minh trên cũng cho cách dựng nghiệm.
+Độ phức tạp \(O(nm)\) nếu dùng blossom trực tiếp cho \(G'\).
+
+\subsection{Matching trọng số lớn nhất trên đồ thị hai phía}
+
+Matching trọng số lớn nhất là matching có tổng trọng số cạnh lớn nhất. Nếu thêm
+đỉnh giả vào phía ít đỉnh hơn để hai phía bằng nhau, và xem cạnh không tồn tại
+có trọng số \(0\), bài toán matching trọng số lớn nhất có thể chuyển thành bài
+toán matching hoàn hảo trọng số lớn nhất. Sau đây xét matching hoàn hảo trọng số
+lớn nhất.
+
+\subsubsection{Thuật toán KM}
+
+Thuật toán KM, còn gọi là Hungarian algorithm, tìm matching hoàn hảo trọng số
+lớn nhất trong \(O(n^3)\) thời gian. Trước hết nêu hai khái niệm.
+
+Một bộ \emph{nhãn đỉnh khả thi} là cách gán mỗi đỉnh \(u\) một giá trị \(l(u)\)
+sao cho với mọi cạnh \((u,v)\),
+\[
+  w(u,v)\le l(u)+l(v).
+\]
+\emph{Đồ thị đẳng thức} ứng với một bộ nhãn khả thi là đồ thị con sinh bởi toàn
+bộ các đỉnh, chỉ giữ những cạnh thỏa
+\[
+  w(u,v)=l(u)+l(v).
+\]
+
+\paragraph{Định lý 2.}
+Với một bộ nhãn khả thi, nếu đồ thị đẳng thức có matching hoàn hảo thì matching
+đó là matching hoàn hảo trọng số lớn nhất của đồ thị hai phía ban đầu.
+
+\paragraph{Chứng minh.}
+Với matching hoàn hảo bất kỳ \(M\), tổng trọng số của nó thỏa
+\[
+  \mathrm{val}(M)=\sum_{(u,v)\in M}w(u,v)
+  \le \sum_{(u,v)\in M}(l(u)+l(v))=\sum_i l(i).
+\]
+Nếu \(M'\) là matching hoàn hảo trong đồ thị đẳng thức, thì
+\[
+  \mathrm{val}(M')=\sum_{(u,v)\in M'}(l(u)+l(v))=\sum_i l(i).
+\]
+Vậy không matching hoàn hảo nào có tổng trọng số lớn hơn \(M'\).
+
+Mục tiêu là liên tục điều chỉnh nhãn sao cho đồ thị đẳng thức có matching hoàn
+hảo. Gọi \(n\) là số đỉnh mỗi phía. Đặt \(l_x(i)\) cho nhãn đỉnh trái thứ
+\(i\), \(l_y(j)\) cho nhãn đỉnh phải thứ \(j\), và \(w(i,j)\) cho trọng số cạnh
+giữa chúng. Khởi tạo nhãn khả thi, chẳng hạn
+\[
+  l_x(i)=\max_j w(i,j),\qquad l_y(j)=0.
+\]
+
+Mỗi lần chọn một đỉnh trái chưa ghép rồi thử tìm đường tăng trong đồ thị đẳng
+thức, giống thuật toán matching cực đại. Nếu tìm được thì tăng ngay. Nếu không,
+ta có một cây luân phiên. Gọi \(S,T\) là tập đỉnh trái và phải trong cây; gọi
+\(S',T'\) là phần còn lại.
+
+Trong đồ thị đẳng thức, không có cạnh từ \(S\) tới \(T'\); nếu có cạnh không
+matching thì cây còn mở rộng được, còn cạnh matching từ \(S\) ra ngoài là không
+thể vì mọi đỉnh trong \(S\) trừ gốc đều được ghép với một đỉnh trong \(T\).
+Ngược lại, mọi cạnh từ \(S'\) tới \(T\) đều là cạnh không matching.
+
+Nếu giảm nhãn của mọi đỉnh trong \(S\) đi \(a\) và tăng nhãn của mọi đỉnh trong
+\(T\) lên \(a\), các cạnh matching và các cạnh của cây luân phiên vẫn nằm trong
+đồ thị đẳng thức; một số cạnh từ \(S\) sang \(T'\) có thể mới được thêm vào.
+Chọn
+\[
+  a=\min\{l_x(u)+l_y(v)-w(u,v)\mid u\in S,\ v\in T'\}.
+\]
+Nếu \(a\) nhỏ hơn giá trị này, đồ thị đẳng thức không đổi.
+
+Khi có cạnh mới \((u,v)\) vào đồ thị đẳng thức, nếu \(v\) chưa ghép thì tìm được
+đường tăng; nếu \(v\) đã ghép thì đưa \(v\) và bạn ghép của nó vào cây luân
+phiên. Mỗi lần sửa nhãn hoặc tìm được đường tăng, hoặc cây luân phiên tăng thêm
+hai đỉnh, nên nhiều nhất \(O(n)\) lần sửa nhãn cho một đường tăng.
+
+Để cài đặt hiệu quả, với mỗi đỉnh phải \(v\in T'\), duy trì
+\[
+  \mathrm{slack}(v)=\min_{u\in S}(l_x(u)+l_y(v)-w(u,v)).
+\]
+Khi thêm một đỉnh trái vào \(S\), cập nhật mọi \(\mathrm{slack}\) trong \(O(n)\);
+khi sửa nhãn, trừ \(a\) khỏi các \(\mathrm{slack}\) tương ứng. Như vậy mỗi lần
+mở rộng cây tốn \(O(n)\), mỗi đường tăng tốn \(O(n^2)\), và toàn bộ thuật toán
+tốn \(O(n^3)\).
+
+\subsubsection{Ứng dụng}
+
+KM giải trực tiếp matching trọng số lớn nhất và matching hoàn hảo trọng số lớn
+nhất trên đồ thị hai phía. Nếu đổi dấu trọng số cạnh, nó cũng giải matching
+trọng số nhỏ nhất.
+
+Mô hình nhãn đỉnh của KM còn cho bài toán đối ngẫu: tìm các dãy \(l_x,l_y\) sao
+cho
+\[
+  l_x(i)+l_y(j)\ge w(i,j)
+\]
+với mọi cạnh \((i,j)\), và cực tiểu hóa
+\[
+  \sum_{i=1}^{n}l_x(i)+\sum_{j=1}^{n}l_y(j).
+\]
+Các nhãn do KM tìm được chính là nghiệm tối ưu, vì tổng nhãn của mọi nghiệm khả
+thi đều không nhỏ hơn trọng số matching hoàn hảo lớn nhất, còn KM đạt đúng cận
+dưới này.
+
+\subsection{Matching trọng số lớn nhất trên đồ thị tổng quát}
+
+\subsubsection{Thuật toán}
+
+Tương tự mô hình nhãn trong KM cho đồ thị hai phía, với đồ thị tổng quát ta đặt
+một nhãn đỉnh \(z_i\) cho mỗi đỉnh \(i\), và một nhãn không âm \(z_B\) cho mỗi
+tập đỉnh lẻ \(B\). Với cạnh \(e=(u,v)\), đặt
+\[
+  f_e=z_u+z_v+\sum_{B:\ u,v\in B} z_B,
+\]
+trong đó \(w_e\) là trọng số của cạnh \(e\).
+
+Nếu với một matching \(M\) thỏa:
+\begin{enumerate}
+  \item \(f_e\ge w_e\) với mọi \(e\in E\);
+  \item \(f_e=w_e\) với mọi \(e\in M\);
+  \item nếu \(z_B>0\) thì trong \(M\) có đúng \((|B|-1)/2\) cạnh nằm hoàn toàn
+  trong \(B\),
+\end{enumerate}
+thì \(M\) là matching trọng số lớn nhất.
+
+Lý do là với matching bất kỳ \(M'\), tổng trọng số của nó không vượt quá giới
+hạn
+\[
+  \mathrm{LIMIT}
+  =\sum_i z_i+\sum_B \frac{|B|-1}{2}z_B.
+\]
+Trong đó \(z_i\) là đóng góp của nhãn đỉnh, còn \(z_B\) là cận trên đóng góp của
+nhãn tập đỉnh lẻ. Matching \(M\) đạt đúng giới hạn này, nên tối ưu. Định nghĩa
+của \(B\) có vẻ lạ, nhưng thực chất \(z_B\) là trọng số duy trì cho mỗi blossom
+đã co.
+
+Mục tiêu là đồng thời tìm bộ nhãn và matching \(M\) thỏa các điều kiện trên.
+Một bộ nhãn thỏa điều kiện \(1,2\) được gọi là hợp lệ; đồ thị gồm các cạnh
+\(f_e=w_e\) gọi là đồ thị đẳng thức. Khởi tạo \(M=\varnothing\), nhãn đỉnh
+\(z_i=\max_e w_e/2\), còn mọi \(z_B=0\); chỉ cần ghi và duy trì những blossom có
+\(z_B>0\). Ban đầu chỉ vi phạm điều kiện thứ ba.
+
+Thuật toán gồm nhiều pha như khi tìm matching cực đại. Trong mỗi pha, tìm đường
+tăng trong đồ thị đẳng thức. Khác với đồ thị hai phía, ta bắt đầu BFS đồng thời
+từ mọi đỉnh chưa ghép, xem các gốc là đỉnh chẵn; hàng đợi chứa các đỉnh chẵn.
+Khi co blossom, mọi đỉnh bên trong blossom được đánh dấu chẵn và các đỉnh chẵn
+mới được đưa vào hàng đợi. Nếu tìm được đường tăng thì tăng. Nếu không, điều
+chỉnh nhãn \(z\).
+
+Để giữ điều kiện thứ ba, sau một pha cần bảo vệ các blossom đã co có \(z_B>0\),
+tức không bung chúng ra. Vì vậy trong BFS cây luân phiên, ta xem blossom như
+một đỉnh; ngoài blossom chẵn, cũng có thể gặp blossom lẻ.
+
+Khi không tìm được đường tăng trong đồ thị đẳng thức, điều chỉnh nhãn giống KM:
+\[
+  z_i\leftarrow z_i-a \quad\text{nếu }i\text{ là đỉnh chẵn},
+\]
+\[
+  z_i\leftarrow z_i+a \quad\text{nếu }i\text{ là đỉnh lẻ}.
+\]
+Tuy nhiên mọi đỉnh trong cùng một blossom có cùng loại; nếu chỉ sửa nhãn đỉnh,
+cạnh bên trong blossom có thể rời đồ thị đẳng thức hoặc nhãn trở nên không hợp
+lệ. Vì thế cần nhãn blossom:
+\[
+  z_B\leftarrow z_B+2a \quad\text{nếu }B\text{ là blossom chẵn},
+\]
+\[
+  z_B\leftarrow z_B-2a \quad\text{nếu }B\text{ là blossom lẻ}.
+\]
+Ở đây chỉ xét các blossom ngoài cùng; blossom có thể lồng nhau. Cách sửa này
+giữ các cạnh trong blossom ở lại đồ thị đẳng thức.
+
+Giá trị \(a\) là nhỏ nhất trong bốn loại sau:
+\begin{enumerate}
+  \item \(z_i\), với \(i\) là đỉnh chẵn;
+  \item \(f_e-w_e\), với \(e=(u,v)\) nối một đỉnh chẵn với một đỉnh chưa thăm;
+  \item \((f_e-w_e)/2\), với \(e=(u,v)\) nối hai đỉnh chẵn không thuộc cùng
+  blossom;
+  \item \(z_B/2\), với \(B\) là blossom lẻ.
+\end{enumerate}
+Giá trị này không làm các cạnh trong blossom, cạnh của cây luân phiên hay cạnh
+matching rời khỏi đồ thị đẳng thức, đồng thời không làm bộ nhãn mất hợp lệ.
+
+Nếu cực tiểu rơi vào loại \(1\), sau lần sửa này điều kiện thứ ba được cải
+thiện. Nếu rơi vào loại \(4\), một số blossom lẻ có trọng số về \(0\). Những
+blossom này chắc chắn hình thành từ các pha trước; trước đây giữ lại chúng để
+bảo toàn điều kiện thứ ba, còn bây giờ có thể bung ra. Sau khi bung, các
+blossom con của chúng trở thành blossom trong cây luân phiên hiện tại, và mọi
+đỉnh chẵn mới được đưa vào hàng đợi.
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình d.} Bản gốc so sánh trước và sau khi bung một blossom lẻ có
+\(z_B=0\); các blossom con trở lại cây luân phiên hiện tại.
+\end{minipage}}
+\end{center}
+
+Nếu cực tiểu rơi vào loại \(2\) hoặc \(3\), ít nhất một cạnh mới được thêm vào
+đồ thị đẳng thức. Nếu cạnh mới nối hai đỉnh chẵn thuộc hai cây khác nhau thì
+tìm được đường tăng. Như vậy cuối cùng luôn tìm được đường tăng. Kết thúc một
+pha, bung mọi blossom chẵn trên cây luân phiên có trọng số \(0\), rồi sang pha
+kế tiếp.
+
+Độ phức tạp cơ bản là \(O(n^4)\). Bằng cách duy trì biến \(\mathrm{slack}\)
+tương tự KM trên đồ thị hai phía, có thể đạt \(O(n^3)\).
+
+\subsubsection{Ứng dụng: bài toán người đưa thư Trung Quốc trên đồ thị vô hướng}
+
+Cho một đồ thị vô hướng đơn có \(n\le 200\) đỉnh, các cạnh có trọng số. Cần tìm
+một đường đi khép kín ngắn nhất đi qua mọi cạnh ít nhất một lần.
+
+Ta cần thêm một số cạnh với tổng trọng số nhỏ nhất sao cho đồ thị có chu trình
+Euler, tức mọi đỉnh đều có bậc chẵn. Trọng số cạnh thêm giữa hai đỉnh là khoảng
+cách ngắn nhất giữa chúng trong đồ thị gốc. Dùng Floyd \(O(n^3)\) để tính mọi
+cặp khoảng cách ngắn nhất; bài toán còn lại là tìm matching hoàn hảo trọng số
+nhỏ nhất giữa các đỉnh bậc lẻ. Đổi trọng số bằng một hằng số lớn trừ đi khoảng
+cách sẽ chuyển nó thành matching trọng số lớn nhất trên đồ thị tổng quát.
+
+\subsection{Tổng kết}
+
+Bài viết đã thảo luận bốn kiểu bài toán matching cực đại: từ matching cực đại
+đến matching trọng số lớn nhất, từ đồ thị hai phía đến đồ thị tổng quát. Với mỗi
+loại, bài viết giới thiệu một số thuật toán đa thức.
+
+Cốt lõi của matching là tìm đường tăng. Với matching trọng số lớn nhất, mô hình
+nhãn đỉnh phần nào chuyển bài toán về dạng tìm matching cực đại trong đồ thị
+đẳng thức.
+
+Thực ra nội dung về matching trên đồ thị còn rộng hơn nhiều: có nhiều thuật
+toán hiệu quả hơn và nhiều hướng nghiên cứu lịch sử mà bài viết chưa đề cập.
+Bạn đọc quan tâm có thể tự tìm hiểu thêm; hy vọng bài viết này đóng vai trò gợi
+mở.
+
+\subsection{Lời cảm ơn}
+
+\begin{itemize}
+  \item Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và
+  giao lưu.
+  \item Xin cảm ơn Lü Kaifeng, Huang Zhi'ao, Guo Xiaoxu, Luo Yuping, Yu
+  Xingjiang, Hu Jiachen và Zhang Tianyang vì đã giúp tôi trong quá trình viết
+  bài.
+  \item Xin cảm ơn các huấn luyện viên trong đội tuyển và thầy Xu Guangming vì
+  đã bồi dưỡng tôi.
+  \item Xin cảm ơn các bạn học ở Trường Trường Quận vì đã giúp đỡ và ủng hộ tôi.
+  \item Xin cảm ơn gia đình đã quan tâm và chăm sóc tôi.
+\end{itemize}
+
+\subsection*{Tài liệu tham khảo của bài viết}
+
+\begin{enumerate}
+  \item Wikipedia, ``Berge's lemma''.
+  \item Wikipedia, ``Hopcroft--Karp algorithm''.
+  \item Matthew Kusner, ``Edmonds's Blossom Algorithm''.
+  \item Zvi Galil, ``Efficient Algorithms for Finding Maximal Matching in
+  Graphs''.
+  \item Liu Rujia, \emph{Sách nhập môn kinh điển về thi thuật toán}, Nhà xuất
+  bản Đại học Thanh Hoa.
+  \item Chen Lijie, ``Codeforces VK Cup 2012 Round 3 D. Minimum Diameter''.
+  \item Huang Zhi'ao, ``Matching trọng số lớn nhất''.
+  \item Fan Haoqiang, ``Thuật toán blossom cho matching trên đồ thị vô hướng''.
 \end{enumerate}
 
 \end{document}

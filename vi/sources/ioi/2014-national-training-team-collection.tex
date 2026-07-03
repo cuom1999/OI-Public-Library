@@ -19,7 +19,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2014. Phần
 mục lục và đầu sách có lớp văn bản đọc được, nhưng thân bài dùng ánh xạ phông
 chữ khiến kết quả trích xuất bị biến dạng. Bản dịch này chuyển ngữ phần đầu
-sách, mục lục và tám bài đầu tiên bằng cách kết hợp mục lục trích xuất được với
+sách, mục lục và chín bài đầu tiên bằng cách kết hợp mục lục trích xuất được với
 OCR từ các trang đã render.
 \end{abstract}
 
@@ -3519,6 +3519,534 @@ kiểm thử và cải tiến lời giải.
   \item \texttt{http://en.wikipedia.org/wiki/Euler\_tour\_technique}
 \end{enumerate}
 
+\section{Ứng dụng cây đoạn trong một lớp bài chia để trị}
+
+\begin{center}
+Xu Yinzhan, Trường Học Quân Hàng Châu, Chiết Giang
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Cây đoạn và chia để trị theo thời gian đều là những thuật toán thường dùng
+trong thi tin học. Bài viết này nêu tư tưởng dùng cây đoạn để giải các bài
+chia để trị, đưa ra một phương pháp chuyển bài sửa đoạn thành bài chia để trị,
+mở rộng tư tưởng ấy sang một số bài bền vững đơn giản, rồi giới thiệu khái
+niệm và cách dựng cây ảo. Các ví dụ trong bài tương đối cơ bản, nhằm gợi mở
+cách dùng phương pháp này trong các bài khác.
+
+\subsection{Cây đoạn và chia để trị theo thời gian}
+
+\subsubsection{Cây đoạn}
+
+Cây đoạn là một cấu trúc dữ liệu rất thông dụng. Gốc biểu diễn toàn bộ đoạn,
+mỗi nút không phải lá có một con trái và một con phải. Nếu nút đang xét biểu
+diễn đoạn \([l,r]\), thì con trái biểu diễn
+\([l,\lfloor(l+r)/2\rfloor]\), còn con phải biểu diễn
+\([\lfloor(l+r)/2\rfloor+1,r]\).
+
+Thời gian tìm các nút tương ứng với một đoạn trên cây đoạn là
+\(O(\log n)\), trong đó \(n\) là độ dài toàn đoạn.
+
+Chứng minh ngắn gọn như sau. Giả sử đoạn cần chèn là \([a,b]\), nút \(i\)
+biểu diễn đoạn \([l_i,r_i]\), và
+\[
+  \operatorname{mid}_i=\left\lfloor\frac{l_i+r_i}{2}\right\rfloor.
+\]
+Nếu tại một lần thăm nút \(i\) ta phải đi xuống cả hai con, thì
+\(a\le \operatorname{mid}_i\) và \(\operatorname{mid}_i<b\). Trong cây con trái
+của \(i\), nếu lại có một nút \(j\) khiến ta phải đi xuống cả hai con, thì
+\(a\le \operatorname{mid}_j\) và \(\operatorname{mid}_j<b\); do
+\(\operatorname{mid}_j\le \operatorname{mid}_i\), các nút ở nhánh phải được
+che phủ trọn bởi \([a,b]\). Trường hợp cây con phải tương tự. Vì vậy số lần
+phân nhánh ở mỗi tầng là hằng số, nên tổng số nút được thăm là \(O(\log n)\).
+
+\subsubsection{Chia để trị theo thời gian}
+
+Chia để trị theo thời gian là một dạng chia để trị. Tư tưởng cơ bản là: để xử
+lý các thao tác sửa và hỏi trong khoảng thời gian \([l,r]\), trước hết xử lý
+đóng góp của các thao tác sửa trong nửa trái
+\([l,\lfloor(l+r)/2\rfloor]\) lên các truy vấn trong nửa phải
+\([\lfloor(l+r)/2\rfloor+1,r]\), sau đó đệ quy trên hai nửa. Cách làm này yêu
+cầu đóng góp của từng sửa đối với truy vấn không ảnh hưởng lẫn nhau, các thao
+tác sửa độc lập với nhau, và bài toán cho phép xử lý offline. Nếu xử lý \(k\)
+thao tác sửa/hỏi tốn \(O(f(k))\), thì theo định lý chủ, tổng thời gian là
+\(O(f(n)\log n)\).
+
+\subsubsection{Bài chia để trị theo thời gian có thao tác thu hồi}
+
+Vì chia để trị theo thời gian yêu cầu các thao tác độc lập, nếu có thao tác
+dạng ``thu hồi một thao tác trước đó'' thì không thể áp dụng trực tiếp. Trong
+tình huống này, cần chuyển bài toán về một bài mới không có thao tác xóa. Một
+cách hay là sau một bước chia để trị thì đảo ngược thời gian, khi đó thao tác
+xóa biến thành thao tác thêm của chiều thời gian ngược. Phương pháp ``dòng
+thời gian đảo ngược'' này có thể xem thêm trong luận văn đội tuyển quốc gia
+năm 2013 của Xu Haoran.
+
+Bài viết này đưa ra một phương pháp tổng quát khác, áp dụng cho các bài có
+thao tác thu hồi, đóng góp của sửa lên truy vấn độc lập với nhau, và cho phép
+offline. Đây là chủ đề chính của bài. Ta bắt đầu bằng một ví dụ.
+
+\paragraph{Ví dụ một: giao nửa mặt phẳng động.}
+Cho một mặt phẳng, cần hỗ trợ các thao tác:
+\begin{itemize}
+  \item thêm một nửa mặt phẳng;
+  \item xóa một nửa mặt phẳng hiện đang tồn tại;
+  \item hỏi một điểm có nằm trong giao của các nửa mặt phẳng hiện tại hay
+  không.
+\end{itemize}
+
+Nếu không có thao tác thứ hai, đây là một bài luyện tập rất phù hợp cho chia
+để trị theo thời gian.
+
+Quan sát định nghĩa cây đoạn và phương pháp chia để trị theo thời gian ở trên,
+ta thấy chúng có liên hệ chặt chẽ: cây đoạn cũng liên tục chia
+\([l,r]\) thành \([l,\operatorname{mid}]\) và
+\([\operatorname{mid}+1,r]\).
+
+Trước hết xét bài con không có xóa. Trong chia để trị theo thời gian, mỗi bước
+xử lý đóng góp của sửa ở đoạn trái lên truy vấn ở đoạn phải; trên cây đoạn,
+điều này tương đương với xử lý đóng góp của các sửa trong con trái lên các
+truy vấn trong con phải. Khi chia đến cuối, đoạn còn lại có độ dài \(1\), tức
+là thao tác tương ứng được đặt tại một lá của cây đoạn.
+
+Nói cách khác, chia để trị theo thời gian tương đương với một cây đoạn lấy
+thời gian làm chỉ số. Khác biệt chỉ là thứ tự xử lý: chia để trị thường xử lý
+đoạn lớn trước rồi đến đoạn nhỏ, còn cách nhìn cây đoạn có thể cho phép xử lý
+từ các đoạn nhỏ lên hoặc gom theo các nút cụ thể. Từ đây nảy sinh câu hỏi:
+nếu dùng thứ tự xử lý của cây đoạn để giải bài chia để trị, liệu có thu được
+một cách làm mạnh hơn hoặc tiện hơn không?
+
+Cụ thể, dựng sẵn một cây đoạn có kích thước bằng số thao tác. Lần lượt chèn
+mỗi thao tác vào lá ứng với thời điểm của nó. Với một nút không lá \(x\), lấy
+mọi nửa mặt phẳng trong con trái của \(x\), dựng bao trên hoặc bao dưới, rồi
+xét các điểm truy vấn ở con phải. Với một điểm \((X,Y)\), dùng tìm kiếm nhị
+phân để tìm nửa mặt phẳng cao nhất hoặc thấp nhất tại hoành độ \(X\), rồi so
+sánh với \(Y\). Nếu một điểm không nằm trong một bao nào đó thì đánh dấu vĩnh
+viễn là không nằm trong giao. Cách này có thời gian
+\(O(n\log^2 n)\), với \(n\) là số thao tác. Nếu dùng trộn để sắp thứ tự hệ số
+góc của nửa mặt phẳng và hoành độ của điểm hỏi, có thể đạt
+\(O(n\log n)\).
+
+Tuy nhiên cách trên nhìn qua không khác nhiều so với chia để trị trực tiếp.
+Đổi góc nhìn: mỗi nửa mặt phẳng đóng góp cho những truy vấn nào? Chính là
+những truy vấn xảy ra sau thời điểm nó được thêm. Biết vậy, ta có thể đánh dấu
+trực tiếp trên cây đoạn đoạn thời gian mà nửa mặt phẳng ấy có hiệu lực, biểu
+thị rằng mọi điểm truy vấn trong đoạn đó cần nằm trong nửa mặt phẳng này.
+
+Thuật toán trở thành: nếu một nửa mặt phẳng xuất hiện từ thời điểm \(T\), thì
+đánh dấu thao tác ấy lên các nút cây đoạn phủ đoạn \([T,n]\). Sau đó, với mỗi
+nút của cây đoạn, lấy các nửa mặt phẳng đánh dấu tại nút ấy và các điểm truy
+vấn thuộc đoạn thời gian của nút, rồi làm giao nửa mặt phẳng và truy vấn.
+
+Điểm đáng mừng là thuật toán này mở rộng được sang trường hợp có thao tác xóa:
+mỗi nửa mặt phẳng vẫn tương ứng với một đoạn thời gian liên tục mà nó tồn tại.
+Phần còn lại giống cách xử lý vừa nêu.
+
+Xét độ phức tạp. Bỏ qua sắp xếp, dựng một giao nửa mặt phẳng và kiểm tra một
+số điểm có nằm trong giao đó hay không đều là tuyến tính. Thứ tự điểm truy vấn
+có thể duy trì bằng trộn. Các nửa mặt phẳng có thể được sắp trước khi chèn vào
+cây đoạn; nửa mặt phẳng được chèn trước luôn đứng trước nửa mặt phẳng được
+chèn sau, nên khi xử lý mỗi nút, dãy nửa mặt phẳng đã có thứ tự. Do đó thời
+gian và bộ nhớ đều là \(O(n\log n)\).
+
+Bộ nhớ của cách này kém hơn cách cổ điển. Có thể tối ưu bằng cách nhận ra rằng
+mỗi nửa mặt phẳng khi chèn đoạn vào cây đoạn chỉ phân nhánh một lần, nên ở mỗi
+tầng của cây đoạn có không quá hằng số bản sao của cùng một nửa mặt phẳng. Vì
+vậy chỉ cần xử lý từng tầng một là có thể giữ bộ nhớ tuyến tính. Trực giác là
+ta thay toàn bộ cây bằng một tầng đang xét. Như vậy thu được cách làm dùng
+\(O(n)\) bộ nhớ và \(O(n\log n)\) thời gian.
+
+Các đoạn trên cho thấy cây đoạn và chia để trị ở đây có cùng bản chất, chỉ
+khác hình thức biểu diễn. Chia để trị mỗi lần chỉ xét một đường đi trong cây
+đoạn, còn cây đoạn biểu diễn toàn bộ quá trình chia để trị. Nhờ mô hình cụ thể
+hơn, trực quan hơn, cây đoạn giúp ta xử lý bài toán rõ ràng và dễ nghĩ ra tối
+ưu hơn; còn chia để trị vẫn có ưu điểm là viết nhanh và gọn.
+
+\paragraph{Ví dụ hai: Homework.}
+Cho một dãy \(n\) số. Mỗi truy vấn hỏi trong các vị trí từ \(l\) tới \(r\), số
+phần tử có giá trị thuộc \([a,b]\), và số giá trị phân biệt trong các phần tử
+ấy. Có \(Q\) truy vấn, với \(n\le 100000\), \(Q\le 1000000\). Nguồn bài: AHOI
+2013.
+
+Vì số giá trị phân biệt liên quan mạnh tới giá trị, ta dựng cây đoạn theo miền
+giá trị. Ở các nút giá trị khác nhau, các số chắc chắn khác nhau. Mỗi nút của
+cây đoạn giá trị lưu vị trí của những phần tử có giá trị nằm trong miền mà nút
+biểu diễn. Một truy vấn \([a,b]\) ứng với \(O(\log n)\) nút của cây đoạn giá
+trị; trong từng nút, cần hỏi số vị trí thuộc \([l,r]\) và số giá trị phân biệt
+tương ứng. Hai bài con này đều xử lý được bằng cây Fenwick. Tổng bộ nhớ là
+\(O(n+Q)\), thời gian là \(O((n+Q)\log^2 n)\).
+
+\subsubsection{Một phương pháp chuyển đổi tổng quát}
+
+Trong các cuộc thi hiện nay, bài có thao tác kiểu ``thu hồi một lần thêm trước
+đó'' không nhiều, nên phương pháp trên không phải lúc nào cũng áp dụng trực
+tiếp. Ta đưa ra một cách chuyển thao tác dạng ``biến mọi phần tử trong
+\([l,r]\) thành cùng một giá trị'' thành các thao tác thêm và thu hồi.
+
+Cách làm như sau. Lần lượt chèn các thao tác sửa vào một cây đoạn theo vị trí,
+và đánh dấu lên các nút phủ \([l,r]\). Nếu trong quá trình chèn gặp một nút đã
+có đánh dấu, đẩy đánh dấu của nút ấy xuống hai con và xóa đánh dấu ở nút hiện
+tại. Khi một thao tác sửa đã tìm được các nút tương ứng trên cây đoạn, lấy ra
+và xóa mọi đánh dấu trong các cây con của những nút ấy. Nếu thời điểm chèn của
+thao tác sửa hiện tại là \(i\), thời điểm chèn của một đánh dấu được lấy ra là
+\(j\), và vị trí của đánh dấu ấy trên cây đoạn là đoạn \([L,R]\), thì trong
+bài đã chuyển đổi thêm hai thao tác:
+\begin{itemize}
+  \item tại thời điểm \(j\), biến mọi phần tử ở các vị trí \([L,R]\) thành một
+  giá trị;
+  \item tại thời điểm \(i\), thu hồi thao tác thứ nhất.
+\end{itemize}
+
+Khi hiện thực, chỉ cần ghi nhận trong cây con của mỗi nút có đánh dấu nào
+không. Nếu không có thì khỏi tìm tiếp; nếu có thì tiếp tục đi xuống để lấy các
+đánh dấu.
+
+Tính đúng đắn có thể thấy như sau. Trong bài phủ đoạn, tại bất kỳ thời điểm
+nào, phần tử thứ \(p\) của dãy chính là giá trị do đánh dấu cuối cùng trên
+đường từ lá \(p\) lên gốc biểu diễn. Trong cây con của một nút đã có đánh dấu,
+các đánh dấu khác đều không còn tác dụng đối với phủ đoạn, nên xóa chúng không
+làm thay đổi kết quả. Mỗi lần chèn một thao tác sửa, ta đang lấy ra mọi phần
+tử trong đoạn tương ứng và đổi chúng thành giá trị mới, chỉ khác là các phần
+tử liên tiếp và cùng giá trị được gộp lại.
+
+Xét độ phức tạp. Sau mỗi lần chèn, trong cây con của một nút có đánh dấu sẽ
+không còn đánh dấu khác. Vì vậy khi chèn vào một nút, đánh dấu chỉ bị đẩy
+xuống một lần, không bị dây chuyền do vị trí đẩy xuống lại có đánh dấu. Một
+lần đẩy xuống làm tăng số đánh dấu thêm \(O(1)\), và làm tổng độ sâu các đánh
+dấu tăng \(O(\log n)\). Nếu \(m\) là số thao tác sửa và \(n\) là độ dài dãy,
+độ phức tạp chèn tổng cộng là \(O(m\log^2 n)\), bao gồm cả thời gian chèn và
+đẩy xuống; chi phí xóa không vượt quá chi phí chèn. Số thao tác trong bài mới
+không vượt quá tổng số đánh dấu, tức \(O(m\log n)\).
+
+Mức này chưa đủ tốt. Quan sát từ dãy ban đầu, mỗi thao tác sửa đoạn mới chỉ
+phủ hoàn toàn một số đoạn giá trị bằng nhau, đồng thời cắt hai đoạn giá trị
+bằng nhau ở hai đầu. Mỗi lần nhiều nhất sinh thêm hai đoạn giá trị mới, nên
+tổng số đoạn giá trị khác nhau cuối cùng là \(O(m)\). Ví dụ, phủ giá trị
+\(6\) lên dãy \(1112334445555\) từ vị trí thứ \(3\) tới vị trí áp chót sẽ phủ
+trọn các đoạn \(2\), \(33\), \(444\), còn \(111\) bị tách thành \(1\) và
+\(11\), \(5555\) bị tách thành \(55\) và \(55\).
+
+Quay lại cây đoạn, nhiều đánh dấu bị xóa thực ra tương ứng với một đoạn liên
+tục trên dãy; chỉ cần gộp các đánh dấu ấy lại thì tổng số thao tác trong bài
+mới là \(O(m)\). Tìm mọi đánh dấu gộp được tốn \(O(\log n)\), tương đương tìm
+các nút cây đoạn phủ một đoạn. Vì vậy độ phức tạp xây dựng là
+\(O(m\log n)\).
+
+\paragraph{Ví dụ ba: một bài đoạn đơn giản.}
+Cho một dãy dài \(m\), ban đầu mọi phần tử có giá trị cho trước. Cần hỗ trợ:
+\begin{itemize}
+  \item đổi mọi phần tử từ vị trí \(l\) tới vị trí \(r\) thành \(x\);
+  \item hỏi trong các vị trí từ \(l\) tới \(r\) có bao nhiêu phần tử có giá trị
+  không vượt quá \(x\).
+\end{itemize}
+Có tổng cộng \(n\) thao tác. Để đơn giản ký hiệu, giả sử \(m=O(n)\).
+
+Dùng phương pháp chuyển đổi ở trên. Trong bài mới, thao tác thứ nhất biến
+thành thêm một giá trị \(x\) vào mọi vị trí thuộc \([l,r]\), cùng với các thao
+tác thu hồi một số lần thêm cũ. Theo phương pháp phần trước, ta tiếp tục đưa
+bài toán về các bài con chỉ có thao tác thêm một giá trị vào đoạn và mọi thao
+tác thêm đều đứng trước truy vấn. Với mỗi bài con, sắp theo giá trị rồi dùng
+cây đoạn duy trì cộng đoạn và hỏi tổng đoạn.
+
+Ban đầu có \(O(n)\) thao tác sửa; sau bước chuyển thứ nhất vẫn có \(O(n)\)
+thao tác, và sau khi đưa lên cây đoạn thời gian có \(O(n\log n)\) thao tác.
+Mỗi thao tác còn phải cập nhật trên cây đoạn vị trí, nên phần này tốn
+\(O(n\log^2 n)\). Mỗi truy vấn xuất hiện ở \(O(\log n)\) nút của cây đoạn thời
+gian, và mỗi lần cần hỏi tổng đoạn, nên phần truy vấn cũng tốn
+\(O(n\log^2 n)\). Tổng thời gian là \(O(n\log^2 n)\).
+
+Do đặc thù của bài này, sau bước chuyển đầu tiên, thao tác thu hồi có thể xem
+như một thao tác thêm với trọng số \(-1\). Khi đó có thể viết theo chia để trị
+thời gian thông thường để giảm hằng số, nhưng bậc độ phức tạp không đổi.
+
+\paragraph{Ví dụ bốn: Robot.}
+Có \(n\) robot và \(m\) ổ cắm xếp thành một hàng; ban đầu mọi ổ cắm đều trống.
+
+Tại mỗi thời điểm, có một robot lên sân khấu. Robot \(i\) chọn một robot \(j\)
+đang cắm phích vào ổ \(k\), rồi hấp thụ năng lượng của nó; bảo đảm lúc ấy
+robot \(j\) có phích ở ổ \(k\). Nếu năng lượng của robot \(j\) là \(f_j\), thì
+năng lượng của robot \(i\) là
+\[
+  f_j+(i-j)^2+(i-k)^2+(j-k)^2.
+\]
+Sau khi bị hấp thụ, năng lượng của robot \(j\) không mất đi. Nếu không có
+robot nào có thể hấp thụ, năng lượng của robot \(i\) là \(0\).
+
+Sau khi nhận năng lượng, robot \(i\) cắm phích của mình vào mọi ổ thuộc một
+đoạn \([l,r]\); mọi phích đang cắm ở các ổ ấy bị rút ra. Tại thời điểm
+\(i+M\), robot \(i\) rút mọi phích của mình và rời đi. Giá trị \(M\) là như
+nhau với mọi robot. Hỏi năng lượng lớn nhất mỗi robot có thể nhận được.
+
+Trước hết bỏ qua thao tác rút phích ở thời điểm \(i+M\). Dù không biết trước
+các giá trị \(f_i\), đoạn hiệu lực của mỗi robot là đã biết. Sau khi xử lý bằng
+phương pháp ở trên, mỗi nút của cây đoạn chỉ có các thao tác kiểu ``thêm robot
+\(j\) đang cắm một đoạn phích''. Xử lý mọi thao tác theo thứ tự trung tự của
+cây đoạn là có thể thu được mọi giá trị \(f_i\).
+
+Vì
+\[
+  f_i=\max_j\bigl(f_j+(i-j)^2+(i-k)^2+(j-k)^2\bigr),
+\]
+nếu \(i,j\) đã cố định thì biểu thức \((i-k)^2+(j-k)^2\) đạt lớn nhất tại một
+trong hai đầu của đoạn ổ cắm. Do đó chỉ cần lấy hai đầu của mỗi đoạn, còn phần
+giữa là vô dụng. Ta có
+\[
+  f_j+(i-j)^2+(i-k)^2+(j-k)^2
+  =f_j+(j-k)^2+j^2+k^2-2(j+k)i+2i^2.
+\]
+Chuyển trạng thái này giải được bằng tối ưu hóa độ dốc trong \(O(n)\) cho mỗi
+tập cần xử lý. Thời gian là \(O(n\log n+n\log m)\).
+
+Thao tác rút phích chỉ cần tìm tại thời điểm \(i+M\), các đánh dấu của robot
+\(i\) hiện nằm ở những nút nào của cây đoạn, rồi lấy chúng ra; thao tác này
+giống thu hồi thông thường, chỉ cần đánh dấu trên cây đoạn thời gian. Độ phức
+tạp vẫn là \(O(n\log n+n\log m)\).
+
+\paragraph{EXT.}
+Giữ nguyên mọi điều kiện của bài, chỉ đổi yêu cầu từ năng lượng lớn nhất thành
+năng lượng nhỏ nhất.
+
+Khi đổi sang nhỏ nhất, chỉ lấy hai đầu của mỗi đoạn là sai. Giá trị nhỏ nhất
+của
+\[
+  f_j+(i-j)^2+(i-k)^2+(j-k)^2
+\]
+còn có thể đạt tại \(k=(i+j)/2\). Khi đó cần
+\[
+  l\le \frac{i+j}{2}\le r,
+  \qquad\text{tức}\qquad
+  2l-j\le i\le 2r-j.
+\]
+Có thể trên nền cách làm cũ thực hiện thêm một lần chia để trị tương tự. Do
+miền của \(k\) là số nguyên, cần xử lý cẩn thận biên, nhưng điều này không làm
+đổi độ phức tạp. Thời gian là \(O(n\log^2 n)\).
+
+\subsection{Chia để trị liên quan tới cấu trúc cây}
+
+\subsubsection{Bền vững hóa bài toán dãy}
+
+Bền vững hóa là ứng dụng kinh điển của nhiều cấu trúc dữ liệu. Ở đây chỉ xét
+loại bền vững đơn giản: ``đưa trạng thái toàn cục trở về sau một thao tác nào
+đó''.
+
+Tại mỗi thời điểm \(T\), có thể có nhiều thao tác sửa khác nhau biến trạng thái
+hiện tại thành các nhánh mới \(T'\). Những nhánh mới này có hậu duệ riêng và
+không liên quan tới trạng thái ở nhánh khác. Quay về một thao tác tức là quay
+về một nút trên cây phiên bản. Vì vậy quan hệ giữa các thao tác sửa cuối cùng
+tạo thành một cấu trúc cây.
+
+Mỗi thao tác sửa ảnh hưởng tới mọi nút trong cây con phiên bản của nó. Khi
+DFS một cây, các nút trong một cây con được thăm trên một đoạn thời gian liên
+tục. Vì vậy, khi vừa đi vào cây con \(x\), ta thêm thao tác do \(x\) biểu
+diễn; khi rời cây con \(x\), ta thu hồi thao tác ấy. Thu hồi của một thao tác
+thu hồi lại là một thao tác thêm. Sắp các nút của cây phiên bản theo thứ tự
+DFS, ta chuyển bài toán về bài toán trên dãy mà số thao tác không đổi bậc.
+
+\subsubsection{Cây ảo}
+
+Trong chia để trị trên dãy, độ phức tạp của mỗi bài con không được phụ thuộc
+vào độ dài toàn dãy, mà chỉ được phụ thuộc vào số phần tử trong bài con. Với
+dãy, chỉ cần sắp các phần tử theo vị trí là tránh được phụ thuộc vào độ dài
+toàn cục.
+
+Nhưng cấu trúc cây phức tạp hơn; không thể chỉ sắp thứ tự là nắm được quan hệ
+giữa các nút trong bài con. Vì vậy cần dùng cây ảo để tối ưu độ phức tạp.
+
+\paragraph{Định nghĩa.}
+Giả sử cây gốc \(T\) có hình dạng cố định và có \(n\) nút. Cây ảo của nó là
+một cây con liên thông của \(T\), hoặc là cây thu được từ một cây con liên
+thông của \(T\) sau khi co các chuỗi cạnh liên tiếp không phân nhánh thành một
+cạnh. Vì các cạnh mới này không nhất thiết tồn tại trong \(T\), ta gọi nó một
+cách hình tượng là cây ảo.
+
+Với cây có hình dạng thay đổi cũng có thể dựng cây ảo, nhưng điều đó không
+liên quan nhiều tới bài này. Khái niệm ``cây con'' ở đây gần với đồ thị con,
+không phải cây con của một cây có gốc.
+
+\paragraph{Cách dựng.}
+Trong bài toán thực tế, điều kiện dựng cây ảo thường là: tìm một cây ảo nhỏ,
+bao hàm mọi điểm khóa \(x_1,x_2,\ldots,x_m\), và giữ đúng quan hệ giữa chúng.
+
+Trước hết, nếu một điểm là điểm khóa, nó chắc chắn phải là một nút trong cây
+ảo cuối cùng. Nếu lấy mọi điểm nằm trên các đường đi giữa các điểm khóa, ta
+được một cây con hợp lệ, dù có thể rất không tối ưu. Xét một điểm không khóa
+trong đó. Xóa điểm này khỏi cây thì toàn cây bị chia thành nhiều cây con; ít
+nhất hai cây con chứa điểm khóa, nếu không điểm ấy đã không được chọn. Nếu chỉ
+cần giữ quan hệ phân nhánh giữa các điểm khóa, thì những điểm không tạo phân
+nhánh thật có thể bị co đi; ngược lại, điểm tạo phân nhánh cần được giữ làm
+nút cây ảo.
+
+Cách dựng trực tiếp như vậy hơi rườm rà, có thể nới điều kiện một chút. Xem
+cây ban đầu là cây có gốc. Nếu một điểm thỏa điều kiện trở thành nút cây ảo,
+thì trong các cây con bị nó chia ra, ít nhất hai cây con là cây con của các
+con trực tiếp của nó; điểm ấy chính là LCA của hai điểm khóa nằm trong hai cây
+con đó. Do đó chỉ cần thêm vào tập nút cây ảo các LCA của từng cặp điểm khóa
+liền nhau theo thứ tự DFS.
+
+Giải thích vì sao chỉ cần các cặp liền nhau. Với hai điểm \(x,y\), trong kỹ
+thuật Euler tour, LCA của chúng là điểm có độ sâu nhỏ nhất trên đoạn giữa hai
+lần xuất hiện tương ứng. Nếu ba điểm \(x,y,z\) có thứ tự trong Euler tour là
+\(x,y,z\), nhờ tính kết hợp của truy vấn min trên đoạn, ta có
+\[
+  h[\operatorname{LCA}(x,z)]
+  =\min\bigl(h[\operatorname{LCA}(x,y)],
+             h[\operatorname{LCA}(y,z)]\bigr).
+\]
+Trên đoạn này điểm có độ sâu nhỏ nhất là duy nhất, nên
+\(\operatorname{LCA}(x,z)\) bằng một trong hai LCA ở vế phải. Vì vậy, chỉ cần
+sắp \(x_1,x_2,\ldots,x_m\) theo thứ tự DFS, rồi lấy thêm
+\(\operatorname{LCA}(x_i,x_{i+1})\) với \(1\le i<m\); cùng với các
+\(x_i\), đó là tập nút cây ảo.
+
+Sau khi có các nút cây ảo, mô phỏng DFS của cây ảo theo thứ tự DFS của cây
+gốc là dựng được các cạnh giữa chúng. Cụ thể, sắp các nút cây ảo theo thứ tự
+DFS trong cây gốc rồi chèn lần lượt. Duy trì đường đi từ gốc cây ảo tới nút
+hiện tại. Khi chèn nút \(x\), kiểm tra nút cuối \(y\) trên đường đi hiện tại
+có phải tổ tiên của \(x\) không. Nếu không, loại \(y\) khỏi đường đi và tiếp
+tục kiểm tra; nếu có, nối cạnh giữa \(x\) và \(y\), rồi đưa \(x\) vào đường đi.
+
+Phương pháp dựng cây ảo này tốn \(O(m\log n)\), và kích thước cây ảo dựng ra
+là \(O(m)\). Có thể kiểm tra quan hệ tổ tiên bằng đoạn DFS của cây con trong
+cây gốc, tốn \(O(1)\) sau tiền xử lý.
+
+\paragraph{Thao tác trên cây ảo.}
+Các thao tác trong bài thường không nhắm trực tiếp vào nút cây ảo, mà nhắm vào
+nút của toàn cây. Trong cây ảo, ta có thể xem trọng số của các nút không thuộc
+cây ảo là vô dụng. Vì vậy, thao tác trên một cây ảo nghĩa là thao tác lên
+những nút vừa thuộc cây ảo vừa liên quan tới thao tác đang xét.
+
+Thao tác trên cây thường có hai loại: đường đi và cây con. Thao tác cây con có
+thể xử lý trực tiếp bằng thứ tự DFS, nên ở đây chỉ xét thao tác trên một đường
+đi \((X,Y)\) trong cây gốc. Đường đi này tách được thành hai đường đi
+\((X,Z)\) và \((Y,Z)\), trong đó \(Z=\operatorname{LCA}(X,Y)\). Tìm trong các
+tổ tiên của \(X\), kể cả \(X\), nút \(a\) sâu nhất thuộc cây ảo; tương tự tìm
+nút \(b\) cho \(Y\). Nếu \(Z\) là nút cây ảo, đường đi tương ứng trong cây ảo
+là \((a,b)\). Nếu không, nó tương ứng với hai đường đi từ \(a\) tới ngay dưới
+\(Z\), và từ \(b\) tới ngay dưới \(Z\). Có thể chứng minh nhiều nhất một trong
+hai đường đi này là hữu ích; nếu độ sâu của cả \(a\) và \(b\) đều lớn hơn
+\(Z\), thì \(Z\) bắt buộc phải là nút cây ảo.
+
+Sau khi biết \(a\), dùng nhảy bậc hai để tìm tổ tiên \(c\) của \(a\) có độ sâu
+lớn hơn \(Z\) nhưng nhỏ nhất có thể; đường đi \((a,c)\) là phần cần thao tác.
+
+Để tìm các nút \(a,b\), có thể sắp các nút cây ảo theo độ sâu tăng dần. Với
+mỗi nút cây ảo \(c\), gán trọng số \(c\) cho mọi nút trong cây con của \(c\).
+Khi đó trọng số của \(X\) chính là \(a\), trọng số của \(Y\) chính là \(b\).
+Các phép gán và hỏi này xử lý bằng cây đoạn trên thứ tự DFS. Tiền xử lý tốn
+\(O(n\log n)\), còn mỗi lần tìm nút cây ảo tương ứng tốn \(O(\log n)\).
+
+\paragraph{Ví dụ năm: Ký túc xá của Jc.}
+Cho một cây \(n\) nút, mỗi nút có một trọng số. Có \(Q\) truy vấn; mỗi truy
+vấn lấy các trọng số trên đường đi \((x,y)\) đưa vào mảng \(w\), sắp tăng dần,
+rồi hỏi
+\[
+  \sum_{1\le k\le m} k\,w_k.
+\]
+Ràng buộc \(1\le n,Q\le 50000\), bộ nhớ 3 GB. Nguồn ghi trong PDF là của tác
+giả.
+
+Chia các trọng số thành các khối theo thứ tự tăng dần. Với mỗi khối, dựng cây
+ảo gồm các nút trong khối, rồi tiền xử lý đáp án giữa mọi cặp nút của cây ảo.
+Việc này có thể làm bằng cách xuất phát từ từng nút, DFS trên cây ảo và duy
+trì một cây cân bằng trên đường đi. Đáp án giữa hai nút ở đây nghĩa là đáp án
+của đường đi nếu chỉ xét các nút thuộc cây ảo của khối này.
+
+Với mỗi truy vấn, lần lượt hỏi trên cây ảo của từng khối: đáp án trên đường
+đi, số nút trên đường đi, và tổng trọng số trên đường đi. Đáp án đã có từ tiền
+xử lý; số nút và tổng trọng số có thể tiền xử lý bằng tổng trên đường từ nút
+tới gốc rồi trừ đi.
+
+Giả sử có \(X\) khối. Với khối \(k\), gọi đáp án nội bộ là
+\(\operatorname{ans}_k\), tổng trọng số là \(w_k\), và tổng số nút trong các
+khối trước đó là \(S_{k-1}\). Đáp án cuối cùng là
+\[
+  \sum_{1\le k\le X}\bigl(\operatorname{ans}_k+w_kS_{k-1}\bigr).
+\]
+Tính đúng đắn hiển nhiên: mọi nút thuộc khối \(k\) đứng sau đúng
+\(S_{k-1}\) nút ở các khối trước nó.
+
+Nếu kích thước mỗi khối là \(T\), tiền xử lý tốn
+\(O(n^2\log n/T)\), còn mỗi truy vấn tốn \(O(T\log n)\). Chọn
+\(T=\sqrt n\), ta được \(O((n+Q)\sqrt n\log n)\). Thực ra, số điểm giữa mọi cặp
+nút của cây ảo, tổng trọng số giữa chúng, và nút cây ảo tương ứng với mỗi nút
+của cây gốc đều có thể tiền xử lý. Khi đó mỗi truy vấn tốn \(O(n/T)\). Chọn
+\(T=\sqrt{n/\log n}\), độ phức tạp thành \(O((n+Q)\sqrt{n\log n})\).
+
+\paragraph{Ví dụ sáu: CHANGE.}
+Cho một cây có gốc gồm \(n\) nút. Mỗi nút có hai thuộc tính \(a,b\); ban đầu
+mọi thuộc tính giống nhau. Có \(Q\) thao tác:
+\begin{itemize}
+  \item đổi giá trị \(a\) của một cây con thành một giá trị cho trước;
+  \item đổi giá trị \(b\) của một cây con thành một giá trị cho trước;
+  \item hỏi trên một đường đi \((x,y)\), trong các nút có
+  \(a\in[X,Y]\), giá trị lớn nhất của \(b\).
+\end{itemize}
+Nguồn bài: tác giả.
+
+Vì sửa cây con tương đương sửa một đoạn trong thứ tự DFS, có thể dùng phương
+pháp ở mục 1.4 để chuyển thành thêm và thu hồi thao tác. Tuy nhiên nếu chỉ
+chuyển như vậy sẽ làm thuật toán rối. Do mỗi lần đều sửa cây con, sau mỗi
+thao tác, các đoạn được chuyển đổi và có cùng đánh dấu sẽ gộp được thành một
+đồ thị con liên thông. Ta chèn các đồ thị con liên thông này vào cây đoạn thời
+gian.
+
+Với mỗi nút của cây đoạn thời gian, dựng một cây đoạn giá trị theo \(a\). Mỗi
+nút của cây đoạn giá trị chứa một số thao tác sửa giá trị \(b\) của một đồ
+thị con liên thông. Xét cách xử lý tại một nút của cây đoạn giá trị.
+
+Với mỗi thao tác sửa đồ thị con liên thông, lấy điểm có độ sâu nhỏ nhất trong
+đồ thị con ấy làm điểm khóa; điểm này là duy nhất. Dựng cây ảo chứa các điểm
+khóa đó. Đồng thời dùng cây đoạn để sửa giá trị \(b\) trong đồ thị con liên
+thông thành giá trị cho trước; chỉ cần sửa những đoạn thu được từ cách dựng ở
+mục 1.4.
+
+Với mỗi truy vấn, đường đi luôn tách được thành hai đường đi hướng lên tổ
+tiên. Một đường đi có hướng như vậy hoặc nằm trong một đồ thị con liên thông,
+hoặc đi qua điểm có độ sâu nhỏ nhất của đồ thị con ấy rồi sang đồ thị con kế
+tiếp. Vì vậy chỉ cần tìm giá trị \(b\) lớn nhất trong các điểm khóa mà đường
+đi đi qua, và giá trị \(b\) tại điểm cuối cùng mà đường đi đạt tới; giá trị lớn
+hơn trong hai giá trị này chính là đóng góp của nút cây đoạn giá trị hiện tại
+cho truy vấn.
+
+Tóm lại: chuyển sửa cây con thành thao tác thêm một cặp \((a,b)\) trên một đồ
+thị con liên thông, cùng với thao tác thu hồi một lần thêm nào đó. Chèn mỗi
+thao tác thêm vào cây đoạn thời gian tương ứng. Với mỗi nút của cây đoạn thời
+gian, lấy các thao tác thêm bao phủ nó, dựng cây đoạn giá trị theo \(a\), rồi
+dựng cây ảo ở từng nút cây đoạn giá trị. Với các truy vấn nằm trong nút cây
+đoạn thời gian này, tìm các nút cây đoạn giá trị phủ \([X,Y]\), rồi hỏi trên
+các cây ảo tương ứng.
+
+Cây đoạn thời gian nhân số nút lên \(\log Q\), cây đoạn giá trị nhân tiếp
+\(\log n\), và các thao tác trong cây đoạn giá trị đều tốn \(O(\log n)\). Do
+đó độ phức tạp là \(O(Q\log^2 n\log Q)\), bỏ qua một số chi phí tiền xử lý trên
+cây gốc.
+
+\subsection{Tổng kết}
+
+Phương pháp kết hợp cây đoạn với chia để trị này có hiệu quả tốt với một lớp
+bài sửa đoạn. Ưu điểm của nó là mã nguồn tương đối đơn giản, tư tưởng rõ ràng,
+và chạy hiệu quả; trong bài toán thực tế có phạm vi ứng dụng khá rộng. Khi kết
+hợp với cây ảo, nó còn có thể giải một số bài khó hơn.
+
+\subsection*{Lời cảm ơn}
+
+\begin{itemize}
+  \item Cảm ơn cha mẹ và nhà trường đã nuôi dưỡng, đào tạo tôi.
+  \item Cảm ơn các bạn Du Yubei, Huang Jiatai, Zhou Zikai và nhiều bạn học
+  khác đã giúp đỡ tôi.
+  \item Cảm ơn CCF đã cho tôi cơ hội thể hiện bản thân.
+\end{itemize}
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Chen Danqi, \emph{Từ Cash bàn về ứng dụng của một lớp thuật toán chia
+  để trị}.
+  \item Xu Haoran, \emph{Bàn sơ về một vài lời giải phi kinh điển cho bài cấu
+  trúc dữ liệu}.
+  \item Chen Lijie, \emph{Báo cáo lời giải JustForFun EXT}.
+\end{enumerate}
+
 \section*{Ghi chú về nguồn}
 
 Tệp PDF có 228 trang. \texttt{pdftotext} đọc tốt phần mục lục nhưng phần thân
@@ -3563,6 +4091,12 @@ bài cấu trúc dữ liệu} được dịch từ các trang in 77--90 (trang v
 một lớp bài chia để trị}. Bài này phải dùng OCR từ ảnh render vì
 \texttt{pdftotext} tạo mojibake; các công thức về Fenwick hai chiều, mảng khối
 phân tầng, DFS Euler và các ví dụ Candy Park/Just for fun EXT được đối chiếu
-lại bằng ảnh render.
+lại bằng ảnh render. Bài \emph{Ứng dụng cây đoạn trong một lớp bài chia để
+trị} được dịch từ các trang in 91--104 (trang vật lý PDF 95--108); trang vật
+lý PDF 108 là trang trắng ngăn cách, và trang vật lý PDF 109 được kiểm tra là
+trang in 105 bắt đầu bài kế tiếp \emph{Thuật toán căn bậc hai: không chỉ là
+chia khối}. Bài này phải dùng OCR từ ảnh render vì \texttt{pdftotext} tạo
+mojibake; các công thức trong ví dụ Robot, điều kiện \(k=(i+j)/2\) ở phần EXT,
+và các dòng độ phức tạp của cây ảo được đối chiếu lại bằng ảnh render.
 
 \end{document}
