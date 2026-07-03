@@ -19,7 +19,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2014. Phần
 mục lục và đầu sách có lớp văn bản đọc được, nhưng thân bài dùng ánh xạ phông
 chữ khiến kết quả trích xuất bị biến dạng. Bản dịch này chuyển ngữ phần đầu
-sách, mục lục và mười bốn bài đầu tiên bằng cách kết hợp mục lục trích xuất được
+sách, mục lục và mười lăm bài bằng cách kết hợp mục lục trích xuất được
 với OCR từ các trang đã render.
 \end{abstract}
 
@@ -6517,6 +6517,622 @@ vết không phá bậc độ phức tạp. Thuật toán có độ phức tạp
   \item Liu Rujia, Huang Liang, \emph{Nghệ thuật thuật toán và thi tin học}.
 \end{enumerate}
 
+\section{Một số phương pháp tìm nghiệm tốt thứ \texorpdfstring{\(k\)}{k}}
+
+\begin{center}
+Yu Dingli, Trường Trung học số 1 Thiệu Hưng
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Tìm nghiệm tốt thứ \(k\) là một kiểu bài rất thường gặp trong thi tin học. Bài
+viết này phân loại và hệ thống hóa các phương pháp giải, để nhiều bài có thể
+được chuyển thành những bài toán quen thuộc và đơn giản hơn. Những thuật toán
+được nhấn mạnh gồm thuật toán tìm \(k\) đường đi ngắn nhất với độ phức tạp
+\(O(n\log n+m+k\log k)\), thuật toán tìm \(k\) cây khung nhỏ nhất với độ phức
+tạp \(O(m\log n+k^2)\), và thuật toán tìm \(k\) đường đi đơn ngắn nhất với độ
+phức tạp \(O(kn(m+n\log n))\). Ngoài các mục thuần giới thiệu thuật toán, mỗi
+phần đều có ví dụ để người đọc dễ đối chiếu và tổng quát hóa.
+
+\subsection{Dẫn nhập}
+
+Sau khi giải xong một bài toán, ta thường tự hỏi các biến thể của nó: nếu đổi
+một điều kiện, đổi hàm mục tiêu, hoặc không chỉ cần nghiệm tốt nhất mà cần nghiệm
+tốt thứ \(k\), bài toán sẽ ra sao. Những bài ``lớn thứ \(k\)'', ``nhỏ thứ
+\(k\)'', hay tổng quát hơn là ``nghiệm tốt thứ \(k\)'', vì vậy xuất hiện rất
+nhiều trong OI.
+
+Các công cụ có thể dùng rất đa dạng: cấu trúc dữ liệu, quy hoạch động, đồ thị,
+tìm kiếm theo thứ tự từ điển, hàng đợi ưu tiên. Có những cách quen thuộc như
+nhị phân đáp án, cây đoạn theo giá trị, thống kê trên trie; cũng có những thuật
+toán ít phổ biến hơn như \(k\) đường đi ngắn nhất, \(k\) cây khung nhỏ nhất và
+\(k\) đường đi đơn ngắn nhất. Bài viết đi từ các phép chuyển hóa đơn giản tới
+những thuật toán chuyên dụng hơn.
+
+\subsection{Nhị phân để tìm nghiệm tốt thứ \texorpdfstring{\(k\)}{k}}
+
+Trước hết cần một mô tả toán học. Với bài toán cực tiểu, ta có tập nghiệm khả
+dĩ \(U\) và hàm mục tiêu \(J\). Bài toán tối ưu thông thường là
+\[
+  \min_{u\in U} J(u).
+\]
+Ở đây \(u\in U\) biểu thị một nghiệm thỏa các ràng buộc, còn \(J(u)\) đo độ tốt
+của nghiệm.
+
+Với bài toán cực tiểu, nghiệm tốt thứ \(k\) có thể hiểu là một tập \(K\subseteq
+U\) sao cho
+\[
+  |K|=k,\qquad
+  \max_{u\in K} J(u) \le \min_{v\in U-K} J(v).
+\]
+Giá trị cần tìm là \(\max_{u\in K}J(u)\). Trường hợp cực đại hoàn toàn tương
+tự nếu đảo chiều bất đẳng thức.
+
+Nếu chỉ cần giá trị của nghiệm tốt thứ \(k\), không cần khôi phục phương án cụ
+thể, và \(J(U)\subseteq\mathbb{Z}\), bài toán có thể chuyển thành bài toán đếm.
+Đặt
+\[
+  S(x)=\{u\in U:J(u)\le x\}.
+\]
+Khi đó giá trị của nghiệm nhỏ thứ \(k\) là
+\[
+  \min_{|S(x)|\ge k} x.
+\]
+Vì \(|S(x)|\) tăng đơn điệu theo \(x\), ta nhị phân trên miền giá trị của
+\(J\). Chi phí chuyển hóa là
+\[
+  O\bigl(\log(\sup J(U)-\inf J(U))\bigr)
+\]
+lần gọi thủ tục đếm
+\[
+  \sum_{u\in U,\;J(u)\le x} 1.
+\]
+Nếu \(J\) nhận giá trị thực nhưng đề bài chỉ yêu cầu làm tròn tới \(d\) chữ số
+thập phân, có thể thay \(J(u)\) bằng \(\operatorname{round}(J(u)10^d)\) để đưa
+về miền nguyên. Điểm quan trọng là điều kiện \(J(u)\le x\) phải đủ đơn giản; nếu
+việc kiểm tra hoặc đếm dưới điều kiện này còn khó hơn bài gốc, nhị phân đáp án
+không đem lại lợi ích.
+
+\subsubsection{Ví dụ: COCI BROJ}
+
+Cho một số nguyên tố \(p\). Hãy tìm số nguyên dương nhỏ thứ \(k\) có ước nguyên
+tố nhỏ nhất bằng \(p\); nếu đáp án lớn hơn \(10^9\), in \(0\).
+
+Ta có \(J(u)=u\) và
+\[
+  U=\{u\in\mathbb{Z}^+:u\le 10^9,\ \text{ước nguyên tố nhỏ nhất của }u
+  \text{ là }p\}.
+\]
+Mọi phần tử của \(U\) có dạng \(vp\), trong đó \(v\le 10^9/p\) và \(v\) không
+có ước nguyên tố nhỏ hơn \(p\). Nếu \(p\) đủ lớn, chẳng hạn \(p\ge 67\), tập ứng
+viên nhỏ và có thể xét trực tiếp. Với \(p\le 61\), nhị phân \(x\in[0,10^9]\) và
+đếm
+\[
+  \sum_{v=1}^{\lfloor x/p\rfloor}
+    \bigl(1-[v\text{ có ước nguyên tố nhỏ hơn }p]\bigr).
+\]
+Bằng bao hàm--loại trừ, số này có thể viết thành
+\[
+  \sum_{d=1}^{\lfloor x/p\rfloor}
+    [d\text{ chỉ có ước nguyên tố nhỏ hơn }p]\,
+    \mu(d)\left\lfloor\frac{x}{pd}\right\rfloor.
+\]
+Vì chỉ cần xét các tích không lặp của những nguyên tố nhỏ hơn \(p\), độ phức tạp
+có dạng
+\[
+  O\bigl(\min\{L/p,\,2^{\pi(p)}\log L\}\bigr),
+  \qquad L=10^9.
+\]
+
+\subsubsection{Ví dụ: TopCoder PulleyTautLine}
+
+Trên mặt bàn có hai đinh tại \((0,0)\) và \(((n+1)d,0)\), cùng \(n\) ròng rọc
+bán kính \(r\) có tâm tại
+\[
+  (d,0),(2d,0),\ldots,(nd,0).
+\]
+Ròng rọc không chồng nhau. Một sợi dây căng nối hai đinh có thể quấn quanh các
+ròng rọc tùy ý. Với \(n,d,r,k\) cho trước, cần tìm độ dài nhỏ thứ \(k\) của dây,
+sai số không quá \(10^{-9}\). Ràng buộc chính là
+\[
+  1\le r\le 499999999,\quad
+  2r+1\le d\le 10^9,\quad
+  1\le n\le 50,\quad
+  1\le k\le 10^{18}.
+\]
+
+Tiếp tục nhị phân độ dài \(\mathit{bound}\) và đếm số cách có độ dài không vượt
+quá ngưỡng này. Mỗi đoạn của dây được chia thành bốn loại độ dài \(e,A,B,R\),
+đều tính được bằng hình học phẳng từ \(d,r\). Khi đó cần đếm các bộ
+\((x,y,z)\) thỏa
+\[
+  2e+xA+yB+zR\le \mathit{bound}.
+\]
+Một quy hoạch động trực tiếp có thể ghi trạng thái gồm số đoạn loại \(A,B,R\),
+ròng rọc hiện tại, hướng đi và vị trí trên ròng rọc. Sau khi quan sát đối xứng,
+hướng đi chỉ phụ thuộc vào \(z\bmod 2\), còn \(A\) và \(B\) có chuyển trạng thái
+giống nhau; vì vậy chỉ cần lưu \(w=x+y\), rồi nhân thêm hệ số tổ hợp
+\(\binom{x+y}{y}\) khi cộng đáp án.
+
+Không cần ghi mọi lần quấn trọn quanh ròng rọc: hai vòng trọn liên tiếp triệt
+tiêu về mặt trạng thái, phần \(R\) dư có thể được phân phối lại bằng công thức
+tổ hợp. Khi đã cố định \(w,x,y,z\), số vòng \(R\) còn có thể thêm là
+\[
+  \mathit{rest}=
+  \left\lfloor
+    \frac{\mathit{bound}-(2e+xA+yB+zR)}{R}
+  \right\rfloor.
+\]
+Nhân số trạng thái cơ bản với hệ số tổ hợp tương ứng là đủ. Vì \(w\) chỉ cần
+xét tới khoảng \(O(\log k)\), bài toán đếm đủ nhanh để đặt trong vòng nhị phân.
+
+\subsection{Chia nhị phân toàn cục và cây đoạn theo giá trị}
+
+Trong nhiều bài cấu trúc dữ liệu, cần trả lời nhiều truy vấn kiểu ``phần tử nhỏ
+thứ \(k_i\) trong đoạn \([l_i,r_i]\)''. Nhị phân riêng từng truy vấn thường lãng
+phí; chia nhị phân toàn cục xử lý đồng thời các truy vấn trên miền đáp án. Cách
+này cần các tính chất quen thuộc:
+\begin{itemize}
+  \item đáp án của truy vấn có tính nhị phân;
+  \item đóng góp của các thao tác sửa đổi vào phép kiểm tra độc lập với nhau;
+  \item nếu một sửa đổi có đóng góp, giá trị đóng góp không phụ thuộc vào ngưỡng
+  đang xét;
+  \item phép cộng đóng góp có tính giao hoán và kết hợp;
+  \item đề bài cho phép xử lý ngoại tuyến.
+\end{itemize}
+Trong bài nghiệm tốt thứ \(k\), tính chất đầu tiên chính là hệ quả của phần
+nhị phân đáp án ở trên.
+
+Khi bài toán cần xử lý trực tuyến hoặc có sửa giá trị điểm, điều kiện của chia
+nhị phân toàn cục thường quá mạnh. Một hướng khác là dựng cây đoạn theo giá trị.
+Mỗi nút \([l,r]\) của cây đoạn lưu cấu trúc dữ liệu mô tả các nghiệm \(u\) có
+\(J(u)\in[l,r]\). Để trả lời truy vấn trên một tập con \(U_i\), đếm số nghiệm
+thuộc nửa phải; nếu số đó ít nhất \(k\) thì đi sang phải, nếu không thì trừ nó
+khỏi \(k\) rồi đi sang trái. Thêm một nghiệm mới \(v\) nghĩa là chèn \(v\) vào
+\(O(\log W)\) nút chứa \(J(v)\), với
+\[
+  W=\sup J(U)-\inf J(U).
+\]
+Sửa giá trị một điểm thì xóa giá trị cũ rồi chèn giá trị mới. Đổi lại, phương
+pháp này không phù hợp với thao tác làm thay đổi đồng thời \(J(u)\) của cả một
+tập nghiệm lớn.
+
+\subsubsection{Ví dụ: BZOJ 3065}
+
+Ban đầu có \(n\) số \(a_1,\ldots,a_n\). Có ba loại thao tác: hỏi giá trị nhỏ
+thứ \(k\) trong đoạn từ số thứ \(x\) tới số thứ \(y\) theo thứ tự hiện tại; sửa
+giá trị của số thứ \(x\) thành \(\mathit{val}\); và chèn một số giá trị
+\(\mathit{val}\) trước vị trí thứ \(x\). Bài yêu cầu trực tuyến bắt buộc, với
+cỡ dữ liệu khoảng \(35000\) phần tử ban đầu và tối đa \(70000\) thao tác sửa,
+\(70000\) truy vấn.
+
+Dùng cây đoạn theo giá trị; ở mỗi nút đặt một cây cân bằng lưu các phần tử có
+giá trị trong khoảng của nút, theo thứ tự hiện tại. Khi đi trong cây giá trị,
+ta cần biết trong đoạn vị trí đang hỏi có bao nhiêu phần tử rơi vào nửa trái
+hoặc nửa phải. Vị trí tương ứng ở tầng con có thể tìm bằng truy vấn ``phần tử
+đặc trưng đầu tiên trước/sau vị trí hiện tại'' trong cây cân bằng. Vì mỗi phần
+tử cần biết vị trí của nó ở từng tầng cây giá trị, hiện thực khá phức tạp dù
+độ phức tạp chỉ khoảng
+\[
+  O((n+q)\log W\log n).
+\]
+
+\subsubsection{Một cách dùng khác của cây đoạn theo giá trị}
+
+Nếu xem cây đoạn theo giá trị như thông tin gắn trên nút của một cấu trúc dữ
+liệu khác, ta gặp khó khăn mới: nhiều cấu trúc cần gộp thông tin con lên cha,
+trong khi hai cây đoạn theo giá trị không gộp nhanh được. Có ba mẹo thường dùng.
+Thứ nhất, khi chỉ cần nghiệm tốt thứ \(k\), không nhất thiết dựng sẵn cây đã gộp;
+ta vừa đi trên cây giá trị vừa tính lượng cần đếm ở nút hiện tại. Thứ hai, nếu
+nhãn lười cũng là cây đoạn theo giá trị, hãy dùng nhãn vĩnh cửu thay vì đẩy
+xuống. Thứ ba, nếu cấu trúc nền cần xoay hoặc cập nhật cha từ con, nên chọn
+cấu trúc cân bằng theo trọng lượng, chẳng hạn treap hoặc scapegoat tree, để
+chấp nhận tái dựng bạo lực với độ phức tạp kỳ vọng hoặc khấu hao tốt.
+
+\subsubsection{Ví dụ: ZJOI 2013}
+
+Có \(n\) vị trí và \(m\) thao tác. Một thao tác thêm một số \(c\) vào từng vị
+trí trong đoạn \([a,b]\); thao tác còn lại hỏi số lớn thứ \(k\) trong toàn bộ
+các số đã được thêm vào các vị trí thuộc \([a,b]\). Với \(n,m\le 50000\), có
+thể dùng cây đoạn theo vị trí, mỗi nút lưu hai cây đoạn theo giá trị. Cây
+\(C_v\) là nhãn lười vĩnh cửu: mọi vị trí trong đoạn của nút \(v\) đều nhận
+các giá trị này. Cây \(T_v\) lưu toàn bộ giá trị xuất hiện trong đoạn của nút.
+
+Khi hỏi đúng đoạn của một nút, trả về \(T_v\). Khi hỏi cắt qua hai con, lấy
+kết quả hai phía rồi cộng thêm \((b-a+1)C_v\), vì nhãn của nút hiện tại áp dụng
+cho mọi vị trí trong đoạn hỏi. Khi sửa đúng đoạn nút, thêm \(c\) vào \(C_v\)
+và thêm \((b-a+1)\) bản sao của \(c\) vào \(T_v\); nếu không thì đệ quy xuống
+con. Độ phức tạp là \(O(m\log^2 n)\). Nếu cần hỗ trợ thêm thao tác cộng một
+lượng vào cả đoạn, có thể duy trì một nhãn dịch \(d_v\); lúc đi qua nút thì
+điều chỉnh giá trị truy vấn theo nhãn này, còn khi đi trên cây giá trị phải trả
+thêm một hệ số \(\log n\).
+
+\subsection{Thống kê trên trie}
+
+Một lớp bài khác yêu cầu xâu nhỏ thứ \(k\) theo thứ tự từ điển thỏa một điều
+kiện nào đó. Dùng nhị phân trên xâu ít tự nhiên hơn cách xác định từng ký tự.
+Bản chất của phương pháp xác định từng ký tự là đi trên trie: tại một nút, thử
+các con theo thứ tự từ điển. Nếu số phương án trong cây con là \(s\ge k\), ta
+đi vào con đó; nếu không, bỏ qua cây con và thay \(k\leftarrow k-s\). Công việc
+cốt lõi là đếm số xâu thỏa điều kiện khi đã cố định tiền tố hiện tại.
+
+Không chỉ xâu mới dùng được cách này. Tìm hoán vị nhỏ thứ \(k\), dãy quyết định
+nhỏ thứ \(k\), hoặc nhiều đối tượng tổ hợp khác cũng có thể nhìn như đi trên
+một cây chữ cái trừu tượng.
+
+\subsubsection{Ví dụ: xâu con nhỏ thứ \texorpdfstring{\(k\)}{k}}
+
+Cho một xâu \(\mathit{str}\), hãy tìm xâu con nhỏ thứ \(k\) theo thứ tự từ điển;
+hai xâu con có vị trí khác nhau được xem là khác nhau. Với \(|\mathit{str}|\le
+100000\), dựng cây hậu tố của \(\mathit{str}\). Cây hậu tố cũng là một trie
+nén của mọi hậu tố, nên đi trên cây này theo thứ tự từ điển sẽ cho đáp án. Số
+xâu con trong một cây con có thể tính bằng quy hoạch động trên cây. Nếu chỉ có
+mảng hậu tố, có thể dựng cấu trúc tương đương dạng ``con trái, anh phải'' bằng
+ngăn xếp đơn điệu trên LCP; bản chất vẫn là đi trên cây hậu tố.
+
+\subsubsection{Ví dụ: câu có lượng thông tin cho trước}
+
+Một câu gồm \(V\) từ, hai từ kề nhau cách nhau bởi một dấu cách, từ chỉ gồm chữ
+cái thường. Lượng thông tin của câu là tổng lượng thông tin của mọi ký tự:
+dấu cách có lượng \(1\), chữ \texttt{a} có lượng \(2\), \ldots, chữ
+\texttt{z} có lượng \(27\). Hỏi câu có tổng lượng thông tin \(W\) và nhỏ thứ
+\(k\) theo thứ tự từ điển. Ràng buộc:
+\[
+  1\le V\le 1000,\qquad 1\le W\le 300,\qquad 1\le k\le 10^{18}.
+\]
+Vẫn đi trên trie của mọi câu hợp lệ. Nếu mỗi lần thử một ký tự lại làm quy
+hoạch động từ đầu thì quá chậm; cần tiền xử lý số cách hoàn thành phần hậu tố
+với lượng thông tin còn lại. Khi đó tổng chi phí có thể giữ ở cỡ \(O(VW)\).
+
+\subsection{Hàng đợi ưu tiên trong bài nghiệm tốt thứ \texorpdfstring{\(k\)}{k}}
+
+Một ví dụ cơ bản là trộn \(m\) danh sách đã sắp xếp. Đưa phần tử đầu của mỗi
+danh sách vào một min-heap; mỗi lần lấy phần tử nhỏ nhất ra, rồi đưa phần tử kế
+tiếp trong cùng danh sách vào heap. Với tổng số phần tử \(n\), độ phức tạp là
+\(O(n\log m)\).
+
+Ví dụ khác: cho \(a_1,\ldots,a_n\) và \(b_1,\ldots,b_m\), cần tìm \(k\) giá trị
+nhỏ nhất trong mọi tổng \(a_i+b_j\). Sắp xếp dãy \(b\). Với mỗi \(i\), dãy
+\[
+  a_i+b_1,\ a_i+b_2,\ \ldots,\ a_i+b_m
+\]
+đã tăng dần; bài toán trở thành trộn \(n\) danh sách có thứ tự. Sau khi sắp
+xếp, chạy heap tới \(k\) bước là đủ. Cách đếm rồi nhị phân cũng cho giá trị
+nhỏ thứ \(k\), nhưng không liệt kê được toàn bộ \(k\) giá trị đầu.
+
+Tổng quát hơn, ta dựng một đồ thị phụ \(P\) trên các nghiệm sao cho mỗi nghiệm
+là một hoặc vài đỉnh, mỗi đỉnh là nghiệm hợp lệ, và đồ thị có tính chất heap:
+nếu có cạnh \(u\to v\) thì \(J(u)\le J(v)\). Thêm một nguồn
+\(\mathit{source}\) có trọng số \(-\infty\), nối tới mọi đỉnh không có bậc vào.
+Dùng hàng đợi ưu tiên chứa các đỉnh đã mở rộng: ban đầu chỉ có
+\(\mathit{source}\), mỗi lần lấy nghiệm tốt nhất chưa lấy ra và đưa các đỉnh
+kề chưa thăm vào heap. Nếu số trạng thái được thăm là \(\mathit{State}\), độ
+phức tạp là \(O(\mathit{State}\log k)\). Đồ thị \(P\) thường không cần dựng
+tường minh; ta chỉ sinh cạnh khi mở rộng trạng thái.
+
+Có thể mở rộng khái niệm trên sang đồ thị có trọng số cạnh không âm: mỗi nghiệm
+tương ứng với một đường đi xuất phát từ \(\mathit{source}\), và giá trị nghiệm
+là tổng trọng số trên đường đi. Cách nhìn này là nền tảng cho các thuật toán ở
+những phần sau. Với bài tổng \(a_i+b_j\), có thể dùng heap trên dãy \(b\) để
+dựng \(P\) với bậc ra nhỏ, đạt dạng độ phức tạp
+\[
+  O(k\log k+n+m).
+\]
+
+\subsection{\texorpdfstring{\(k\)}{k} đường đi ngắn nhất}
+
+Trong phần này, đường đi được phép đi qua lại một đỉnh nhiều lần. Bài toán là
+tìm độ dài đường đi ngắn thứ \(k\), không giảm nghiêm ngặt, từ \(s\) tới \(t\)
+trong đồ thị có hướng có trọng số.
+
+\subsubsection{Chuyển về các cạnh lệch khỏi cây ngắn nhất}
+
+Lấy một cây đường đi ngắn nhất \(T\) hướng về \(t\). Với cạnh \(e\), gọi
+\(\ell(e)\) là độ dài, \(\operatorname{head}(e)\) là đỉnh đầu,
+\(\operatorname{tail}(e)\) là đỉnh cuối, và \(d(u,t)\) là khoảng cách ngắn nhất
+từ \(u\) tới \(t\). Định nghĩa
+\[
+  \delta(e)=\ell(e)+d(\operatorname{tail}(e),t)
+              -d(\operatorname{head}(e),t).
+\]
+Khi đó \(\delta(e)\ge 0\) với mọi cạnh, và \(\delta(e)=0\) với cạnh thuộc cây
+\(T\).
+
+Với một đường đi \(p\) từ \(s\) tới \(t\), bỏ các cạnh thuộc \(T\); dãy còn lại
+gọi là \(\operatorname{sidetracks}(p)\). Dãy cạnh lệch này có ba tính chất:
+\begin{itemize}
+  \item mọi cạnh trong dãy đều thuộc \(G-T\);
+  \item nếu hai cạnh lệch liên tiếp là \(e,f\), thì
+  \(\operatorname{head}(f)\) nằm trên đường cây từ \(\operatorname{tail}(e)\)
+  tới \(t\), hoặc \(\operatorname{head}(f)=\operatorname{tail}(e)\);
+  \item độ dài của \(p\) bằng
+  \[
+    d(s,t)+\sum_{e\in\operatorname{sidetracks}(p)}\delta(e).
+  \]
+\end{itemize}
+Ngược lại, mỗi dãy cạnh lệch thỏa điều kiện trên xác định duy nhất một đường đi
+từ \(s\) tới \(t\). Do đó bài toán trở thành tìm dãy cạnh lệch có tổng
+\(\delta\) nhỏ thứ \(k\).
+
+\subsubsection{Dựng đồ thị phụ}
+
+Cách thô: một trạng thái là một dãy cạnh lệch \(q\). Nếu cạnh cuối có đỉnh cuối
+là \(v\) (dãy rỗng thì \(v=s\)), có thể nối tới mọi cạnh \(e\in G-T\) có đỉnh
+đầu nằm trên đường cây từ \(v\) tới \(t\), với trọng số \(\delta(e)\). Bậc ra
+quá lớn.
+
+Ta cải thiện bằng cách với mỗi đỉnh \(v\), lập danh sách \(g(v)\) gồm mọi cạnh
+ngoài cây có đỉnh đầu nằm trên đường từ \(v\) tới \(t\), sắp theo \(\delta\).
+Trạng thái có thể thay cạnh cuối bằng phần tử kế tiếp trong \(g(v)\), hoặc thêm
+phần tử đầu của \(g(\operatorname{tail}(e))\). Dùng biểu diễn ``con trái, anh
+phải'' giảm bậc ra xuống \(2\), nhưng việc dựng mọi danh sách vẫn đắt.
+
+Nhận xét \(g(v)\) và \(g(\operatorname{next}_T(v))\) gần như giống nhau: từ
+đỉnh \(v\) chỉ thêm các cạnh ngoài cây đi ra khỏi \(v\). Vì vậy dùng heap khả
+dĩ lâu bền. Gọi \(H(v)\) là heap chứa các cạnh trong \(g(v)\); ta có được
+\(H(v)\) bằng cách thêm lâu bền các cạnh ngoài cây của \(v\) vào
+\(H(\operatorname{next}_T(v))\). Khi cần lấy ``phần tử kế tiếp'', chỉ thay đỉnh
+heap hiện tại bằng hai con của nó. Thêm một tầng heap nữa để tận dụng phép dựng
+heap tuyến tính, thuật toán đạt
+\[
+  O(n\log n+m+k\log k).
+\]
+Heap trái có thể làm lâu bền bằng cách sao chép các nút trên đường trộn; mỗi
+phép trộn vẫn có độ phức tạp \(O(\log m)\).
+
+\subsection{Một lớp bài quy hoạch động}
+
+Nếu một quy hoạch động có thể xem như đường đi ngắn nhất trên DAG, thì nghiệm
+tốt thứ \(k\) của quy hoạch động có thể tìm bằng thuật toán \(k\) đường đi ngắn
+nhất. Cụ thể, nếu cạnh \((a,b)\) biểu thị chuyển trạng thái
+\[
+  b=\min\{b,\ a+\ell(a,b)\},
+\]
+và mọi phương án quyết định của quy hoạch động tương ứng một-một với một đường
+đi từ trạng thái đầu tới trạng thái cuối, thì nghiệm nhỏ thứ \(k\) chính là
+đường đi ngắn thứ \(k\). Nếu có nhiều trạng thái đầu/cuối, thêm nguồn và đích
+ảo với cạnh trọng số \(0\). Với \(n\) trạng thái và \(m\) chuyển trạng thái, độ
+phức tạp là
+\[
+  O(n\log n+m+k\log k).
+\]
+Trường hợp tối đa hóa đổi dấu mọi trọng số cạnh rồi đổi dấu đáp án.
+
+\subsubsection{Ví dụ: chia điểm vào hai tập}
+
+Cho \(n\) điểm một chiều \(x_i\). Cần chia các điểm vào hai tập \(S_A,S_B\).
+Với một tập
+\[
+  S=\{p_1,p_2,\ldots,p_{|S|}\},\qquad p_1<p_2<\cdots<p_{|S|},
+\]
+định nghĩa
+\[
+  L(S)=\sum_{i=0}^{|S|-1}|p_{i+1}-p_i|,
+\]
+trong đó mặc định \(p_0=0\). Hãy tìm giá trị nhỏ thứ \(k\) của
+\[
+  L(S_A)+L(S_B).
+\]
+Ràng buộc trong bài gốc là \(n\le 10000\), \(k\le 500000\).
+
+Với \(k=1\), đặt \(f(i,j)\) là chi phí nhỏ nhất khi hai tập có phần tử cuối lần
+lượt là \(i\) và \(j\), giả sử \(i\ge j\). Điểm \(i+1\) hoặc được đưa vào tập
+đang kết thúc ở \(i\), hoặc đưa vào tập đang kết thúc ở \(j\):
+\[
+  f(i,j)+|x_{i+1}-x_i|\to f(i+1,j),
+\]
+\[
+  f(i,j)+|x_{i+1}-x_j|\to f(i+1,i).
+\]
+Khởi tạo \(f(0,0)=0\), các trạng thái khác là \(+\infty\); đáp án tối ưu là
+\(\min_{j<n}f(n,j)\). Xem các chuyển trạng thái này là cạnh DAG rồi áp dụng
+phần trước sẽ cho nghiệm nhỏ thứ \(k\), nhưng số cạnh ban đầu là \(O(n^2)\).
+
+Có thể tối ưu chuyển thứ hai bằng cách duy trì
+\[
+  M_i=\min_j\{f(i,j)+|x_i-x_j|\}.
+\]
+Đặt
+\[
+  g(i,x_j)=f(i,j)-x_j,\qquad h(i,x_j)=f(i,j)+x_j,
+\]
+ta có thể tính \(M_i\) bằng hai truy vấn min trên cây đoạn:
+\[
+  M_i=\min\left\{x_i+\min_{j:x_j<x_i}g(i,x_j),\;
+                 -x_i+\min_{j:x_j>x_i}h(i,x_j)\right\}.
+\]
+Cây đoạn nhị phân đưa số cạnh xuống \(O(n\log n)\), cho độ phức tạp khoảng
+\(O(n\log^2 n+k\log k)\). Nếu thay cây nhị phân bằng cây \(d\)-phân, chi phí sửa
+và hỏi có thể cân bằng tốt hơn; lựa chọn \(d\) tối ưu liên quan tới hàm Lambert
+\(W\), nhưng ý chính là điều chỉnh bậc cây để giảm tổng số cạnh phụ trợ.
+
+\subsection{\texorpdfstring{\(k\)}{k} cây khung nhỏ nhất}
+
+\subsubsection{Từ cây khung nhỏ nhất tới cây khung nhỏ thứ hai}
+
+Prim và Kruskal là hai thuật toán quen thuộc để tìm cây khung nhỏ nhất, với độ
+phức tạp điển hình \(O(n\log n+m)\) và \(O(m\log m+m\alpha(n))\). Với cây khung
+nhỏ thứ hai, trước hết tìm cây khung nhỏ nhất \(T\). Với mỗi cạnh ngoài cây
+\((u,v)\), nếu thêm nó vào \(T\) thì tạo một chu trình; bỏ cạnh lớn nhất trên
+đường \(u\to v\) trong \(T\) sẽ thu được một cây khung mới. Cây khung nhỏ
+thứ hai là phương án tốt nhất trong các thay thế này. Cạnh lớn nhất trên đường
+cây có thể tìm bằng nhân đôi LCA, nên tổng độ phức tạp là \(O(m\log n)\) sau
+khi đã có \(T\).
+
+\subsubsection{Co các cạnh bắt buộc}
+
+Với đồ thị vô hướng \(G\) và cạnh \(e=(x,y)\), ký hiệu \(G.e\) là đồ thị thu
+được bằng cách co \(e\). Nếu \(T\) là cây khung của \(G\) chứa \(e\), thì
+\(c_e(T)\) là cây khung nhỏ nhất của \(G.e\) khi và chỉ khi \(T\) là cây khung
+nhỏ nhất của \(G\) trong số các cây bắt buộc chứa \(e\).
+
+Với một cạnh cây \(e\), bỏ \(e\) sẽ chia \(T\) thành hai phần. Gọi
+\(\operatorname{ref}(e)\) là cạnh nhẹ nhất, khác \(e\), bắc qua hai phần đó.
+Nếu \(G-e\) còn liên thông, thì
+\[
+  T-e+\operatorname{ref}(e)
+\]
+là cây khung nhỏ nhất của \(G-e\). Tất cả \(\operatorname{ref}(e)\) có thể tính
+trong \(O(m\log m)\): duyệt các cạnh ngoài cây theo trọng số tăng dần, phủ
+đường đi giữa hai đầu mút của nó trên \(T\), và dùng DSU để nhảy qua các đoạn
+đã được phủ.
+
+Đặt
+\[
+  \operatorname{lb}(e)=\ell(\operatorname{ref}(e))-\ell(e).
+\]
+Nếu \(\operatorname{lb}(e)\) không nằm trong \(k-1\) giá trị nhỏ nhất, thì có ít
+nhất \(k\) cây khung không tệ hơn mọi cây không chứa \(e\). Vì vậy \(e\) chắc
+chắn xuất hiện trong cây khung nhỏ thứ \(k\), và có thể co lại. Bằng cách này
+ta tìm được một tập cạnh chắc chắn thuộc đáp án và giảm số đỉnh cần xét xuống
+cỡ \(O(k)\).
+
+\subsubsection{Bỏ các cạnh ngoài cây vô dụng}
+
+Với cạnh ngoài cây \(e=(u,v)\), gọi \(\operatorname{Re}(e)\) là cạnh nặng nhất
+trên đường \(u\to v\) trong cây khung nhỏ nhất \(T\). Đại lượng
+\[
+  \zeta(e)=\ell(e)-\ell(\operatorname{Re}(e))
+\]
+chính là chi phí tăng thêm khi ép dùng \(e\) theo thay thế tốt nhất. Nếu
+\(\zeta(e)\) quá lớn, cụ thể lớn hơn giá trị nhỏ thứ \(k-1\) trong các cạnh
+ngoài cây, thì đã có ít nhất \(k\) cây khung không tệ hơn mọi cây chứa \(e\);
+do đó \(e\) chắc chắn không nằm trong cây khung nhỏ thứ \(k\). Sau bước này có
+thể giả sử \(n\le k\) và \(m\le 2k-1\).
+
+\subsubsection{Dựng đồ thị phụ cho các cây khung}
+
+Một đỉnh của đồ thị phụ \(P\) là bộ
+\[
+  R=(T,I,X),
+\]
+trong đó \(T\) là một cây khung, \(I\) là tập cạnh bị ép phải có, còn \(X\) là
+tập cạnh bị ép không được có. Nút gốc là
+\[
+  R_0=(T_0,\varnothing,\varnothing),
+\]
+với \(T_0\) là cây khung nhỏ nhất của \(G\).
+
+Từ \(R_i=(T_i,I_i,X_i)\), xét các thay thế hợp lệ
+\[
+  T_i-e+\operatorname{rc}_{X_i}(e),
+  \qquad e\in T_i-I_i,
+\]
+trong đó \(\operatorname{rc}_{X_i}(e)\) là cạnh nhẹ nhất, không thuộc \(X_i\),
+có thể thay \(e\). Sắp các thay thế theo độ tăng trọng số, với các cạnh cây bị
+thay lần lượt là \(e_1,e_2,\ldots\). Con thứ \(j\) của \(R_i\) là
+\[
+  \bigl(T_i-e_j+\operatorname{rc}_{X_i}(e_j),\;
+        I_i+\{e_1,\ldots,e_{j-1}\},\;
+        X_i+\{e_j\}\bigr).
+\]
+Tập \(I\) ghi rằng các thay thế trước đó đã bị bỏ qua nên các cạnh ấy phải giữ
+lại; tập \(X\) ghi cạnh vừa bị cấm để tách các nhánh. Có thể chứng minh các
+nút của \(P\) tương ứng một-một với mọi cây khung, và trọng số không giảm dọc
+cạnh của \(P\). Vì vậy dùng hàng đợi ưu tiên trên \(P\) sẽ sinh lần lượt các
+cây khung nhỏ nhất.
+
+Vấn đề còn lại là tìm thay thế nhỏ nhất đủ nhanh. Có hai hướng: duy trì
+\(\operatorname{rc}\) cho mọi cạnh cây, hoặc duy trì \(\operatorname{Re}\) cho
+mọi cạnh ngoài cây. Hướng thứ hai có thể cập nhật \(O(m)\) mỗi lần thay một
+cạnh cây. Khi thay \(e=(u_0,v_0)\) bằng \(f=(u_p,v_q)\), chỉ những cạnh ngoài
+cây bắc qua hai thành phần của \(T-e\) mới đổi đường đi trong cây. Duyệt cây để
+biết mỗi đỉnh gần điểm nào nhất trên chu trình mới, rồi tính lại
+\(\operatorname{Re}\) từ vài đoạn tiền tố trên chu trình. Tổng cộng thu được
+định lý:
+\[
+  \text{\(k\) cây khung nhỏ nhất có thể tìm trong }O(m\log n+k^2).
+\]
+Nếu có một cấu trúc dữ liệu lâu bền hỗ trợ thay cạnh cây, đổi trọng số cạnh và
+duy trì thay thế nhỏ nhất, chi phí phần sau có thể giảm theo số thao tác của
+cấu trúc đó; tài liệu gốc nhắc tới topology tree lâu bền cho hướng này.
+
+\subsection{\texorpdfstring{\(k\)}{k} đường đi đơn ngắn nhất}
+
+Ở đây đường đi từ \(s\) tới \(t\) không được đi qua một đỉnh quá một lần. Chỉ
+khác \(k\) đường đi ngắn nhất ở chữ ``đơn'', nhưng thuật toán lại gần tinh thần
+của \(k\) cây khung nhỏ nhất hơn: chia tập nghiệm thành các tập con, mỗi tập
+con lấy nghiệm tốt nhất rồi đưa vào hàng đợi ưu tiên.
+
+Một đỉnh của đồ thị phụ là
+\[
+  R=(p,I,X),
+\]
+trong đó \(p=(v_1=s,v_2,\ldots,v_{|p|}=t)\) là đường đi đơn tốt nhất hiện tại
+dưới các ràng buộc, \(I\) là tập cạnh bị ép phải dùng theo một tiền tố của
+đường đi, còn \(X\) là các cạnh bị cấm xuất phát từ đỉnh phân nhánh hiện tại.
+Giả sử
+\[
+  I=\{(v_1,v_2),(v_2,v_3),\ldots,(v_{q-1},v_q)\},
+\]
+và \(X\) chỉ gồm các cạnh đi ra từ \(v_q\). Để tách tập nghiệm chứa \(p\) nhưng
+không lấy lại đúng \(p\), ta tạo các nhánh: nhánh đầu cấm cạnh
+\((v_q,v_{q+1})\); các nhánh sau lần lượt ép thêm cạnh kế tiếp của tiền tố rồi
+cấm cạnh rẽ tiếp theo. Cách chia này giống phương pháp Lawler: các tập con
+không giao nhau và phủ hết nghiệm còn lại.
+
+Trong mỗi tập con, cần tìm đường đi đơn ngắn nhất thỏa \(I,X\). Nếu mọi cạnh có
+trọng số không âm, dùng Dijkstra. Nếu có cạnh âm nhưng không có chu trình âm,
+dùng Bellman--Ford hoặc SPFA để lấy thế năng \(\operatorname{dist}(s,u)\), rồi
+đổi trọng số cạnh thành
+\[
+  \ell'(u,v)=\ell(u,v)+\operatorname{dist}(s,u)-\operatorname{dist}(s,v),
+\]
+tương tự phần \(\delta\) của \(k\) đường đi ngắn nhất; cuối cùng cộng lại độ
+dài đường đi ngắn nhất ban đầu từ \(s\) tới \(t\).
+
+Mỗi lần lấy một nút khỏi hàng đợi ưu tiên, ta sinh các nhánh con và chạy lại
+thuật toán đường đi ngắn nhất dưới ràng buộc. Tối đa \(k\) đường đi, mỗi đường
+có độ dài không quá \(n\), nên số lần tính đường đi ngắn nhất là \(O(kn)\). Do
+đó:
+\[
+  \text{đường đi đơn ngắn thứ \(k\) có thể tìm trong }
+  O(kn(m+n\log n)).
+\]
+Heap trực tiếp cho phần hàng đợi ưu tiên đủ dùng; bộ nhớ có thể giữ ở
+\(O(kn)\).
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+đổi; cảm ơn các thầy Chen Heli, Shao Hongxiang, You Guanghui và Dong Yehua của
+Trường Trung học số 1 Thiệu Hưng vì sự quan tâm và hướng dẫn nhiều năm; cảm ơn
+huấn luyện viên Hu Weidong và Yu Linyun của đội tuyển quốc gia; cảm ơn các anh
+chị, bạn học ở Thiệu Hưng và Trấn Hải đã góp ý, giúp đỡ và hiệu đính; cuối cùng
+cảm ơn cha mẹ vì sự chăm sóc bền bỉ.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Wikipedia, \emph{Optimization problem}.
+  \item Wheeler, \emph{PulleyTautLine}, TopCoder Algorithm Problem Set Analysis.
+  \item Xu Haoran, bài viết về chia nhị phân toàn cục, tập luận văn đội tuyển
+  quốc gia năm 2013.
+  \item Wang Kaifeng, lời giải loạt bài giá trị nhỏ thứ \(k\) trên đoạn có chèn.
+  \item Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford
+  Stein, \emph{Introduction to Algorithms}.
+  \item D. Eppstein, \emph{Finding the \(k\) shortest paths}, SIAM Journal on
+  Computing, 28(2):652--673, 1998.
+  \item Yu Dingli, \emph{Heap lâu bền và \(k\) đường đi ngắn nhất}, thảo luận
+  trại đông năm 2014.
+  \item Yu Dingli, lời giải \emph{Người đưa thư nhàm chán}, bài tập đội tuyển
+  quốc gia lần hai năm 2014.
+  \item Wikipedia, \emph{Prim's algorithm}.
+  \item Wikipedia, \emph{Kruskal's algorithm}.
+  \item Wikipedia, \emph{Minimum spanning tree}.
+  \item Tang Wenbin, chuyên đề đồ thị về cây khung, bài giảng trại đông năm
+  2012.
+  \item Liu Rujia, Huang Liang, \emph{Nghệ thuật thuật toán và thi tin học}.
+  \item D. Eppstein, \emph{Finding the smallest spanning trees}, BIT 32(2):
+  237--248.
+  \item Greg N. Frederickson, \emph{Ambivalent data structures for dynamic
+  2-edge-connectivity and \(k\) smallest spanning trees}, SIAM Journal on
+  Computing, 26(2):484--538, 1997.
+  \item E. L. Lawler, \emph{Combinatorial Optimization: Networks and Matroids}.
+  \item J. Y. Yen, \emph{Finding the \(k\) shortest loopless paths in a
+  network}, Management Science, 17:712--716, 1971.
+\end{enumerate}
+
 \section*{Ghi chú về nguồn}
 
 Tệp PDF có 228 trang. \texttt{pdftotext} đọc tốt phần mục lục nhưng phần thân
@@ -6607,5 +7223,12 @@ mojibake; các đoạn mã mẫu C++ được chuyển thành công thức và m
 riêng các công thức \texttt{lowbit}, sinh tổ hợp kế tiếp, chọn không rẽ nhánh
 và các ví dụ \emph{Robot in Basement}, \emph{Quick Tortoise}, \emph{Bags and
 Coins} được đối chiếu với ảnh render khi OCR bị nhiễu ký hiệu.
+Bài \emph{Một số phương pháp tìm nghiệm tốt thứ \(k\)} được dịch từ các trang
+in 195--224 (trang vật lý PDF 199--228), là bài cuối cùng của tập 2014. Bài này
+phải dùng OCR từ ảnh render vì \texttt{pdftotext} tạo mojibake; các phần mã và
+cấu trúc dữ liệu được chuyển thành mô tả thuật toán, còn các công thức đếm bằng
+bao hàm--loại trừ, mô hình cạnh lệch của \(k\) đường đi ngắn nhất, quy hoạch
+động dưới dạng DAG, \(k\) cây khung nhỏ nhất và \(k\) đường đi đơn ngắn nhất
+được đối chiếu với lớp văn bản còn nhận được ký hiệu khi cần.
 
 \end{document}

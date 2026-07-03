@@ -19,8 +19,8 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2015. Tệp được
 tạo bằng pdfTeX nhưng lớp văn bản không ánh xạ đúng về Unicode: ngay cả mục
 lục khi trích xuất bằng \texttt{pdftotext} cũng trở thành mojibake. Bản dịch
-này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và mười
-bốn bài đầu tiên của tập sách, được đọc bằng OCR hoặc đối chiếu với trang render.
+này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và toàn
+bộ mười lăm bài của tập sách, được đọc bằng OCR hoặc đối chiếu với trang render.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -66,7 +66,9 @@ và trang PDF vật lý 235, trang in 231, là đầu bài kế tiếp về bài
 nguồn làm đầu vào. Bài thứ mười bốn, ``Bước đầu tìm hiểu một lớp bài toán lấy mã
 nguồn làm đầu vào'', dùng các trang PDF vật lý 235--274, tương ứng trang in
 231--270; trang PDF vật lý 275, trang in 271, là đầu bài kế tiếp về lũy thừa tập
-hợp.
+hợp. Bài thứ mười lăm, ``Tính chất, ứng dụng và thuật toán nhanh cho lũy thừa
+tập hợp'', dùng các trang PDF vật lý 275--291, tương ứng trang in 271--287, và
+là bài cuối của tập sách.
 
 \section{Mục lục đã dịch}
 
@@ -8749,6 +8751,436 @@ của họ đã giúp tác giả phát hiện một lĩnh vực hoàn toàn mớ
   \emph{Compilers: Principles, Techniques, and Tools}, 2nd edition.
   \item Robert W. Sebesta, \emph{Concepts of Programming Languages}, 10th
   edition.
+\end{enumerate}
+
+\section{Tính chất, ứng dụng và thuật toán nhanh cho lũy thừa tập hợp}
+
+\begin{center}
+\textbf{Lu Kaifeng}\\
+Trường Trung học số 2 Vũ Hán, Hồ Bắc
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Để nghiên cứu các truy hồi lấy tập hợp làm trạng thái, bài viết đưa ra khái
+niệm chuỗi lũy thừa theo tập hợp, phân tích một số tính chất của nó, rồi tổng
+kết ba loại phép nhân thường gặp cùng các thuật toán nhanh tương ứng. Cuối bài
+là một số ví dụ thực tế cho thấy cách dùng chuỗi lũy thừa theo tập hợp để tăng
+tốc truy hồi.
+
+\subsection{Dẫn nhập}
+
+Trong thi tin học thường gặp các quy hoạch động trên tập hợp. Ta đặt một trạng
+thái \(f_S\) biểu diễn số phương án, xác suất hoặc một đại lượng nào đó ứng với
+tập \(S\), viết ra truy hồi, rồi phát hiện độ phức tạp quá lớn so với giới hạn
+thời gian. Muốn tối ưu truy hồi như vậy cần một công cụ phù hợp.
+
+Với dãy số một chiều, ta đã có lý thuyết khá trưởng thành về hàm sinh: một dãy
+\(f_0,f_1,\ldots\) được gắn với chuỗi hình thức
+\[
+  f(x)=\sum_{k\ge 0} f_k x^k.
+\]
+Nhờ phân tích toán học trên chuỗi hình thức và các thuật toán nhanh cho đa
+thức, hàm sinh giải quyết được nhiều bài toán đếm. Câu hỏi tự nhiên là liệu ta
+có thể gắn các hệ số có chỉ số là tập hợp, tức các \(f_S\), với một loại chuỗi
+tương tự để nhận được các thuật toán vừa đẹp vừa nhanh hay không.
+
+Trong toàn bài, đặt \(U=\{1,2,\ldots,n\}\), \(n=|U|\). Mọi tập được xét đều là
+tập con của \(U\). Với một tập \(X\), ký hiệu \(2^X\) là họ tất cả tập con của
+\(X\). Ký hiệu \([P]\) bằng \(1\) nếu mệnh đề \(P\) đúng và bằng \(0\) nếu
+không.
+
+\subsection{Định nghĩa}
+
+Gọi \(F\) là một trường. Một \term{chuỗi lũy thừa theo tập hợp} trên \(F\) là
+một hàm
+\[
+  f:2^U\to F.
+\]
+Với \(S\in 2^U\), viết \(f_S\) cho giá trị của hàm tại \(S\), và gọi đó là hệ
+số thứ \(S\). Trong bài này, khi không nói rõ, các hệ số đều thuộc cùng một
+trường \(F\), chẳng hạn \(C,R,Q\) hoặc trường hữu hạn.
+
+Phép cộng và trừ được định nghĩa theo từng hệ số. Nếu \(h=f+g\), thì
+\[
+  h_S=f_S+g_S. \tag{1}
+\]
+Vì vậy cộng hoặc trừ hai chuỗi mất \(O(2^n)\) thời gian.
+
+Với \(c\in F\) và \(S\subseteq U\), ký hiệu \(c x^S\) là chuỗi có hệ số thứ
+\(S\) bằng \(c\) và mọi hệ số khác bằng \(0\). Riêng \(1x^S\) thường được viết
+gọn là \(x^S\). Khi đó mọi chuỗi có thể viết dưới dạng
+\[
+  f=\sum_{S\subseteq U} f_S x^S. \tag{2}
+\]
+Ví dụ, với \(U=\{1,2\}\) và \(F=R\), biểu thức
+\[
+  f(x)=5x^\emptyset+9x^{\{1\}}+3x^{\{1,2\}}
+\]
+biểu diễn chuỗi có \(f_\emptyset=5\), \(f_{\{1\}}=9\),
+\(f_{\{2\}}=0\), \(f_{\{1,2\}}=3\).
+
+Vấn đề quan trọng là định nghĩa phép nhân. Nếu \(h=f\cdot g\), ta muốn phép
+nhân phân phối với phép cộng:
+\[
+  \sum_{S\subseteq U} h_Sx^S
+  =
+  \left(\sum_{L\subseteq U} f_Lx^L\right)
+  \left(\sum_{R\subseteq U} g_Rx^R\right)
+  =
+  \sum_{L\subseteq U}\sum_{R\subseteq U}(f_Lx^L)(g_Rx^R). \tag{3}
+\]
+Giả sử trên \(2^U\) có một phép toán hai ngôi \(*\) giao hoán, kết hợp và có
+đơn vị \(\emptyset\):
+\[
+  L*R=R*L,\qquad (L*M)*R=L*(M*R),\qquad S*\emptyset=S.
+\]
+Khi đó ta có thể đặt
+\[
+  (f_Lx^L)(g_Rx^R)=(f_Lg_R)x^{L*R}.
+\]
+Cách định nghĩa này làm các chuỗi trở thành một vành giao hoán, chứa \(F\) như
+một vành con qua phép nhúng \(c\mapsto c x^\emptyset\). Chọn \(*\) khác nhau
+sẽ sinh ra các loại tích khác nhau. Ba trường hợp chính trong bài là hợp tập,
+đối xứng sai khác và hợp không giao nhau.
+
+\subsection{Tích chập theo hợp tập}
+
+Lấy \(L*R=L\cup R\). Khi đó tích của \(f=\sum f_Sx^S\) và \(g=\sum g_Sx^S\)
+được gọi là \term{tích chập theo hợp tập}. Nếu \(h=f\cdot g\), thì
+\[
+  h_S=\sum_{L\subseteq U}\sum_{R\subseteq U}
+       [L\cup R=S] f_Lg_R. \tag{4}
+\]
+Phép nhân này cũng được viết ngắn là \(fg\). Cách tính trực tiếp duyệt mọi
+\((L,R)\) mất \(O(4^n)\), thường không chấp nhận được.
+
+\subsubsection{Chia để trị}
+
+Tách riêng phần có chứa phần tử \(n\):
+\[
+  f=f^-+x^{\{n\}}f^+,\qquad g=g^-+x^{\{n\}}g^+.
+\]
+Khi đó
+\begin{align*}
+  fg
+  &= (f^-+x^{\{n\}}f^+)(g^-+x^{\{n\}}g^+) \tag{5}\\
+  &= f^-g^-+x^{\{n\}}(f^-g^+ + f^+g^- + f^+g^+) \tag{6}\\
+  &= f^-g^-+x^{\{n\}}\bigl((f^-+f^+)(g^-+g^+) - f^-g^-\bigr). \tag{7}
+\end{align*}
+Vì các phép nhân còn lại chỉ liên quan tới tập nền \(\{1,\ldots,n-1\}\), ta đệ
+quy được truy hồi \(T(n)=2T(n-1)+O(2^n)\), suy ra \(T(n)=O(n2^n)\).
+
+\subsubsection{Biến đổi Möbius nhanh}
+
+Một cách nhìn mạnh hơn là biến đổi Möbius trên bao hàm. Với chuỗi \(f\), định
+nghĩa
+\[
+  \hat f_S=\sum_{T\subseteq S} f_T. \tag{8}
+\]
+Ngược lại, theo nguyên lý bao hàm--loại trừ,
+\[
+  f_S=\sum_{T\subseteq S}(-1)^{|S|-|T|}\hat f_T. \tag{9}
+\]
+Lấy biến đổi Möbius hai vế của (4):
+\begin{align*}
+  \hat h_S
+  &= \sum_{L\subseteq U}\sum_{R\subseteq U}
+     [L\cup R\subseteq S] f_Lg_R \tag{10}\\
+  &= \sum_{L\subseteq S}\sum_{R\subseteq S} f_Lg_R \tag{11}\\
+  &= \left(\sum_{L\subseteq S}f_L\right)
+     \left(\sum_{R\subseteq S}g_R\right) \tag{12}\\
+  &= \hat f_S\hat g_S. \tag{13}
+\end{align*}
+Vì vậy muốn tính \(h=fg\), chỉ cần biến đổi \(f,g\), nhân từng hệ số tương ứng,
+rồi biến đổi ngược.
+
+Biến đổi nhanh thực hiện theo từng phần tử \(i\). Với mọi \(S\) chưa chứa
+\(i\), cộng hệ số của \(S\) vào hệ số của \(S\cup\{i\}\). Biến đổi ngược làm
+tương tự nhưng dùng phép trừ. Cả hai đều mất \(O(n2^n)\) thời gian. Đây chính
+là nội dung của các mã mẫu trong bài gốc; ý nghĩa của chúng chỉ là quét từng
+chiều của siêu lập phương tập con và thực hiện phép cộng/trừ tại mỗi cạnh.
+
+So với chia để trị, bản chất hai thuật toán là một: khi đi xuống đệ quy ta đang
+làm biến đổi Möbius, còn khi quay lui ta đang làm biến đổi ngược. Cả hai cách
+mở rộng được cho chuỗi có hệ số trên một vành giao hoán bất kỳ.
+
+\subsubsection{Tính chất từ biến đổi}
+
+Khi phép nhân đã được tách thành ``biến đổi, nhân từng hệ số, biến đổi ngược'',
+nhiều thao tác khác cũng có thể chuyển sang miền biến đổi. Chẳng hạn, nếu
+\(T(x)\) là một đa thức và muốn tính \(T(f)\), ta lấy \(\hat f\), thay từng hệ
+số \(\hat f_S\) bằng \(T(\hat f_S)\), rồi biến đổi ngược. Phép chia cũng trở
+thành chia từng hệ số trong miền Möbius; do đó \(f\) có nghịch đảo nhân duy
+nhất khi và chỉ khi mọi \(\hat f_S\) đều khác \(0\).
+
+Có thể hiểu biến đổi này như phép lấy giá trị tại các vector đặc trưng. Với
+\(x\in F^n\) và \(S\subseteq U\), đặt
+\[
+  x^S=\prod_{i\in S}x_i, \tag{14}
+\]
+và
+\[
+  f(x)=\sum_{S\subseteq U} f_Sx^S. \tag{15}
+\]
+Với tập \(S\), vector đặc trưng của nó là
+\[
+  S_i=[i\in S]. \tag{16}
+\]
+Khi thay vector này vào \(f(x)\), ta nhận được \(\hat f_S\). Vì \(0\) và \(1\)
+đều thỏa \(x_Lx_R=x_{L\cup R}\), tích chập theo hợp tập biến thành nhân điểm
+giá trị tại mọi vector đặc trưng.
+
+\subsection{Tích chập theo đối xứng sai khác}
+
+Đối xứng sai khác của hai tập \(A,B\) là
+\[
+  A\oplus B=\{x\mid (x\in A)\oplus(x\in B)\}, \tag{17}
+\]
+trong đó \(\oplus\) ở vế phải là xor logic. Lấy \(L*R=L\oplus R\), ta được
+\term{tích chập theo đối xứng sai khác}. Nếu \(h=fg\), thì
+\[
+  h_S=\sum_{L\subseteq U}\sum_{R\subseteq U}
+       [L\oplus R=S] f_Lg_R. \tag{18}
+\]
+Cách tính trực tiếp vẫn là \(O(4^n)\).
+
+Chia để trị cũng làm được. Với cùng cách tách \(f=f^-+x^{\{n\}}f^+\),
+\(g=g^-+x^{\{n\}}g^+\), ta có
+\begin{align*}
+  fg
+  &= (f^-+x^{\{n\}}f^+)(g^-+x^{\{n\}}g^+) \tag{19}\\
+  &= (f^-g^-+f^+g^+)+x^{\{n\}}(f^-g^+ + f^+g^-). \tag{20}
+\end{align*}
+Từ \((f^-+f^+)(g^-+g^+)\) và \((f^--f^+)(g^--g^+)\), cộng trừ rồi chia \(2\)
+sẽ lấy được hai ngoặc trong (20). Do phải chia \(2\), cách này không dùng được
+trên trường có đặc trưng \(2\). Độ phức tạp vẫn là \(O(n2^n)\).
+
+\subsubsection{Biến đổi Walsh nhanh}
+
+Ta dùng đẳng thức
+\[
+  \frac{1}{2^n}\sum_{T\subseteq U}(-1)^{|S\cap T|}=[S=\emptyset]. \tag{21}
+\]
+Nếu \(S\ne\emptyset\), chọn \(v\in S\) và ghép mỗi \(T\) với \(T\oplus\{v\}\),
+hai số hạng triệt tiêu nhau. Nếu \(S=\emptyset\), mọi số hạng đều bằng \(1\).
+
+Từ (18) suy ra
+\begin{align*}
+  h_S
+  &= \sum_{L\subseteq U}\sum_{R\subseteq U}
+     [L\oplus R\oplus S=\emptyset] f_Lg_R \tag{22}\\
+  &= \sum_{L,R}\frac{1}{2^n}\sum_{T\subseteq U}
+     (-1)^{|T\cap(L\oplus R\oplus S)|} f_Lg_R \tag{23}\\
+  &= \sum_{L,R}\frac{1}{2^n}\sum_{T\subseteq U}
+     (-1)^{|T\cap L|}(-1)^{|T\cap R|}(-1)^{|T\cap S|} f_Lg_R \tag{24}\\
+  &= \frac{1}{2^n}\sum_{T\subseteq U}(-1)^{|T\cap S|}
+     \left(\sum_{L\subseteq U}(-1)^{|T\cap L|}f_L\right)
+     \left(\sum_{R\subseteq U}(-1)^{|T\cap R|}g_R\right). \tag{25}
+\end{align*}
+Do đó định nghĩa biến đổi Walsh bởi
+\[
+  \hat f_S=\sum_{T\subseteq U} f_T(-1)^{|S\cap T|}. \tag{26}
+\]
+Biến đổi ngược là
+\[
+  f_S=\frac{1}{2^n}\sum_{T\subseteq U}\hat f_T(-1)^{|S\cap T|}. \tag{27}
+\]
+Với tích chập xor, ta có
+\[
+  \hat h_S=\hat f_S\hat g_S. \tag{28}
+\]
+
+Biến đổi Walsh nhanh là các bước ``bướm'' theo từng phần tử \(i\). Với mọi
+\(S\) chưa chứa \(i\), đặt tạm \(l=f_S\), \(r=f_{S\cup\{i\}}\), rồi thay bằng
+\(f_S=l+r\), \(f_{S\cup\{i\}}=l-r\). Biến đổi ngược là cùng quy trình kèm nhân
+toàn bộ với \(1/2^n\). Vì vậy tích chập xor cũng tính được trong \(O(n2^n)\),
+miễn là \(2\) có nghịch đảo trong vành hệ số.
+
+Như trong trường hợp Möbius, chia để trị chỉ là biến đổi Walsh và biến đổi
+ngược được gộp chung. Một cách hiểu khác dùng vector đặc trưng mới:
+\[
+  S_i=(-1)^{[i\in S]}. \tag{29}
+\]
+Khi thay vector này vào đa thức \(f(x)\), ta nhận được \(\hat f_S\). Vì mỗi tọa
+độ là \(\pm1\), ta có \(x^Lx^R=x^{L\oplus R}\), nên nhân trong miền giá trị
+tương ứng với tích chập xor trong miền hệ số.
+
+\subsection{Tích chập con}
+
+Lần này đặt \(*\) là phép hợp của hai tập rời nhau; nếu \(A\cap B\ne\emptyset\)
+thì xem \(x^Ax^B=0\), còn nếu rời nhau thì \(x^Ax^B=x^{A\cup B}\). Tích nhận
+được là \term{tích chập con}. Nếu \(h=fg\), thì
+\[
+  h_S=\sum_{L\subseteq S}\sum_{R\subseteq S}
+       [L\cup R=S][L\cap R=\emptyset] f_Lg_R. \tag{30}
+\]
+Tương đương \(h_S=\sum_{L\subseteq S}f_Lg_{S\setminus L}\). Cách trực tiếp mất
+\(O(3^n)\), vì \(\sum_{i=0}^n \binom{n}{i}2^i=3^n\).
+
+\subsubsection{Chuyển về tích chập theo hợp tập}
+
+Ta có
+\[
+  [L\cup R=S][L\cap R=\emptyset]=[L\cup R=S][|L|+|R|=|S|].
+\]
+Ý tưởng là đưa thêm một biến hình thức \(z\) để ghi nhận kích thước tập. Xét
+chuỗi lũy thừa theo tập hợp có hệ số trong \(F[[z]]\). Với một chuỗi \(f\), tạo
+chuỗi nâng \(\sigma\) sao cho hệ số của \(z^{|S|}\) tại tập \(S\) là \(f_S\),
+các hệ số bậc nhỏ hơn \(|S|\) bằng \(0\):
+\[
+  \sigma
+  =
+  \sum_{S\subseteq U} f_S z^{|S|}x^S
+  +\sum_{S\subseteq U}\sum_{k=|S|+1}^{\infty}\sigma_{S,k}z^kx^S. \tag{31}
+\]
+Làm tương tự với \(g\) để được \(\tau\). Nếu lấy tích chập theo hợp tập của
+\(\sigma,\tau\) và gọi kết quả là \(\delta\), thì hệ số cần tìm là
+\(h_S=\delta_{S,|S|}\). Vì các chuỗi hình thức chỉ cần giữ tới bậc \(n\), phép
+nhân hệ số mất \(O(n^2)\) và tổng thời gian là \(O(n^2 2^n)\).
+
+Có thể triển khai bằng cách biến đổi Möbius hai chuỗi nâng, nhân từng hệ số
+\(F[[z]]\), rồi biến đổi ngược. Chuyển về tích chập xor cũng được nhờ
+\[
+  [L\cup R=S][L\cap R=\emptyset]=[L\oplus R=S][|L|+|R|=|S|],
+\]
+nhưng bản Walsh cần chia cho \(2\), còn bản Möbius chạy được trên mọi vành giao
+hoán, nên bài viết khuyến nghị dùng hướng hợp tập.
+
+Tương tự hai phần trước, sau khi đưa tích chập con về ``biến đổi, nhân hệ số,
+biến đổi ngược'', ta cũng xử lý được một số phép toán khác. Một chuỗi có nghịch
+đảo nhân khi và chỉ khi hệ số thứ \(\emptyset\) khác \(0\); nghịch đảo của các
+hệ số \(F[[z]]\) có thể tính tới bậc \(n\) bằng truy hồi, nên tổng thời gian
+vẫn là \(O(n^2 2^n)\). Có thể định nghĩa đạo hàm bởi
+\[
+  (c x^S)'=\sum_{v\in S} c x^{S\setminus\{v\}},
+\]
+nhưng định nghĩa tích phân lại khó hơn. Về mặt tổ hợp, tích chập con thường có
+ý nghĩa trực tiếp hơn hai tích chập trước.
+
+\subsection{Ứng dụng}
+
+\subsubsection{Kỳ vọng số tập ngẫu nhiên cần lấy để hợp thành toàn tập}
+
+Cho \(U=\{1,\ldots,n\}\). Mỗi lượt, một máy trò chơi sinh ngẫu nhiên một tập
+con \(S\) của \(U\) với xác suất \(p_S\). Trò chơi kết thúc khi hợp các tập đã
+sinh ra bằng \(U\). Với \(n\le 20\), cần tính kỳ vọng số lượt.
+
+Xem \(p\) là một chuỗi lũy thừa theo tập hợp và dùng tích chập theo hợp tập.
+Sau \(k\) lượt, xác suất hợp bằng \(S\) là hệ số thứ \(S\) của \(p^k\). Vì vậy
+xác suất trò chơi kết thúc đúng ở lượt \(k\) là hệ số thứ \(U\) của
+\(p^k-p^{k-1}\), và kỳ vọng là hệ số thứ \(U\) của
+\[
+  f=\sum_{k=1}^{\infty} k(p^k-p^{k-1}).
+\]
+Biến đổi Möbius cho ta
+\[
+  \hat f_S=\sum_{k=1}^{\infty} k(\hat p_S^k-\hat p_S^{k-1}).
+\]
+Vì các xác suất nằm trong \([0,1]\) và tổng bằng \(1\), nên \(0\le \hat p_S\le
+1\). Do đó
+\[
+  \hat f_S=
+  \begin{cases}
+    -\dfrac{1}{1-\hat p_S}, & \hat p_S<1,\\
+    0, & \hat p_S=1.
+  \end{cases}
+\]
+Biến đổi ngược \(\hat f\) sẽ cho đáp án tại \(f_U\). Nếu không bao giờ có thể
+thu được hợp \(U\), thì hệ số thứ \(U\) của mọi \(p^k\) đều bằng \(0\), và kết
+quả nhận được cũng là \(0\). Độ phức tạp là \(O(n2^n)\).
+
+\subsubsection{\emph{Topcoder SRM 518 Nim}}
+
+Bài toán: có \(m\) đống Nim. Số đá trong mỗi đống phải là một số nguyên tố
+không vượt quá \(l\). Hỏi có bao nhiêu cách chọn sao cho người đi trước thua,
+lấy modulo \(10^9+7\). Ràng buộc là \(m\le 10^9\), \(l\le 10^5\).
+
+Theo định lý Sprague--Grundy, người đi trước thua khi và chỉ khi xor các kích
+thước đống bằng \(0\). Đồng nhất số nhị phân với tập các bit bật; khi đó xor
+là đối xứng sai khác. Nếu \(\operatorname{set}(k)\) là tập bit của \(k\), bài
+toán yêu cầu hệ số thứ \(\emptyset\) của
+\[
+  \left(\sum_{p=1}^{l} [p\text{ là nguyên tố}]x^{\operatorname{set}(p)}\right)^m.
+  \tag{32}
+\]
+Ta lấy biến đổi Walsh của chuỗi trong ngoặc, nâng từng hệ số lên lũy thừa \(m\)
+bằng lũy thừa nhanh, rồi biến đổi Walsh ngược. Sàng nguyên tố mất
+\(O(l\log l)\), còn phần biến đổi và lũy thừa mất \(O(l\log m)\) theo kích
+thước miền bit cần dùng.
+
+\subsubsection{Đếm đồ thị con sinh liên thông}
+
+Cho một đồ thị vô hướng \(G\) có \(n\le 20\) đỉnh. Cần đếm số đồ thị con sinh
+liên thông của \(G\), modulo \(10^9+7\). Ở đây đồ thị con sinh là đồ thị con
+chứa toàn bộ các đỉnh đang xét.
+
+Với mỗi \(S\), đặt \(f_S\) là số đồ thị con sinh liên thông của đồ thị cảm sinh
+trên \(S\), và \(g_S\) là số đồ thị con sinh bất kỳ của đồ thị cảm sinh đó.
+Quy ước \(f_\emptyset=g_\emptyset=0\). Dùng tích chập con làm phép nhân. Một đồ
+thị con sinh bất kỳ là một tập các thành phần liên thông, do đó
+\[
+  1+g=\sum_{k\ge 0}\frac{f^k}{k!}=e^f,
+\]
+suy ra
+\[
+  f=\ln(1+g)=\sum_{k\ge 1}\frac{(-1)^{k+1}}{k}g^k.
+\]
+Chuỗi \(g\) dễ tính: nếu đồ thị cảm sinh trên \(S\ne\emptyset\) có \(m_S\)
+cạnh thì \(g_S=2^{m_S}\).
+
+Ta nâng \(g\) lên chuỗi có hệ số trong \(F[[z]]\), lấy biến đổi Möbius, rồi với
+mỗi hệ số hình thức \(a\) tính \(b=\ln(1+a)\). Nếu
+\[
+  a=\sum_{k\ge 1}a_kz^k,\qquad b=\ln(1+a),
+\]
+thì từ \(b'=a'/(1+a)\) có
+\[
+\begin{aligned}
+  b'(1+a)&=a',\\
+  (k+1)b_{k+1}
+  &=(k+1)a_{k+1}
+    -\sum_{i=0}^{k-1}(i+1)b_{i+1}a_{k-i},\\
+  b_{k+1}
+  &=a_{k+1}
+    -\frac{1}{k+1}\sum_{i=0}^{k-1}(i+1)b_{i+1}a_{k-i},
+\end{aligned}
+\]
+với \(b_0=0\). Truy hồi này tính các hệ số tới bậc \(n\) trong \(O(n^2)\). Sau
+đó biến đổi Möbius ngược và lấy hệ số tương ứng, ta có số đồ thị con sinh liên
+thông trong \(O(n^2 2^n)\).
+
+\subsection{Tổng kết}
+
+Chuỗi lũy thừa theo tập hợp mở ra một cách nhìn thống nhất cho các truy hồi có
+trạng thái là tập hợp: xem nó như hàm sinh, phân tích bài toán ở mức toàn cục,
+rồi dùng các biến đổi nhanh để tính. Chủ đề này vẫn còn nhiều câu hỏi thú vị
+đáng nghiên cứu tiếp; tác giả hy vọng bài viết có thể gợi ý cho độc giả những
+ứng dụng mới.
+
+\subsection{Lời cảm ơn}
+
+Xin cảm ơn bạn Peng Yuxiang; tinh thần học được kỹ thuật mới rồi biến nó thành
+bài OI để chia sẻ với mọi người đã giúp tác giả học được nhiều điều. Bài viết
+này cũng được mở rộng từ một bài blog của bạn ấy.
+
+Xin cảm ơn anh Guo Xiaoxu của Đại học Giao thông Thượng Hải. Tác giả ví anh như
+một bách khoa toàn thư di động về tin học, và thuật toán nhanh cho tích chập con
+là điều tác giả lần đầu nghe từ anh.
+
+Xin cảm ơn Jin Ce và Yang Dinghai đã đọc duyệt bài viết.
+
+Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+\subsection*{Tài liệu tham khảo của bài viết}
+
+\begin{enumerate}
+  \item Andreas Björklund, Petteri Kaski, and Thore Husfeldt,
+  ``Fourier meets Möbius: fast subset convolution'', in
+  \emph{Proceedings of the 39th Annual ACM Symposium on Theory of Computing},
+  pp. 67--74, ACM, 2007.
+  \item \#25940, ``Fast Walsh-Hadamard Transform'',
+  \texttt{http://picks.logdown.com/posts/179290-fast-walsh-hadamard-transform}.
 \end{enumerate}
 
 \end{document}
