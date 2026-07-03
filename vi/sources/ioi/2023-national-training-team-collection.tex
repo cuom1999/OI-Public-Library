@@ -21,7 +21,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2023. Tệp được
 tạo bằng LaTeX với lớp văn bản Unicode đọc được; mục lục và các trang thân bài
 đã kiểm tra đều trích xuất tốt bằng \texttt{pdftotext}. Bản LaTeX này chuyển
-ngữ phần nhận diện tập sách, toàn bộ mục lục và mười hai bài đầu tiên, đồng thời ghi
+ngữ phần nhận diện tập sách, toàn bộ mục lục và mười ba bài đầu tiên, đồng thời ghi
 lại các chủ đề chính để phục vụ bản dịch chi tiết hơn.
 \end{abstract}
 
@@ -6164,6 +6164,533 @@ và thầy Li Jian đã đọc bản thảo.
   \item Harold N. Gabow and Robert E. Tarjan. A linear-time algorithm for a
   special case of disjoint set union. \emph{Journal of Computer and System
   Sciences}, 30:209--221, 1985.
+\end{enumerate}
+
+\section{Bàn về ứng dụng static top tree trên cây và đồ thị nối tiếp-song song tổng quát}
+
+\begin{center}
+Trường Ngoại ngữ Nam Kinh\\
+Cheng Siyuan
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Bài viết giới thiệu khái niệm static Top Tree; trình bày ba ứng dụng trên bài
+toán cây: duy trì thông tin bằng thao tác pushup trên Top Tree, chia để trị
+trên các đỉnh của Top Tree, và dùng Top Tree để xây dựng phân khối cây. Sau đó
+bài viết mở rộng hai ứng dụng đầu sang đồ thị nối tiếp-song song tổng quát, và
+đề xuất một cách xây dựng phân khối cho lớp đồ thị này dựa trên Top Tree.
+\end{abstract}
+
+\subsection{Dẫn nhập}
+
+Trong thi tin học có nhiều bài toán tĩnh trên cây có thể giải bằng static Top
+Tree. Nếu mở rộng Top Tree sang đồ thị nối tiếp-song song tổng quát, ta cũng có
+thể xử lý một số bài toán trên lớp đồ thị này.
+
+Ở các thuật toán trước đây dùng Top Tree cho đồ thị nối tiếp-song song tổng
+quát, cách trực tiếp pushup để duy trì thông tin thường khó xử lý những thông
+tin phức tạp không ghép được một cách đơn giản. Cách chia để trị theo đỉnh của
+Top Tree lại phải xét các cạnh nằm ngoài cây con, nên khó hỗ trợ sửa đổi thông
+tin. Tác giả khảo sát một hướng dùng phân khối đồ thị nối tiếp-song song tổng
+quát để khắc phục các khó khăn đó.
+
+\subsection{Khái niệm cụm và các phép toán}
+
+\subsubsection{Khái niệm cụm}
+
+Với cây vô hướng \(T\), một cụm trên \(T\) là bộ ba
+\[
+  C=(V,E,B),
+\]
+trong đó \((V,E)\) là một đồ thị con liên thông của \(T\),
+\(B\subseteq V\), \(|B|\le 2\), và với mọi \(x\in V\), nếu tồn tại
+\(y\notin V\) sao cho \((x,y)\in E(T)\), thì \(x\in B\). Các phần tử của
+\(B\) được gọi là \emph{điểm biên} của cụm. Ký hiệu \(V(C),E(C)\) lần lượt là
+tập đỉnh và tập cạnh của \(C\), còn \(B(C)\) là tập điểm biên.
+
+Ưu điểm của định nghĩa này là khi thực hiện phép toán trên cụm, ta chỉ cần quan
+tâm đến các điểm trong \(B\). Vì \(|B|\le 2\), một cụm có thể được nhìn trực
+giác như một cạnh đã được co gọn. Trong một số bối cảnh, các cạnh kề một đỉnh
+có thứ tự vòng; khi đó quanh mỗi điểm biên chỉ cho phép lấy một đoạn liên tiếp
+các cạnh vào cụm, nhưng bài viết không xét biến thể này.
+
+\subsubsection{Phép compress}
+
+Với hai cụm \(C,D\) trên cây vô hướng \(T\), nếu
+\[
+  B(C)\cap B(D)=\{v\},
+\]
+thì kết quả của phép \emph{compress} là
+\[
+  \bigl(V(C)\cup V(D),\ E(C)\cup E(D),\
+  (B(C)-\{v\})\cup(B(D)-\{v\})\bigr).
+\]
+Phép toán chỉ hợp lệ khi hai cụm có đúng một điểm biên chung và kết quả vẫn là
+một cụm trên \(T\).
+
+\subsubsection{Phép rake}
+
+Với hai cụm \(C,D\) trên cây vô hướng \(T\), nếu
+\[
+  B(C)\cap B(D)=\{x\},
+\]
+thì kết quả của phép \emph{rake} là
+\[
+  \bigl(V(C)\cup V(D),\ E(C)\cup E(D),\ B(C)\bigr).
+\]
+Phép toán cũng chỉ hợp lệ khi hai cụm có đúng một điểm biên chung và kết quả
+vẫn là một cụm. Hình trong bản gốc minh họa trực quan rằng compress ghép hai
+cụm theo kiểu nối tiếp, còn rake ghép một cụm phụ vào cụm chính qua điểm biên
+chung.
+
+\subsection{Khái niệm Top Tree và cách dựng tĩnh}
+
+\subsubsection{Khái niệm Top Tree}
+
+Ta đưa vào khái niệm cụm để biểu diễn cả cây \(T\) bằng một biểu thức gồm các
+phép toán trên cụm. Nói cách khác, ta thực hiện một dãy phép compress và rake
+để cuối cùng thu được một cụm \(C\) thỏa \(E(C)=E(T)\).
+
+Tại mỗi thời điểm trong quá trình tính toán, với mỗi cụm đang tồn tại, nối một
+cạnh giữa hai điểm biên của cụm đó; đồ thị thu được là \emph{cây co}. Cây co
+ban đầu được tạo bởi tất cả các cụm một cạnh
+\[
+  (\{u,v\},\{(u,v)\},\{u,v\})\qquad ((u,v)\in E(T)).
+\]
+Vì mỗi cụm ban đầu chỉ chứa một cạnh, thông tin trên chúng rất dễ duy trì.
+
+\paragraph{Bổ đề.}
+Tồn tại một dãy phép toán đưa cây co ban đầu tới cây co cuối cùng.
+
+\paragraph{Chứng minh.}
+Chọn tùy ý một gốc. Mỗi lần xét một lá \(x\) của cây co hiện tại và cụm \(C\)
+ứng với cạnh nối \(x\) với cha \(y\). Nếu \(x\) có anh em thì rake \(C\) vào
+một cụm anh em; nếu không, compress \(C\) với cụm nối \(y\) với cha \(z\) của
+\(y\). Lặp lại thao tác này thì cuối cùng thu được cụm chứa toàn bộ cây.
+
+Do đó cây co ban đầu và cuối cùng đã được xác định. Với một quá trình biến đổi
+từ cây co ban đầu sang cây co cuối cùng, ta có thể mô tả nó bằng một cây biểu
+thức; cây này được gọi là Top Tree. Trong hình gốc, nút vuông biểu thị phép
+compress, nút tròn biểu thị phép rake.
+
+Cách dựng trong chứng minh trên cho phép dựng Top Tree cho mọi cây, và còn có
+nhiều thuật toán dễ cài đặt tương tự. Điểm yếu là chúng không bảo đảm độ sâu.
+Trong khi đó, một số ứng dụng bên dưới phụ thuộc trực tiếp vào độ sâu của Top
+Tree, nên ta muốn dựng một Top Tree có độ sâu \(\Theta(\log |V|)\).
+
+\subsubsection{Phân rã nặng nhẹ}
+
+Trước hết xét bài toán sau. Top Tree là cây biểu thức nhị phân, nên nếu cần
+compress hoặc rake lần lượt \(k\) cụm, ta phải dựng một cây đoạn hoặc cây đoạn
+tổng quát trên \(k\) cụm. Nếu dùng cây đoạn cân bằng thông thường, độ sâu là
+\(\Theta(\log k)\). Hai loại cây sinh ra theo cách này được gọi lần lượt là
+cây compress và cây rake.
+
+Chọn tùy ý một gốc cho cây ban đầu rồi thực hiện phân rã nặng nhẹ. Với một
+chuỗi nặng, trước hết đệ quy xử lý mọi con nhẹ. Sau đó, với mỗi đỉnh trên chuỗi
+nặng, nếu nó có con nhẹ thì rake toàn bộ cụm của các con nhẹ vào cụm chứa con
+nặng. Cuối cùng compress toàn bộ các cụm trên chuỗi nặng cùng với cha của đỉnh
+đầu chuỗi, nếu cha đó tồn tại. Như vậy cả một chuỗi nặng được co thành một
+cụm.
+
+Nếu mỗi lần ghép dùng cây đoạn cân bằng thông thường, chi phí độ sâu cho một
+chuỗi nặng là \(\Theta(\log |V|)\). Vì trên đường từ một đỉnh tới gốc có nhiều
+nhất \(\Theta(\log |V|)\) chuỗi nặng, Top Tree thu được có độ sâu
+\(\Theta(\log^2 |V|)\).
+
+\subsubsection{Cây nhị phân cân bằng toàn cục}
+
+Cách dựng cây đoạn bằng việc luôn lấy trung điểm là lãng phí. Nó làm cho mọi
+cụm tham gia phép toán có độ sâu gần bằng nhau trong cây đoạn, nhưng độ sâu
+cây con Top Tree phía dưới chúng lại khác nhau. Cụm có cây con nông hơn thực
+ra có thể được đặt sâu hơn trong cây đoạn.
+
+Thuật toán mới là: với dãy cụm cần dựng cây đoạn tổng quát, tính kích thước cây
+con Top Tree của từng cụm, rồi chọn vị trí sao cho tổng kích thước phía trái là
+lớn nhất nhưng không vượt quá một nửa tổng kích thước. Chia tại vị trí đó và
+đệ quy cho hai nửa. Nếu nửa trái rỗng, đặt nó chỉ gồm cụm ngoài cùng bên trái.
+
+\paragraph{Bổ đề.}
+Với một cây kích thước \(n\), Top Tree dựng bằng thuật toán trên có độ sâu
+\(\Theta(\log n)\).
+
+\paragraph{Chứng minh.}
+Xét một nút \(x\) trên Top Tree và ký hiệu kích thước cây con của nó là
+\(\mathit{sz}_x\). Nếu trong các cháu của \(x\) tồn tại một nút không nằm cùng
+cây compress hoặc cây rake với \(x\), thì do mỗi đường từ một đỉnh của cây gốc
+tới gốc đi qua nhiều nhất \(\Theta(\log n)\) chuỗi nặng, số nút loại này trên
+một đường trong Top Tree cũng chỉ là \(\Theta(\log n)\).
+
+Ngược lại, mọi cháu của \(x\) đều nằm trong cùng cây compress hoặc rake với
+\(x\). Hình trong bản gốc mô tả cách chia cây con của \(x\): lá màu đỏ là lá
+vượt qua mốc \(\mathit{sz}_x/2\), và các phần còn lại có tổng kích thước
+\(\mathit{sz}_x/2\). Vì con trái của con phải của \(x\) nằm trong cùng cây
+compress hoặc rake, kích thước cây con của nó không vượt quá một nửa kích
+thước con phải. Kết hợp với cách chọn điểm chia, các cây con cháu liên quan
+đều có kích thước không quá \(\mathit{sz}_x/2\). Do đó sau mỗi hai tầng loại
+này, kích thước giảm ít nhất một nửa, nên đóng góp độ sâu cũng là
+\(\Theta(\log n)\).
+
+Hai phần cộng lại cho độ sâu \(\Theta(\log n)\). Cây đoạn tổng quát dựng bằng
+thuật toán này thường được gọi là cây nhị phân cân bằng toàn cục. Với một số
+bài toán, phép rake có tính chất tốt nên không cần dựng cây rake riêng.
+
+\subsection{Ứng dụng của Top Tree trên cây}
+
+\subsubsection{Duy trì thông tin bằng pushup trực tiếp}
+
+Dựa trên cấu trúc cụm, ta có thể duy trì các thông tin bán nhóm phụ thuộc vào
+trạng thái của điểm biên. Ví dụ, một lớp bài toán quy hoạch động trên cây có
+thể viết dưới dạng: mỗi đỉnh nhận một trạng thái, còn mỗi cạnh đóng góp một
+giá trị tùy theo trạng thái của hai đầu mút. Các bài toán điển hình gồm tập
+độc lập trọng số lớn nhất trên cây, hoặc chọn một số hằng đỉnh trên cây để
+tính giá trị.
+
+Với các bài toán này, trong mỗi cụm ta ghi giá trị DP cho từng cặp trạng thái
+của hai điểm biên. Khi compress, liệt kê trạng thái của điểm biên chung; khi
+rake, cộng các giá trị có cùng trạng thái. Vì Top Tree có độ sâu
+\(\Theta(\log |V|)\), nếu sửa trọng số một cạnh hoặc một đỉnh thì chỉ cần
+pushup lại \(\Theta(\log |V|)\) nút.
+
+\paragraph{Ví dụ: NOIP 2018, \emph{Bảo vệ vương quốc}.}
+Cho cây vô hướng \(T\) gồm \(n\) đỉnh có trọng số. Mỗi truy vấn cố định trạng
+thái của hai đỉnh \(a,b\) lần lượt là \(x,y\), rồi hỏi phủ đỉnh trọng số nhỏ
+nhất của \(T\). Các truy vấn độc lập, \(n,q\le 10^5\).
+
+Nếu hỗ trợ sửa trọng số đỉnh, bài toán cố định trạng thái có thể quy về đặt
+trọng số của một trạng thái thành dương vô cùng hoặc âm vô cùng. Dựng Top Tree
+của \(T\); với mỗi cụm \(c\), ghi
+\[
+  f_{0/1,0/1}
+\]
+là chi phí nhỏ nhất của các đỉnh không phải điểm biên khi hai điểm biên nhận
+bốn tổ hợp trạng thái. Compress thì liệt kê trạng thái điểm giao, rake thì
+cộng chi phí cùng trạng thái. Khi sửa một trọng số, tìm các nút Top Tree bị
+ảnh hưởng rồi pushup lại đường lên gốc. Độ phức tạp
+\(\Theta(n+m\log n)\).
+
+\paragraph{Ví dụ: NOI 2022, \emph{Đếm điểm trong lân cận trên cây}.}
+Cho cây \(T\) gồm \(n\) đỉnh. Được phép tiền xử lý một số cụm bằng compress và
+rake. Sau đó có \(q\) truy vấn online, mỗi truy vấn cho \(x,d\), yêu cầu dùng
+không quá một phép toán cụm để thu được cụm gồm mọi đỉnh cách \(x\) không quá
+\(d\). Giới hạn \(n\le 10^5\), \(q\le 2\cdot 10^6\), số phép toán tiền xử lý
+không vượt quá \(3\cdot 10^7\).
+
+Dựng Top Tree của \(T\). Với truy vấn \(x,d\), xét một cạnh kề \(x\) tùy ý và
+tìm trong các tổ tiên trên Top Tree cụm nông nhất chứa hoàn toàn mọi đỉnh cách
+\(x\) không quá \(d\). Gọi cụm này là \(C\). Khi đó \(d\) không vượt quá đường
+kính của cụm cha của \(C\), và đáp án có thể biểu diễn bằng cách lấy \(C\)
+compress với cụm gồm các đỉnh bên ngoài \(C\) nhưng cách một trong hai điểm
+biên của \(C\) không quá một ngưỡng tương ứng.
+
+Với mỗi cụm \(C\), duy trì \(g_{0/1,d}\), trong đó chỉ số \(0/1\) chọn một
+điểm biên, còn \(d\) là khoảng cách được xét bên ngoài \(C\). Trước hết pushup
+để duy trì thông tin \(f_{0/1,d}\) bên trong cụm, rồi dùng kỹ thuật đổi gốc DP
+để suy ra \(g\). Để mỗi truy vấn chỉ cần một phép toán, tiền xử lý thêm kết
+quả compress giữa \(C\) và từng phần tử \(g\) tương ứng. Tổng số phép toán
+tiền xử lý là cùng bậc với tổng kích thước cây con của các nút Top Tree, tức
+\(\Theta(n\log n)\).
+
+\subsubsection{Chia để trị theo đỉnh của Top Tree}
+
+Ta muốn chia để trị trên Top Tree để giải các bài toán thống kê đường đi. Cần
+định nghĩa cây co tương ứng với một đồ thị con liên thông \(T'\) của Top Tree.
+Lấy nút nông nhất của \(T'\); xóa khỏi cây gốc mọi cạnh không nằm trong cây con
+của nút đó, rồi lần lượt thực hiện các phép toán ứng với các nút thuộc
+\(T-T'\) không còn nối với gốc. Cây co thu được là cây co của đồ thị con
+\(T'\).
+
+Với định nghĩa này, thuật toán chia để trị như sau. Ở mỗi bước đang có một đồ
+thị con liên thông \(T\) của Top Tree; chọn một cạnh \((x,fa_x)\) sao cho hai
+phần có số đỉnh gần nhau nhất. Chia \(T\) thành \(\operatorname{subtree}_x\)
+và \(T-\operatorname{subtree}_x+\{x\}\). Trước hết thống kê đóng góp của các
+đường đi trong cây co của \(T\) mà hai đầu mút là điểm biên hoặc không nằm
+trong cùng một đồ thị con, rồi đệ quy hai phía. Nếu mọi đỉnh của cây co hiện
+tại đều từng được dùng làm điểm biên trong các bước trước thì dừng.
+
+Sau \(k\) tầng đệ quy, cây co của một đồ thị con có nhiều nhất \(k\) cạnh không
+thuộc cây gốc; tổng số lần xuất hiện của các cạnh này là
+\(\Theta(|V|\log |V|)\). Mỗi cạnh gốc không đệ quy sang cả hai phía, nên tổng
+số lần xuất hiện của các cạnh gốc cũng là \(\Theta(|V|\log |V|)\). Do đó tổng
+kích thước các cây co trong toàn bộ chia để trị là \(\Theta(|V|\log |V|)\).
+
+\subsubsection{Xây dựng phân khối cây}
+
+Top Tree cũng cho một cách dựng phân khối cây với tính chất mạnh. Với cây kích
+thước \(n\), chọn mọi nút trên Top Tree có kích thước cây con không quá
+\(\sqrt n\), nhưng cha của nó có kích thước cây con lớn hơn \(\sqrt n\). Các
+cụm tương ứng tạo thành một phân hoạch cụm của cây gốc.
+
+Mỗi cụm có kích thước \(\Theta(\sqrt n)\), số cụm là \(\Theta(\sqrt n)\). Do
+đó độ sâu và đường kính của từng cụm cũng ở mức \(\Theta(\sqrt n)\). Hơn nữa,
+với mỗi đỉnh không phải điểm biên, cụm kế tiếp đi xuống trong cây con là duy
+nhất, nên việc mô tả thông tin cây con thường thuận tiện. Trong cài đặt thực
+tế có những thuật toán dựng phân khối cây ngắn hơn; bài gốc chỉ nêu hướng này
+và dẫn tới tài liệu tham khảo liên quan.
+
+\subsection{Đồ thị tổng quát hơn}
+
+Định nghĩa cụm ở trên thực ra không dùng quá nhiều tính chất riêng của cây. Ta
+thử mở rộng nó sang đồ thị liên thông. Vì đồ thị không còn bảo đảm vô chu trình,
+cần thêm một phép toán mới gọi là \emph{twist}.
+
+\subsubsection{Phép twist}
+
+Với hai cụm tổng quát \(C,D\) trên đồ thị vô hướng liên thông \(G\), nếu
+\[
+  B(C)=B(D),
+\]
+thì kết quả của phép \emph{twist} là
+\[
+  (V(C)\cup V(D),\ E(C)\cup E(D),\ B(C)).
+\]
+Twist cũng có tính kết hợp. Trên đồ thị co, twist chính là việc chồng hai cạnh
+song song thành một cụm.
+
+\subsubsection{Đồ thị co được: đồ thị nối tiếp-song song tổng quát}
+
+Ngay cả khi có đủ compress, rake và twist, vẫn có đồ thị không thể co thành
+một cụm, ví dụ \(K_4\). Tổng quát hơn, nếu một đồ thị chứa đồ thị con đồng phôi
+với \(K_4\), nó cũng không co được bằng ba phép toán trên.
+
+Thực ra, không chứa đồ thị con đồng phôi với \(K_4\) vừa là điều kiện cần vừa
+là điều kiện đủ để co được. Các đồ thị liên thông không chứa đồ thị con đồng
+phôi với \(K_4\) được gọi là đồ thị nối tiếp-song song tổng quát. Chứng minh
+kết luận này khá phức tạp; bài gốc dẫn tới tài liệu tham khảo. Vì ở mỗi thời
+điểm các cụm không còn tạo thành cây, từ đây ta gọi cấu trúc co là đồ thị co
+thay vì cây co.
+
+Có thể dựng Top Tree của đồ thị nối tiếp-song song tổng quát bằng cách lặp:
+\begin{itemize}
+  \item nếu trong đồ thị co có đỉnh bậc \(1\), gọi nó là \(v\) và đỉnh kề là
+  \(u\), thì rake cụm ứng với \(\{u,v\}\) vào một cụm bất kỳ khác kề \(u\);
+  \item nếu có đỉnh bậc \(2\), gọi nó là \(v\) và hai đỉnh kề là \(u,w\), thì
+  compress hai cụm ứng với \(\{u,v\}\) và \(\{v,w\}\);
+  \item nếu có cạnh song song, twist các cụm tương ứng.
+\end{itemize}
+Theo kết luận trên, quá trình này cuối cùng co toàn bộ đồ thị thành một cụm và
+không bị kẹt giữa chừng.
+
+Đáng tiếc là Top Tree dựng theo cách này có thể có độ sâu \(\Theta(|V|)\). Hơn
+nữa, trên đồ thị nối tiếp-song song tổng quát, có thể xây dựng ví dụ khiến mọi
+cách dựng Top Tree đều có độ sâu \(\Theta(|V|)\). Hình trong bản gốc đưa ra
+một đồ thị như vậy.
+
+Mục tiêu còn lại là mở rộng ba ứng dụng của Top Tree ở phần trước sang đồ thị
+nối tiếp-song song tổng quát.
+
+\subsubsection{Top Tree của Top Tree}
+
+Trước hết xét việc pushup trực tiếp trên Top Tree. Nếu Top Tree có độ sâu
+\(\Theta(|V|)\), sửa một phần tử có thể tốn tuyến tính.
+
+Quan sát rằng dựng Top Tree rồi pushup trên đó thực chất là biến một bài toán
+pushup trên cây bất kỳ thành bài toán pushup trên Top Tree, với chi phí một lần
+sửa bằng độ sâu của Top Tree. Nay Top Tree đầu tiên có độ sâu
+\(\Theta(|V|)\); nếu xem chính nó như một cây thường và dựng thêm một Top Tree
+thứ hai trên nó, bài toán pushup trên Top Tree sâu tuyến tính được chuyển thành
+pushup trên Top Tree mới có độ sâu \(\Theta(\log |V|)\).
+
+Cần xét lượng thông tin phải lưu. Giả sử mỗi đỉnh đồ thị gốc có \(k\) trạng
+thái. Vì mỗi cụm có hai điểm biên, mỗi nút trên Top Tree đầu tiên có
+\(k^2\) trạng thái. Một nút trên Top Tree thứ hai có hai điểm biên là hai cụm
+của Top Tree đầu, nên cần \(k^4\) trạng thái. Trong các bài toán thực tế, \(k\)
+thường là hằng số. Như vậy ta vẫn xử lý được một lần sửa bằng
+\(\Theta(\log |V|)\) phép toán bán nhóm. Vì Top Tree đầu tiên là cây nhị phân,
+khi dựng Top Tree của nó không cần dựng cây rake.
+
+\paragraph{Ví dụ: Công viên, tập huấn đội tuyển 2019 Day 3.}
+Cho một đồ thị nối tiếp-song song tổng quát \(G\) gồm \(n\) đỉnh. Mỗi đỉnh có
+thể tô đen hoặc trắng; hai trọng số của đỉnh là lợi ích khi tô mỗi màu. Mỗi
+cạnh có hai trọng số, tương ứng lợi ích khi hai đầu cùng màu hoặc khác màu. Có
+\(q\) lần sửa trọng số đỉnh hoặc cạnh, sau mỗi lần hỏi lợi ích lớn nhất khi tô
+màu tùy ý. Các lần sửa không độc lập, \(n,q\le 10^5\).
+
+Dựng Top Tree \(T\) của \(G\). Với mỗi cụm \(C\), đặt
+\[
+  f_{0/1,0/1}
+\]
+là lợi ích lớn nhất của các cạnh và các đỉnh không phải điểm biên trong cụm
+khi hai điểm biên nhận từng tổ hợp màu. Dựng tiếp Top Tree \(T'\) của \(T\).
+Trên mỗi cụm \(C\) của \(T'\), duy trì
+\[
+  g_{0/1,0/1,0/1,0/1},
+\]
+ứng với trạng thái của bốn điểm: hai điểm biên trong đồ thị gốc của mỗi cụm
+biên thuộc \(T\). Pushup trực tiếp duy trì \(g\). Khi sửa, tìm nút tương ứng
+trên \(T\), rồi nút tương ứng trên \(T'\), và pushup đường lên gốc. Độ phức
+tạp \(\Theta(n+m\log n)\).
+
+\subsubsection{Chia để trị Top Tree trên đồ thị nối tiếp-song song tổng quát}
+
+Tiếp theo xét mở rộng chia để trị theo đỉnh của Top Tree. Bản thân chia để trị
+không phụ thuộc vào độ sâu, nên việc Top Tree có độ sâu tuyến tính không gây
+vấn đề.
+
+Khác biệt nằm ở định nghĩa đồ thị co của một đồ thị con Top Tree. Nếu vẫn xóa
+toàn bộ cạnh nằm ngoài cây con của nút nông nhất, trong đồ thị nối tiếp-song
+song tổng quát có thể bỏ sót các đường đi đi qua phần ngoài cây con đó để nối
+hai điểm biên của cùng một cụm. Dạng đường bị bỏ sót là: đi từ một đỉnh trong
+cụm của \(r\) tới một điểm biên của \(r\), qua phần nằm ngoài cây con của
+\(r\) để tới điểm biên còn lại, rồi quay vào cụm của \(r\).
+
+Vì vậy, với phần ngoài cây con của \(r\), ta lấy đồ thị con gồm các đỉnh còn
+liên thông với cả hai điểm biên của \(r\). Đồ thị con này vẫn là nối tiếp-song
+song tổng quát và có thể co thành một cụm có hai điểm biên chính là hai điểm
+biên của \(r\). Nếu loại thông tin đang duy trì cho phép, cụm này có thể thay
+thế tương đương cho toàn bộ phần ngoài.
+
+Trong quá trình chia để trị, giả sử đang xử lý đồ thị con \(T\) của Top Tree,
+chọn điểm chia \(r\), và gọi cây con của \(r\) là \(T'\). Khi đệ quy vào
+\(T'\), cần thêm cụm thay thế toàn bộ các cạnh nằm ngoài cây con của \(r\). Vì
+phần ngoài cây con của nút nông nhất trong \(T\) đã được thay bằng một cụm, khi
+tính cụm thay thế cho phần ngoài \(r\) chỉ cần xử lý một đồ thị có kích thước
+\(\Theta(|T-T'|)\). Do đó độ phức tạp tổng vẫn là \(\Theta(|V|\log |V|)\).
+
+\paragraph{Ví dụ: \emph{Đi dạo công viên}, tập huấn đội tuyển 2021.}
+Cho đồ thị nối tiếp-song song tổng quát \(G\) có trọng số cạnh. Mỗi truy vấn
+cho một tập đỉnh, hỏi tổng khoảng cách ngắn nhất giữa mọi cặp đỉnh trong tập,
+lấy modulo \(2013265921\). Có \(n,q\le 10^5\), và tổng kích thước các tập truy
+vấn không vượt quá \(10^5\).
+
+Xử lý offline toàn bộ truy vấn. Dựng Top Tree \(T\) của \(G\), rồi chia để trị
+trên \(T\). Khi chọn điểm chia \(r\), chia đồ thị con hiện tại thành cây con
+\(T'\) của \(r\) và \(T-T'+\{r\}\). Gọi hai điểm biên của \(r\) là \(u,v\).
+Trước hết tính trong cụm hiện tại khoảng cách ngắn nhất một nguồn từ \(u\) và
+từ \(v\).
+
+Xét một truy vấn. Nếu \(u\) hoặc \(v\) thuộc tập truy vấn thì đóng góp liên
+quan có thể tính trực tiếp. Với một điểm \(x\in T'\) và một điểm
+\(y\in T-T'+\{r\}\), đường ngắn nhất giữa chúng là đường ngắn hơn trong hai
+khả năng \(x-u-y\) và \(x-v-y\). Với mỗi điểm, tính hiệu khoảng cách tới \(u\)
+và tới \(v\), rồi sắp xếp theo hiệu này. Khi duyệt \(x\) theo thứ tự tăng dần,
+tập các \(y\) mà đường \(x-u-y\) tốt hơn là một tiền tố và tiền tố này chỉ
+giảm dần; có thể dùng hai con trỏ để tính tổng đóng góp.
+
+Khi đệ quy, phần \(T-T'+\{x\}\) chỉ cần thay bằng một cụm có hai điểm biên
+\(u,v\), trong đó khoảng cách giữa \(u\) và \(v\) bằng khoảng cách ngắn nhất
+trong phần đó. Độ phức tạp cuối cùng là
+\[
+  \Theta\left(n\log^2 n+\sum k\log n\right),
+\]
+với \(k\) là kích thước của từng tập truy vấn.
+
+\subsubsection{Xây dựng phân khối đồ thị nối tiếp-song song tổng quát}
+
+Cuối cùng, thử dùng Top Tree để dựng phân khối trên đồ thị nối tiếp-song song
+tổng quát. Thực hiện phân khối trên Top Tree của đồ thị; với mỗi khối của Top
+Tree, dùng định nghĩa đồ thị co của đồ thị con Top Tree để thu được một khối
+trên đồ thị gốc. Các khối có những tính chất sau:
+\begin{itemize}
+  \item số khối là \(\Theta(\sqrt{|V|})\);
+  \item mỗi khối có số đỉnh và số cạnh đều là \(\Theta(\sqrt{|V|})\);
+  \item mỗi khối có thể co thành cụm ứng với nút nông nhất trong khối Top Tree;
+  hai điểm biên của cụm này được gọi là điểm biên ngoài của khối;
+  \item mỗi đỉnh của đồ thị gốc xuất hiện như một đỉnh không phải biên ngoài
+  trong nhiều nhất một khối, còn mỗi cạnh xuất hiện đúng trong một khối;
+  \item mỗi khối \(C\) giao với nhiều nhất hai khối khác tại các điểm không
+  phải biên ngoài của \(C\); hai khối đó là các con của \(C\) trên Top Tree sau
+  phân khối. Vì hai khối này cùng cây con của chúng có thể lập tức co thành
+  một cụm, số giao điểm nhiều nhất là hai. Các giao điểm này được gọi là điểm
+  biên trong của \(C\). Do đó mỗi khối có nhiều nhất bốn điểm biên.
+\end{itemize}
+
+Như vậy ta thu được một phân khối cho đồ thị nối tiếp-song song tổng quát.
+
+\paragraph{Ví dụ tự đề xuất.}
+Cho đồ thị nối tiếp-song song tổng quát \(G\) gồm \(n\) đỉnh, cạnh có trọng
+số. Có \(q\) thao tác:
+\begin{itemize}
+  \item \(1\ i\ c\): đổi trọng số cạnh thứ \(i\) thành \(c\);
+  \item \(2\ x\ d\): hỏi có bao nhiêu đỉnh có khoảng cách ngắn nhất có trọng
+  số tới \(x\) không vượt quá \(d\).
+\end{itemize}
+Giới hạn \(q\le 3\cdot 10^4\), \(n\le 10^5\).
+
+Trước hết dựng Top Tree của \(G\), rồi dựng phân khối đồ thị nối tiếp-song
+song tổng quát. Với truy vấn tại \(x\), xét đường ngắn nhất từ \(x\) tới một
+đỉnh \(y\). Đường này hoặc không đi qua điểm biên nào, hoặc đi qua ít nhất một
+điểm biên.
+
+Nếu đường \(x,y\) không qua điểm biên, hai đỉnh nằm trong cùng khối; có thể
+chạy một lần đường đi ngắn nhất một nguồn trong khối của \(x\). Nhưng ngay cả
+khi \(x,y\) ở cùng một khối, đường ngắn nhất vẫn có thể đi qua điểm biên, nên
+các đỉnh trong khối cũng phải được xét bằng cách bên dưới.
+
+Nếu đường đi qua điểm biên, nó có thể tách thành ba đoạn: từ \(x\) tới một
+điểm biên \(u\) mà không qua điểm biên khác, từ \(u\) tới một điểm biên
+\(v\), rồi từ \(v\) tới \(y\) mà không qua điểm biên khác. Nếu \(x\) là điểm
+biên thì đoạn đầu suy biến và \(u=x\); nếu không, \(u\) chỉ có thể là một trong
+bốn điểm biên của khối chứa \(x\).
+
+Vì số điểm biên chỉ là \(\Theta(\sqrt n)\), ta có thể tính khoảng cách từ
+\(x\) tới mọi điểm biên bằng cách chạy đường đi ngắn nhất trên một đồ thị
+\(G'\) chỉ gồm các điểm biên, với các nguồn có khoảng cách khởi tạo từ bốn
+điểm biên của khối \(x\). Đồ thị \(G'\) cần bảo đảm khoảng cách ngắn nhất giữa
+mọi cặp điểm biên trong \(G'\) đúng bằng khoảng cách trong \(G\).
+
+Sau khi biết khoảng cách tới từng điểm biên \(v\), cần đếm các đỉnh \(y\). Với
+mỗi khối, lưu lại đối với từng truy vấn còn có thể đi thêm bao xa sau khi tới
+bốn điểm biên của khối; đó là một tọa độ bốn chiều của truy vấn. Với mỗi đỉnh
+\(y\) trong khối, tính khoảng cách từ bốn điểm biên tới \(y\); đó là tọa độ
+bốn chiều của \(y\). Đỉnh \(y\) không đóng góp khi và chỉ khi cả bốn tọa độ của
+\(y\) đều lớn hơn tọa độ tương ứng của truy vấn, nên có thể quy về đếm điểm
+bốn chiều offline.
+
+Cách dựng \(G'\) là: với mỗi khối, tính đường đi ngắn nhất giữa mọi cặp điểm
+biên chỉ dùng cạnh trong khối, rồi nối các cặp đó trong \(G'\). Nếu một đường
+ngắn nhất giữa hai điểm biên \(u,v\) trong \(G\) đi qua điểm biên khác \(w\),
+thì chỉ cần khoảng cách \(u,w\) và \(w,v\) đã đúng trong \(G'\), khoảng cách
+\(u,v\) cũng sẽ đúng. Vì mỗi khối có nhiều nhất bốn điểm biên, mỗi khối chỉ
+đóng góp \(O(1)\) cạnh, nên \(G'\) có \(\Theta(\sqrt n)\) cạnh.
+
+Khi sửa cạnh, xét khối chứa cạnh đó. Do trọng số trong khối thay đổi, cần xử
+lý ngay các truy vấn đã gom offline vào khối này, sau đó cập nhật các cạnh mà
+khối đóng góp cho \(G'\). Nếu dùng chia để trị nhiều chiều để đếm bốn chiều,
+độ phức tạp là
+\[
+  \Theta((q\sqrt n+n)\log^3 n).
+\]
+Nếu dùng bitset, độ phức tạp là
+\[
+  \Theta\left(\frac{nq}{w}+q\sqrt n\log n\right),
+\]
+trong đó \(w\) là độ rộng từ máy. Lý thuyết thì cách thứ nhất tốt hơn, nhưng
+trong phạm vi dữ liệu mà máy tính hiện nay xử lý được, cách bitset thường chạy
+nhanh hơn.
+
+\subsection{Kết luận}
+
+Bài viết giới thiệu các ứng dụng của static Top Tree trên bài toán cây và đồ
+thị nối tiếp-song song tổng quát. Phần cuối đề xuất một thuật toán xây dựng
+phân khối đồ thị nối tiếp-song song tổng quát dựa trên Top Tree. Tác giả hy
+vọng nội dung này gợi mở thêm hướng nghiên cứu và giúp người đọc tiếp tục phát
+triển các ứng dụng mới.
+
+\subsection{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao
+lưu; cảm ơn thầy Li Shu, thầy Zhang Chao và thầy Shi Polei của Trường Ngoại
+ngữ Nam Kinh đã giảng dạy; cảm ơn cha mẹ đã quan tâm và hỗ trợ.
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Renato F. Werneck. \emph{Design and Analysis of Data Structures for
+  Dynamic Trees}. Princeton University, 2006.
+  \item Robert E. Tarjan and Renato F. Werneck. Self-adjusting top trees.
+  \emph{Proceedings of the Sixteenth Annual ACM-SIAM Symposium on Discrete
+  Algorithms}, SODA 2005, Vancouver, British Columbia, Canada, January 23--25,
+  2005.
+  \item Zhao Yuyang. \emph{Lý thuyết, cách dùng và hiện thực một số nội dung
+  liên quan tới Top Tree}, 2019.
+  \item Zhou Xin. Bàn về một lớp thuật toán xây dựng phân khối trên cây và ứng
+  dụng, tập luận văn đội tuyển quốc gia Trung Quốc IOI 2021.
+  \item Wu Zuotong. Báo cáo ra đề \emph{Công viên}, tập luận văn đội tuyển quốc
+  gia Trung Quốc IOI 2019.
+  \item Lin Haohan. Báo cáo ra đề \emph{Đi dạo công viên}, tập luận văn đội
+  tuyển quốc gia Trung Quốc IOI 2021.
 \end{enumerate}
 
 \end{document}

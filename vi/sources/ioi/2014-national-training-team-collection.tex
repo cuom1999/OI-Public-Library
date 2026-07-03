@@ -19,8 +19,8 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2014. Phần
 mục lục và đầu sách có lớp văn bản đọc được, nhưng thân bài dùng ánh xạ phông
 chữ khiến kết quả trích xuất bị biến dạng. Bản dịch này chuyển ngữ phần đầu
-sách, mục lục và chín bài đầu tiên bằng cách kết hợp mục lục trích xuất được với
-OCR từ các trang đã render.
+sách, mục lục và mười bài đầu tiên bằng cách kết hợp mục lục trích xuất được
+với OCR từ các trang đã render.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -4047,6 +4047,354 @@ hợp với cây ảo, nó còn có thể giải một số bài khó hơn.
   \item Chen Lijie, \emph{Báo cáo lời giải JustForFun EXT}.
 \end{enumerate}
 
+\section{Thuật toán căn bậc hai: không chỉ là chia khối}
+
+\begin{center}
+Wang Yuetong, Trường Ngoại ngữ Nam Kinh
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Thuật toán căn bậc hai ngày càng phổ biến, và độ phức tạp của các bài OI cũng
+ngày càng ``đa dạng'', không còn chỉ là những dạng đơn giản như
+\(O(n)\), \(O(n^2)\), hay \(O(n\log n)\). Nhiều bài có độ phức tạp chứa căn bậc
+hai; trong đó các thuật toán căn bậc hai ở bài cấu trúc dữ liệu là thường gặp
+nhất, chẳng hạn duy trì theo khối hoặc thuật toán Mo, vốn đã được trình bày kỹ
+trong năm trước.
+
+Nhưng thuật toán căn bậc hai tuyệt đối không chỉ giới hạn ở những chỗ ấy. Chúng
+còn xuất hiện trong nhiều thuật toán khác, đi kèm những tư tưởng rất khác nhau.
+Nghiên cứu sâu các tư tưởng ấy đôi khi còn đào được những ứng dụng có độ phức
+tạp tốt hơn cả mức căn. Bài viết này giới thiệu vài ứng dụng của thuật toán căn
+bậc hai ngoài các bài cấu trúc dữ liệu, rồi thử di chuyển tư tưởng ấy để thu
+được thuật toán tốt hơn.
+
+\subsection{Các bài toán cơ bản}
+
+\subsubsection{Bắt đầu từ một bài dễ}
+
+\paragraph{Ví dụ một: Codeforces \#80 Div1 D.}
+Cho một dãy \(a[i]\) độ dài \(N\le 300000\), và \(M\le 300000\) truy vấn. Mỗi
+truy vấn có dạng \((x,y)\); cần xuất
+\[
+  a[x]+a[x+y]+a[x+2y]+\cdots+a[x+ky],
+\]
+trong đó \(x+(k+1)y>N\). Giới hạn thời gian là 4 giây.
+
+Truy vấn của bài này khác những truy vấn thông thường. Phần lớn cấu trúc dữ
+liệu ta học đều giỏi xử lý các đoạn liên tiếp, nhưng không giỏi xử lý những vị
+trí cách đều nhau. Với bài này, cây đoạn và các cấu trúc truyền thống tương tự
+khó phát huy tác dụng. Tuy nhiên, nếu mọi truy vấn có cùng \(y\), ta có thể
+chia dãy gốc thành \(y\) nhóm theo giá trị chỉ số modulo \(y\). Trong nhóm
+tương ứng, truy vấn trở thành truy vấn đoạn liên tiếp và chỉ cần tổng tiền tố.
+
+Vấn đề là với \(y=1\) ta cần duy trì vài mảng có tổng kích thước \(N\); với
+\(y=2\), \(y=3,4,\ldots,N\) cũng đều cần, nên không thể chấp nhận. Nhưng nếu
+\(y\) rất lớn thì vì sao phải lưu trước? Quét trực tiếp cũng nhanh, vì mỗi lần
+chỉ tốn \(O(N/y)\). Do đó, lấy \(K=\sqrt N\): với \(1\le y\le K\), tiền xử lý
+tổng tiền tố theo lớp modulo \(y\); với \(y>K\), trả lời bằng quét trực tiếp.
+Độ phức tạp được bảo đảm ở mức \(O(N\sqrt N)\).
+
+Nhìn lại bài này, không thể nói nó hoàn toàn không phải bài cấu trúc dữ liệu,
+nhưng nó thể hiện một tư tưởng rất khác với chia khối thông thường. Hai đại
+lượng ràng buộc nhau theo quan hệ tích: bước nhảy và số hạng, luôn có ít nhất
+một đại lượng không quá lớn. Ta thiết kế thuật toán riêng cho hai tình huống,
+rồi ghép hai thuật toán ấy thành một lời giải hoàn chỉnh.
+
+\paragraph{Ví dụ hai: Topcoder SRM589 Level-3 FlippingBits.}
+Cho một xâu nhị phân độ dài \(N\le 300\), và một số nguyên dương \(M\). Mỗi thao
+tác có thể đảo một vị trí, hoặc đảo một tiền tố có độ dài là bội của \(M\). Hỏi
+cần ít nhất bao nhiêu thao tác để biến xâu thành một xâu tuần hoàn có chu kỳ
+\(M\).
+
+Chu kỳ \(M\) nghĩa là với mọi \(i\), nếu vị trí \(i+M\) tồn tại thì ký tự ở
+\(i\) và \(i+M\) phải bằng nhau.
+
+Bài này cũng không khó. Xét độ dài chu kỳ và số chu kỳ; tích của hai đại lượng
+này là độ dài xâu gốc, nên luôn có một đại lượng không vượt quá \(\sqrt N\).
+Điều đó gợi ý thiết kế hai thuật toán chuyên biệt.
+
+Trước hết xét khi chu kỳ không dài, cụ thể không quá \(17\), xấp xỉ
+\(\sqrt{300}\). Khi đó vì đáp án yêu cầu mọi chu kỳ đều giống nhau, ta có thể
+liệt kê trực tiếp chu kỳ đích. Sau khi liệt kê, mỗi đoạn độ dài \(M\) trong xâu
+gốc phải bằng chu kỳ ấy hoặc bằng chu kỳ ấy sau khi đảo bit. Phần còn lại là
+một quy hoạch động đơn giản: nếu ghi lại mỗi đoạn có bị đảo toàn bộ hay không,
+thì số lần dùng thao tác đảo tiền tố bội của \(M\) chính là số lần dãy trạng
+thái đoạn đổi giữa \(0\) và \(1\).
+
+Trường hợp còn lại là số chu kỳ không nhiều. Khi đó thao tác đảo tiền tố bội
+của \(M\) chỉ có thể xảy ra ở không quá \(\sqrt N\) vị trí, nên vẫn có thể liệt
+kê. Lúc này, ta đã biết từng đoạn có bị đảo hay không và cần xây một chu kỳ
+đích ``phù hợp'' với chúng. Việc này cũng đơn giản: với từng vị trí trong chu
+kỳ đích, nếu sau khi xét mọi đoạn số ký tự \(0\) nhiều hơn thì đặt là \(0\),
+nếu số \(1\) nhiều hơn thì đặt là \(1\).
+
+Như vậy toàn bộ bài được giải quyết với độ phức tạp
+\(O(N2^{\sqrt N})\). Bản chất vẫn giống ví dụ trước: kết hợp hai thuật toán
+thô sơ để thu được một cách làm đủ hiệu quả. Quan trọng hơn, kiểu ``thuật toán
+tổ hợp'' này đôi khi gần như không thể thay thế: có những bài chỉ có thể giải
+bằng cách phối hợp nhiều thuật toán, hoặc chỉ như vậy mới giảm được độ phức
+tạp. Tư tưởng ấy có thể mở rộng sang các bài phức tạp hơn.
+
+\subsubsection{Ứng dụng xa hơn}
+
+\paragraph{Ví dụ ba: IOI 2009 Regions.}
+Cho một cây \(N\) nút, có \(R\) loại thuộc tính, mỗi nút thuộc đúng một thuộc
+tính. Có \(Q\) truy vấn; mỗi truy vấn cho \(r_1,r_2\), hỏi có bao nhiêu cặp
+\((e_1,e_2)\) sao cho \(e_1\) có thuộc tính \(r_1\), \(e_2\) có thuộc tính
+\(r_2\), và \(e_1\) là tổ tiên của \(e_2\). Ràng buộc:
+\(N,Q\le 200000\), \(R\le 25000\), giới hạn thời gian 5 giây.
+
+Thoạt nhìn đây là một truy vấn tĩnh khá chính thống trên cây. Bài bắt buộc
+trực tuyến, nếu không ta rất dễ đi lệch hướng sang các cách offline. Tác giả
+ban đầu thử nghĩ các thuật toán cỡ \(O(\sqrt n\log^2 n)\) nhưng không tiến
+triển. Mấu chốt của lời giải là thiết kế thuật toán khác nhau theo số lượng
+nút của hai thuộc tính trong truy vấn.
+
+Giả sử trong truy vấn, thuộc tính \(r_1\) có \(A\) nút, thuộc tính \(r_2\) có
+\(B\) nút. Nếu \(A\) nhỏ còn \(B\) lớn, ta có thể quét \(A\) nhưng không thể
+quét \(B\). Dùng thứ tự DFS: cây con của mỗi nút trong \(A\) ứng với một đoạn
+\([l,r]\), còn mỗi nút trong \(B\) ứng với một vị trí \(p\). Nếu
+\(l\le p\le r\), nút thuộc \(A\) là tổ tiên của nút thuộc \(B\). Vì vậy, với
+mỗi thuộc tính, lưu các thứ tự DFS của các nút thuộc tính ấy trong một
+\texttt{vector} đã sắp. Khi quét từng nút thuộc \(A\), chỉ cần tìm nhị phân
+trong \texttt{vector} của \(B\). Một truy vấn được xử lý trong
+\(O(A\log B)\).
+
+Nếu \(A\) lớn còn \(B\) nhỏ, trực giác cho thấy cần một thuật toán
+\(O(B\log A)\). Có thể làm như sau: quét các nút thuộc \(B\), và hỏi vị trí
+của nút đó bị bao phủ bởi bao nhiêu đoạn cây con của \(A\). Tiền xử lý toàn bộ
+\(A\) đoạn bằng cách cộng \(1\) trên từng đoạn, chẳng hạn đoạn \([5,10]\) cộng
+trên các vị trí từ \(5\) tới \(10\). Sau đó, giá trị tại vị trí của một nút
+thuộc \(B\) chính là số tổ tiên cần đếm. Các đầu mút đoạn của \(A\) có thể rời
+rạc hóa, còn phép cộng đoạn có thể xử lý bằng hiệu hoặc tổng tiền tố, nên cũng
+đạt \(O(B\log A)\).
+
+Vẫn còn hai vấn đề. Thứ nhất, nếu cả \(A\) và \(B\) đều lớn thì dù thế nào
+cũng khó tốt hơn \(O(A+B)\); nếu truy vấn nào cũng như vậy thì có vẻ sẽ quá
+chậm. Nhưng thực ra một truy vấn liên quan tới rất nhiều nút thì số truy vấn
+khác nhau kiểu ấy không thể quá nhiều. Nếu có hai truy vấn giống hệt nhau, ta
+lưu lại đáp án trước đó và trả lời trực tiếp; còn với truy vấn khác nhau thì
+cứ xử lý. Phân tích độ phức tạp nằm ở dưới.
+
+Thứ hai, ngay cả khi đã có cách \(O(A\log B)\) và \(O(B\log A)\), vẫn có tình
+huống xấu: giả sử \(N\) và \(Q\) cùng bậc, có \(\sqrt N\) thuộc tính, mỗi thuộc
+tính có \(\sqrt N\) nút, rồi hỏi mọi cặp thuộc tính. Thuật toán có thể suy biến
+thành \(O(N\sqrt N\log N)\), không chấp nhận được với \(N=200000\).
+
+Qua phân tích trên, trường hợp một bên lớn một bên nhỏ không khó; vấn đề là
+khi hai bên xấp xỉ nhau. Nếu chấp nhận quét cả \(A\) và \(B\), ta nên tìm cách
+loại bỏ thừa số \(\log\). Xem \(A\) là các đoạn và \(B\) là các điểm, bài toán
+trở thành đếm mỗi điểm nằm trong bao nhiêu đoạn. Có thể trộn các đầu đoạn của
+\(A\) với các điểm của \(B\), đồng thời duy trì một ngăn xếp hoặc bộ đếm đang
+mở. Vì các đoạn cây con của cùng một thuộc tính không chứa nhau, có nhiều tính
+đơn điệu rõ ràng, nên phần này làm được trong \(O(A+B)\).
+
+Phân tích cuối cùng như sau. Đặt một ngưỡng \(C\). Nếu \(A>C\), dùng cách
+\(O(B\log A)\); nếu \(B>C\), dùng cách \(O(A\log B)\); các trường hợp còn lại
+dùng cách \(O(A+B)\). Nhờ không xử lý lặp lại cùng một cặp thuộc tính, hai
+nhóm lớn có tổng chi phí cỡ \(O(N^2\log N/C)\), còn nhóm nhỏ có tổng chi phí
+\(O(NC)\). Chọn \(C=\sqrt{N\log N}\), độ phức tạp toàn bộ là
+\(O(N\sqrt{N\log N})\), đủ dùng.
+
+Bài này phức tạp hơn các ví dụ trước nhiều; ngay cả đặt trong kỳ thi IOI khi
+đó cũng không dễ. Tư tưởng lấy ưu điểm bù nhược điểm giữa nhiều thuật toán để
+bảo đảm độ phức tạp đã được thể hiện rất rõ.
+
+\subsection{Những cách cân bằng khác}
+
+\subsubsection{Duy trì theo phân loại}
+
+``Duy trì theo phân loại'' là một tư tưởng khác trong bài cấu trúc dữ liệu. Nó
+cũng là thuật toán căn bậc hai, nhưng khác khá xa với duy trì theo khối. Ta
+dùng một ví dụ để nói ngắn gọn về ý nghĩa và ứng dụng của cách làm này.
+
+\paragraph{Ví dụ bốn.}
+Cho một đồ thị vô hướng có \(N\) đỉnh và \(M\) cạnh, với
+\(N,M\le 100000\). Ban đầu mọi đỉnh đều màu đen. Mỗi thao tác thuộc một trong
+hai loại: đổi màu một đỉnh, hoặc hỏi trong các đỉnh kề trực tiếp với một đỉnh
+cho trước có bao nhiêu đỉnh màu đen. Giới hạn thời gian là 1 giây.
+
+Bài này không khó, nhưng thể hiện một tư tưởng rất tốt. Trong đa số tình huống,
+nhất là dữ liệu ngẫu nhiên, quét trực tiếp các cạnh kề của một đỉnh rất nhanh,
+vì bậc thường nhỏ. Dù trường hợp xấu theo lý thuyết là \(O(N)\), nó không dễ
+xảy ra. Vì vậy, nếu một đỉnh có bậc nhỏ, khi truy vấn ta liệt kê trực tiếp.
+
+Nếu bậc rất lớn thì sao? Phản xạ nên là: một bên nhiều thì bên kia ít. Đỉnh có
+bậc lớn thì số đỉnh như vậy ít. Lấy \(\sqrt N\) làm ranh giới để bàn. Nếu một
+đỉnh có bậc không quá \(\sqrt N\), truy vấn trực tiếp tốn \(O(\sqrt N)\). Nếu
+bậc lớn hơn, số đỉnh loại này nhiều nhất là \(\sqrt N\), nên mỗi khi đổi màu
+một đỉnh, ta cập nhật câu trả lời cho toàn bộ các đỉnh bậc lớn bằng cách kiểm
+tra đỉnh vừa đổi màu có kề với chúng hay không. Việc này cũng tốn
+\(O(\sqrt N)\). Kết hợp hai cách duy trì, mỗi thao tác đạt \(O(\sqrt N)\) sau
+tiền xử lý.
+
+\subsubsection{Một khoảng nghỉ nhẹ}
+
+Ta xét một bài đơn giản và thú vị hơn.
+
+\paragraph{Ví dụ năm: Kế hoạch phá cầu (JSOI 2013).}
+Cho một dãy \(A_1,A_2,\ldots,A_N\), với \(N\le100000\) và
+\(1000\le A_i\le2000\). Cần chọn một số phần tử, có thể không chọn phần tử nào.
+Giả sử chọn \(K\) phần tử tại các vị trí tăng dần
+\(p_1,p_2,\ldots,p_K\). Chi phí chọn là
+\[
+  A_{p_1}\cdot 1+A_{p_2}\cdot 2+\cdots+A_{p_K}\cdot K.
+\]
+Các phần tử được chọn chia những phần tử còn lại thành \(K+1\) đoạn, có thể có
+đoạn rỗng. Gọi tổng các \(A_i\) trong mỗi đoạn là \(T_i\). Với mỗi đoạn có
+\(T_i>M\), phát sinh thêm chi phí \(T_i\); nếu không thì không phát sinh. Giá
+trị \(M\) giống nhau cho mọi đoạn và không vượt quá \(2\cdot10^8\). Hãy tìm
+cách chọn để tổng chi phí nhỏ nhất. Giới hạn thời gian là 7 giây.
+
+Không khó thiết kế trạng thái hai chiều \(F[i][j]\): vị trí được chọn cuối
+cùng hiện là \(i\), và đây là vị trí chọn thứ \(j\) từ trái sang phải; khi đó
+tổng chi phí nhỏ nhất của \(j\) vị trí chọn và \(j\) đoạn đã sinh ra là bao
+nhiêu. Đặt \(\operatorname{sum}[i]\) là tổng \(A_1+\cdots+A_i\), ta có chuyển:
+\[
+  F[i][j]=\min\bigl(F[k][j-1]+A_i\cdot j\bigr),
+  \quad \operatorname{sum}[i-1]-\operatorname{sum}[k]\le M,
+\]
+\[
+  F[i][j]=\min\bigl(F[k][j-1]+A_i\cdot j
+      +\operatorname{sum}[i-1]-\operatorname{sum}[k]\bigr),
+  \quad \operatorname{sum}[i-1]-\operatorname{sum}[k]>M,
+\]
+trong đó \(0\le k<i\). Phân tích thêm một chút sẽ thấy có thể dùng hàng đợi
+đơn điệu để hạ phần chuyển trạng thái xuống cỡ bậc hai; chi tiết khá hiển nhiên
+nên không nhắc lại. Nhưng với \(N=100000\), như vậy vẫn quá chậm.
+
+Đây là bài tác giả ra trong kỳ thi thử đội tuyển tỉnh JSOI 2013. Tại chỗ không
+ai làm được; thật ra nó không khó, mà là một mẹo cần nhận ra. Điều kiện
+\(1000\le A_i\le2000\) có ích gì? Vì chi phí chọn một phần tử \(A_i\) tăng dần
+theo thứ tự chọn, ta không thể chọn quá nhiều phần tử.
+
+Nếu không chọn phần tử nào, tổng chi phí không quá \(2000N\). Nếu chọn \(i\)
+phần tử, riêng chi phí chọn đã ít nhất
+\[
+  1000\cdot \frac{i(i+1)}2 > 500i^2.
+\]
+Để phương án chọn \(i\) phần tử có khả năng tối ưu, cần
+\[
+  500i^2\le 2000N,
+\]
+tức là \(i\le 2\sqrt N\). Vì vậy số trạng thái hữu ích chỉ còn
+\(O(N\sqrt N)\), đủ để qua bài.
+
+Bài này được đặt ở đây không phải vì nó hoàn toàn tách rời các bài khác. Nó
+cũng là một thuật toán \(O(N\sqrt N)\), và nguồn gốc của căn bậc hai cũng rất
+đặc biệt: xuất phát từ việc phân tích cận dưới trong đề bài.
+
+Một bài Topcoder khác có cùng tinh thần: cho một đồ thị gồm \(K\) đỉnh chia
+thành \(N\) tầng, giữa hai tầng kề nhau có một số cạnh, và giữa tầng đầu với
+tầng cuối cũng có cạnh. Hỏi tập độc lập lớn nhất. Ràng buộc
+\(K\le100\), \(10\le N\le100\). Cần dùng tính chất đồ thị hai phía để ghép cặp,
+nhưng nếu \(N\) lẻ thì đồ thị không còn hai phía. Vì \(N\ge10\) và tổng số
+đỉnh không quá \(100\), chắc chắn có một tầng không quá \(10\) đỉnh. Liệt kê
+mọi trạng thái của tầng ấy là có thể ``cắt vòng thành dây''. Bài này không
+liên quan nhiều tới chủ đề chính, nhưng nó nhắc rằng khi cận trên và cận dưới
+cùng bậc, chẳng hạn chỉ hơn kém nhau một hằng số nhỏ, phân tích hai cận thường
+cho ta một tính chất căn bậc hai làm điểm đột phá.
+
+\subsubsection{Tối ưu bộ nhớ}
+
+Tình huống bị siết bộ nhớ có lẽ không phổ biến trong OI. Nhưng nếu thời gian
+có thể được tối ưu bằng kiểu cân bằng này, vì sao bộ nhớ lại không? Bằng cách
+mở rộng tương tự, bộ nhớ cũng có thể được tối ưu ở mức đáng kể.
+
+\paragraph{Ví dụ sáu: Codeforces \#79 Div1 E.}
+Có \(N\le20000\) viên đá và \(M\le20000\) viên kẹo cần ăn hết. Cho các tham số
+\(A[i]\) và \(B[j]\). Mỗi lần có thể chọn ăn một viên kẹo hoặc một viên đá.
+Sau khi ăn xong, nếu còn \(x\) viên đá và \(y\) viên kẹo, ta nhận phần thưởng
+\((A[x]+B[y])\bmod P\), trong đó \(P\) cũng cho trước; sau đó tiếp tục ăn. Cần
+tối đa hóa tổng phần thưởng qua \(M+N\) lần ăn, và phải xuất phương án: mỗi
+lần ăn kẹo hay ăn đá. Giới hạn thời gian 13 giây, giới hạn bộ nhớ 43 MB.
+
+Nếu bỏ qua bộ nhớ, bài này rất dễ. Dùng quy hoạch động \(F[i][j]\) biểu diễn
+đáp án tốt nhất sau khi đã ăn \(i\) viên kẹo và \(j\) viên đá. Giá trị chuyển
+trạng thái là phần thưởng của trạng thái còn lại cộng với giá trị tốt hơn giữa
+hai trạng thái trước đó. Để ghi phương án, dùng thêm một mảng \(G\) lưu mỗi ô
+đến từ đâu.
+
+Quay lại giới hạn bộ nhớ. Mảng \(F\) có thể cuộn, còn \(G\) có thể nén bit,
+nhưng tính ra vẫn cần hơn 50 MB. Vì vậy cần một đường khác.
+
+Ta không đủ bộ nhớ để lưu cả bảng. Nhưng tại sao phải lưu tất cả? Chẳng hạn,
+nếu đã lưu đáp án của dòng cách cuối \(K\) dòng, thì không gian từ dòng
+\(K+1\) tới dòng cuối có thể dùng chung với phần trước: sau khi khôi phục đáp
+án của đoạn ấy và xuất ra, bài toán còn lại được quy về đoạn trước dòng \(K\).
+Từ gợi ý này, ta lưu một số dòng thích hợp để tận dụng lại không gian.
+
+Rất tự nhiên nghĩ tới căn bậc hai: cứ mỗi \(\sqrt N\) dòng lưu lại một dòng
+đáp án \(F\) đầy đủ. Khi đó chỉ cần không gian cỡ \(O(N\sqrt N)\) trong trường
+hợp \(N\) và \(M\) cùng bậc để lưu các thông tin này, rồi có thể khôi phục
+phương án theo từng đoạn. Muốn lấy đáp án ở ô cuối, ta dùng dòng mốc trước đó
+để chạy lại quy hoạch động trong đoạn \(\sqrt N\) dòng và tìm đường đi tối ưu;
+sau đó cùng vùng nhớ ấy lại dùng để khôi phục đoạn phía trên, cứ thế tiếp tục.
+Đây là một dạng cân bằng khác. Ý tưởng không khó hiểu nhưng khá mới, và là một
+ứng dụng mở rộng của tư tưởng căn bậc hai. Thời gian vẫn là \(O(NM)\), còn bộ
+nhớ giảm xuống mức căn theo một chiều của bảng.
+
+\subsection{Căn xuất hiện tự nhiên}
+
+Cũng có lúc ta không cố ý đưa căn bậc hai vào thuật toán, nhưng nó tự xuất
+hiện. Ví dụ, khi \(i\) chạy từ \(1\) tới \(N\), giá trị
+\(\lfloor N/i\rfloor\) chỉ có \(O(\sqrt N)\) khả năng khác nhau. Chứng minh rất
+dễ: với \(i\le\sqrt N\), có nhiều nhất \(\sqrt N\) giá trị; với
+\(i>\sqrt N\), kết quả nằm trong đoạn \([1,\sqrt N]\), cũng chỉ có nhiều nhất
+\(\sqrt N\) giá trị. Tính chất này có một số ứng dụng.
+
+\paragraph{Ví dụ bảy: POI 2007 Queries.}
+Có nhiều truy vấn. Với các số nguyên \(a,b,d\), hỏi có bao nhiêu cặp số nguyên
+dương \((x,y)\) thỏa \(x\le a\), \(y\le b\), và \(\gcd(x,y)=d\). Ràng buộc số
+lượng truy vấn và miền giá trị ở mức \(50000\).
+
+Đây là một bài toán số học. Trước hết,
+\(\gcd(x,y)=d\) có thể chuyển thành \(\gcd(x/d,y/d)=1\), đồng thời thu nhỏ
+giới hạn thành \(\lfloor a/d\rfloor\) và \(\lfloor b/d\rfloor\). Vì vậy ta cần
+đếm số cặp nguyên tố cùng nhau, một số không vượt quá \(a\), một số không vượt
+quá \(b\). Bài này rất giống bài \emph{Energy Collection} của NOI 2010 và có
+thể giải bằng nguyên lý bao hàm--loại trừ.
+
+Đặt \(F(x)\) là số cặp mà hai số đều lần lượt không vượt quá \(a,b\), và
+\(\gcd\) của chúng là bội của \(x\). Rõ ràng
+\[
+  F(x)=\left\lfloor\frac a x\right\rfloor
+       \left\lfloor\frac b x\right\rfloor.
+\]
+Sau đó dùng bao hàm--loại trừ:
+\[
+  \operatorname{ans}
+  =\sum_{x=1}^{\min(a,b)} \mu(x)F(x),
+\]
+trong đó \(\mu(x)\) bằng \(0\) nếu \(x\) có một thừa số nguyên tố xuất hiện hơn
+một lần, còn nếu không thì \(\mu(x)=(-1)^k\), với \(k\) là số thừa số nguyên tố
+khác nhau của \(x\). Làm trực tiếp mất \(O(n)\) cho mỗi truy vấn; tốt hơn vét
+cạn \(O(n^2)\) rất nhiều nhưng vẫn chưa đủ.
+
+Quan sát công thức, ta cần tính nhanh tổng \(\sum F(x)\mu(x)\). Hàm \(\mu(x)\)
+không có quy luật đơn giản, nhưng \(F(x)\) thì có: như đã nói, các giá trị
+\(\lfloor a/x\rfloor\) và \(\lfloor b/x\rfloor\) chỉ đổi \(O(\sqrt n)\) lần,
+nên \(F(x)\) cũng chỉ có cùng bậc số giá trị khác nhau. Với một đoạn liên tiếp
+mà \(F(x)\) không đổi, ta tính gộp cả đoạn; chỉ cần tiền xử lý tổng tiền tố của
+\(\mu(x)\). Nhờ vậy mỗi truy vấn được trả lời trong \(O(\sqrt n)\).
+
+Hàm \(\mu(x)\) còn có tên là hàm Mobius; luận văn đội tuyển năm trước của Wang
+Di đã trình bày về nó. Ở đây bài viết không đào sâu thêm các tính chất số học
+và ứng dụng rộng hơn, mà chỉ dùng nó làm ví dụ cho kiểu tối ưu dựa trên một
+tính chất căn bậc hai xuất hiện tự nhiên.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item \emph{21st International Olympiad in Informatics Tasks and Solutions},
+  từ \texttt{www.ioi2009.org}.
+  \item Zhou Mengyu, Trường Trung học số 7 Thành Đô, \emph{POI XIV solutions},
+  bài tập đội tuyển quốc gia năm 2008.
+  \item Wang Di, \emph{Bàn sơ về nguyên lý bao hàm--loại trừ}, luận văn đội
+  tuyển quốc gia năm 2013.
+\end{enumerate}
+
 \section*{Ghi chú về nguồn}
 
 Tệp PDF có 228 trang. \texttt{pdftotext} đọc tốt phần mục lục nhưng phần thân
@@ -4098,5 +4446,12 @@ trang in 105 bắt đầu bài kế tiếp \emph{Thuật toán căn bậc hai: k
 chia khối}. Bài này phải dùng OCR từ ảnh render vì \texttt{pdftotext} tạo
 mojibake; các công thức trong ví dụ Robot, điều kiện \(k=(i+j)/2\) ở phần EXT,
 và các dòng độ phức tạp của cây ảo được đối chiếu lại bằng ảnh render.
+Bài \emph{Thuật toán căn bậc hai: không chỉ là chia khối} được dịch từ các
+trang in 105--114 (trang vật lý PDF 109--118); trang vật lý PDF 118 là trang
+trắng ngăn cách, và trang vật lý PDF 119 được kiểm tra là trang in 115 bắt đầu
+bài kế tiếp \emph{Bàn về các vấn đề liên quan tới cây động và một số mở rộng
+đơn giản}. Bài này phải dùng OCR từ ảnh render vì \texttt{pdftotext} tạo
+mojibake; các công thức quy hoạch động, hàm Mobius và các ngưỡng căn bậc hai
+được đối chiếu bằng ảnh render khi OCR bị nhiễu.
 
 \end{document}
