@@ -19,8 +19,9 @@ PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc n
 dàn trang bằng Adobe InDesign; phần bìa và mục lục có lớp văn bản đọc được,
 nhưng nhiều trang thân bài trích xuất thành mojibake và sinh cảnh báo phông
 chữ. Bản LaTeX này chuyển ngữ phần nhận diện tập sách và toàn bộ mục lục, đồng
-thời dịch bài đầu tiên của Zhou Kangyang về bài toán tính tổng hàm nhân tính
-dựa trên OCR và đối chiếu ảnh trang PDF.
+thời dịch hai bài đầu tiên: bài của Zhou Kangyang về bài toán tính tổng hàm
+nhân tính và bài của Guo Yuchong về parity của matroid tuyến tính, dựa trên OCR
+và đối chiếu ảnh trang PDF.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -927,6 +928,563 @@ Cảm ơn các thầy cô và bạn học khác đã giúp đỡ tác giả.
   2021.
 \end{enumerate}
 
+\section*{Bài 2. Bàn về bài toán parity của matroid tuyến tính}
+\addcontentsline{toc}{section}{Bài 2. Bàn về bài toán parity của matroid tuyến tính}
+
+\begin{center}
+Guo Yuchong, Trường Trung học số 2 trực thuộc Đại học Sư phạm Hoa Đông
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài toán parity của matroid tuyến tính (\emph{Linear Matroid Parity Problem},
+LMPP) định nghĩa một lớp bài toán tối ưu hóa trên không gian tuyến tính. Mô
+hình này tạo cầu nối giữa phương pháp đại số và tối ưu tổ hợp: nhiều bài toán
+kinh điển như matching cực đại trên đồ thị tổng quát hoặc luồng mạng đều có thể
+quy về nó. Đổi lại, độ phức tạp thường tăng lên, nhưng ta thu được một góc nhìn
+thống nhất cho các bài toán bề ngoài rất khác nhau.
+
+\subsection*{1. Ký hiệu và quy ước}
+
+Ký hiệu \(e_i\) là vector đơn vị có thành phần thứ \(i\) bằng \(1\), các thành
+phần còn lại bằng \(0\). Với ma trận \(A\) và hai tập chỉ số \(S,T\), ký hiệu
+\(A_{S,T}\) là ma trận con chỉ giữ các hàng trong \(S\) và các cột trong \(T\).
+Ký hiệu \(\deg_x(F)\) là bậc cao nhất theo biến \(x\) trong đa thức nhiều biến
+\(F\).
+
+\subsection*{2. Bài toán parity của matroid tuyến tính}
+
+\subsubsection*{2.1. Định nghĩa}
+
+Cho \(m\) cặp vector \((a_i,b_i)\), trong đó \(a_i,b_i\) đều là vector
+\(n\)-chiều. Cần chọn nhiều cặp nhất sao cho mọi vector xuất hiện trong các cặp
+được chọn đều độc lập tuyến tính.
+
+\subsubsection*{2.2. Dựng dạng thưa và dạng gọn}
+
+Gọi \(v\) là đáp án của bài toán gốc. Với các biến chưa xác định
+\(x'_1,\ldots,x'_m\), dựng
+\[
+  A=(a_1,b_1,a_2,b_2,\ldots,a_m,b_m),
+\]
+và
+\[
+  X=\operatorname{diag}\left(
+  \begin{pmatrix}0&x'_1\\-x'_1&0\end{pmatrix},
+  \begin{pmatrix}0&x'_2\\-x'_2&0\end{pmatrix},
+  \ldots,
+  \begin{pmatrix}0&x'_m\\-x'_m&0\end{pmatrix}\right).
+\]
+Xét các ma trận trên trường phân thức hữu tỉ của \(x'_1,\ldots,x'_m\), ta có
+\[
+  2v+2m=\operatorname{rank}
+  \begin{pmatrix}
+    0&A\\
+    -A^T&X
+  \end{pmatrix}.
+\]
+Đây là cách dựng dạng thưa.
+
+Với các biến chưa xác định \(x_1,\ldots,x_m\), dựng ma trận
+\[
+  M=\sum_{i=1}^{m}x_i(a_ib_i^T-b_ia_i^T).
+\]
+Khi xét trên trường phân thức hữu tỉ của \(x_1,\ldots,x_m\), ta có
+\[
+  2v=\operatorname{rank}(M).
+\]
+Đây là cách dựng dạng gọn. So với dạng thưa, dạng gọn cho ma trận nhỏ hơn nên
+có lợi về thời gian tính toán; các thuật toán phía sau đều dùng cách dựng này.
+Tính đúng của hai cách dựng đã được chứng minh chi tiết trong tài liệu tham khảo
+\([1]\), nên bài viết không lặp lại.
+
+\subsubsection*{2.3. Thuật toán}
+
+Để có độ phức tạp tốt, ta xử lý đặc biệt các biến \(x_1,\ldots,x_m\). Chọn một
+số nguyên tố lớn \(p\), lấy ngẫu nhiên các \(x_i\) trong
+\([0,p)\cap\mathbb Z\), rồi thế vào \(M\) để được ma trận \(M'\) trên
+\(\mathbb F_p\). Dùng khử Gauss tính \(\operatorname{rank}(M')\) trong
+\(O(n^3)\), và coi
+\[
+  \operatorname{rank}(M)=\operatorname{rank}(M')
+\]
+để suy ra đáp án.
+
+\subsubsection*{2.4. Phân tích xác suất đúng}
+
+Thuật toán trên có xác suất sai. Hiển nhiên
+\(\operatorname{rank}(M')\le \operatorname{rank}(M)\); cần chứng minh hai giá trị
+này bằng nhau với xác suất lớn.
+
+Đặt \(r=\operatorname{rank}(M)\). Khi đó \(M\) có một ma trận con khả nghịch cấp
+\(r\), ký hiệu \(M_{S,T}\). Định thức \(\det(M_{S,T})\) là một đa thức nhiều biến
+khác \(0\) theo \(x_1,\ldots,x_m\), còn \(\det(M'_{S,T})\) là giá trị sau khi thế
+các biến ngẫu nhiên vào đa thức ấy.
+
+\paragraph{\term{Bổ đề Schwartz--Zippel}.}
+Nếu \(f(x_1,\ldots,x_m)\) là đa thức nhiều biến khác \(0\) có tổng bậc không quá
+\(d\), và mỗi \(x_i\) được chọn ngẫu nhiên từ tập hữu hạn \(S\), thì
+\[
+  \Pr[f(x_1,\ldots,x_m)=0]\le \frac{d}{|S|}.
+\]
+
+\paragraph{\term{Chứng minh}.}
+Với \(m=1\), đa thức một biến bậc không quá \(d\) có không quá \(d\) nghiệm.
+Giả sử mệnh đề đúng với \(m-1\) biến, tách riêng biến \(x_m\):
+\[
+  f(x_1,\ldots,x_m)=\sum_{i=0}^{d}x_m^i f_i(x_1,\ldots,x_{m-1}).
+\]
+Gọi \(k\) là bậc cao nhất theo \(x_m\). Sau khi cố định
+\(x_1,\ldots,x_{m-1}\), nếu đa thức một biến thu được là đa thức không thì
+\[
+  f_k(x_1,\ldots,x_{m-1})=0,
+\]
+mà \(f_k\) có bậc không quá \(d-k\), nên xác suất trường hợp này không vượt quá
+\((d-k)/|S|\). Ngược lại, đa thức một biến không không có quá \(k\) nghiệm, nên
+xác suất chọn phải nghiệm không vượt quá \(k/|S|\). Tổng lại là \(d/|S|\).
+
+Áp dụng bổ đề cho \(\det(M_{S,T})\), xác suất
+\(\det(M'_{S,T})=0\) không vượt quá \(r/p\). Vì thế thuật toán cho đáp án đúng
+với xác suất ít nhất \(1-r/p\).
+
+\subsubsection*{2.5. Dựng phương án}
+
+Xét lần lượt từng cặp vector. Nếu xóa cặp hiện tại mà đáp án không giảm thì xóa,
+ngược lại giữ lại. Cuối cùng sẽ còn đúng \(v\) cặp, tạo thành một phương án tối
+ưu. Cách làm trực tiếp cần tính lại \(\operatorname{rank}(M)\) sau mỗi lần xóa,
+nên mất \(O(mn^3)\).
+
+Vì
+\[
+  \operatorname{rank}(a_ib_i^T-b_ia_i^T)\le 2,
+\]
+có thể tăng tốc bằng kỹ thuật nhiễu hạng thấp của ma trận.
+
+\paragraph{\term{Bổ đề Sherman--Morrison--Woodbury}.}
+Với ma trận khả nghịch \(A,B\), ma trận \(U\) cỡ \(n\times m\) và ma trận \(V\)
+cỡ \(m\times n\), ta có
+\[
+  (A-UB^{-1}V)^{-1}
+  =A^{-1}+A^{-1}U(B-VA^{-1}U)^{-1}VA^{-1}.
+\]
+Đồng thời \(A-UB^{-1}V\) khả nghịch khi và chỉ khi
+\(B-VA^{-1}U\) khả nghịch.
+
+Trong bài toán hiện tại, ma trận \(M\) dựng được chưa chắc khả nghịch nên chưa
+thể dùng trực tiếp bổ đề. Do \(M\) phản đối xứng, nếu \(r=\operatorname{rank}(M)\)
+thì \(M\) có một ma trận con chính \(M_{S,S}\) khả nghịch cấp \(r\). Chỉ giữ các
+thành phần vector thuộc \(S\) sẽ đưa bài toán về trường hợp \(M\) khả nghịch mà
+không làm mất phương án đúng; một tập \(S\) hợp lệ có thể tìm trong \(O(n^3)\).
+
+Giả sử từ đây \(M\) khả nghịch và duy trì \(N=M^{-1}\). Với cặp đang xét, đặt
+\[
+  U=(a_i,-b_i),\qquad V=(b_i,a_i)^T,
+\]
+khi đó \(a_ib_i^T-b_ia_i^T=UV\). Việc kiểm tra \(M-UV\) khả nghịch được chuyển
+thành kiểm tra ma trận \(2\times2\)
+\[
+  I-VNU.
+\]
+Ta tính nó trong \(O(r^2)\) và kiểm tra định thức trong \(O(1)\). Nếu khả
+nghịch, cập nhật
+\[
+  N'=(M-UV)^{-1}=N+NU(I-VNU)^{-1}VN,
+\]
+cũng trong \(O(r^2)\). Tổng thời gian dựng phương án giảm còn \(O(mr^2)\), sau
+phần tiền xử lý \(O(n^3)\).
+
+\subsubsection*{2.6. Mở rộng}
+
+Định nghĩa LMPP yêu cầu mỗi nhóm có đúng hai vector. Với trường hợp có nhóm một
+vector, cách trực tiếp là mở rộng vector lên \(n+m_1\) chiều, và với nhóm một
+vector thứ \(i\) ghép thêm \(b_i=e_{n+i}\). Cách này đúng nhưng làm tăng số
+chiều khi \(m_1\) lớn.
+
+Nếu viết ma trận sau mở rộng dưới dạng
+\[
+  M=
+  \begin{pmatrix}
+    M_2&A_1\\
+    -A_1^T&0
+  \end{pmatrix},
+\]
+trong đó \(M_2\) là ma trận chỉ xét các cặp và \(A_1\) chứa các vector của nhóm
+một phần tử, thì ta chỉ quan tâm tới \(\operatorname{rank}(M)\). Vì vậy có thể
+chỉ giữ một cơ sở cột của \(A_1\), kích thước không quá \(n\), rồi quy về trường
+hợp \(m_1\le n\). Khi ấy cách mở rộng trực tiếp không làm tăng cấp độ phức tạp.
+
+\subsubsection*{2.7. Tiểu kết}
+
+Phần này đã trình bày thuật toán ngẫu nhiên tổng quát để giải và dựng phương án
+cho LMPP, đồng thời nêu cách mở rộng sang nhóm một vector mà không tăng cấp độ
+phức tạp. Các thành phần thời gian chính là:
+\begin{itemize}
+  \item dựng
+  \(M=\sum_{i=1}^{m}x_i(a_ib_i^T-b_ia_i^T)\), mất \(O(mn^2)\);
+  \item tính \(\operatorname{rank}(M)\), mất \(O(n^3)\);
+  \item nếu cần dựng phương án, tính \(M^{-1}\), mất \(O(n^3)\);
+  \item sau mỗi nhiễu hạng thấp, kiểm tra khả nghịch và cập nhật \(N\), tổng
+  \(O(mr^2)\).
+\end{itemize}
+Trong bài toán cụ thể, cấu trúc đặc biệt của \(a_i,b_i\) thường còn cho phép
+tối ưu thêm.
+
+\subsection*{3. Bài toán parity có trọng số của matroid tuyến tính}
+
+\subsubsection*{3.1. Giới thiệu}
+
+Bài toán parity có trọng số là phiên bản có trọng số của LMPP. Tài liệu tham
+khảo \([4]\) đưa ra thuật toán \(O(\operatorname{poly}(n,m))\) cho bài toán này,
+nhưng thuật toán khá phức tạp. Phần này trình bày một thuật toán đơn giản hơn
+với thời gian cao hơn, không phải đa thức theo độ dài biểu diễn tổng quát.
+
+\subsubsection*{3.2. Định nghĩa}
+
+Cho \(m\) cặp vector \((a_i,b_i)\), trong đó \(a_i,b_i\) là vector \(n\)-chiều.
+Cặp thứ \(i\) có trọng số nguyên dương \(w_i\). Cần chọn một số cặp có tổng
+trọng số lớn nhất sao cho mọi vector trong các cặp được chọn độc lập tuyến tính.
+
+\subsubsection*{3.3. Dựng dạng thưa và dạng gọn}
+
+Gọi \(v\) là đáp án, và giả sử \(w_i\in[1,V]\cap\mathbb Z\). Thêm biến chưa xác
+định \(z\), dùng bậc theo \(z\) để biểu diễn tổng trọng số. Tương tự dạng thưa
+không trọng số, đặt
+\[
+  A=(a_1z^{w_1},b_1,a_2z^{w_2},b_2,\ldots,a_mz^{w_m},b_m),
+\]
+\[
+  X=\operatorname{diag}\left(
+  \begin{pmatrix}0&x'_1\\-x'_1&0\end{pmatrix},
+  \ldots,
+  \begin{pmatrix}0&x'_m\\-x'_m&0\end{pmatrix}\right),\qquad
+  Y=\operatorname{diag}(y_1,\ldots,y_n).
+\]
+Khi đó
+\[
+  2v=\deg_z\det
+  \begin{pmatrix}
+    Y&A\\
+    -A^T&X
+  \end{pmatrix}.
+\]
+
+Ý tưởng chứng minh là khai triển định thức theo các phần tử đường chéo của
+\(Y\), rồi dùng tính chất của Pfaffian:
+\[
+  \det(B)=\operatorname{pf}(B)^2
+\]
+với \(B\) phản đối xứng. Các tiểu thức khác \(0\) của \(X\) buộc hai chỉ số của
+mỗi cặp phải cùng được chọn hoặc cùng không được chọn; bậc cao nhất theo \(z\)
+khi đó đúng bằng hai lần tổng trọng số lớn nhất của một tập vector độc lập
+tuyến tính.
+
+Để đưa về dạng gọn, dùng bổ đề Schur. Nếu \(D\) khả nghịch thì
+\[
+  \det
+  \begin{pmatrix}
+    A&B\\
+    C&D
+  \end{pmatrix}
+  =\det(A-BD^{-1}C)\det(D).
+\]
+Áp dụng vào ma trận trên:
+\[
+  2v=\deg_z\det(Y+AX^{-1}A^T).
+\]
+Đặt \(x_i=-1/x'_i\), ta có
+\[
+  Y+AX^{-1}A^T
+  =
+  Y+\sum_{i=1}^{m}x_i(a_ib_i^T-b_ia_i^T)z^{w_i}.
+\]
+Gọi ma trận này là \(M\), ta thu được dạng gọn của bài toán có trọng số:
+\[
+  2v=\deg_z\det(M).
+\]
+
+\subsubsection*{3.4. Thuật toán}
+
+Chỉ cần tính \(\det(M)\). Tương tự trường hợp không trọng số, các biến
+\(x_i,y_i\) được gán ngẫu nhiên trên \(\mathbb F_p\). Mỗi phần tử của \(M\) là
+đa thức theo \(z\) bậc không quá \(V\), nên \(\det(M)\) có bậc không quá \(Vn\).
+Chọn \(Vn+1\) giá trị khác nhau \(z_1,\ldots,z_{Vn+1}\), tính
+\(\det(M)\) sau khi thế từng \(z_i\), rồi dùng nội suy Lagrange để khôi phục đa
+thức \(\det(M)\).
+
+\subsubsection*{3.5. Dựng phương án}
+
+Tương tự phần không trọng số, duy trì các ma trận sau khi thế
+\(z_1,\ldots,z_{Vn+1}\):
+\[
+  M_1,\ldots,M_{Vn+1}
+\]
+cùng nghịch đảo của chúng
+\[
+  N_1,\ldots,N_{Vn+1}.
+\]
+Ta cần hỗ trợ nhiễu hạng thấp và duy trì định thức.
+
+\paragraph{\term{Bổ đề định thức ma trận}.}
+Nếu \(A,B\) khả nghịch thì
+\[
+  \det(A-UB^{-1}V)
+  =\frac{\det(A)}{\det(B)}\det(B-VA^{-1}U).
+\]
+Chứng minh tương tự bổ đề Sherman--Morrison--Woodbury.
+
+Nếu mọi \(M_i\) luôn khả nghịch thì công thức trên đủ để cập nhật định thức.
+Trong thực tế có thể gặp thời điểm \(\det(M_i)=0\). Vì \(\det(M)\) có bậc không
+quá \(Vn\) theo \(z\), nếu các \(z_i\) được chọn ngẫu nhiên trong
+\([0,p)\cap\mathbb Z\), thì theo Schwartz--Zippel, số lần kỳ vọng gặp
+\(\det(M_i)=0\) là
+\[
+  O\left(\frac{V^2mn^2}{p}\right).
+\]
+Khi xảy ra, chọn lại \(z_i\) ngẫu nhiên cho tới khi nó khác mọi \(z_j\) còn lại
+và \(\det(M_i)\ne0\). Với \(p\) đủ lớn, chi phí dựng lại có thể xem là không đáng
+kể. Sau đó, mỗi lần nội suy lại \(\det(M)\) từ các giá trị
+\(\det(M_1),\ldots,\det(M_{Vn+1})\), ta quyết định được cặp hiện tại có nằm trong
+phương án tối ưu hay không.
+
+\subsubsection*{3.6. Tiểu kết}
+
+Phần này trình bày thuật toán ngẫu nhiên tổng quát cho phiên bản có trọng số.
+Các thành phần thời gian chính là:
+\begin{itemize}
+  \item tính giá trị của từng phần tử ma trận tại
+  \(z_1,\ldots,z_{Vn+1}\) bằng đánh giá nhiều điểm:
+  \(O(Vn^3\log^2(Vn))\);
+  \item tính định thức tại từng \(z_i\): \(O(Vn^4)\);
+  \item nội suy \(\det(M)\): \(O(Vn\log^2(Vn))\).
+\end{itemize}
+Nếu cần dựng phương án, cần thêm:
+\begin{itemize}
+  \item tính \(N_1,\ldots,N_{Vn+1}\): \(O(Vn^4)\);
+  \item sau mỗi nhiễu hạng thấp, nội suy lại \(\det(M)\):
+  \(O(Vmn\log^2(Vn))\);
+  \item cập nhật các \(\det(M_i)\) và \(N_i\): \(O(Vmn^3)\).
+\end{itemize}
+
+\subsection*{4. Ứng dụng của bài toán parity matroid tuyến tính}
+
+\subsubsection*{4.1. Giới thiệu}
+
+Phần này nêu một số ví dụ quy các bài toán tối ưu tổ hợp về LMPP.
+
+\subsubsection*{4.2. Matching cực đại trên đồ thị tổng quát}
+
+\paragraph{\term{Định nghĩa}.}
+Cho một đồ thị vô hướng, cần chọn nhiều cạnh nhất sao cho không có hai cạnh được
+chọn chung đỉnh.
+
+\paragraph{\term{Thuật toán}.}
+Cách cổ điển để giải bài toán này là thuật toán blossom. Với cạnh thứ \(i\) là
+\((u_i,v_i)\), đặt
+\[
+  a_i=e_{u_i},\qquad b_i=e_{v_i}.
+\]
+Nếu hai cạnh được chọn chung đỉnh \(u\), vector \(e_u\) xuất hiện ít nhất hai
+lần nên phụ thuộc tuyến tính. Ngược lại, nếu không chung đỉnh thì mỗi vector
+đơn vị xuất hiện nhiều nhất một lần, nên độc lập tuyến tính. Do đó bài toán
+matching cực đại được quy về LMPP. Ma trận \(M\) thu được trùng với ma trận
+Tutte, một công cụ kinh điển khác cho matching tổng quát.
+
+Nếu số cạnh là \(m\), số đỉnh là \(n\), dùng trực tiếp thuật toán tổng quát để
+dựng phương án cho thời gian \(O(mn^2)\).
+
+\paragraph{\term{Tối ưu}.}
+Ta dùng cấu trúc đặc biệt của \(a_i,b_i\). Bổ đề Harvey nói rằng nếu \(A\) khả
+nghịch và \(A,B\) chỉ khác nhau ở ma trận con chính ứng với tập \(S\), đặt
+\(D=B-A\), thì
+\[
+\begin{aligned}
+  (B^{-1})_{T,T}
+  &=(A^{-1})_{T,T}\\
+  &\quad -(A^{-1})_{T,S}
+  (I+D_{S,S}(A^{-1})_{S,S})^{-1}
+  D_{S,S}(A^{-1})_{S,T}.
+\end{aligned}
+\]
+Đồng thời \(B\) khả nghịch khi và chỉ khi
+\[
+  I+D_{S,S}(A^{-1})_{S,S}
+\]
+khả nghịch. Bổ đề này cho thấy chỉ cần thông tin cục bộ để xử lý một sửa đổi
+cục bộ.
+
+Trong matching tổng quát, cặp \((a_i,b_i)\) chỉ ảnh hưởng hai vị trí
+\(M_{u_i,v_i}\) và \(M_{v_i,u_i}\). Vì vậy có thể dùng chia để trị. Gọi
+\(\operatorname{solve}(S,T)\) là thủ tục xử lý mọi cặp có
+\(u_i\in S, v_i\in T\), quyết định chúng có thuộc đáp án hay không. Đặt
+\[
+  X=S\cup T,
+\]
+ta chỉ cần quan tâm \(M_{X,X}\) và \((M^{-1})_{X,X}\). Nếu
+\(|S|=|T|=1\), xử lý trực tiếp trong \(O(1)\). Ngược lại, chia đôi \(S,T\) thành
+\(S_1,S_2,T_1,T_2\), đệ quy trên bốn cặp \((S_i,T_j)\); sau mỗi đệ quy, các cặp
+bị loại chỉ gây thay đổi trong ma trận con chính ứng với \(X\), nên dùng bổ đề
+Harvey cập nhật ảnh hưởng lên \((M^{-1})_{X,X}\) trong \(O(|X|^3)\).
+
+Phân tích đệ quy cho hai trường hợp \(S=T\) và \(S\cap T=\varnothing\) dẫn tới
+\[
+  T_2(n)=O(n^3)+4T_2(n/2)=O(n^3),
+\]
+\[
+  T_1(n)=2T_1(n/2)+2T_2(n)+O(n^3)=O(n^3).
+\]
+Vì thế \(\operatorname{solve}(\{1,\ldots,n\},\{1,\ldots,n\})\) chạy trong
+\(O(n^3)\).
+
+\subsubsection*{4.3. Cây khung có \(\operatorname{mex}\) lớn nhất}
+
+Bài toán này xuất phát từ QOJ 6402, \emph{MEXimum Spanning Tree}.
+
+\paragraph{\term{Định nghĩa}.}
+Cho đồ thị vô hướng liên thông có trọng số cạnh là số nguyên không âm. Cần tìm
+cây khung sao cho \(\operatorname{mex}\) của tập trọng số cạnh là lớn nhất. Với
+tập \(S\), \(\operatorname{mex}(S)\) là số nguyên không âm nhỏ nhất không thuộc
+\(S\).
+
+\paragraph{\term{Thuật toán}.}
+Diễn đạt lại: cần tìm \(k\) lớn nhất sao cho có thể chọn một đồ thị con không
+chu trình, trong đó với mỗi trọng số thuộc \([0,k)\cap\mathbb Z\) có đúng một
+cạnh được chọn. Khi cố định \(k\), đây là giao của matroid đồ thị (các rừng) và
+matroid màu (các tập có màu đôi một khác nhau); cả hai đều là matroid tuyến
+tính, và giao matroid tuyến tính yếu hơn LMPP.
+
+Cụ thể, nếu số đỉnh là \(n\), với cạnh \((u_i,v_i,w_i)\) thỏa
+\(w_i\in[0,k)\cap\mathbb Z\), đặt
+\[
+  a_i=e_{u_i}-e_{v_i},\qquad b_i=e_{n+w_i}.
+\]
+Cách dựng này cũng cho thấy quy nạp tổng quát từ giao hai matroid tuyến tính về
+LMPP. Ma trận tương ứng có dạng
+\[
+  M=
+  \begin{pmatrix}
+    0&B\\
+    -B^T&0
+  \end{pmatrix},
+\]
+nên \(\operatorname{rank}(M)=2\operatorname{rank}(B)\).
+
+Trong bài toán này, duyệt \(k\) tăng dần cho tới khi
+\(\operatorname{rank}(B)<k\). Khi chuyển từ \(k-1\) sang \(k\), cột thứ \(k\)
+của \(B\) đổi từ toàn \(0\) thành
+\[
+  \sum_{i=1}^{m}[w_i=k]a_i.
+\]
+Giống duy trì cơ sở tuyến tính, vừa thêm vector vừa khử Gauss; mỗi vector mất
+\(O(n^2)\), tổng thời gian \(O(n^3)\).
+
+\subsubsection*{4.4. Cây khung với giới hạn số cạnh mỗi màu}
+
+\paragraph{\term{Định nghĩa}.}
+Cho đồ thị vô hướng liên thông, mỗi cạnh có một màu là số nguyên dương. Cần tìm
+một rừng có nhiều cạnh nhất sao cho với mọi màu \(i\), số cạnh màu \(i\) không
+vượt quá \(\mathrm{lim}_i\).
+
+\paragraph{\term{Thuật toán}.}
+Xem bài toán như giao matroid tuyến tính. Điểm chính là biểu diễn điều kiện
+``màu \(i\) xuất hiện không quá \(\mathrm{lim}_i\) lần'' bằng một matroid tuyến
+tính. Với màu \(i\), cấp \(\mathrm{lim}_i\) chiều độc lập với các màu khác. Bài
+toán quy về việc dựng \(m\) vector \(k=\mathrm{lim}_i\) chiều trên
+\(\mathbb F_p\) sao cho bất kỳ \(k\) vector nào cũng độc lập tuyến tính.
+
+Chọn một số nguyên tố \(p>m\), và đặt thành phần thứ \(j\) của vector thứ \(i\)
+là \(i^j\). Tính độc lập của mọi \(k\) vector được chứng minh trực tiếp bằng
+định thức Vandermonde.
+
+\subsubsection*{4.5. Ví dụ khác}
+
+Bài toán này xuất phát từ UOJ 785, \emph{Goodbye Renyin E: Tìm cặp năm mới}.
+
+\paragraph{\term{Định nghĩa}.}
+Cho đồ thị vô hướng, đỉnh \(u\) có màu \(w_u\). Cần chọn nhiều đường đi đôi một
+không giao nhau nhất. Với mỗi đường đi \(P\), gọi hai đầu mút là \(u,v\), cần
+thỏa:
+\begin{itemize}
+  \item \(w_u\ne0\), \(w_v\ne0\), và \(w_u\ne w_v\);
+  \item với mọi \(x\in P\), \(x\ne u\), \(x\ne v\), ta có \(w_x=0\).
+\end{itemize}
+
+\paragraph{\term{Thuật toán}.}
+Đổi cách nhìn: chọn nhiều cạnh nhất sao cho trong đồ thị chỉ giữ các cạnh ấy,
+mỗi thành phần liên thông có nhiều nhất hai đỉnh màu khác \(0\); nếu có hai đỉnh
+như vậy thì màu của chúng phải khác nhau. Chuyển đổi này đúng vì nghiệm tối ưu
+không có thành phần toàn màu \(0\) trừ trường hợp mọi đỉnh đều màu \(0\); nếu có
+thể gộp thành phần ấy vào thành phần kề thì nghiệm tốt hơn. Nếu gọi \(c_0\) là
+số đỉnh màu khác \(0\), và \(c_2\) là số thành phần có đúng hai đỉnh màu khác
+\(0\), thì
+\[
+  |V|-\#E_{\text{chọn}}=\#\text{thành phần liên thông}=c_0-c_2.
+\]
+Hai đại lượng đầu và số đỉnh màu khác \(0\) là hằng số, nên chỉ cần tối đa hóa
+số cạnh.
+
+Gán cho mỗi màu \(i\) một vector hai chiều \(\alpha_i\), sao cho các vector này
+đôi một độc lập tuyến tính. Với cạnh \((u_i,v_i)\), đặt
+\[
+  a_i=e_{2u_i-1}-e_{2v_i-1},\qquad
+  b_i=e_{2u_i}-e_{2v_i}.
+\]
+Cách này bảo đảm tập cạnh được chọn tạo thành rừng. Với đỉnh \(u\) có
+\(w_u\ne0\), đặt
+\[
+  a_u=\alpha_{w_u,1}e_{2u-1}+\alpha_{w_u,2}e_{2u}.
+\]
+Sau đó có hai cách tương đương:
+\begin{itemize}
+  \item xem mỗi đỉnh màu khác \(0\) là một nhóm một vector có thể chọn hoặc
+  không chọn, rồi dùng dạng mở rộng ở phần 2.6;
+  \item bắt buộc chọn mọi đỉnh màu khác \(0\). Nếu \(V_1\) là không gian sinh
+  bởi các vector của đỉnh, phân rã \(\mathbb F_p^n=V_1\oplus V_2\) và chiếu mọi
+  \(a_i,b_i\) của cạnh xuống \(V_2\), từ đó loại ảnh hưởng của điều kiện bắt
+  buộc chọn đỉnh.
+\end{itemize}
+Trong nghiệm tối ưu, mọi đỉnh màu khác \(0\) đều được chọn, nên hai cách là
+tương đương. Dễ kiểm tra rằng cấu trúc trên bảo đảm mỗi thành phần liên thông
+thỏa yêu cầu. Do \(a_i,b_i\) có dạng giống ví dụ matching, có thể dùng tiếp kỹ
+thuật chia để trị dựa trên bổ đề Harvey để đạt tổng thời gian \(O(n^3)\).
+
+\subsection*{5. Tổng kết}
+
+Bài viết giới thiệu thuật toán tổng quát cho bài toán parity của matroid tuyến
+tính, các mở rộng và một số ứng dụng; qua đó khảo sát bước đầu việc dùng phương
+pháp đại số trong tối ưu tổ hợp. Do giới hạn năng lực của tác giả, bài viết
+không đi vào các nội dung như thuật toán đa thức cho phiên bản có trọng số hoặc
+bài toán parity của matroid phi tuyến tính.
+
+Những năm gần đây, học thuật có nhiều kết quả mới theo hướng này, đồng thời còn
+nhiều phương pháp đại số khác đang phát triển. Hiện tại các phương pháp ấy chưa
+được cộng đồng OI tiếp nhận rộng rãi. Tác giả hy vọng bài viết có thể gợi hứng
+thú tìm hiểu phương pháp đại số và đưa những lớp bài toán, kỹ thuật mới vào OI.
+
+\subsection*{6. Lời cảm ơn}
+
+Cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+Cảm ơn các thầy Jin Jing, Gao Kai và Wu Shenguang đã hướng dẫn tác giả.
+
+Cảm ơn cha mẹ đã nuôi dưỡng và dạy dỗ.
+
+Cảm ơn các anh Chang Ruinian, Wan Chengzhang, cùng các bạn Ke Yisi và Ke Yijing
+đã giúp đỡ trong quá trình viết bài.
+
+Cảm ơn mọi thầy cô và bạn học đã giúp đỡ tác giả.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Chang Ruinian. \emph{Bàn về ứng dụng đại số tuyến tính trong OI}. Tập
+  luận văn đội tuyển quốc gia IOI 2022.
+  \item Ren Qingyu. \emph{Goodbye Renyin E: lời giải bài Tìm cặp năm mới}.
+  \item Ho Yee Cheung, Lap Chi Lau, Kai Man Leung. \emph{Algebraic Algorithms
+  for Linear Matroid Parity Problems}.
+  \item Satoru Iwata, Yusuke Kobayashi. \emph{A Weighted Linear Matroid Parity
+  Algorithm}.
+\end{enumerate}
+
 \section{Chủ đề chính}
 
 Từ mục lục, tập năm 2024 bao phủ các nhóm chủ đề sau:
@@ -945,8 +1503,10 @@ Từ mục lục, tập năm 2024 bao phủ các nhóm chủ đề sau:
 Phần mục lục của tập 2024 trích xuất được rõ ràng, nhưng lớp văn bản thân bài
 không ổn định: nhiều đoạn trở thành mojibake và công cụ PDF báo cảnh báo phông
 chữ. Bài đầu tiên ở trên được dịch từ OCR tại \texttt{/tmp/oipl-ocr/2024-p9-18.txt}
-và đối chiếu với ảnh render các trang PDF 9--18. Một số công thức dài trong
-phần 4 được giữ ở mức có thể xác nhận từ ảnh trang; các biến phụ như \(\omega(m)\)
-được hiểu theo ký hiệu chuẩn là số lượng thừa số nguyên tố phân biệt.
+và đối chiếu với ảnh render các trang PDF 9--18. Bài thứ hai được dịch từ lớp
+văn bản PDF và OCR tại \texttt{/tmp/oipl-2024-parity/}, đối chiếu với ảnh render
+PDF trang 19--31, tương ứng trang in 11--23. Một số công thức dài trong phần 4
+được giữ ở mức có thể xác nhận từ ảnh trang; các biến phụ như \(\omega(m)\) được
+hiểu theo ký hiệu chuẩn là số lượng thừa số nguyên tố phân biệt.
 
 \end{document}
