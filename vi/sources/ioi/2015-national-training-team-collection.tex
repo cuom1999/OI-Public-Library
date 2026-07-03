@@ -20,7 +20,7 @@ PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc n
 tạo bằng pdfTeX nhưng lớp văn bản không ánh xạ đúng về Unicode: ngay cả mục
 lục khi trích xuất bằng \texttt{pdftotext} cũng trở thành mojibake. Bản dịch
 này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và mười
-ba bài đầu tiên của tập sách, được đọc bằng OCR hoặc đối chiếu với trang render.
+bốn bài đầu tiên của tập sách, được đọc bằng OCR hoặc đối chiếu với trang render.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -63,7 +63,10 @@ số kỹ thuật tối ưu DP'', dùng các trang PDF vật lý 209--219, tươ
 cáo ra đề \emph{Product}'', dùng các trang PDF vật lý 221--234, tương ứng trang
 in 217--230; nội dung bài kết thúc ở trang in 229, trang in 230 là trang trắng,
 và trang PDF vật lý 235, trang in 231, là đầu bài kế tiếp về bài toán lấy mã
-nguồn làm đầu vào.
+nguồn làm đầu vào. Bài thứ mười bốn, ``Bước đầu tìm hiểu một lớp bài toán lấy mã
+nguồn làm đầu vào'', dùng các trang PDF vật lý 235--274, tương ứng trang in
+231--270; trang PDF vật lý 275, trang in 271, là đầu bài kế tiếp về lũy thừa tập
+hợp.
 
 \section{Mục lục đã dịch}
 
@@ -8250,6 +8253,502 @@ của Trường Học Quân Hàng Châu vì đã trao đổi và giúp đỡ.
   \item Jean-Pierre Massias, Jean-Louis Nicolas, and Guy Robin, ``Effective Bounds
   for the Maximal Order of an Element in the Symmetric Group''.
   \item Hansraj Gupta, ``On the Partition of \(J\)-partite Numbers''.
+\end{enumerate}
+
+\section{Bước đầu tìm hiểu một lớp bài toán lấy mã nguồn làm đầu vào}
+
+\begin{center}
+\textbf{Lu Xiaochen}\\
+Học viện Giao Xuyên Trấn Hải, Ninh Ba
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Trong ACM-ICPC đôi khi xuất hiện các bài lấy mã nguồn làm dữ liệu vào, nhằm kiểm
+tra năng lực viết chương trình tổng hợp của thí sinh. Bài viết giới thiệu một số
+kỹ thuật hiện thực khi xử lý loại bài này, rồi kết hợp chúng với các cấu trúc dữ
+liệu thường gặp trong OI để đề xuất một hình thức ra đề mới cho bài cấu trúc dữ
+liệu.
+
+\subsection{Dẫn nhập}
+
+Trong thi tin học, phần lớn đề bài có thể tạm chia thành ba loại: bài ý tưởng,
+bài thuật toán và bài code. Bài ý tưởng kiểm tra khả năng sáng tạo, bài thuật
+toán kiểm tra vốn kiến thức, còn bài code kiểm tra nền tảng lập trình và năng
+lực gỡ lỗi. Những bài code kinh điển trong OI, ngoài các bài cấu trúc dữ liệu
+cao cấp, còn có các bài mô phỏng trò chơi như \emph{Pig Country Kill} hay
+\emph{Kill Ants}. Theo tác giả, một số thí sinh không quen bối cảnh trò chơi có
+thể hiểu sai đề; còn bài lấy mã nguồn làm đầu vào thì gần với sinh hoạt luyện
+tập hằng ngày của thí sinh hơn, nên tránh được nhược điểm đó và là một lựa chọn
+tốt cho dạng bài code.
+
+Tác giả gom một số bài lấy mã nguồn làm đầu vào thành ba nhóm. Phần chuẩn bị
+nhắc lại cấu trúc trình biên dịch, các cách hiện thực ngôn ngữ lập trình và ký
+hiệu dùng để mô tả văn phạm. Tiếp đó là một bài cơ sở chỉ cần phân tích cấu trúc
+mã, chưa cần hiểu ngữ nghĩa. Phần nâng cao xét các bài mô phỏng chương trình,
+tức là phải thông dịch mã nguồn được cho. Trọng tâm của bài viết là nhóm biến
+thể ở cuối: mô hình loại bỏ mã không thể tới được được kết hợp với các cấu trúc
+dữ liệu, tạo ra những bài có thao tác sửa đổi và quay lui sửa đổi.
+
+Tính chất ``có sửa đổi, có quay lui sửa đổi'' yếu hơn khả năng persistent đầy đủ
+và yếu hơn mô hình ``có sửa đổi, có hủy sửa đổi bất kỳ'', nhưng mạnh hơn bài chỉ
+có sửa đổi. Nhờ ràng buộc quay lui theo ngăn xếp này, ta có thể thiết kế các
+bài chưa có lời giải mẫu sẵn, nhưng vẫn đủ nhẹ để có thuật toán hiệu quả trong
+một kỳ thi.
+
+\subsection{Kiến thức chuẩn bị}
+
+\subsubsection{Cấu trúc của trình biên dịch}
+
+Một trình biên dịch ánh xạ mã nguồn của một ngôn ngữ cấp cao sang mã của một
+ngôn ngữ cấp cao khác hoặc sang mã máy. Vì vậy trình biên dịch thường được chia
+thành hai phần: frontend và backend.
+
+Frontend, hay phần phân tích, đọc mã nguồn, tách nó thành các đơn vị cơ bản,
+kiểm tra cú pháp và tạo ra một biểu diễn trung gian. Biểu diễn này thường không
+phải một ngôn ngữ cấp cao khác, vì ngôn ngữ cấp cao khó xử lý trực tiếp, cũng
+không phải mã máy, vì mã máy quá xa mã nguồn. Một biểu diễn trung gian quen
+thuộc là mã ba địa chỉ. Backend, hay phần tổng hợp, dựa trên thông tin và biểu
+diễn trung gian mà frontend trả về để tạo mã đích.
+
+Frontend thường gồm bốn bước: phân tích từ vựng, phân tích cú pháp, phân tích
+ngữ nghĩa và sinh mã trung gian. Backend gồm bước sinh mã. Một số trình biên
+dịch còn đặt thêm bước tối ưu độc lập máy ở giữa hoặc tối ưu phụ thuộc máy sau
+sinh mã. Bộ tiền xử lý, assembler và linker thông thường không được xem là một
+phần của trình biên dịch.
+
+Xét câu lệnh ví dụ, trong đó \(A\) có kiểu \texttt{double}, còn \(B\) có kiểu
+\texttt{int}:
+
+\begin{verbatim}
+A = A + B * 123
+\end{verbatim}
+
+Phân tích từ vựng nhận một xâu là mã nguồn và trả về dãy token. Câu trên được
+tách thành định danh \(A\), dấu gán, định danh \(A\), toán tử \(+\), định danh
+\(B\), toán tử \(*\) và literal số nguyên \(123\). Trong các trình biên dịch
+cũ, lexer có thể xử lý toàn bộ tệp nguồn một lần. Trong thực tế hiện nay, lexer
+thường là thủ tục con của parser: parser cần token kế tiếp thì gọi lexer, lexer
+đọc từ luồng vào cho tới khi tạo được một token rồi trả token đó.
+
+Phân tích cú pháp nhận dãy token, kiểm tra chương trình có đúng cú pháp không,
+và về mặt khái niệm có thể trả về một cây sinh cú pháp. Parser không nhất thiết
+phải dựng tường minh cả cây, nhưng nó phải đủ mạnh để lần theo cấu trúc cây đó.
+Phần lớn hiện tượng ngôn ngữ lập trình có thể mô tả bằng văn phạm phi ngữ cảnh.
+Thuật toán CYK giải tổng quát trong \(O(n^3)\), nhưng trong thực hành người ta
+hy sinh tính tổng quát để lấy tốc độ tuyến tính trên các lớp văn phạm đặc biệt.
+
+Phân tích ngữ nghĩa kiểm tra các thuộc tính ngữ nghĩa trên cây cú pháp, chẳng
+hạn kiểm tra kiểu. Với ví dụ trên, sau khi biết \(B*123\) có kiểu \texttt{int}
+còn phép cộng cần hai toán hạng \texttt{double}, trình phân tích có thể chèn
+chuyển kiểu \texttt{int}-sang-\texttt{double}. Do có nạp chồng toán tử, trong
+nhiều ngôn ngữ parser chưa thể xác định một toán tử cụ thể ứng với hàm nào; sau
+bước ngữ nghĩa, kiểu của từng cây con đã rõ, nên hàm tương ứng của mỗi toán tử
+cũng được xác định.
+
+Sinh mã trung gian nhằm tách frontend và backend. Nếu đã thống nhất định dạng
+trung gian, \(N\) frontend và \(M\) backend có thể ghép thành \(NM\) trình biên
+dịch khác nhau. Ví dụ mã ba địa chỉ cho câu lệnh trên có thể hiểu là:
+
+\begin{verbatim}
+MULTIPLY(t3, id2, 123)       [t3 = id2 * 123]
+INT_TO_DOUBLE(t2, t3)        [t2 = int_to_double(t3)]
+ADD(t1, id1, t2)             [t1 = id1 + t2]
+ASSIGN(id1, t1)              [id1 = t1]
+\end{verbatim}
+
+Cuối cùng, bộ sinh mã biến biểu diễn trung gian thành mã đích. Nếu tạm bỏ qua
+tối ưu, có thể tạo một khung mã đích cho từng chỉ lệnh ba địa chỉ, dù cách này
+thường sinh nhiều mã dư thừa.
+
+\subsubsection{Ba cách hiện thực ngôn ngữ lập trình}
+
+Mã nguồn là một đoạn mô tả chương trình, chưa thể chạy trực tiếp trên máy. Ta
+cần một cách biến mô tả đó thành hình thức máy có thể nhận biết và thực thi.
+Ba cách phổ biến là biên dịch hoàn toàn, thông dịch hoàn toàn và hiện thực hỗn
+hợp.
+
+Trong biên dịch hoàn toàn, compiler dịch cả chương trình thành mã máy thực thi
+được; giai đoạn biên dịch và giai đoạn chạy tách rời. C++ thuộc kiểu này, nên
+thường có hiệu năng chạy tốt. Trong thông dịch hoàn toàn, interpreter giống một
+máy ảo của ngôn ngữ: mỗi lần nó tìm một câu lệnh trong mã nguồn rồi dịch và
+thực hiện câu lệnh đó. Vì cùng một câu lệnh có thể bị dịch nhiều lần, tốc độ
+thường kém hơn, nhưng bù lại dễ di chuyển và dễ định vị lỗi khi debug. Shell là
+một ví dụ.
+
+Hiện thực hỗn hợp nằm giữa hai cực trên. Compiler xử lý toàn bộ chương trình
+nhưng chỉ dùng frontend để thu được biểu diễn trung gian, rồi interpreter thực
+thi biểu diễn đó. Biểu diễn trung gian đã được chuẩn hóa nên rẻ hơn đọc lại mã
+nguồn. Java là ví dụ quen thuộc: mã Java được biên dịch thành bytecode, sau đó
+bytecode chạy trên máy ảo Java.
+
+\subsubsection{Dạng Backus--Naur}
+
+Dạng Backus--Naur (BNF) dùng để mô tả ngôn ngữ phi ngữ cảnh. Một luật có dạng
+\(A ::= \langle\)xâu ký hiệu\(\rangle\), trong đó \(A\) là ký hiệu không kết
+thúc, còn vế phải là một xâu ký hiệu có thể rỗng. Ví dụ văn phạm sau mô tả biểu
+thức bốn phép toán trên số nguyên:
+
+\begin{verbatim}
+EXPR   ::= TERM
+EXPR   ::= TERM + TERM
+EXPR   ::= TERM - TERM
+TERM   ::= FACTOR
+TERM   ::= FACTOR * FACTOR
+TERM   ::= FACTOR / FACTOR
+FACTOR ::= (EXPR)
+FACTOR ::= integer_value
+\end{verbatim}
+
+Ở đây \texttt{integer\_value} là literal số nguyên, tức ký hiệu kết thúc. Trong
+trình biên dịch, literal này do lexer định nghĩa chứ không phải do parser định
+nghĩa.
+
+\subsection{Bài cơ sở: chưa cần phân tích ngữ nghĩa}
+
+\subsubsection{Bài toán đếm độ dài mã}
+
+Bài UVA 189, \emph{Pascal Program Lengths}, yêu cầu thống kê độ dài của một
+đoạn mã Pascal. Độ dài được định nghĩa bằng số ``đơn vị'': mỗi từ khóa, mỗi định
+danh, mỗi literal, mỗi cặp ngoặc nhọn, mỗi cặp ngoặc tròn và mỗi toán tử tính
+là một đơn vị; chú thích không tham gia đếm. Với ví dụ:
+
+\begin{verbatim}
+{THIS IS COMMENT}
+'THIS IS A STRING'
+(A * A) shr 1
+\end{verbatim}
+
+dòng đầu chỉ có một đơn vị là cặp ngoặc nhọn; dòng thứ hai chỉ có một đơn vị là
+literal xâu; dòng thứ ba có sáu đơn vị: một từ khóa, hai định danh, một cặp
+ngoặc, một toán tử và một literal số nguyên. Rõ ràng bài này chỉ cần lexer.
+
+Lexer được viết tương tự tối ưu đọc vào. Trước hết bỏ qua mọi ký tự trắng cho
+tới khi gặp ký tự không trắng, rồi dựa trên loại của ký tự đầu tiên để quyết
+định token. Trong bài này có thể chia ký tự không trắng thành ba nhóm: chữ số
+\(0\)--\(9\), ký tự đầu của định danh gồm dấu gạch dưới và chữ cái, và các ký
+tự còn lại.
+
+Để ``nhìn trước'' mà chưa lấy ký tự khỏi luồng vào, tác giả khuyên viết một bộ
+quản lý luồng vào thay cho việc gọi trực tiếp chuẩn nhập. Bộ này chỉ cần một
+buffer một ký tự và hỗ trợ hai thao tác: xem ký tự đầu luồng, hoặc lấy hẳn một
+ký tự. Lexer cũng có buffer token một phần tử, với hai thao tác xem token kế
+tiếp và lấy token kế tiếp. Nhờ đó parser hoặc bộ đếm có thể kiểm tra token kế
+tiếp mà chưa tiêu thụ nó.
+
+Trong lời giải hoàn chỉnh còn phải xử lý số viết theo dạng khoa học. Đề mô tả
+dạng tổng quát bằng ví dụ \texttt{10.56E-15}: phần nguyên luôn có ít nhất một
+chữ số, phần thập phân sau dấu chấm là tùy chọn, và phần mũ bắt đầu bằng
+\texttt{E} hoặc \texttt{e}, theo sau là dấu tùy chọn. Có thể dùng một biến trạng
+thái để lần lượt nhận phần nguyên, dấu chấm và phần mũ. Tuy nhiên cần cẩn thận
+với đoạn khai báo mảng kiểu \texttt{[1..2]}: cách đọc số đơn giản sẽ nhầm dấu
+\texttt{..}, nên buffer của luồng vào có thể phải mở rộng lên hai ký tự.
+
+Chú thích Pascal được nhận bằng quy tắc: gặp dấu ngoặc nhọn mở đầu tiên không
+nằm trong chú thích hoặc xâu, rồi lấy đến dấu ngoặc nhọn đóng đầu tiên sau nó.
+Xâu Pascal được nhận từ dấu nháy đơn đầu tiên không nằm trong chú thích hoặc
+xâu, và kết thúc ở dấu nháy đơn kế tiếp mà phía sau không phải một dấu nháy đơn
+nữa. Hai dấu nháy đơn liên tiếp biểu diễn một dấu nháy đơn bên trong xâu.
+
+\subsection{Bài nâng cao: mô phỏng mã nguồn}
+
+\subsubsection{Một trình thông dịch Python đơn giản}
+
+Bài mô phỏng đầu tiên yêu cầu viết một interpreter. Ngôn ngữ hỗ trợ hai loại
+câu lệnh:
+
+\begin{enumerate}
+  \item Gán: dạng \texttt{name = expression}. Biến chỉ có kiểu số nguyên và không cần
+  khai báo trước. Biểu thức gồm biến, hằng và các phép toán số học thông dụng.
+  \item In: dạng \texttt{print(x, y, ...)}, trong đó mỗi đối số là tên biến
+  hoặc hằng.
+\end{enumerate}
+
+Mọi hằng là số tự nhiên vừa trong kiểu số nguyên có dấu 16 bit. Mọi biến đều đã
+được gán trước khi dùng. Dữ liệu vào phù hợp cú pháp Python 3.
+
+Câu lệnh in dễ mô phỏng bằng một ánh xạ từ tên biến sang giá trị. Phần khó nằm
+ở vế phải của phép gán. Chương trình chính có thể là một vòng lặp, mỗi vòng xử
+lý một câu lệnh. Token đầu của câu lệnh hoặc là \texttt{print}, hoặc là tên
+biến, nhưng trong Python 3 không thể dựa vào token này để phân loại, vì
+\texttt{print} là đối tượng hàm và có thể bị gán lại. Cách đúng là nhìn token
+kế tiếp: nếu là dấu bằng thì đây là phép gán, nếu là dấu ngoặc trái thì đây là
+lệnh in.
+
+Tác giả nêu ba cách xử lý biểu thức. Cách cổ điển là quét từ trái sang phải,
+duy trì một stack toán tử và một stack giá trị; phép nhân, chia được áp dụng
+sớm hơn phép cộng, trừ. Nếu cần hỗ trợ ngoặc, mỗi phần tử có thể mang timestamp;
+trước khi kết thúc một vòng quét, áp dụng các toán tử có ưu tiên cao và phù hợp
+phạm vi ngoặc. Nếu có nhiều mức ưu tiên hơn, mỗi lần gặp toán tử mới thì áp
+dụng trước mọi toán tử trên đỉnh stack có ưu tiên cao hơn.
+
+Cách thứ hai là đọc hết token của một biểu thức đến hết dòng, rồi tách biểu
+thức theo các toán tử ưu tiên thấp nhất. Trước hết tách theo cộng, trừ thành
+các ``hạng'', sau đó tách từng hạng theo nhân, chia. Khi có ngoặc, chỉ cần bỏ
+qua những toán tử nằm trong ngoặc khi tìm mức ưu tiên thấp nhất, và gọi đệ quy
+cho biểu thức trong ngoặc.
+
+Cách thứ ba là dùng phân tích cú pháp đệ quy xuống. Với biểu thức bốn phép toán
+không ngoặc, văn phạm tự nhiên là:
+
+\begin{verbatim}
+EXPR   ::= TERM
+EXPR   ::= EXPR + TERM
+EXPR   ::= EXPR - TERM
+TERM   ::= FACTOR
+TERM   ::= TERM * FACTOR
+TERM   ::= TERM / FACTOR
+FACTOR ::= variable
+FACTOR ::= integer
+\end{verbatim}
+
+Văn phạm trên đệ quy trái, nên chuyển sang một văn phạm LL(1) tương đương:
+
+\begin{verbatim}
+EXPR   ::= TERM REXPR
+REXPR  ::= epsilon
+REXPR  ::= + TERM REXPR
+REXPR  ::= - TERM REXPR
+TERM   ::= FACTOR RTERM
+RTERM  ::= epsilon
+RTERM  ::= * FACTOR RTERM
+RTERM  ::= / FACTOR RTERM
+FACTOR ::= variable
+FACTOR ::= integer
+\end{verbatim}
+
+Tính LL(1) nghĩa là với mỗi ký hiệu không kết thúc, chỉ cần nhìn một token kế
+tiếp là biết dùng luật nào. Mỗi ký hiệu không kết thúc được hiện thực bằng một
+hàm. Nếu các hàm chỉ kiểm tra và tiêu thụ token, chuỗi lời gọi của chúng chính
+là một dạng cây cú pháp cụ thể. Nếu các hàm trả giá trị và truyền theo vế trái
+đã tính, ta nhận được bộ tính biểu thức. Một phiên bản dễ viết hơn dùng vòng
+\texttt{while}: hàm \texttt{EXPR} lấy giá trị đầu từ \texttt{TERM}, rồi lặp khi
+còn gặp \(+\) hoặc \(-\); hàm \texttt{TERM} làm tương tự với \(*\) và \(/\).
+
+Dạng này mở rộng tốt. Thêm một mức ưu tiên thì thêm một tầng hàm. Thêm ngoặc
+tương đương thêm luật \(\texttt{FACTOR ::= (EXPR)}\). Thêm toán tử một ngôi
+như dấu âm thì chèn một tầng giữa \texttt{TERM} và \texttt{FACTOR}: nếu token kế
+tiếp là \(-\) thì lấy token đó và trả về giá trị âm của tầng dưới, ngược lại
+trả trực tiếp tầng dưới.
+
+\subsubsection{Một hệ thống hiện thực hỗn hợp C++ đơn giản}
+
+Bài \emph{Future Program} yêu cầu viết một interpreter cho một tập con của C++.
+Nó cần hỗ trợ biến \texttt{int}, mảng \texttt{int} nhiều chiều, một số phép toán
+trên số nguyên, nhập xuất \texttt{cin}/\texttt{cout}, biến toàn cục và cục bộ
+không cấp phát động, hàm \texttt{putchar} trả \texttt{int}, hàm tự định nghĩa
+trả \texttt{int} với không, một hoặc nhiều tham số \texttt{int}, đệ quy trực
+tiếp, câu lệnh rẽ nhánh và vòng lặp.
+
+Các test con của bài gần như đi theo các bước xây interpreter. Test 2 chỉ cần
+tính biểu thức gồm hằng tự nhiên và bốn phép toán. Test 3, 4 thêm nhiều mức
+toán tử, ngoặc, toán tử một ngôi và hàm \texttt{putchar}. Test 5 chỉ có
+\texttt{main}, chưa có điều khiển luồng. Test 6, 7 bắt đầu cần cấu trúc cây cú
+pháp. Các test cuối thêm hàm.
+
+Để chuẩn bị cho test 5, thay vì chỉ lấy đoạn giữa \texttt{cout} và
+\texttt{endl}, ta phân tích cả câu lệnh. Hai toán tử nhập xuất \texttt{<<} và
+\texttt{>>} được đưa vào mô-đun biểu thức như các toán tử có tác dụng phụ: khi
+biểu thức bên phải \texttt{<<} được tính xong, in ngay giá trị đó; với
+\texttt{>>}, đọc vào địa chỉ tương ứng. Vì trong đề có thể xác định vế trái của
+\texttt{<<} là \texttt{cout}, còn vế trái của \texttt{>>} là \texttt{cin}, cách
+xử lý này đủ đơn giản.
+
+Khi thêm biến, trong chương trình tồn tại các đối tượng kiểu \texttt{int}, đối
+tượng kiểu tham chiếu \texttt{int\&} ở vế trái phép gán, cùng các đối tượng đặc
+biệt \texttt{cin}, \texttt{cout}, \texttt{endl}. Có thể dùng một mảng lớn mô
+phỏng bộ nhớ và biểu diễn mỗi đối tượng bằng một cặp \((b,x)\). Nếu \(b\) đúng,
+đối tượng có địa chỉ cụ thể trong bộ nhớ, tức là một \texttt{int\&}; khi đó
+\(x\) là địa chỉ. Nếu \(b\) sai, đối tượng chỉ là một giá trị và \(x\) chính là
+giá trị đó. Các đối tượng đặc biệt được mã hóa bằng những địa chỉ không thể là
+địa chỉ bộ nhớ thật, chẳng hạn số âm.
+
+Khi hai đối tượng tham gia phép toán không phải gán hay nhập xuất, trước hết lấy
+giá trị thật của từng đối tượng: nếu là địa chỉ thì đọc bộ nhớ, nếu là giá trị
+thì dùng trực tiếp. Kết quả là một cặp có \(b\) sai. Riêng phép gán dùng địa chỉ
+của vế trái để ghi giá trị vế phải vào bộ nhớ.
+
+Mảng có thể được lưu liên tục đúng bằng số phần tử, rồi dùng công thức tính vị
+trí. Tác giả đưa ra một cách khác, tốn không gian hơn nhưng hòa hợp với mô-đun
+tính biểu thức: xem mỗi mảng là một cây. Con của một mảng \(i\) chiều là các
+mảng \(i-1\) chiều bên dưới nó. Mỗi nút cây đều có một vị trí bộ nhớ; lá lưu
+giá trị phần tử, còn nút trong lưu địa chỉ đứa con đầu tiên, và các con của một
+nút được đặt liên tiếp. Với \(A[3][2]\), một cách bố trí là:
+
+\begin{verbatim}
+Address  Content  Value
+x        A        x+1
+x+1      A[0]     x+4
+x+2      A[1]     x+6
+x+3      A[2]     x+8
+x+4      A[0][0]  A[0][0]
+x+5      A[0][1]  A[0][1]
+x+6      A[1][0]  A[1][0]
+x+7      A[1][1]  A[1][1]
+x+8      A[2][0]  A[2][0]
+x+9      A[2][1]  A[2][1]
+\end{verbatim}
+
+Khi chỉ có một hàm nhưng có nhiều khối ngoặc, vẫn phải xử lý phạm vi biến. Quy
+tắc thường dùng là: tại vị trí gọi một biến, đi ngược từ cặp ngoặc chứa vị trí
+đó lên trên, khai báo gần nhất trước vị trí gọi quyết định biến được dùng. Có
+thể duy trì một ánh xạ từ tên biến tới stack địa chỉ, và một stack ghi danh
+sách khai báo của từng khối. Gặp khai báo thì đẩy địa chỉ vào stack của tên
+biến; rời khối thì rút toàn bộ khai báo trong khối.
+
+Nếu có vòng lặp, cùng một đoạn mã nguồn có thể được thực hiện nhiều lần; quét và
+parse lại mỗi lần là không hiệu quả. Vì vậy lần quét đầu nên dựng tường minh
+cây cú pháp trừu tượng. Mỗi nút cây có thể chứa một danh sách chuỗi để lưu thông
+tin phụ, và một danh sách con. Ví dụ với văn phạm:
+
+\begin{verbatim}
+EXPR   ::= TERM ((+ TERM) | (- TERM))*
+TERM   ::= FACTOR (* FACTOR)*
+FACTOR ::= integer
+\end{verbatim}
+
+nút \texttt{EXPR} lưu các dấu \(+\) hoặc \(-\) từ \texttt{TERM} thứ hai trở đi
+và các con \texttt{TERM}; nút \texttt{TERM} lưu các con \texttt{FACTOR}; nút
+\texttt{FACTOR} lưu literal số. Chương trình phân tích sinh cây, còn chương
+trình thực thi duyệt cây để lấy giá trị. Với bài đầy đủ, tư tưởng vẫn giống vậy
+nhưng nút cây phong phú hơn.
+
+Khi thêm hàm, mô-đun biểu thức không nên đặc biệt hóa riêng \texttt{putchar} nữa
+mà phải có cơ chế gọi hàm chung. Ở tầng thấp nhất của biểu thức, nếu gặp định
+danh thì tra xem đó là tên hàm hay biến. Bảng hàm có thể thu được bằng cách
+duyệt trước các con của nút gốc. Nếu là biến, hỏi mô-đun quản lý bộ nhớ để lấy
+giá trị; nếu là \texttt{putchar}, thực hiện tác dụng phụ; nếu là hàm tự định
+nghĩa, lấy cây con của hàm đó và thực thi nó, đồng thời khai báo và gán giá trị
+cho các tham số như biến cục bộ mới.
+
+Cơ chế quản lý biến theo một stack cho mỗi tên biến chưa đủ khi có hàm. Ví dụ
+nếu tồn tại biến toàn cục \texttt{x}, trong \texttt{main} lại khai báo một
+\texttt{x} cục bộ rồi gọi \texttt{func}, thì trong \texttt{func} tên
+\texttt{x} phải chỉ về biến toàn cục, không phải biến cục bộ của \texttt{main}.
+Vì vậy cần thêm một stack các tập tên biến theo từng tầng hàm. Khi hỏi địa chỉ
+của một biến, trước hết kiểm tra tầng hàm hiện tại có khai báo tên đó không; nếu
+có thì lấy đỉnh stack địa chỉ, nếu không thì dùng khai báo toàn cục ở đáy stack.
+
+Lệnh \texttt{return} cũng cần xử lý riêng. Khi thực thi cây cú pháp, thoát khỏi
+một thủ tục con không đồng nghĩa thoát khỏi cả lời gọi hàm. Có thể chia quá
+trình \texttt{return} thành ba giai đoạn: trước thực thi, khi đang tính biểu
+thức sau \texttt{return}; trong thực thi, khi interpreter quay lui qua nhiều
+tầng nút cho tới điểm gọi hàm; và sau thực thi, khi dọn dẹp môi trường của hàm.
+Dù có thể nhiều lệnh \texttt{return} cùng ở giai đoạn trước thực thi trong các
+lời gọi khác nhau, tại mỗi thời điểm chỉ có một lệnh ở giai đoạn đang quay lui,
+nên có thể dùng biến toàn cục để quản lý trạng thái này.
+
+\subsection{Biến thể kết hợp cấu trúc dữ liệu}
+
+Các bài mô phỏng mạnh như phần trước có độ dài code rất lớn: tác giả ghi rằng
+lời giải chuẩn của bài C++ sau khi đọc tài liệu liên quan dài hơn nghìn dòng và
+mất khoảng sáu giờ để viết. Vì vậy phần cuối chuyển sang một hướng nhẹ hơn về
+code nhưng thú vị hơn về cấu trúc dữ liệu. Các bài ở đây dùng khung cố định
+gồm quản lý luồng vào, lexer và parser, rồi thay mô-đun kiểm tra tính khả thi.
+
+\subsubsection{\emph{Unreachable Statement}}
+
+Bài ZOJ 3786, \emph{Unreachable Statement}, yêu cầu tìm mọi câu lệnh không thể
+được thực thi trong mã nguồn của ngôn ngữ Cb, một tập con của C. Một chương
+trình Cb gồm nhiều hàm. Mỗi hàm có dạng
+``\texttt{function name() \{ statements \}}''. Câu lệnh có ba dạng:
+\texttt{print x}; câu lệnh rẽ nhánh \texttt{if (cond) stmt [else stmt]}; và
+khối \texttt{\{ statements \}}. Lệnh \texttt{print} không có ý nghĩa thực thi đặc
+biệt. Biểu thức chỉ có ba loại: \texttt{true}, \texttt{false}, và ``tên biến
+toán tử nhị phân hằng không âm'', trong đó toán tử là bốn dấu bất đẳng thức.
+Mọi biến đều có kiểu \texttt{int} và không có khai báo biến.
+
+Chương trình phân tích bài này gồm ba mô-đun chính. Bộ quản lý luồng vào và
+lexer giống phần đếm độ dài mã, nhưng cần ghi thêm tọa độ hiện tại để khi phát
+hiện câu lệnh không thể tới được có thể in ra vị trí. Parser giống kiểu đệ quy
+xuống ở phần trước; vì ngôn ngữ không có vòng lặp, nó đủ đơn giản. Mô-đun mới
+là bộ phán định tính khả thi.
+
+Khi parser chuẩn bị đi vào một nhánh của câu lệnh điều kiện, nó thu thập thông
+tin của biểu thức điều kiện và đưa thông tin đó vào bộ phán định. Nếu trạng thái
+trước khi thêm điều kiện là khả thi nhưng sau khi thêm trở thành bất khả thi,
+parser lấy tọa độ từ lexer và in ra. Sau khi nhánh kết thúc, parser báo cho bộ
+phán định xóa điều kiện vừa thêm. Với \texttt{else}, có thể áp dụng quy tắc
+thông thường: \texttt{else} ghép với \texttt{if} chưa ghép gần nhất, không cần
+ép toàn bộ văn phạm về LL(1).
+
+Bộ phán định là một cấu trúc dữ liệu trên tập mệnh đề tương ứng với các điều
+kiện bao quanh vị trí hiện tại. Nó phải hỗ trợ:
+
+\begin{enumerate}
+  \item Thêm một mệnh đề.
+  \item Xóa mệnh đề chưa xóa được thêm gần nhất.
+  \item Trả lời tập mệnh đề hiện tại có mâu thuẫn hay không.
+\end{enumerate}
+
+Trong bài gốc, mỗi biến có một khoảng giá trị hiện tại. Có thể dùng ánh xạ từ
+tên biến sang stack các cặp \((\ell,r)\), biểu diễn các ràng buộc khoảng đang
+hiệu lực, và một biến đếm số xung đột. Số xung đột bằng số điều kiện
+\texttt{false} đang có cộng với số biến có cận trên nhỏ hơn cận dưới. Stack cho
+phép quay lui đúng mệnh đề mới nhất. Khi biến đếm bằng \(0\), trạng thái còn
+khả thi; ngược lại, vị trí hiện tại không thể được thực thi.
+
+\subsubsection{Các biến thể}
+
+Vì bộ phán định tách riêng với lexer và parser, thay bộ phán định sẽ tạo ra các
+bài khác.
+
+Một biến thể dùng segment tree. Trên nền bài gốc, biểu thức có dạng
+\texttt{a[index] >= value}, trong đó \(a\) là mảng \texttt{int} độ dài \(X\),
+mỗi phần tử không âm. Có thêm tiên đề: nếu mọi phần tử trong đoạn \(a[i..j]\)
+đều khác \(0\), thì tổng các phần tử trên đoạn đó không vượt quá một hằng số
+cho trước. Ngoài kiểm tra mâu thuẫn khoảng giá trị, bộ phán định phải theo dõi
+tổng lớn nhất của một đoạn liên tiếp toàn phần tử khác \(0\); thêm một segment
+tree là đủ.
+
+Một biến thể dùng disjoint set union. Biến chuyển từ \texttt{int} sang
+\texttt{bool}, và biểu thức trong \texttt{if} là hai biến có bằng nhau hay
+không. Bộ phán định lúc này là DSU có quay lui. Vì thao tác xóa chỉ xóa thao
+tác mới nhất chưa xóa, chỉ cần một stack ghi cạnh đã nối ở mỗi lần hợp nhất;
+dùng hợp nhất theo hạng để giữ độ phức tạp tốt.
+
+Một biến thể dùng bao lồi. Biến chuyển sang số thực và chỉ có hai biến \(x,y\).
+Biểu thức trong \texttt{if} có dạng
+\[
+  ax+by+c\ge 0,
+\]
+với tiên đề \(|x|,|y|<100\). Tại mọi thời điểm, miền khả thi của \((x,y)\) là
+một đa giác lồi. Có thể dùng hai splay tree để lưu hai vỏ lồi; mỗi mệnh đề là
+một nửa mặt phẳng cắt đa giác, và thao tác cần xét các trường hợp giao với hai
+vỏ lồi.
+
+\subsection{Tổng kết}
+
+Lời giải cho lớp bài này có một khung cố định: bộ quản lý luồng vào, lexer,
+parser, và một mô-đun phán định tính khả thi tùy bài. Tính chất tự nhiên của mã
+nguồn là ``thêm điều kiện khi đi vào nhánh, quay lui điều kiện khi rời nhánh'',
+nên các cấu trúc dữ liệu không dễ persistent đầy đủ nhưng dễ rollback theo
+ngăn xếp trở nên hữu dụng.
+
+Vì vậy, lớp bài lấy mã nguồn làm đầu vào không chỉ có ý nghĩa trong ra đề, mà
+còn gợi ý cách nhìn khác cho một số bài cấu trúc dữ liệu. Tác giả đặt lại câu
+hỏi: còn cấu trúc dữ liệu nào khó persistent hóa nhưng dễ quay lui thao tác
+mới nhất? Ngoài ví dụ DSU và bao lồi nêu trên, bài viết xem đây là lời mời độc
+giả tiếp tục suy nghĩ.
+
+\subsection{Lời cảm ơn}
+
+Xin cảm ơn CCF đã cung cấp nền tảng học tập và giao lưu.
+
+Xin cảm ơn huấn luyện viên Li Jian đã chỉ dẫn.
+
+Xin cảm ơn các bạn học đã giúp đỡ trong quá trình viết bài.
+
+Xin cảm ơn ban ra đề cuộc thi lập trình sinh viên tỉnh Chiết Giang; công việc
+của họ đã giúp tác giả phát hiện một lĩnh vực hoàn toàn mới đối với mình.
+
+\subsection*{Tài liệu tham khảo của bài viết}
+
+\begin{enumerate}
+  \item Alfred V. Aho, Monica S. Lam, Ravi Sethi, and Jeffrey D. Ullman,
+  \emph{Compilers: Principles, Techniques, and Tools}, 2nd edition.
+  \item Robert W. Sebesta, \emph{Concepts of Programming Languages}, 10th
+  edition.
 \end{enumerate}
 
 \end{document}

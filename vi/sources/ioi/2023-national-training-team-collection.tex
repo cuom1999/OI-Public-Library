@@ -21,7 +21,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2023. Tệp được
 tạo bằng LaTeX với lớp văn bản Unicode đọc được; mục lục và các trang thân bài
 đã kiểm tra đều trích xuất tốt bằng \texttt{pdftotext}. Bản LaTeX này chuyển
-ngữ phần nhận diện tập sách, toàn bộ mục lục và mười sáu bài đầu tiên, đồng thời ghi
+ngữ phần nhận diện tập sách, toàn bộ mục lục và mười bảy bài đầu tiên, đồng thời ghi
 lại các chủ đề chính để phục vụ bản dịch chi tiết hơn.
 \end{abstract}
 
@@ -8506,5 +8506,590 @@ Ruinian, Ye Zichuan và Wu Hang đã đọc bản thảo.
   \item Xu Yixuan. Bàn về suffix automaton nén, tập luận văn đội tuyển quốc gia
   Trung Quốc IOI 2020.
 \end{enumerate}
+
+\section{Xem xét lại một vài bài toán số học cổ điển}
+
+\begin{center}
+Trường Yali, Trường Sa\\
+Zheng Xuanye
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Bài viết thảo luận ba bài toán số học lâu đời: kiểm tra tính nguyên tố, phân
+tích số nguyên và logarit rời rạc. Nội dung điểm lại một số thuật toán đã phổ
+biến trong OI, nêu các tính chất đặc biệt của chúng, đồng thời giới thiệu vài
+thuật toán tốt nhưng chưa được dùng rộng rãi trong OI.
+\end{abstract}
+
+\subsection{Tổng quan}
+
+\subsubsection{Lời nói đầu}
+
+Kiểm tra tính nguyên tố, phân tích số nguyên và logarit rời rạc đều là các bài
+toán số học rất kinh điển. Tuy vậy, trong môi trường OI hiện nay, nhiều thí
+sinh vẫn biết khá ít về các thuật toán liên quan; ngay cả một số thí sinh trình
+độ cao cũng gặp tình trạng này. Khi tra cứu tài liệu, tác giả còn thường gặp
+những bài viết mâu thuẫn với nhau hoặc có sai sót thực tế. Vì mong muốn thúc
+đẩy sự phát triển của OI, bài viết này giới thiệu một số thuật toán cho ba bài
+toán trên và đưa ra vài gợi ý sử dụng.
+
+\subsubsection{Định nghĩa cơ bản}
+
+Một ước không tầm thường của số nguyên \(n\) là một số \(d\) sao cho
+\[
+  d\mid n,\qquad 1<d<n.
+\]
+Số nguyên tố là số nguyên dương không có ước không tầm thường; hợp số là số
+nguyên dương có ước không tầm thường. Quy ước riêng \(1\) không phải số nguyên
+tố cũng không phải hợp số.
+
+\emph{Smooth-number} là số có các thừa số nguyên tố đều nhỏ. Nếu mọi thừa số
+nguyên tố của một số không vượt quá \(B\), ta gọi nó là \(B\)-smooth.
+
+Ký hiệu \(\tilde O(f(n))\) nghĩa là tồn tại hằng số \(k\) để độ phức tạp là
+\[
+  O(f(n)\log^k f(n)).
+\]
+Ký hiệu tiệm cận
+\[
+  L_n[\alpha,c]=
+  \exp\!\left((c+o(1))(\ln n)^\alpha(\ln\ln n)^{1-\alpha}\right),
+\]
+với \(0\le\alpha\le 1\), \(c>0\), thường dùng trong phân tích các thuật toán số
+học. Ta có \(L_n[0,c]=(\ln n)^{c+o(1)}\), tức đa thức theo \(\ln n\), còn
+\(L_n[1,c]=n^{c+o(1)}\), tức mũ theo \(\ln n\). Vì vậy khi
+\(\alpha\in(0,1)\), đây là mức dưới mũ theo độ dài đầu vào.
+
+\subsection{Bài toán kiểm tra tính nguyên tố}
+
+\subsubsection{Mô tả bài toán}
+
+Bài toán kiểm tra tính nguyên tố: nhập một số nguyên dương \(p\), xác định
+\(p\) có phải số nguyên tố hay không.
+
+\subsubsection{Thuật toán Miller--Rabin}
+
+Thuật toán Miller--Rabin xét xem một số có thỏa các tính chất cần có của số
+nguyên tố hay không. Trước hết nhìn vào phản đảo của định lý nhỏ Fermat: với
+số cần kiểm tra \(p\) và một số nguyên \(a\) thỏa \(1\le a<p\), nếu
+\[
+  a^{p-1}\not\equiv 1 \pmod p,
+\]
+thì \(p\) không phải số nguyên tố. Bước này gọi là phép thử Fermat.
+
+Điểm yếu của phép thử Fermat là chiều ngược lại không đúng: nếu
+\(a^{p-1}\equiv 1\pmod p\), ta chưa thể kết luận \(p\) nguyên tố. Tuy nhiên,
+nếu \(p\) thật sự là số nguyên tố, thì khi đó phải có
+\[
+  a^{(p-1)/2}\equiv 1 \pmod p
+  \quad\text{hoặc}\quad
+  a^{(p-1)/2}\equiv p-1 \pmod p.
+\]
+Vì thế ta có thể tiếp tục kiểm tra \(a^{(p-1)/2}\bmod p\). Nếu giá trị này
+không phải \(1\) hoặc \(-1\), có thể kết luận \(p\) là hợp số. Nếu
+\((p-1)/2\) còn chẵn và giá trị vừa xét là \(1\), ta lại thử tiếp
+\(a^{(p-1)/4}\bmod p\). Tổng quát hóa quá trình này thu được một phép thử
+Miller--Rabin với cơ số \(a\).
+
+Một lần thử có thể mô tả như sau.
+\begin{enumerate}
+  \item Nếu \(p=2\), trả lời \(p\) nguyên tố; nếu \(p\) là số chẵn khác \(2\)
+  hoặc \(p=1\), trả lời \(p\) không nguyên tố.
+  \item Đặt \(k=p-1\).
+  \item Nếu \(a^k\not\equiv 1\pmod p\), trả lời \(p\) không nguyên tố.
+  \item Tính \(r=a^{k/2}\bmod p\).
+  \item Nếu \(r\not\equiv 1\pmod p\) và \(r\not\equiv -1\pmod p\), trả lời
+  \(p\) không nguyên tố.
+  \item Nếu \(r\equiv 1\pmod p\) và \(k/2\) chẵn, đặt \(k\gets k/2\) rồi quay
+  lại bước tính \(r\).
+  \item Nếu không phát hiện mâu thuẫn, phép thử trả lời \(p\) có thể là số
+  nguyên tố.
+\end{enumerate}
+
+Khi hiện thực, cần tính các lũy thừa
+\[
+  a^{p-1},\,a^{(p-1)/2},\,a^{(p-1)/4},\ldots.
+\]
+Thay vì gọi lũy thừa nhanh nhiều lần, ta phân tích
+\[
+  p-1=2^\ell t
+\]
+với \(t\) lẻ, tính \(a^t\) một lần, rồi bình phương dần để có
+\(a^{2t},a^{4t},a^{8t},\ldots\). Nhờ đó một phép thử tốn \(O(\log p)\) phép
+nhân và lấy modulo trên số nguyên.
+
+\subsubsection{Tính chất của thuật toán}
+
+Miller--Rabin là thuật toán xác suất một phía. Khi thuật toán trả lời \(p\)
+không nguyên tố thì kết luận chắc chắn đúng; khi nó trả lời \(p\) có thể
+nguyên tố thì vẫn có khả năng \(p\) là hợp số.
+
+Cách cải tiến đơn giản và hiệu quả là chọn nhiều cơ số, chạy Miller--Rabin cho
+từng cơ số, và chỉ khi tất cả đều trả lời có thể nguyên tố mới xem \(p\) là
+nguyên tố. Hai kết quả sau làm cho cách làm này đáng tin cậy.
+
+\paragraph{Định lý 1.}
+Giả sử giả thuyết Riemann mở rộng (ERH) đúng. Khi đó thuật toán kiểm tra
+Miller--Rabin với mọi cơ số nguyên \(a\in[1,2\ln^2 p]\) là đúng.
+
+\paragraph{Định lý 2.}
+Nếu \(p\) là hợp số, thì trong khoảng \([1,p)\) có ít nhất
+\[
+  \frac{3(p-1)}{4}
+\]
+số có thể làm chứng cứ Miller--Rabin rằng \(p\) là hợp số, tức khi dùng chúng
+làm cơ số, phép thử sẽ trả lời không nguyên tố.
+
+Chứng minh hai định lý này khá phức tạp nên bài viết lược bỏ. ERH vẫn là giả
+thuyết chưa được chứng minh, nhưng đa số nhà toán học tin nó có khả năng đúng.
+Dưới giả định đó, định lý 1 biến Miller--Rabin thành thuật toán kiểm tra tính
+nguyên tố xác định trong thời gian đa thức.
+
+Trong thực tế, phiên bản phổ biến hơn là chọn ngẫu nhiên vài cơ số. Theo định
+lý 2, nếu chọn ngẫu nhiên \(k\) cơ số độc lập, xác suất đúng ít nhất là
+\[
+  1-4^{-k}.
+\]
+Trong OI thường không cần xử lý số cực lớn. Khi đó có thể dùng các bộ cơ số cố
+định để tăng tốc. Ví dụ, với các cơ số \(2,3,7,61,24251\), trong phạm vi
+\(10^{15}\) chỉ có số \(46856248255981\) bị kiểm tra sai. Có thể tìm thêm các
+bộ cơ số có tính chất khác trên mạng.
+
+\subsubsection{Các thuật toán khác}
+
+Solovay--Strassen ra đời sớm hơn Miller--Rabin và có ý nghĩa lịch sử nhất
+định. Nó cũng là thuật toán xác suất một phía, mỗi lần thử có xác suất đúng ít
+nhất \(50\%\). Khác biệt là thuật toán phải tính ký hiệu Jacobi, nên hiệu quả
+kém hơn Miller--Rabin đã tối ưu và hiện gần như bị thay thế.
+
+AKS là thuật toán đầu tiên kiểm tra tính nguyên tố trong thời gian đa thức, xác
+định và không dựa trên giả thuyết chưa chứng minh. Ở đây ``đa thức'' nghĩa là
+đa thức theo độ dài đầu vào, tức theo \(\ln p\). AKS có ý nghĩa lý thuyết rất
+lớn, nhưng các bước phức tạp và hiệu suất thực tế thấp nên hiếm khi được dùng.
+
+\subsection{Bài toán phân tích số nguyên}
+
+\subsubsection{Mô tả bài toán}
+
+Bài toán phân tích số nguyên: nhập một hợp số \(n\), tìm một ước không tầm
+thường của nó.
+
+Các thuật toán phân tích số có thể chia thành hai loại: thuật toán cho trường
+hợp đặc biệt và thuật toán tổng quát. Bài viết chọn mỗi loại một đại diện thực
+dụng để giới thiệu.
+
+\subsubsection{\texorpdfstring{Thuật toán Pollard \(p-1\)}{Thuật toán Pollard p-1}}
+
+Pollard \(p-1\) xuất phát từ ý tưởng về smooth-number. Nếu \(n\) có một thừa số
+nguyên tố không lớn \(p\le B\), ta muốn xây dựng một số chia hết cho \(p\), rồi
+lấy \(\gcd\) với \(n\) để tách được nhân tử.
+
+Định lý nhỏ Fermat lại hữu ích: với \(a\not\equiv 0\pmod p\), số
+\[
+  a^{p-1}-1
+\]
+chia hết cho \(p\). Vấn đề là ta không biết \(p\). Nếu chọn một số \(M\) sao
+cho \((p-1)\mid M\), thì \(a^M-1\) cũng dùng được. Vì \(p-1<B\), có thể lấy
+\[
+  M=\prod_{\text{prime }q<B} q^{\lfloor \log_q B\rfloor},
+\]
+khi đó chắc chắn có \((p-1)\mid M\).
+
+Quy trình Pollard \(p-1\) rất đơn giản: chọn \(a,B\), tính
+\[
+  \gcd(a^M-1,n).
+\]
+Thực tế thường lấy \(a=2\). Điểm cần cân nhắc là chọn \(B\): quá lớn thì chậm,
+quá nhỏ thì điều kiện \(p\le B\) dễ không thỏa. Có thể tăng dần \(B\) để nâng
+xác suất thành công.
+
+Thuật toán này không phải lúc nào cũng phân tích được. Trong vài trường hợp,
+chẳng hạn \(n\) là tích của hai số nguyên tố lớn, nó gần như vô dụng. Đây là
+nhược điểm của thuật toán thiết kế cho trường hợp đặc biệt. Bù lại, nếu điều
+kiện thuận lợi, nó rất nhanh và có thể kết hợp với thuật toán tổng quát.
+
+\subsubsection{Thuật toán Pollard Rho}
+
+Pollard Rho đã khá phổ biến trong OI, nên bài viết chỉ nhắc lại quy trình và
+một số tính chất quan trọng. Với phiên bản dùng nhân gộp theo lô, thuật toán
+có thể mô tả như sau.
+\begin{enumerate}
+  \item Chọn hằng số \(c\) cho hàm giả ngẫu nhiên
+  \[
+    f(x)=(x^2+c)\bmod n,
+  \]
+  đồng thời chọn một hằng số dương \(B\).
+  \item Khởi tạo \(s,t\) bằng cùng một số ngẫu nhiên trong \([0,n)\). Đặt độ
+  dài nhân đôi \(\operatorname{len}=2\), biến vòng lặp \(i=0\), và tích gộp
+  \(q=1\).
+  \item Cập nhật \(t\gets f(t)\), rồi
+  \[
+    q\gets q\cdot |t-s|\bmod n.
+  \]
+  \item Nếu \(i\equiv 0\pmod B\), tính \(\gcd(q,n)\). Nếu kết quả khác \(1\),
+  trả về kết quả đó.
+  \item Tăng \(i\). Nếu \(i=\operatorname{len}\), đặt
+  \(\operatorname{len}\gets 2\operatorname{len}\), \(s\gets t\), \(i\gets 0\).
+  \item Lặp lại quá trình.
+\end{enumerate}
+
+Pollard Rho có thể trả về \(n\); khi đó chưa tìm được ước không tầm thường và
+cần chạy lại. Nếu xử lý đúng, trường hợp này thường không ảnh hưởng lớn tới
+hiệu suất.
+
+Chuỗi giả ngẫu nhiên trong thuật toán có một hậu tố dạng vòng, nên hình dạng
+giống chữ \(\rho\). Hàm giả ngẫu nhiên không được chọn tùy tiện. Nếu
+\[
+  t-s\equiv 0\pmod p
+\]
+với một thừa số nguyên tố không tầm thường \(p\mid n\), thì cũng có
+\[
+  f(t)-f(s)\equiv 0\pmod p.
+\]
+Vì vậy trên vòng của hình \(\rho\), nếu có hai số cách nhau \(d\) bước giúp tìm
+được nhân tử \(p\) hoặc bội của \(p\), thì mọi cặp cách nhau \(d\) bước cũng có
+khả năng tương tự. Tác giả nhấn mạnh điểm này vì nhiều người dùng Pollard Rho
+không thật sự nắm được nguyên lý này.
+
+Thời gian chạy của Pollard Rho không ổn định và dao động khá lớn. Nếu hàm
+\(f(x)=(x^2+c)\bmod n\) đủ đều và tham số \(B=\Theta(\log n)\), kỳ vọng thời
+gian là \(O(p^{1/2})\), trong đó \(p\) là thừa số nguyên tố nhỏ nhất của \(n\);
+vì thế không vượt quá \(O(n^{1/4})\). Việc hàm giả ngẫu nhiên trên có đủ đều
+hay không vẫn là một vấn đề mở, nhưng trong đa số trường hợp Pollard Rho hoạt
+động tốt và trở thành thuật toán tổng quát được dùng rộng rãi.
+
+\subsubsection{Các thuật toán khác}
+
+General number field sieve (GNFS) là thuật toán truyền thống có độ phức tạp lý
+thuyết tốt nhất hiện nay cho phân tích số nguyên, với độ phức tạp
+\[
+  L_n\!\left[\frac13,\sqrt[3]{\frac{64}{9}}\right].
+\]
+Do hiện thực quá phức tạp, gần như không thể dùng trong OI.
+
+Shor là thuật toán lượng tử có độ phức tạp đa thức, có thể tối ưu đến
+\(\tilde O(\log^2 n)\). Tuy nhiên máy tính lượng tử chưa đủ phát triển; theo
+bài viết, số lớn nhất từng được phân tích bằng thuật toán này mới là \(21\).
+
+\subsection{Logarit rời rạc}
+
+\subsubsection{Mô tả bài toán}
+
+Trong một nhóm tổng quát, bài toán logarit rời rạc là: cho nhóm \(G\) và một
+phần tử sinh \(g\), nhập một phần tử \(b\in G\), tìm số nguyên \(x\) sao cho
+\[
+  g^x=b,
+\]
+cũng viết \(x=\log_g b\). Ký hiệu kích thước nhóm là \(|G|=n\).
+
+Một trường hợp đặc biệt quan trọng là logarit rời rạc trong nhóm nhân
+\(\mathbb Z_p^\times\), với \(p\) nguyên tố. Khi đó \(g\) là một căn nguyên
+thủy modulo \(p\). Vì hầu hết bài toán logarit rời rạc trong OI thuộc dạng này
+và nhóm nhân số nguyên cũng quen thuộc hơn, các phần sau chủ yếu nhìn từ
+\(\mathbb Z_p^\times\). Nếu không nói riêng, thuật toán vẫn có thể làm việc
+trên nhóm tổng quát.
+
+\subsubsection{Thuật toán BSGS}
+
+BSGS là thuật toán logarit rời rạc phổ biến nhất trong OI. Quy trình:
+\begin{enumerate}
+  \item Chọn ngưỡng \(B\).
+  \item Đưa \(g^0,g^1,g^2,\ldots,g^{B-1}\) vào bảng băm.
+  \item Duyệt \(i=0,1,2,\ldots\), tra trong bảng băm giá trị \(b\cdot g^{-iB}\).
+  Nếu tìm được \(g^c\), trả lời \(x=iB+c\).
+\end{enumerate}
+Khi \(B=\Theta(\sqrt n)\), thuật toán đạt \(O(\sqrt n)\) thời gian.
+
+Nhờ tính tổng quát, quy trình đơn giản và hiệu suất ổn định, BSGS rất được ưa
+chuộng. Nhược điểm là độ phức tạp \(\sqrt n\) vẫn chưa đủ tốt khi phạm vi lớn.
+
+\subsubsection{Pollard Rho cho logarit rời rạc}
+
+Cần phân biệt thuật toán này với Pollard Rho dùng cho phân tích số nguyên.
+Chúng cùng tên nhưng giải quyết hai bài toán khác nhau.
+
+Nếu tìm được bốn số \(\alpha_1,\beta_1,\alpha_2,\beta_2\) sao cho
+\[
+  g^{\alpha_1}b^{\beta_1}=g^{\alpha_2}b^{\beta_2}
+\]
+và \(\beta_1\not\equiv\beta_2\pmod n\), do \(b=g^x\), ta có
+\[
+  \alpha_1-\alpha_2\equiv x(\beta_2-\beta_1)\pmod n,
+\]
+từ đó giải \(x\) bằng thuật toán Euclid mở rộng nếu điều kiện cho phép.
+
+Tinh thần của Pollard Rho logarit rời rạc là tạo va chạm bằng một dãy giả
+ngẫu nhiên. Ta sinh các bộ ba \((v_i,\alpha_i,\beta_i)\) thỏa
+\[
+  v_i=g^{\alpha_i}b^{\beta_i}.
+\]
+Nếu dãy đủ ngẫu nhiên, kỳ vọng sau \(O(\sqrt n)\) phần tử sẽ có hai giá trị
+\(v_i=v_j\), khi đó kiểm tra phương trình trên để giải đáp án.
+
+Một quy tắc sinh thường dùng:
+\begin{enumerate}
+  \item Chia nhóm \(G\) thành ba phần xấp xỉ bằng nhau \(S_1,S_2,S_3\).
+  \item Nếu \(v\in S_1\), chuyển sang \((vg,\alpha+1,\beta)\).
+  \item Nếu \(v\in S_2\), chuyển sang \((vb,\alpha,\beta+1)\).
+  \item Nếu \(v\in S_3\), chuyển sang \((v^2,2\alpha,2\beta)\).
+\end{enumerate}
+Khi chia tập cần bảo đảm \(1\notin S_3\), nếu không thuật toán có thể rơi vào
+vòng lặp chết. Tác giả không tìm thấy tài liệu đánh giá chặt mức ngẫu nhiên
+của hàm này, nhưng thực tế nó thường tạo va chạm nhanh. Hiện thực không khó và
+hiệu suất có thể sánh với BSGS.
+
+Dù vậy, thuật toán có một vấn đề nghiêm trọng: khi giải
+\[
+  \alpha_1-\alpha_2\equiv x(\beta_2-\beta_1)\pmod n,
+\]
+có thể xảy ra \(\gcd(\beta_2-\beta_1,n)\ne 1\), khiến không có nghiệm duy nhất.
+Nếu \(n\) là số nguyên tố, tình huống này hiếm và thường chỉ cần đổi seed chạy
+lại. Nhưng trong OI, ta hay gặp \(n=\varphi(p)=p-1\), chắc chắn không nguyên
+tố; khi đó chạy lại nhiều lần cũng không chắc giải quyết được.
+
+Tác giả từng thử với các modulo quen thuộc \(998244353\) và \(10^9+7\), nhận
+thấy Pollard Rho đôi khi chạy lại hàng nghìn lần vẫn không tìm được nghiệm;
+nếu may mắn kết thúc thì thời gian cũng có thể lớn hơn BSGS nhiều bậc. Vì vậy
+không khuyến nghị dùng Pollard Rho trong tình huống này.
+
+\subsubsection{Thuật toán Pohlig--Hellman}
+
+Pohlig--Hellman khai thác trường hợp kích thước nhóm là smooth-number. Trước
+hết xét \(n=q^k\), với \(q\) là số nguyên tố nhỏ, và tìm đáp án \(x\) theo các
+chữ số cơ số \(q\) từ thấp lên cao.
+
+Quy trình:
+\begin{enumerate}
+  \item Khởi tạo \(x_0=0\), tính \(t=g^{q^{k-1}}\).
+  \item Với \(i=0,1,\ldots,k-1\):
+  \begin{enumerate}
+    \item Tính
+    \[
+      v=(b\cdot g^{-x_i})^{q^{k-i-1}}.
+    \]
+    \item Tìm \(d_i\) sao cho \(t^{d_i}=v\), \(0\le d_i<q\). Bước này có thể
+    làm bằng duyệt trực tiếp nếu \(q\) nhỏ.
+    \item Đặt \(x_{i+1}=x_i+q^i d_i\).
+  \end{enumerate}
+  \item Trả về \(x_k\).
+\end{enumerate}
+
+Ở vòng thứ \(i\), \(x_i\) chính là phần gồm \(i\) chữ số thấp của \(x\) trong
+cơ số \(q\). Thuật toán loại bỏ phần đã biết, triệt tiêu các chữ số cao, rồi
+tìm riêng chữ số kế tiếp.
+
+Với \(n\) không phải lũy thừa nguyên tố, phân tích
+\[
+  n=\prod_i p_i^{e_i}.
+\]
+Với từng \(p_i^{e_i}\), giải \(x\bmod p_i^{e_i}\) bằng cách đặt
+\[
+  g'=g^{n/p_i^{e_i}},\qquad b'=b^{n/p_i^{e_i}},
+\]
+rồi chạy quy trình trên. Cuối cùng dùng định lý phần dư Trung Quốc để ghép
+nghiệm.
+
+Thực chất bước tìm \(d_i\) là một bài logarit rời rạc trong nhóm bậc \(q\).
+Nếu thay duyệt bằng BSGS hoặc thuật toán khác, có thể tối ưu thêm. Khi
+\[
+  n=\prod_i p_i^{e_i},
+\]
+phiên bản dùng BSGS có độ phức tạp xấp xỉ
+\[
+  O\!\left(\sum_i e_i(\sqrt{p_i}+\log n)\right).
+\]
+Do đó với \(n\) smooth hoặc có nhiều thừa số nhỏ, thuật toán rất lợi. Ví dụ
+trong \(\mathbb Z_{998244353}^{\times}\),
+\[
+  998244352=2^{23}\cdot 7\cdot 17.
+\]
+Ngược lại, nếu \(n\) là số nguyên tố hoặc có một thừa số nguyên tố rất lớn,
+Pohlig--Hellman gần như không giúp ích.
+
+\subsubsection{Index calculus}
+
+Trong phần này xét logarit rời rạc trên \(\mathbb Z_p^\times\).
+
+\paragraph{Ý tưởng.}
+Index calculus cố gắng quy toàn bộ vấn đề về smooth-number. Với một ngưỡng
+\(B\), thuật toán chọn ngẫu nhiên \(l\) cho tới khi \(b\cdot g^l\) là
+\(B\)-smooth. Khi đó bài toán \(\log_g b\) được đưa về bài toán biết logarit
+của các số nguyên tố không vượt \(B\).
+
+Để tìm các logarit nhỏ này, thuật toán lại chọn ngẫu nhiên \(l\) sao cho
+\(g^l\) là \(B\)-smooth. Phân tích \(g^l\) thành thừa số nguyên tố sẽ tạo một
+phương trình tuyến tính theo các ẩn \(\log_g p_i\). Gom đủ phương trình, ta
+dùng khử Gauss để giải toàn bộ \(\log_g p_i\).
+
+\paragraph{Quy trình.}
+\begin{enumerate}
+  \item Chọn ngưỡng \(B\).
+  \item Chọn ngẫu nhiên \(l\) cho tới khi \(g^l\) là \(B\)-smooth. Nếu
+  \[
+    g^l=\prod_i p_i^{e_i},
+  \]
+  thu được phương trình
+  \[
+    \sum_i e_i\log_g p_i=l.
+  \]
+  \item Lặp lại cho đến khi đủ phương trình để giải mọi \(\log_g p_i\) với
+  \(p_i\le B\).
+  \item Để tính \(\log_g b\), chọn ngẫu nhiên \(l\) cho tới khi
+  \(b\cdot g^l\) là \(B\)-smooth. Nếu
+  \[
+    b\cdot g^l=\prod_i q_i^{c_i},
+  \]
+  thì
+  \[
+    \log_g b=\sum_i c_i\log_g q_i-l.
+  \]
+\end{enumerate}
+
+\paragraph{Độ phức tạp.}
+Gọi \(k=O(B/\ln B)\) là số lượng số nguyên tố không vượt \(B\). Điểm then chốt
+là số lần cần thử ngẫu nhiên để gặp một \(B\)-smooth. Do \(l\) được chọn đều,
+\(g^l\) và \(b\cdot g^l\) cũng phân bố đều trên \([1,p-1]\). Theo phân tích
+trong tài liệu tham khảo, xác suất một số là \(B\)-smooth xấp xỉ \(u^{-u}\),
+với
+\[
+  u=\frac{\ln p}{\ln B}.
+\]
+Chỉ cần khoảng \(O(k)\) phương trình để giải hết các ẩn, nên độ phức tạp toàn
+cục có dạng
+\[
+  \tilde O(k u^u+k^3).
+\]
+Khi chọn
+\[
+  u\approx \sqrt{\frac{2\ln p}{3\ln\ln p}},
+  \qquad
+  B=L_p[1/2,2^{-1/2}],
+\]
+thu được độ phức tạp
+\[
+  L_p[1/2,3/\sqrt 2].
+\]
+Có thể tăng tốc bước nhận diện smooth-number để tối ưu thành
+\[
+  L_p[1/2,\sqrt 2],
+\]
+nhưng bài viết không trình bày chi tiết.
+
+\paragraph{Ưu và nhược điểm.}
+Nhờ lợi thế độ phức tạp, Index calculus xử lý được phạm vi logarit rời rạc lớn
+hơn nhiều thuật toán thường gặp. Ví dụ tác giả ghi nhận một hiện thực chưa tối
+ưu hằng số có thể giải khoảng 200 truy vấn cỡ \(3\cdot 10^{18}\) trong khoảng
+6 giây trên LOJ 6542. Nhược điểm là hiện thực rườm rà hơn, nên khi dùng trong
+OI cần cân nhắc chi phí cài đặt.
+
+\subsubsection{Một số biến thể của logarit rời rạc}
+
+\paragraph{Nhiều truy vấn.}
+Khi cần giải nhiều truy vấn trong cùng một nhóm, có thể điều chỉnh thuật toán
+để đổi thời gian tiền xử lý lấy thời gian trả lời. Giả sử trong
+\(\mathbb Z_p^\times\) có \(T\) truy vấn logarit rời rạc.
+
+Với BSGS, nếu chọn ngưỡng \(B\), ta tiền xử lý \(O(B)\) và trả lời một truy vấn
+trong \(O(n/B)\). Chọn \(B=\Theta(\sqrt{Tn})\) cho tổng độ phức tạp
+\[
+  O(\sqrt{Tn}),
+\]
+tốt hơn \(O(T\sqrt n)\) của cách chạy độc lập.
+
+Pollard Rho kém linh hoạt, khó sửa để tận dụng nhiều truy vấn. Pohlig--Hellman
+thực chất chuyển bài toán gốc thành nhiều bài logarit rời rạc nhỏ hơn; trong
+các bài nhỏ đó có thể áp dụng tối ưu nhiều truy vấn tương ứng. Index calculus
+cũng có thể tăng \(B\) trong phạm vi hợp lý để giảm số lần thử smooth-number
+khi trả lời từng truy vấn, đổi lại tiền xử lý chậm hơn.
+
+Bài viết còn nêu một thuật toán khá thực dụng trong OI. Xét phép chia có dư
+\[
+  p=qb+r,\qquad 0\le r<b.
+\]
+Từ đó suy ra
+\[
+  \log_g b\equiv \log_g(-1)+\log_g r-\log_g q \pmod n.
+\]
+Mặt khác,
+\[
+  p=(q+1)b+(r-b),
+\]
+nên
+\[
+  \log_g b\equiv \log_g(b-r)-\log_g(q+1)\pmod n.
+\]
+Nếu \(b>\sqrt p\), thì \(q+1\le \sqrt p+1\). Nếu đã tiền xử lý bảng logarit
+cho các số không vượt \(\sqrt p+1\), bài toán \(\log_g b\) được quy về
+\(\log_g r\) hoặc \(\log_g(b-r)\), với đối số nhỏ nhất không vượt \(b/2\). Vì
+vậy chỉ cần \(O(\log b)\) bước đệ quy cho một truy vấn.
+
+Để xây bảng logarit đến \(\sqrt p+1\), dùng sàng tuyến tính cho thấy chỉ cần
+biết logarit của các số nguyên tố trong phạm vi đó. Nếu dùng BSGS để tìm các
+giá trị này, tiền xử lý khoảng \(O(p^{3/4}/\ln p)\). Với modulo cỡ \(10^9\)
+thường gặp trong OI, cách này tiền xử lý được khá nhanh và cho thời gian truy
+vấn \(O(\log p)\).
+
+Thông điệp của ví dụ này là không nên ràng buộc vào một thuật toán duy nhất.
+Cần chọn hoặc kết hợp phương pháp theo dữ liệu cụ thể.
+
+\paragraph{Cơ số không phải phần tử sinh.}
+Cho tới đây ta chỉ xét cơ số cố định là phần tử sinh \(g\). Đôi khi bài toán
+cho \(a,b\) và cần tìm \(x\) sao cho
+\[
+  a^x=b.
+\]
+Nếu biết một phần tử sinh \(g\) của nhóm, ta có thể tính riêng
+\(\log_g a\) và \(\log_g b\), rồi giải phương trình tuyến tính
+\[
+  (\log_g a)x\equiv \log_g b \pmod n
+\]
+bằng Euclid mở rộng. Nhờ vậy, bài toán lại quay về dạng quen thuộc. Nếu có
+nhiều truy vấn với cơ số khác nhau, phép biến đổi này cũng đưa chúng về dạng
+cùng cơ số để áp dụng tối ưu nhiều truy vấn.
+
+Khi không biết phần tử sinh, một số thuật toán như BSGS hoặc Pollard Rho vẫn
+có thể tìm nghiệm hoặc báo vô nghiệm, nhưng ngoài ra tác giả chưa thấy cách
+xử lý tốt. Vì thế nên cố gắng chuyển bài toán về một phần tử sinh.
+
+\subsection{Ý nghĩa của các bài toán}
+
+\subsubsection{Lý thuyết tính toán}
+
+AKS cho thấy kiểm tra tính nguyên tố có thuật toán xác định thời gian đa thức.
+Ngược lại, phân tích số nguyên và logarit rời rạc đến nay vẫn chưa có thuật
+toán truyền thống thời gian đa thức.
+
+Dù vậy, cũng chưa chứng minh được hai bài toán này thuộc lớp NPC. Hiện tại
+người ta cho rằng chúng rất có thể là các bài toán NP-intermediate: thuộc NP
+nhưng không thuộc P và cũng không NPC. Điều này hàm ý việc cải thiện độ phức
+tạp cho chúng có thể cần những phương pháp hoàn toàn mới và rất khó.
+
+Trên máy tính lượng tử, cả hai bài toán lại có thuật toán thời gian đa thức.
+Điều đó cho thấy thuật toán lượng tử có thể là con đường hiệu quả trong tương
+lai.
+
+\subsubsection{Liên hệ với mật mã học}
+
+Nhiều giao thức và thuật toán mật mã hiện đại dựa trên độ khó của phân tích số
+nguyên và logarit rời rạc, chẳng hạn RSA, trao đổi khóa Diffie--Hellman và
+ElGamal. Vì thế độ an toàn của các hệ này liên quan trực tiếp đến hiệu quả giải
+hai bài toán trên.
+
+Với logarit rời rạc, do nhóm nhân \(\mathbb Z_p^\times\) đã được nghiên cứu
+sâu và có thuật toán dưới mũ khá nhanh, mật mã hiện đại thường dùng các nhóm
+đường cong elliptic được xây dựng cẩn thận. Trên nhóm tổng quát, thuật toán
+tốt nhất đã biết trong bối cảnh bài viết là BSGS; thực tế cũng thường dùng
+Pollard Rho để giải logarit rời rạc trên nhóm tổng quát.
+
+\subsection{Tổng kết}
+
+Bài viết thảo luận ba bài toán số học cổ điển: kiểm tra tính nguyên tố, phân
+tích số nguyên và logarit rời rạc. Đồng thời, bài viết giới thiệu một số thuật
+toán liên quan và nêu ngắn gọn khả năng liên hệ của chúng với OI, trong đó có
+những thuật toán chưa phổ biến trong OI. Kiến thức khoa học máy tính rất rộng;
+tác giả hy vọng nội dung này có thể bổ sung thêm sức sống cho OI và thu hút
+nhiều người đọc có năng lực tiếp tục nghiên cứu, phát triển các lý thuyết liên
+quan.
 
 \end{document}
