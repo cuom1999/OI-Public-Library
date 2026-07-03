@@ -19,8 +19,8 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2015. Tệp được
 tạo bằng pdfTeX nhưng lớp văn bản không ánh xạ đúng về Unicode: ngay cả mục
 lục khi trích xuất bằng \texttt{pdftotext} cũng trở thành mojibake. Bản dịch
-này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và bảy
-bài đầu tiên của tập sách, được OCR từ ảnh trang.
+này chuyển ngữ phần đầu sách, mục lục đọc được từ các trang đã render, và tám
+bài đầu tiên của tập sách, được đọc bằng OCR hoặc đối chiếu với trang render.
 \end{abstract}
 
 \section{Thông tin đầu sách}
@@ -45,7 +45,10 @@ Bài thứ sáu, ``Báo cáo ra đề \emph{ydc's bonus}'', dùng các trang PDF
 đầu bài kế tiếp về chia khối. Bài thứ bảy, ``Bàn về ứng dụng chia khối trong
 một lớp bài toán trực tuyến'', dùng các trang PDF vật lý 117--131, tương ứng
 trang in 113--127; trang PDF vật lý 132, trang in 128, là trang trắng; trang
-PDF vật lý 133, trang in 129, là đầu bài kế tiếp về cactus.
+PDF vật lý 133, trang in 129, là đầu bài kế tiếp về cactus. Bài thứ tám,
+``Thuật toán liên quan tới cactus và ứng dụng'', dùng các trang PDF vật lý
+133--152, tương ứng trang in 129--148; trang PDF vật lý 153, trang in 149, là
+đầu bài kế tiếp về matching trên đồ thị.
 
 \section{Mục lục đã dịch}
 
@@ -4885,6 +4888,720 @@ toàn đáng làm.
   tuyển quốc gia năm 2014, Trường Ngoại ngữ Nam Kinh.
   \item Xu Yinzhan, ``Ứng dụng cây đoạn trên một lớp bài toán chia để trị'',
   luận văn đội tuyển quốc gia năm 2014, Trường Học Quân Hàng Châu.
+\end{enumerate}
+
+\section{Thuật toán liên quan tới cactus và ứng dụng}
+
+\begin{center}
+\textbf{Wang Yisong}\\
+Trường Học Quân Hàng Châu, Chiết Giang
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Trong những năm gần đây, thi tin học xuất hiện khá nhiều bài toán liên quan tới
+cactus, chẳng hạn các bài toán cactus động. Bài viết này giới thiệu những thuật
+toán thường gặp trên cactus và đưa ra một số ví dụ, với hy vọng có thể gợi mở
+thêm các hướng ứng dụng.
+
+\subsection{Định nghĩa và cấu trúc của cactus}
+
+\subsubsection{Định nghĩa cactus}
+
+Nếu trong một đồ thị vô hướng liên thông, mỗi cạnh thuộc nhiều nhất một chu
+trình đơn, và đồ thị không có khuyên, ta gọi đồ thị đó là một cactus.
+
+\subsubsection{Số cạnh của cactus}
+
+Với một cactus có \(n\) đỉnh, xét một cây khung của nó; cây khung có \(n-1\)
+cạnh. Những cạnh còn lại đều là cạnh không thuộc cây. Mỗi cạnh không thuộc cây
+tương ứng với một đường đi trên cây khung và tạo thành một chu trình đơn. Vì
+mỗi cạnh thuộc nhiều nhất một chu trình đơn, giao của hai đường đi tương ứng
+với hai cạnh không thuộc cây bất kỳ là rỗng, tức các đường đi này không chồng
+lên nhau. Do đó nhiều nhất có \(n-1\) đường đi như vậy. Vì thế cactus \(n\)
+đỉnh có nhiều nhất \(2n-2\) cạnh và ít nhất \(n-1\) cạnh.
+
+\subsubsection{Cấu trúc của cactus}
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình a.} Bản gốc vẽ một cactus gốc \(1\): các chu trình gồm
+\(1-6\), \(2-3-4-5\), \(8-9-10\) và \(10-11\), cùng các nhánh cây gắn vào
+những đỉnh này.
+\end{minipage}}
+\end{center}
+
+Tương tự khái niệm cha của đỉnh trên cây, ta định nghĩa cha của đỉnh và cha của
+chu trình trên cactus.
+
+Nếu mọi đường đi đơn từ một đỉnh \(u\) tới gốc của cactus đều có cạnh đầu tiên
+giống nhau, thì giống như trên cây, cha của \(u\) là đỉnh thứ hai trên một
+đường đi đơn từ \(u\) tới gốc. Ngược lại, cha của \(u\) là chu trình chứa cạnh
+đầu tiên trên một đường đi đơn từ \(u\) tới gốc. Chẳng hạn trong hình, cha của
+đỉnh \(8\) là đỉnh \(1\); cha của đỉnh \(10\) là chu trình \(8-9-10\); cha của
+đỉnh \(11\) là chu trình \(10-11\).
+
+Cha của một chu trình là đỉnh trên chu trình gần gốc nhất. Chẳng hạn cha của
+chu trình \(8-9-10\) là đỉnh \(8\), còn cha của chu trình \(10-11\) là đỉnh
+\(10\).
+
+\subsubsection{Con}
+
+Tương tự con của đỉnh trên cây, ta định nghĩa con của đỉnh và con của chu trình
+trên cactus.
+
+Con của một đỉnh có thể là một đỉnh, cũng có thể là một chu trình. Chẳng hạn
+con của đỉnh \(1\) gồm đỉnh \(2\), đỉnh \(8\) và chu trình \(1-6\).
+
+Con của một chu trình là mọi đỉnh trên chu trình trừ cha của chu trình đó. Ví
+dụ, con của chu trình \(8-9-10\) là đỉnh \(9\) và đỉnh \(10\).
+
+\subsubsection{Đỉnh cha và đỉnh mẹ}
+
+Với một đỉnh nằm trên chu trình, ta gọi hai đỉnh kề nó trên chu trình lần lượt
+là đỉnh cha và đỉnh mẹ. Cần phân biệt ``cha'' với ``đỉnh cha''. Chẳng hạn trên
+chu trình \(2-3-4-5\), đỉnh cha của \(3\) là \(2\), đỉnh mẹ của \(3\) là \(4\);
+đỉnh cha của \(4\) là \(3\), đỉnh mẹ của \(4\) là \(5\). Bắt đầu từ một con bất
+kỳ của chu trình, đi theo các đỉnh cha và đỉnh mẹ là có thể duyệt hết chu
+trình.
+
+\subsubsection{Cách duyệt một cactus}
+
+Tương tự quá trình duyệt cây, ta bắt đầu DFS từ gốc. Giả sử hiện đang ở đỉnh
+\(x\), và tiếp theo cần thăm đỉnh \(y\).
+
+Nếu \(y\) chưa được thăm, xử lý giống như trên cây: chỉ cần đặt cha của \(y\)
+là \(x\).
+
+Nếu \(y\) đã được thăm, và thời điểm thăm đầu tiên của \(y\) sớm hơn thời điểm
+thăm đầu tiên của \(x\), tức ta đã phát hiện một chu trình. Cha của chu trình
+này là \(y\), còn các con là mọi đỉnh trên đường đi từ \(x\) tới \(y\) sau khi
+bỏ \(y\). Ta duyệt chu trình này và đặt đỉnh cha, đỉnh mẹ cho mọi đỉnh trên
+chu trình.
+
+Nếu \(y\) đã được thăm, và thời điểm thăm đầu tiên của \(y\) muộn hơn thời
+điểm thăm đầu tiên của \(x\), tức \(y\) nằm trên một chu trình đã được xử lý;
+có thể bỏ qua trường hợp này.
+
+\subsection{DP trên cactus}
+
+Tương tự DP trên cây, ta cũng có thể thực hiện DP trên cactus.
+
+Bắt đầu DP từ gốc cactus. Giả sử hiện DP tới đỉnh \(u\); trước hết xử lý thông
+tin ở \(u\), sau đó liệt kê từng con của \(u\) và từng con của các chu trình có
+cha là \(u\), rồi tiếp tục DP.
+
+\subsubsection{Ví dụ 1: một bài toán kinh điển}
+
+Cho một cactus, mỗi cạnh có độ dài. Hãy tính khoảng cách từ đỉnh \(1\) tới mọi
+đỉnh, trong đó khoảng cách giữa hai đỉnh là độ dài đường đi ngắn nhất giữa
+chúng. Ràng buộc \(n\le 10^5\).
+
+Trước hết DFS một lượt để xác định cấu trúc cactus.
+
+Sau đó bắt đầu DP từ đỉnh \(1\). Giả sử đã biết khoảng cách từ đỉnh \(1\) tới
+đỉnh \(u\). Ta liệt kê từng con của \(u\). Nếu con đó là một đỉnh, ta tính được
+khoảng cách từ đỉnh \(1\) tới đỉnh này và tiếp tục DP từ đó. Nếu con đó là một
+chu trình, ta liệt kê từng con \(x\) trên chu trình, tính khoảng cách từ \(x\)
+tới đỉnh \(1\), rồi tiếp tục DP từ \(x\).
+
+Độ phức tạp thời gian là \(O(n)\).
+
+\subsubsection{Ví dụ 2: một bài toán kinh điển khác}
+
+Cho một cactus, mỗi cạnh có độ dài. Hãy tính đường kính của cactus. Đường kính
+là khoảng cách của cặp đỉnh xa nhau nhất, trong đó khoảng cách giữa hai đỉnh là
+độ dài đường đi ngắn nhất giữa chúng. Ràng buộc \(n\le 10^5\).
+
+\paragraph{Trường hợp cây.}
+Vì cây cũng là cactus, trước hết xét trường hợp cây. Một cách kinh điển là chọn
+tùy ý một đỉnh, tìm đỉnh xa nó nhất, rồi từ đỉnh vừa tìm được lại tìm một đỉnh
+xa nhất; khoảng cách giữa hai đỉnh này là đáp án.
+
+Cách làm này sai trên cactus.
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình b.} Bản gốc minh họa một chu trình có \(2k\) đỉnh, mọi cạnh trên
+chu trình dài \(1\), cộng thêm một cạnh nhánh. Đáp án là \(k+1\), nhưng cách
+hai lần tìm đỉnh xa nhất chỉ ra đáp án này nếu điểm ban đầu rơi vào \(O(1)\)
+đỉnh đặc biệt.
+\end{minipage}}
+\end{center}
+
+\paragraph{Một cách làm khác.}
+Với cây, xét DP cây: với mỗi \(x\), tính độ sâu lớn nhất trong cây con gốc
+\(x\), rồi dùng tổng độ sâu lớn nhất và lớn nhì trong các con khác nhau của mỗi
+đỉnh để cập nhật đáp án.
+
+Với cactus, có thể làm tương tự DP cây. Trước hết DFS một lượt để xác định cấu
+trúc cactus. Sau đó với mỗi đỉnh \(x\), tính độ sâu lớn nhất của cactus con
+\(x\). Ở đây cactus con \(x\) là thành phần liên thông chứa \(x\) sau khi xóa
+mọi cạnh nằm trên các đường đi đơn từ gốc tới \(x\).
+
+Với mỗi đỉnh, dùng độ sâu lớn nhất của hai con khác nhau để cập nhật đáp án.
+Với mỗi chu trình, còn cần dùng tổng độ sâu lớn nhất của từng cặp đỉnh trên chu
+trình cộng với độ dài đường đi ngắn nhất giữa cặp đó để cập nhật đáp án. Không
+mất tính tổng quát, liệt kê một đỉnh; khi đó những đỉnh còn lại mà đường ngắn
+nhất đi theo chiều kim đồng hồ tạo thành một đoạn trên chu trình, và đầu còn
+lại của đoạn này cũng di chuyển theo chiều kim đồng hồ khi đỉnh đang xét di
+chuyển theo chiều kim đồng hồ. Đây là bài toán RMQ có hai đầu mút cùng đơn
+điệu, có thể duy trì bằng hàng đợi đơn điệu.
+
+Cũng có thể không dùng hàng đợi đơn điệu. Chia chu trình thành hai phần theo
+nhánh mà khoảng cách từ cha của chu trình đi xuống ngắn hơn. Với cặp đỉnh nằm
+cùng một phần, đường ngắn nhất chắc chắn đi trong phần đó. Với mỗi đỉnh, trong
+phần kia, các đỉnh mà đường ngắn nhất đi theo chiều kim đồng hồ tạo thành một
+tiền tố, còn các đỉnh mà đường ngắn nhất đi ngược chiều kim đồng hồ tạo thành
+một hậu tố; chỉ cần xử lý trực tiếp giá trị lớn nhất của tiền tố và hậu tố.
+
+Độ phức tạp thời gian là \(O(n)\).
+
+\subsubsection{\texorpdfstring{Ví dụ 3: \emph{mx's cactus}}{Ví dụ 3: mx's cactus}}
+
+Cho một cactus \(n\) đỉnh và \(q\) truy vấn. Mỗi truy vấn cho một tập đỉnh, yêu
+cầu in khoảng cách của cặp đỉnh xa nhau nhất trong tập đó. Khoảng cách giữa hai
+đỉnh là độ dài đường đi ngắn nhất giữa chúng.
+\[
+  n\le 3\cdot 10^5,\qquad q\le 3\cdot 10^5,\qquad
+  \mathrm{tot}\le 3\cdot 10^5,
+\]
+trong đó \(\mathrm{tot}\) là tổng kích thước các tập đỉnh. Giới hạn thời gian
+\(5\) giây, bộ nhớ \(512\) MB.\footnote{Nguồn: UOJ \#87, \emph{mx's cactus}.}
+
+\paragraph{Thuật toán vét cạn.}
+Xử lý từng truy vấn bằng vét cạn. Với trường hợp cây, mỗi truy vấn chỉ cần làm
+một lần DP cây. Với trường hợp cactus, mỗi truy vấn dùng DP trên cactus như ví
+dụ trước. Độ phức tạp là \(O(nq)\).
+
+\paragraph{Một tính chất.}
+Trong quá trình DP cây, nếu một truy vấn cho \(cnt\) đỉnh, số lần cập nhật đáp
+án thật sự có hiệu lực là \(cnt-1\), vì ban đầu có \(cnt\) đỉnh mang đáp án, và
+mỗi lần cập nhật đáp án sẽ làm giảm đi một đỉnh ``có đáp án''. DP trên cactus
+cũng có tính chất tương tự: số lần cập nhật đáp án có hiệu lực là \(O(cnt)\).
+Vì thế tổng số lần cập nhật có hiệu lực trên mọi truy vấn là \(O(n)\).
+
+\paragraph{Trường hợp cây.}
+Dùng \(f[x][i]\) biểu thị khoảng cách lớn nhất từ các đỉnh thuộc tập của truy
+vấn thứ \(i\), nằm trong cây con \(x\), tới đỉnh \(x\). Khi đó quá trình DP cây
+tương đương với việc gộp các mảng này và cập nhật đáp án của những truy vấn
+tương ứng.
+
+Bài toán trở thành: với mỗi đỉnh, gộp các mảng DP của từng con và nhanh chóng
+tìm những chỉ số truy vấn cần được cập nhật đáp án.
+
+Điều này tương đương với việc duy trì nhiều tập số, hỗ trợ gộp hai tập và trả
+về giao của chúng trong lúc gộp. Có thể dùng mảng để lưu các số trong tập, rồi
+gộp heuristic: mỗi lần gộp thì chèn thô tập nhỏ vào tập lớn. Vì cần tìm giao,
+có thể mở một bảng băm cho mỗi tập, hoặc dùng một bảng băm toàn cục, rồi kiểm
+tra khi gộp.
+
+Độ phức tạp thời gian \(O(n\log n)\), bộ nhớ \(O(n)\).
+
+\paragraph{Trường hợp cactus.}
+Với những phần không phải chu trình, xử lý giống trường hợp cây.
+
+Với mỗi chu trình, trước hết tính mảng DP của từng con trên chu trình, sau đó
+dùng giao của từng cặp mảng DP để cập nhật đáp án.
+
+Vì không thể xóa các phần tử của một tập khỏi tập khác, ta không dùng được hàng
+đợi đơn điệu có thao tác xóa. Có thể chia chu trình thành hai phần theo nhánh
+mà đi từ cha của chu trình xuống gần hơn. Với mỗi phần của chu trình, gộp các
+mảng DP theo thứ tự, rồi lấy giao với các mảng DP của phần kia để cập nhật đáp
+án. Sau khi cập nhật đáp án trên chu trình, cần hoàn tác mọi thao tác gộp; điều
+này có thể làm bằng cách ghi lại các thao tác phát sinh trong quá trình gộp.
+Cuối cùng gộp toàn bộ mảng DP của mọi con trên chu trình.
+
+Không xét các lần gộp mảng DP khi cập nhật đáp án trên chu trình, tổng thời
+gian là \(O(n\log n)\), vì mỗi đỉnh truy vấn đóng vai trò phần tử của ``tập
+nhỏ hơn'' nhiều nhất \(O(\log n)\) lần. Khi xét quá trình cập nhật trên chu
+trình, bản chất của nó giống việc gộp toàn bộ mảng DP trên chu trình nên không
+ảnh hưởng tới độ phức tạp. Do đó tổng thời gian vẫn là \(O(n\log n)\).
+
+Giả sử trên một chu trình có nhiều tập, tổng kích thước là \(N\). Có thể chứng
+minh chi phí gộp lần lượt các tập theo thứ tự không vượt quá \(O(N)\), nên số
+thao tác cần ghi lại khi gộp cũng là \(O(N)\). Tổng bộ nhớ vì vậy là \(O(n)\).
+
+\subsection{Chia để trị theo điểm trên cactus}
+
+Tương tự chia để trị theo điểm trên cây, ta có thể chia để trị theo điểm trên
+cactus.
+
+Mỗi lần chọn một đỉnh, gọi là ``trọng tâm'', sao cho sau khi xóa đỉnh này và
+mọi cạnh trên các chu trình chứa đỉnh này, kích thước thành phần liên thông lớn
+nhất là nhỏ nhất. Sau đó thống kê thông tin liên quan tới trọng tâm và các chu
+trình chứa trọng tâm, rồi đệ quy chia để trị từng thành phần liên thông còn
+lại.
+
+\paragraph{Độ phức tạp.}
+Xét thành phần hiện tại có kích thước \(N\). Nếu chọn đỉnh \(x\), và tồn tại
+một đỉnh \(y\) sao cho khi lấy \(x\) làm gốc, kích thước cactus con \(y\) lớn
+hơn \(N/2\), thì chọn \(y\) chắc chắn tốt hơn chọn \(x\). Vì vậy sau mỗi lần
+chia để trị, thành phần liên thông lớn nhất giảm ít nhất một nửa. Số tầng chia
+để trị là \(O(\log n)\).
+
+\subsubsection{Ví dụ 1: Vua bọ chét xuống Giang Nam}
+
+Cho một cactus. Với mỗi \(l=1,2,\ldots,n\), hãy tính số đường đi đơn bắt đầu từ
+đỉnh \(1\) và đi qua đúng \(l\) cạnh. Lấy đáp án modulo \(998244353\), một số
+nguyên tố bằng \(7\cdot 17\cdot 2^{23}+1\). Ràng buộc
+\(n\le 10^5\).\footnote{Nguồn: UOJ \#23, \emph{UR \#1: Vua bọ chét xuống
+Giang Nam}.}
+
+\paragraph{Thuật toán vét cạn.}
+Gọi \(f[x][l]\) là số đường đi độ dài \(l\) bắt đầu từ đỉnh \(x\) và chỉ được
+đi theo hướng xa gốc hơn. Với mỗi con \(y\) của \(x\), nếu \(y\) là một đỉnh,
+cộng \(f[y][l-1]\) vào \(f[x][l]\). Nếu con đó là một chu trình, liệt kê từng
+con \(z\) trên chu trình và cộng \(f[z][l-d_1]+f[z][l-d_2]\) vào \(f[x][l]\),
+trong đó \(d_1,d_2\) là độ dài hai đường đi từ \(x\) tới \(z\).
+
+\paragraph{Chia để trị cactus.}
+Ta nhận thấy \(f[u]\) có thể xem như một đa thức. Mỗi lần chuyển từ một con
+\(v\) của \(u\) tương đương với nhân \(f[v]\) với \(x\), hoặc với
+\(x^{d_1}+x^{d_2}\), rồi cộng vào \(f[u]\). Điều này gợi ý dùng chia để trị.
+
+Trong mỗi bước chia để trị, sau khi tìm trọng tâm \(u\), trước hết đệ quy xử lý
+từng thành phần liên thông. Sau đó tính đa thức từ gốc tới trọng tâm, ký hiệu
+\(f(x)\), rồi cộng đáp án của mọi con của \(u\), ký hiệu \(g(x)\). Chỉ cần cộng
+\(f(x)\cdot g(x)\) với đáp án của từng thành phần liên thông là được.
+
+Khi tính \(f(x)\), nếu nhân các đa thức từ trọng tâm tới gốc bằng chia để trị
+kết hợp FFT, độ phức tạp là \(O(n\log^2 n)\). Thật ra có thể ghi lại đa thức
+từ gốc tới trọng tâm trong quá trình đệ quy, rồi nhân ngược từng đa thức một.
+Khi đó độ phức tạp thỏa
+\[
+  T(n)=T(n/2)+O(n\log n)=O(n\log n).
+\]
+Tổng độ phức tạp là \(O(n\log^2 n)\).
+
+\subsubsection{\texorpdfstring{Ví dụ 2: \emph{Tree and Sets}}{Ví dụ 2: Tree and Sets}}
+
+Cho một cactus \(n\) đỉnh, mỗi cạnh có một độ dài \(l\), các cạnh khác nhau có
+thể có độ dài khác nhau.
+
+Có \(q\) tập đỉnh. Mỗi tập có thể được mô tả bằng hai số nguyên \(u,d\)
+\((1\le u\le n)\). Một đỉnh \(v\) thuộc tập này khi và chỉ khi khoảng cách giữa
+\(v\) và \(u\) không vượt quá \(d\), trong đó khoảng cách giữa hai đỉnh là độ
+dài đường đi ngắn nhất giữa chúng.
+
+Cần xây một đồ thị có hướng không chu trình, thỏa:
+\begin{itemize}
+  \item DAG có ít nhất \(n+q\) đỉnh, nhiều nhất \(1200000\) đỉnh và
+  \(2400000\) cạnh.
+  \item Với mỗi cạnh từ \(u\) tới \(v\), ta có \(u>n\) và \(u\ne v\).
+  \item Với mỗi đỉnh \(x\) có số hiệu nằm trong tập đỉnh thứ \(i\)
+  \((1\le i\le q)\), có đúng một đường đi từ đỉnh \(n+i\) tới đỉnh \(x\).
+  \item Với mỗi đỉnh \(x\in\{1,2,\ldots,n\}\) nhưng không thuộc tập đỉnh thứ
+  \(i\), không tồn tại đường đi từ đỉnh \(n+i\) tới đỉnh \(x\).
+\end{itemize}
+Ràng buộc \(1\le n,q\le 10000\).\footnote{Nguồn: đợt thi đối kháng đội tuyển
+quốc gia năm 2015.}
+
+\paragraph{Trường hợp cây.}
+Trước hết thêm các đỉnh ảo để bậc của mọi đỉnh không vượt quá \(3\), đồng thời
+với mỗi đỉnh, nhiều nhất một tập đỉnh có \(u\) bằng đỉnh đó.
+
+Sau đó chia để trị theo điểm trên cây. Mỗi lần chia để trị, với từng cây con
+của trọng tâm, sắp xếp mọi đỉnh trong cây con đó theo khoảng cách tới trọng
+tâm, rồi tiền xử lý tổng tiền tố và nối các cạnh tương ứng cho từng tập đỉnh.
+
+Vì số tầng chia để trị theo điểm là \(O(\log n)\), tổng số cạnh được nối là
+\(O(n\log n)\), giả sử \(q=O(n)\).
+
+\paragraph{Trường hợp cactus.}
+Vẫn có thể thêm đỉnh ảo để bậc của mọi đỉnh không vượt quá \(3\). Khi đó mỗi
+đỉnh của cactus thuộc nhiều nhất một chu trình.
+
+Mỗi lần chia để trị có thể chọn một đỉnh, hoặc chọn một chu trình, làm ``trọng
+tâm''. Dễ chứng minh số tầng chia để trị vẫn là \(O(\log n)\).
+
+Khi trọng tâm là một đỉnh, xử lý giống trường hợp cây.
+
+Khi trọng tâm là một chu trình, tương tự DP trên cactus, chia chu trình này
+thành hai phần. Cả trong từng phần lẫn giữa hai phần đều là một bài toán tổng
+tiền tố/hậu tố. Lấy bài toán tổng tiền tố trong một phần làm ví dụ. Xem phần
+này là một dãy, gọi \(\mathrm{size}[i]\) là kích thước cactus con tại vị trí
+\(i\) của dãy. Mỗi lần chia để trị trên đoạn \([l,r]\), đặt
+\[
+  \sum_{i=l}^{r}\mathrm{size}[i]=N.
+\]
+Chọn \(mid\) sao cho
+\[
+  \sum_{i=l}^{mid-1}\mathrm{size}[i]\le N/2,\qquad
+  \sum_{i=mid+1}^{r}\mathrm{size}[i]\le N/2.
+\]
+Sau đó đệ quy xử lý \([l,mid)\) và \((mid,r]\), rồi dựng các cạnh giữa ba phần
+\([l,mid)\), \(mid\), \((mid,r]\). Trong phép chia để trị trên chu trình này,
+với mỗi \(i\), cactus con thứ \(i\) xuất hiện trong
+\(O(\log(N/\mathrm{size}[i]))+O(1)\) lần chia để trị. Vì vậy với mỗi đỉnh,
+tổng số lần nó xuất hiện trong mọi lần chia để trị theo điểm và chia để trị
+trên chu trình là \(O(\log n)\).
+
+Do đó tổng số cạnh vẫn là \(O(n\log n)\).
+
+\subsection{\texorpdfstring{\emph{Link-cut cactus}}{Link-cut cactus}}
+
+\subsubsection{Bài toán cactus động}
+
+Bài toán cactus động là một lớp bài toán cần duy trì thông tin động trên
+cactus. Việc duy trì động có thể là thay đổi hình dạng, hoặc thay đổi các
+thông tin liên quan.
+
+Nhiều bài toán cây động có thể giải bằng link-cut tree. Tương tự link-cut tree,
+ta có thể xây link-cut cactus, dùng để giải khá nhiều bài toán cactus động.
+
+\paragraph{Cấu trúc của link-cut cactus.}
+Link-cut tree duy trì một phân rã theo xích của cây, nên ta cũng có thể duy trì
+một phân rã theo xích của cactus.
+
+Nếu không có chu trình, cấu trúc giống link-cut tree: mỗi đỉnh có một
+\emph{preferred child}, nối bằng cạnh thực; các con khác nối bằng cạnh ảo.
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình c.} Bản gốc minh họa trường hợp không có chu trình: cạnh đỏ là
+cạnh thực, cạnh đen là cạnh ảo.
+\end{minipage}}
+\end{center}
+
+Với một chu trình, định nghĩa cha của nó là đỉnh trên chu trình gần gốc của
+cactus nhất, ký hiệu \(A\). Định nghĩa \emph{preferred child} của chu trình là
+đỉnh trên chu trình được \texttt{access} gần đây nhất, ký hiệu \(B\).
+
+Ta nối đường đi ngắn nhất giữa \(A\) và \(B\) bằng cạnh thực.
+
+Xích tạo bởi những đỉnh còn lại trên chu trình cũng được nối bằng cạnh thực;
+ta gọi xích này là xích phụ, tức xích \emph{extra} trong hình nguồn.
+
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình d.} Bản gốc vẽ chu trình với hai đỉnh \(A,B\), một đường
+\(A\)--\(B\) được chọn làm xích chính và phần còn lại là xích \emph{extra}.
+\end{minipage}}
+\end{center}
+
+\paragraph{Cách duy trì thông tin cạnh trên splay.}
+Ta thêm một đỉnh vào mỗi cạnh để biểu diễn cạnh đó trên splay. Với hai đoạn
+đầu của xích phụ nối tới \(A\) và \(B\), bản gốc tô đen các cạnh này; ta trực
+tiếp gắn chúng vào hai đầu của xích phụ để duy trì.
+
+\paragraph{Trường hợp biên.}
+Nếu mọi đỉnh trên chu trình đều nằm trên xích \(AB\), thì xích phụ chỉ còn một
+cạnh. Tuy nhiên ta đã thêm một đỉnh trên cạnh này để duy trì nó, nên thực tế
+không cần thảo luận riêng trường hợp này.
+
+\paragraph{Một trường hợp đặc biệt.}
+Giả sử lần \texttt{access} trước là tới đỉnh \(A\). Khi đó cạnh kề \(A\) trên
+xích \(AB\) trở thành cạnh ảo, nhưng đỉnh splay biểu diễn cạnh này vẫn nằm trên
+splay của xích \(AB\). Cần đặc biệt xử lý trường hợp này.
+
+\paragraph{Thao tác \texttt{access}.}
+Thao tác này tương tự \texttt{access} của link-cut tree.
+
+Giả sử hiện \texttt{access} tới đỉnh \(x\). Trước hết tìm cạnh \(e\) đứng ngay
+trước \(x\) trên splay.
+
+Nếu \(e\) không nằm trên chu trình, xử lý giống link-cut tree.
+
+Ngược lại, trước hết cắt hai đầu trái phải của xích \(AB\) của chu trình này,
+chú ý xét trường hợp đặc biệt phía trên; sau đó nối xích \(AB\) với xích phụ.
+
+Tiếp theo đưa \(x\) lên gốc splay, chọn phía ngắn hơn để nối lại làm xích
+\(AB\) mới, và đặt phía còn lại thành xích phụ.
+
+\paragraph{Thao tác đổi gốc.}
+Tương tự thao tác đổi gốc của link-cut tree: sau \texttt{access}, đặt nhãn đảo
+trên đường từ gốc tới đỉnh đó.
+
+Cần chú ý thao tác này làm hoán đổi hai đỉnh \(A\) và \(B\) của các chu trình
+mà đường đi này đi qua, đồng thời hướng của xích phụ trở nên không đúng.
+
+Cách giải quyết là với mỗi chu trình được \texttt{access}, kiểm tra thứ tự
+trước sau của \(A\) và \(B\) trong splay. Nếu bị đảo, hoán đổi \(A,B\) và đặt
+nhãn đảo cho xích phụ.
+
+\paragraph{Cách sử dụng link-cut cactus.}
+Lấy truy vấn giá trị nhỏ nhất của trọng số cạnh trên một đường đi ngắn nhất từ
+\(u\) tới \(v\) làm ví dụ: trước hết đổi gốc thành \(u\), sau đó
+\texttt{access} đỉnh \(v\), rồi trả về giá trị nhỏ nhất của trọng số cạnh trên
+splay này.
+
+Cần chú ý giữa \(u\) và \(v\) có thể có nhiều đường đi ngắn nhất; có thể duy
+trì điều này bằng cách đặt nhãn trên splay khi \texttt{access} tới chu trình.
+
+\paragraph{Độ phức tạp thời gian.}
+Tương tự link-cut tree, với cactus \(n\) đỉnh và \(O(n)\) thao tác
+\texttt{access}, số lần chuyển đổi \emph{preferred child} của đỉnh và chu trình
+là \(O(n\log n)\). Vì mỗi lần chuyển đổi \emph{preferred child} dùng splay,
+tổng thời gian là \(O(n\log^2 n)\).
+
+\subsubsection{\texorpdfstring{Ví dụ 1: \emph{Push the Flow!}}{Ví dụ 1: Push the Flow!}}
+
+Cho một cactus \(n\) đỉnh, không có cạnh bội hoặc khuyên, mỗi cạnh có một dung
+lượng.
+
+Có \(q\) thao tác; mỗi thao tác hoặc sửa dung lượng của một cạnh, hoặc hỏi lưu
+lượng cực đại giữa hai đỉnh.
+\[
+  1\le n\le 100000,\qquad 0\le q\le 200000.
+\]
+\footnote{Nguồn: CODECHEF PUSHFLOW.}
+
+\paragraph{Cách dùng link-cut cactus.}
+Với trường hợp không có chu trình, lưu lượng cực đại giữa hai đỉnh chính là giá
+trị nhỏ nhất của dung lượng cạnh trên đường đi giữa hai đỉnh đó.
+
+Với mỗi chu trình, lưu lượng cực đại giữa hai đỉnh \(A,B\) bằng giá trị nhỏ
+nhất trên xích \(AB\) cộng với giá trị nhỏ nhất trên xích phụ. Vì vậy có thể
+cộng giá trị nhỏ nhất của xích phụ vào dung lượng của từng cạnh trên xích
+\(AB\).
+
+Khi truy vấn, chỉ cần đổi gốc rồi \texttt{access}.
+
+Khi sửa dung lượng của một cạnh, đổi gốc thành một đầu mút của cạnh này, rồi
+\texttt{access} đầu mút còn lại. Khi đó cạnh cần sửa chắc chắn không nằm trên
+xích phụ của một chu trình, nên có thể sửa trực tiếp.
+
+Độ phức tạp thời gian \(O((n+q)\log^2 n)\), bộ nhớ \(O(n)\).\footnote{Bài này
+cũng có thể giải bằng link-cut tree; vì đây không phải trọng tâm nên bản gốc
+lược qua.}
+
+\subsubsection{Ví dụ 2: một bài toán kinh điển}
+
+Cho một cactus, cần hỗ trợ thêm cạnh, xóa cạnh, và sửa hoặc hỏi trên đường đi
+ngắn nhất giữa hai đỉnh hay trên một cactus con.
+
+Khi lấy \(x\) làm gốc, cactus con \(y\) là thành phần liên thông chứa \(y\) sau
+khi xóa mọi cạnh nằm trên các đường đi đơn từ \(x\) tới \(y\).
+
+Thao tác sửa là cộng một số vào trọng số đỉnh trên một xích hoặc một cactus
+con, hoặc gán toàn bộ các trọng số này thành cùng một số.
+
+Truy vấn là giá trị lớn nhất, nhỏ nhất, hoặc tổng trọng số đỉnh trên một xích
+hay một cactus con.
+
+\paragraph{Một bài toán con.}
+Cho một cây, cần hỗ trợ thêm cạnh, xóa cạnh, và sửa hoặc hỏi trên một đường đi
+hay một cây con.
+
+Có thể dùng self-adjusting top trees để làm, độ phức tạp thời gian
+\(O(n\log n)\). Cách làm này được giới thiệu chi tiết trong tài liệu tham khảo
+[1] và [2].
+
+\paragraph{Thuật toán 1.}
+Dùng link-cut cactus để duy trì hình dạng của cactus.
+
+Với mỗi chu trình, cắt cạnh nối đỉnh \(B\) trên chu trình với xích phụ. Nếu chu
+trình này chỉ có hai đỉnh thì không cắt cạnh đó.
+
+Như vậy ta thu được một cây khung của cactus, có thể duy trì bằng
+self-adjusting top trees, gọi tắt là top tree.
+
+Khi thao tác trên xích, đổi gốc và \texttt{access} trên link-cut cactus, rồi
+thực hiện thao tác xích trên top tree.
+
+Khi thao tác trên cactus con, đổi gốc rồi \texttt{access}; lúc đó cactus con
+này là một cây con trên top tree, nên thực hiện trực tiếp thao tác cây con của
+top tree.
+
+Trong thao tác \texttt{access} của link-cut cactus, \(O(\log n)\) chu trình bị
+ảnh hưởng bởi thay đổi \emph{preferred child}. Ta cần thay đổi cạnh bị cắt trên
+những chu trình đó, tức thực hiện \(O(\log n)\) thao tác \texttt{link} và
+\texttt{cut} trên top tree. Độ phức tạp khấu hao là \(O(\log^2 n)\).
+
+Vì dùng top tree nên hằng số hơi lớn.
+
+\paragraph{Thuật toán 2.}
+Xét việc duy trì trực tiếp bằng link-cut cactus.
+
+Tương tự top tree, trên mỗi đỉnh của link-cut cactus có thể duy trì thông tin
+của cactus con. Ta gọi cách làm này là ``top cactus''.
+
+Một kỹ thuật nhỏ: gọi thông tin cần duy trì là \(\mathrm{Info}\), nhãn là
+\(\mathrm{Tag}\). Khi đó chỉ cần cài đặt
+\(\mathrm{Info}+\mathrm{Info}\), \(\mathrm{Info}*\mathrm{Tag}\) và
+\(\mathrm{Tag}*\mathrm{Tag}\). Chú ý \(\mathrm{Tag}\) có thể biểu diễn dưới
+dạng \(a*x+b\), giúp đơn giản hóa mã.
+
+Trên mỗi đỉnh của top cactus, duy trì các giá trị sau:
+\begin{itemize}
+  \item \(x\): thông tin của chính đỉnh này.
+  \item \(\mathrm{sum}\): tổng thông tin của mọi đỉnh trên xích do splay gốc
+  tại đỉnh này biểu diễn, không gồm thông tin cactus con.
+  \item \(\mathrm{sub}\): tổng thông tin cactus con của mọi đỉnh trên xích do
+  splay gốc tại đỉnh này biểu diễn, không gồm thông tin trên xích.
+  \item \(\mathrm{ex}\): với cạnh đầu tiên của xích \(AB\) của mỗi chu trình,
+  \(\mathrm{ex}\) biểu diễn giá trị \(\mathrm{all}\) của xích phụ của chu
+  trình đó.
+  \item \(\mathrm{all}\): \(\mathrm{all}=\mathrm{sum}+\mathrm{sub}+\mathrm{ex}\).
+  \item \(\mathrm{chain\ tag}\): nhãn trên mọi đỉnh của xích do splay gốc tại
+  đỉnh này biểu diễn, không gồm nhãn cactus con.
+  \item \(\mathrm{sub\ tag}\): nhãn trên cactus con của mọi đỉnh thuộc xích do
+  splay gốc tại đỉnh này biểu diễn, không gồm nhãn trên xích.
+  \item \(\mathrm{ex\ tag\ sum}\): tổng các \(\mathrm{sub\ tag}\) đã đặt trên
+  xích \(AB\) của chu trình kể từ lần \texttt{access} trước, nhưng chưa có trên
+  xích phụ.
+\end{itemize}
+
+Trong đó \(\mathrm{sub}\) cần liệt kê từng cactus con của đỉnh này để tính.
+Vì bậc của một đỉnh có thể là \(O(n)\), không thể tính \(\mathrm{sub}\) bằng
+vét cạn; nên với mỗi đỉnh, dùng một cây cân bằng, chẳng hạn splay, để duy trì
+\(\mathrm{sub}\).
+
+\paragraph{Đẩy nhãn xuống.}
+\(\mathrm{chain\ tag}\) chỉ được đẩy xuống trong nội bộ splay.
+
+Khi \(\mathrm{sub\ tag}\) được đẩy xuống cactus con, nó được tách thành dạng
+\(\mathrm{chain\ tag}+\mathrm{sub\ tag}\).
+
+\(\mathrm{ex\ tag\ sum}\) duy trì những nhãn đã có trên xích \(AB\) nhưng chưa
+có trên xích phụ. Khi \texttt{access} tới một chu trình, đẩy các nhãn này xuống
+xích phụ của chu trình.
+
+\paragraph{Thao tác \texttt{access}.}
+Mỗi lần \texttt{access} tới đỉnh \(x\):
+\begin{itemize}
+  \item Nếu \(x\) không nằm trên chu trình, đổi cạnh nối \(x\) với
+  \emph{preferred child} cũ của nó thành cạnh ảo, và thêm \emph{preferred
+  child} cũ vào cây cân bằng duy trì cactus con. Sau đó đổi cạnh nối \(x\) với
+  \emph{preferred child} mới thành cạnh thực, xóa \emph{preferred child} mới
+  khỏi cây cân bằng duy trì cactus con, và truyền nhãn cactus con cho nó.
+  \item Nếu \(x\) nằm trên chu trình, cắt hai đầu trên dưới của chu trình, tìm
+  \(\mathrm{ex\ tag\ sum}\) trên xích \(AB\), rồi truyền nó cho xích phụ. Sau
+  đó đưa \(x\) lên gốc splay, chọn phía ngắn hơn để nối lại, đồng thời cập nhật
+  thông tin và nhãn tương ứng.
+\end{itemize}
+
+\paragraph{Độ phức tạp thời gian.}
+Bản thân link-cut cactus có độ phức tạp \(O(n\log^2 n)\).
+
+Tổng số vòng lặp trong \texttt{access} là \(O(n\log n)\), nên chi phí duy trì
+thông tin cactus con của mỗi đỉnh cũng là \(O(n\log^2 n)\).
+
+Tổng độ phức tạp thời gian là \(O(n\log^2 n)\), nhưng hằng số nhỏ hơn thuật
+toán trước.
+
+\subsubsection{Ví dụ 3: một bài toán kinh điển mở rộng}
+
+Cho một cactus, cần hỗ trợ thêm cạnh, xóa cạnh, và sửa hoặc hỏi trên đường đi
+ngắn nhất giữa hai đỉnh hay trên một cactus con.
+
+Khi lấy \(x\) làm gốc, cactus con \(y\) là thành phần liên thông chứa \(y\) sau
+khi xóa mọi cạnh nằm trên các đường đi đơn từ \(x\) tới \(y\).
+
+Thao tác sửa là cộng một số vào trọng số đỉnh trên một xích hoặc một cactus
+con, hoặc gán toàn bộ các trọng số này thành cùng một số.
+
+Truy vấn là trọng số đỉnh lớn thứ \(k\) trên một xích hoặc một cactus con.
+
+\paragraph{Một bài toán con.}
+Cho một cây, cần hỗ trợ thêm cạnh, xóa cạnh, và sửa hoặc hỏi trọng số đỉnh lớn
+thứ \(k\) trên một đường đi hay một cây con.
+
+Top tree không duy trì được truy vấn lớn thứ \(k\). Ta xét một cách kinh điển
+khác để duy trì thông tin đường đi và cây con: thứ tự DFS.
+
+Vì có sửa đường đi và hỏi lớn thứ \(k\), cấu trúc duy trì thứ tự DFS có thể là
+danh sách chia khối. Giả sử kích thước khối là \(T\). Khi đó một thao tác tách
+hoặc gộp trên danh sách chia khối cần \(O(\log n+T)\) thời gian; một truy vấn
+cần \(O((n/T)\log^2 n)\) thời gian. Chú ý có thể dùng cây cân bằng để duy trì
+dãy các khối, nhờ đó độ phức tạp sửa là \(O(\log n+T)\).
+
+Nếu mỗi thao tác của bài toán gốc có thể chuyển thành \(f(n)\) thao tác tách,
+gộp trên thứ tự DFS và \(O(1)\) truy vấn, thì chọn kích thước khối
+\[
+  T=O\left(\sqrt{\frac{n\log^2 n}{f(n)}}\right)
+\]
+sẽ cho độ phức tạp mỗi thao tác là
+\[
+  O\left(\sqrt{n f(n)\log^2 n}\right).
+\]
+
+\paragraph{Hình dạng cây không đổi, gốc cố định.}
+Dùng link-cut tree để duy trì một phân rã theo xích của cây, rồi duy trì một
+thứ tự DFS tương ứng.
+
+Trong thứ tự DFS này, mọi xích trong phân rã theo xích đều là một đoạn liên
+tiếp.
+
+Trong quá trình \texttt{access} của link-cut tree, ta chỉnh thứ tự DFS tương
+ứng. Giả sử hiện cần đổi \emph{preferred child} của đỉnh \(x\) thành \(y\); khi
+đó chỉ cần lấy đoạn thứ tự DFS tương ứng với cây con \(y\) ra và đặt ngay sau
+đỉnh \(x\).
+
+Như vậy sau khi \texttt{access} đỉnh \(x\), xích từ gốc tới \(x\) là một đoạn
+trong thứ tự DFS, và cây con \(x\) cũng là một đoạn; do đó có thể thao tác trên
+xích và cây con.
+
+\paragraph{Hình dạng cây không đổi, có thao tác đổi gốc.}
+\begin{center}
+\fbox{\begin{minipage}{0.82\linewidth}
+\textbf{Hình e.} Bản gốc dùng các hình bầu dục biểu diễn đỉnh và tam giác biểu
+diễn cây con. Khi gốc là \(a\), thứ tự DFS là \(a\,b\,c\,C\,B\,A\); khi gốc là
+\(c\), thứ tự DFS là \(c\,b\,a\,A\,B\,C\).
+\end{minipage}}
+\end{center}
+
+Giả sử cần đổi gốc từ \(a\) sang \(c\). Trước hết \texttt{access} gốc mới, phát
+sinh \(O(f(n))\) thao tác trên thứ tự DFS. Nếu làm trực tiếp, có vẻ phải dùng
+\(O(\text{chiều cao cây})\) thao tác thứ tự DFS để đổi gốc.
+
+Ta cưỡng bức đặt nhãn đảo cho đoạn thứ tự DFS tương ứng với đường đi từ gốc cũ
+tới gốc mới, và cho phần còn lại của thứ tự DFS. Khi đó thứ tự DFS trở thành
+\[
+  c\ b\ a\ r(A)\ r(B)\ r(C),
+\]
+trong đó \(r(X)\) là thứ tự DFS sau khi đảo của cây con \(X\). Lưu ý toàn bộ
+thứ tự DFS của một số cây con đã bị đảo.
+
+Trong mỗi vòng lặp của \texttt{access}, kiểm tra xem có xảy ra tình huống này
+hay không. Nếu có, dùng \(O(1)\) thao tác trên thứ tự DFS để đảo lại thứ tự DFS
+của cây con đó. Như vậy đạt được \(f(n)=O(\log n)\).
+
+\paragraph{Hình dạng cây có thể thay đổi.}
+Với thao tác thêm cạnh và xóa cạnh, sau khi đổi gốc và \texttt{access} những
+đỉnh tương ứng, trực tiếp nối cả thứ tự DFS của cây vào hoặc tách nó ra.
+
+Vẫn có \(f(n)=O(\log n)\). Vì vậy bài toán con này có thể giải trong
+\[
+  O\left(\sqrt{n\log^3 n}\right)
+\]
+thời gian cho mỗi thao tác.
+
+\paragraph{Trường hợp cactus.}
+Ta vẫn dùng link-cut cactus để duy trì hình dạng của cactus. Một thao tác có
+thể chuyển thành \(O(\log n)\) thao tác của bài toán trên cây, nên thu được
+cận trên \(f(n)=O(\log^2 n)\). Tuy nhiên khi viết chương trình sẽ thấy
+\(f(n)\) gần với \(O(\log n)\) hơn.
+
+Sau đây là chứng minh \(f(n)=O(\log n)\): vì link-cut tree duy trì một cây
+khung của cactus, và các đỉnh được \texttt{access} là như nhau, phân rã theo
+xích trên LCT tương tự phân rã theo xích do link-cut cactus duy trì. Khi đó
+trong một lần \texttt{access} của link-cut cactus, ngoài lần \texttt{access}
+đầu tiên của LCT, mỗi lần \texttt{access} của LCT chỉ thay đổi phân rã theo
+xích của một chu trình và đi qua \(O(1)\) cạnh ảo. Điều này cho thấy tổng số
+vòng lặp \texttt{access} của LCT là \(O(\log n)\), nên \(f(n)=O(\log n)\).
+
+Vì vậy bài này được giải trong
+\[
+  O\left(\sqrt{n\log^3 n}\right)
+\]
+thời gian cho mỗi thao tác.
+
+\subsection{Lời cảm ơn}
+
+\begin{itemize}
+  \item Xin cảm ơn CCF đã cung cấp cơ hội học tập và giao lưu.
+  \item Xin cảm ơn huấn luyện viên Xu Xianyou vì đã bồi dưỡng tôi.
+  \item Xin cảm ơn các bạn học đã giúp tôi hoàn thành bài viết này.
+\end{itemize}
+
+\subsection*{Tài liệu tham khảo của bài viết}
+
+\begin{enumerate}
+  \item Huang Zhi'ao, ``Bàn về các bài toán liên quan tới cây động và một số mở
+  rộng đơn giản'', luận văn đội tuyển quốc gia năm 2014.
+  \item Tarjan, Robert E., and Renato F. Werneck. ``Self-adjusting top trees.''
 \end{enumerate}
 
 \end{document}

@@ -25,15 +25,16 @@ phương pháp mô hình hóa bằng luồng mạng, bài thứ ba của Dong Ke
 hoạch tuyến tính cùng bài toán đối ngẫu, bài thứ tư của Wang Wentao về
 một số thuật toán cùng ứng dụng cho bài toán cắt nhỏ nhất trên đồ thị vô
 hướng, bài thứ năm của Zou Xiaoyao về ứng dụng của quy hoạch tuyến tính trong
-thi tin học, và bài thứ sáu của Ji Ruyi về phép toán cực trị trên đoạn cùng
-bài toán cực trị lịch sử, và bài thứ bảy của Mao Xiao về việc xét lại biến
-đổi Fourier nhanh. Phần thân các bài được dựng từ OCR và đối chiếu công thức
-với lớp văn bản PDF.
+thi tin học, bài thứ sáu của Ji Ruyi về phép toán cực trị trên đoạn cùng bài
+toán cực trị lịch sử, bài thứ bảy của Mao Xiao về việc xét lại biến đổi
+Fourier nhanh, và bài thứ tám của Luo Zhezheng về một lớp phương pháp duy trì
+thông tin đoạn có hỗ trợ chèn và xóa ở cuối. Phần thân các bài được dựng từ
+OCR và đối chiếu công thức với lớp văn bản PDF.
 \end{abstract}
 
 \section{Trạng thái và ghi chú trích xuất}
 
-Đã dịch sáu bài đầu tiên trong tập luận văn. Bài 1 dùng trang vật lý 5--20 của
+Đã dịch tám bài đầu tiên trong tập luận văn. Bài 1 dùng trang vật lý 5--20 của
 PDF nguồn, tương ứng trang in 1--16. Bài 2 dùng trang vật lý 21--35, tương ứng
 trang in 17--31; trang vật lý 36, tương ứng trang in 32, là trang trắng ngăn
 cách trước bài kế tiếp. Bài 3 bắt đầu ở trang vật lý 37, tương ứng trang in
@@ -42,9 +43,10 @@ lý 67--84, tương ứng trang in 63--80. Bài 5 dùng trang vật lý 85--102,
 ứng trang in 81--98. Bài 6 dùng trang vật lý 103--126, tương ứng trang in
 99--122; trang vật lý 126, tương ứng trang in 122, là trang trắng ngăn cách
 trước bài kế tiếp. Bài 7 dùng trang vật lý 127--144, tương ứng trang in
-123--140; bài kế tiếp bắt đầu ở trang vật lý 145, tương ứng trang in 141.
-Phần thân các bài 2, 3, 4, 5, 6 và 7 có lớp văn bản bị mojibake, nên được OCR
-bằng
+123--140. Bài 8 dùng trang vật lý 145--166, tương ứng trang in 141--162; phần
+nội dung kết thúc ở trang in 161, trang in 162 là trang trắng ngăn cách, và
+bài kế tiếp bắt đầu ở trang vật lý 167, tương ứng trang in 163. Phần thân các
+bài 2, 3, 4, 5, 6, 7 và 8 có lớp văn bản bị mojibake, nên được OCR bằng
 \texttt{pdftoppm} và \texttt{tesseract -l chi\_sim+eng}, rồi lọc nhiễu thủ
 công khi dựng bản dịch.
 
@@ -5896,6 +5898,915 @@ làm cho phương pháp này dùng được với NTT, tác giả rất hoan ngh
   \href{https://discuss.codechef.com/questions/74772/mgch3d-editorial}{https://discuss.codechef.com/questions/74772/mgch3d-editorial}.
   \item Trang Wikipedia tiếng Anh về CZT:
   \href{https://en.wikipedia.org/wiki/Chirp_Z-transform}{Chirp Z-transform}.
+\end{enumerate}
+
+\section*{Bài 8. Từ \emph{Unknown} bàn về một lớp phương pháp duy trì thông tin đoạn có hỗ trợ chèn và xóa ở cuối}
+\addcontentsline{toc}{section}{Bài 8. Từ \emph{Unknown} bàn về một lớp phương pháp duy trì thông tin đoạn có hỗ trợ chèn và xóa ở cuối}
+
+\begin{center}
+Luo Zhezheng, Trường THPT trực thuộc Đại học Sư phạm An Huy
+\end{center}
+
+\subsection*{Tóm tắt}
+
+\emph{Unknown} là bài tự sáng tác của tác giả trong kỳ kiểm tra chéo đội tuyển
+tập huấn, tên đầy đủ là ``Chúng ta vẫn chưa biết tên cấu trúc dữ liệu đã nhìn
+thấy hôm ấy''. Loại bài yêu cầu hỗ trợ chèn, xóa ở cuối và truy vấn đoạn xuất
+hiện khá thường xuyên trong các cuộc thi tin học những năm gần đây. Bài viết
+này thông qua việc giới thiệu chi tiết quá trình giải từng bước của bài
+\emph{Unknown}, phân loại và phân tích một số nhánh khác nhau của loại bài
+này, tổng kết và đề xuất một số thuật toán tổng quát, đồng thời phân tích
+hiệu năng của chúng. Trọng tâm của bài viết là tổng kết một phương pháp chung
+để xử lý việc chèn, xóa tại đầu mút và duy trì thông tin đoạn trong trường hợp
+thông tin không dễ hợp nhất nhanh. Hy vọng bài viết có ích cho mọi người và
+gợi ra thêm suy nghĩ về loại bài này.
+
+\subsection*{1. Ý chính đề bài}
+
+Cho một dãy \(S\) gồm các phần tử là vector, chỉ số bắt đầu từ \(1\). Ban đầu
+\(S\) rỗng. Cần hỗ trợ ba thao tác:
+\begin{enumerate}
+  \item Thêm một phần tử \((x,y)\) vào cuối \(S\).
+  \item Xóa phần tử cuối của \(S\).
+  \item Hỏi trong các phần tử có chỉ số thuộc đoạn \([l,r]\), giá trị lớn nhất
+  của \((x,y)\times S_i\).
+\end{enumerate}
+Ở đây \(\times\) biểu thị tích có hướng của vector:
+\[
+  (x_1,y_1)\times(x_2,y_2)=x_1y_2-x_2y_1.
+\]
+
+Bài này được cải biên từ bài \emph{SDOI 2014 Vector Set}:
+\href{http://www.lydsy.com/JudgeOnline/problem.php?id=3533}{http://www.lydsy.com/JudgeOnline/problem.php?id=3533}.
+
+\subsection*{2. Định dạng nhập}
+
+Dòng đầu là một số nguyên \(tp\), biểu thị kiểu dữ liệu. Sau đó có nhiều bộ dữ
+liệu, không quá \(3\) bộ, kết thúc bởi \(m=0\).
+
+Với mỗi bộ dữ liệu, dòng đầu là một số nguyên \(m\), biểu thị số thao tác.
+Tiếp theo là \(m\) dòng, mỗi dòng thuộc một trong ba dạng:
+\begin{itemize}
+  \item \texttt{1 x y}: thêm phần tử \((x,y)\) vào cuối \(S\).
+  \item \texttt{2}: xóa phần tử cuối của \(S\).
+  \item \texttt{3 l r x y}: hỏi giá trị lớn nhất của
+  \((x,y)\times S_i\) với \(i\in[l,r]\).
+\end{itemize}
+
+\subsection*{3. Định dạng xuất}
+
+Với mỗi bộ dữ liệu, cần lấy kết quả của mỗi truy vấn modulo
+\[
+  M=998244353=7\cdot 17\cdot 2^{23}+1,
+\]
+trong đó \(M\) là số nguyên tố, rồi XOR các kết quả đó và in ra.
+
+Chú ý kết quả modulo theo nghĩa toán học nằm trong đoạn \([0,M)\), chẳng hạn
+\(-1\bmod M=M-1\).
+
+\subsection*{4. Phạm vi dữ liệu và quy ước}
+
+Các điểm kiểm tra có phạm vi như sau:
+\begin{center}
+\small
+\begin{tabular}{c p{0.23\linewidth} p{0.49\linewidth}}
+\textbf{Điểm} & \textbf{Quy mô \(m\)} & \textbf{Điều kiện khác} \\
+\hline
+1 & \(m\le 1000\) & \\
+2 & & Không có \\
+3 & \(m\le 80000\) & \\
+4 & & Không có thao tác loại \(2\); truy vấn loại \(3\) luôn hỏi toàn bộ đoạn \\
+5 & \(m\le 300000\) & Mọi thao tác loại \(2\) đều nằm sau thao tác loại \(1\); truy vấn loại \(3\) luôn hỏi toàn bộ đoạn \\
+6 & & Mọi thao tác loại \(3\) đều nằm sau các thao tác loại \(1\) và loại \(2\) \\
+7 & & Với mọi thao tác loại \(3\), \(l=1\); giới hạn bộ nhớ \(128\) MB \\
+8 & & Không có \\
+9 & \(m\le 500000\) & Giới hạn bộ nhớ \(128\) MB \\
+10 & & Giới hạn bộ nhớ \(64\) MB
+\end{tabular}
+\end{center}
+
+Với toàn bộ dữ liệu, gọi \(n\) là độ dài dãy tại một thời điểm bất kỳ. Khi đó
+\(n\le 300000\), \(m\le 500000\). Số thao tác loại \(1\) không vượt quá
+\(300000\); các giá trị nhập vào thỏa
+\[
+  -10^9\le x\le 10^9,\qquad 1\le y\le 10^9.
+\]
+Số thao tác loại \(3\) không vượt quá \(300000\); trong thao tác này,
+\[
+  1\le x\le 10^9,\qquad -10^9\le y\le 10^9,\qquad 1\le l\le r\le n.
+\]
+Giới hạn thời gian là \(5\) giây trên Tsinsen hoặc \(3\) giây trên UOJ, giới
+hạn bộ nhớ \(512\) MB, trừ khi điểm kiểm tra có ghi riêng.
+
+\subsection*{5. Giới thiệu thuật toán}
+
+\subsubsection*{5.1. Thuật toán 1: vét cạn}
+
+Trước hết xét cách viết vét cạn. Nhìn ban đầu, bài này là một bài cấu trúc dữ
+liệu; vét cạn cho bài cấu trúc dữ liệu thường khá dễ viết, chỉ cần mô phỏng
+theo đề. Với truy vấn đoạn \([l,r]\), ta trực tiếp liệt kê mọi phần tử
+\(S_i\) trong đoạn và thống kê giá trị lớn nhất của \((x,y)\times S_i\).
+
+Phân tích độ phức tạp: vì \(n\) và \(m\) cùng cấp, khi tính độ phức tạp ta
+không phân biệt nữa. Số truy vấn là \(O(n)\), độ dài đoạn cũng có thể đạt cấp
+\(O(n)\), nên thuật toán vét cạn có độ phức tạp thời gian \(O(n^2)\), dự kiến
+đạt \(20\) điểm.
+
+\subsubsection*{5.2. Quan sát tính chất của đáp án}
+
+Tích vô hướng đơn giản hơn tích có hướng. Ta viết tích có hướng thành tích vô
+hướng: nếu \(S_i=(a_i,b_i)\), thì
+\[
+  (x,y)\times S_i=(-y,x)\cdot(a_i,b_i).
+\]
+Sau khi biến đổi \((x,y)\) thành \((-y,x)\), bài toán trở thành tìm giá trị
+lớn nhất của \((x,y)\cdot(a_i,b_i)\). Các phần sau không dùng trực tiếp tích
+có hướng nữa.
+
+Do
+\[
+  \overrightarrow{OA}\cdot\overrightarrow{OB}
+  =|OA|\cdot|OB|\cos\angle AOB,
+\]
+đáp án tỉ lệ với độ dài hình chiếu của \(OB\) theo hướng \(OA\). Vì thế có
+thể tìm điểm cho tích vô hướng lớn nhất như sau: dùng một đường thẳng vuông
+góc với \(OA\), quét từ vô cực về phía gốc \(O\); điểm đầu tiên mà đường thẳng
+đụng tới chính là đáp án.
+
+Trong hình minh họa của nguồn, với một tập điểm được đánh dấu, đường quét đầu
+tiên chạm vào điểm \(A\), nên đáp án là \(\overrightarrow{OQ}\cdot
+\overrightarrow{OA}\). Tiếp tục quan sát phạm vi góc của các vector truy vấn:
+góc cực của chúng nằm trong đoạn \((0,\pi)\). Dễ thấy đáp án chắc chắn nằm
+trên bao lồi trên của các phần tử trong đoạn.
+
+Nếu ta có thể nhanh chóng lấy bao lồi trên của đoạn truy vấn, thì có thể nhị
+phân hệ số góc trên bao lồi để trả lời trong \(O(\log n)\). Như vậy bài toán
+được chuyển thành duy trì bao lồi trên của đoạn.
+
+\subsubsection*{5.3. Duy trì một lớp thông tin đoạn mà bao lồi là đại diện}
+
+Khi duy trì thông tin đoạn, cần chú ý một số tính chất của chính thông tin đó;
+chúng ảnh hưởng trực tiếp tới cách duy trì và độ khó.
+
+\paragraph{\term{5.3.1. Có hỗ trợ hợp nhất nhanh hay không}.}
+Với hai đoạn \([l,\mathit{mid}]\) và \([\mathit{mid}+1,r]\), nếu biết thông
+tin của hai đoạn này và có thể hợp nhất chúng trong \(O(1)\) hoặc
+\(\operatorname{poly}(\log(r-l))\), ta nói loại thông tin này hỗ trợ
+\term{hợp nhất nhanh}.
+
+Ví dụ về thông tin hỗ trợ hợp nhất nhanh:
+\begin{itemize}
+  \item Cực trị đoạn, với độ phức tạp hợp nhất \(O(1)\).
+  \item Bao lồi theo chỉ số đơn điệu. Nếu dùng cây cân bằng duy trì và nhị
+  phân hệ số góc thì có thể hợp nhất trong \(O(\log^2 n)\).
+\end{itemize}
+
+Ví dụ về thông tin không hỗ trợ hợp nhất nhanh:
+\begin{itemize}
+  \item Bao lồi của tập điểm trong đoạn.
+  \item \(\operatorname{mex}\) của tập số trong đoạn.
+\end{itemize}
+
+Các thông tin hỗ trợ hợp nhất nhanh đều có thể dùng những cấu trúc dữ liệu
+đoạn kiểu chia để trị, chẳng hạn cây đoạn. Ví dụ cây đoạn duy trì giá trị lớn
+nhất hoặc nhỏ nhất trên đoạn là kỹ thuật quen thuộc.
+
+\paragraph{\term{5.3.2. Có hỗ trợ chèn, xóa nhanh hay không}.}
+Với một đoạn \([l,r]\), nếu biết thông tin của đoạn này và có thể tính thông
+tin của đoạn \([l,r+1]\) trong \(O(1)\) hoặc \(\operatorname{poly}
+(\log(r-l))\), ta nói loại thông tin này hỗ trợ \term{chèn nhanh}. Nếu có thể
+tính thông tin của đoạn \([l,r-1]\) trong thời gian như vậy, ta nói nó hỗ trợ
+\term{xóa nhanh}.
+
+Một kết luận hiển nhiên là: thông tin hỗ trợ hợp nhất nhanh chắc chắn hỗ trợ
+chèn nhanh, chẳng hạn chèn ở đầu phải có thể xem là hợp nhất hai đoạn
+\([l,r]\) và \([r+1,r+1]\).
+
+Ví dụ hỗ trợ chèn nhanh nhưng không hỗ trợ xóa nhanh:
+\begin{itemize}
+  \item Bao lồi của tập điểm trong đoạn, duy trì bằng cây cân bằng.
+  \item Cây ảo của tập điểm trong đoạn, duy trì theo thứ tự DFS tương đối
+  bằng cây cân bằng.
+\end{itemize}
+
+Ví dụ hỗ trợ xóa nhanh nhưng không hỗ trợ chèn nhanh:
+\begin{itemize}
+  \item \(\operatorname{mex}\).
+\end{itemize}
+
+Ví dụ đồng thời hỗ trợ chèn và xóa nhanh:
+\begin{itemize}
+  \item Hàm đa thức bậc hằng của tổng đoạn, chẳng hạn bình phương của tổng
+  đoạn.
+  \item Số lượng phần tử khác nhau trong đoạn.
+\end{itemize}
+
+Những thông tin đoạn hỗ trợ chèn, xóa nhanh đều có thể xử lý bằng thuật toán
+Mo. Vì thuật toán Mo không phải trọng tâm thảo luận của bài này, ở đây không
+mở rộng.
+
+\subsubsection*{5.4. Thuật toán 2: chia khối}
+
+Vì bản thân bao lồi không hỗ trợ hợp nhất nhanh và xóa nhanh, còn bài này lại
+có thao tác xóa và truy vấn đoạn, nên các cấu trúc dữ liệu đoạn truyền thống
+kiểu chia để trị như cây đoạn không thể duy trì trực tiếp. Ta xét chia khối.
+
+Chia dãy thành \(S\) khối, mỗi khối có kích thước xấp xỉ \(n/S\), và với mỗi
+khối duy trì bao lồi của các phần tử trong khối. Khi chèn và xóa, xây dựng lại
+bao lồi trên của khối cuối, nên độ phức tạp chèn và xóa đều là
+\[
+  O\left(\frac nS\right).
+\]
+
+Với truy vấn đoạn \([l,r]\), ta cần liệt kê các khối nằm hoàn toàn trong đoạn
+truy vấn và nhị phân trên bao lồi của chúng, độ phức tạp
+\[
+  O(S\log n).
+\]
+Vì vậy tổng độ phức tạp là
+\[
+  O\left(\frac{n^2}{S}+nS\log n\right).
+\]
+Lấy \(S=\sqrt{n/\log n}\) thì thời gian nhỏ nhất là
+\[
+  O\left(n\sqrt{n\log n}\right).
+\]
+
+\subsubsection*{5.5. Thuật toán 3: phân nhóm nhị phân}
+
+Tính chất đặc biệt của điểm kiểm tra 4: không có thao tác loại \(2\), và truy
+vấn loại \(3\) luôn hỏi toàn bộ đoạn.
+
+Trong điểm này, ta chỉ cần duy trì bao lồi của toàn bộ phần tử, đồng thời chỉ
+cần hỗ trợ thao tác chèn.
+
+Bài toán này tương đối kinh điển và có thể dùng cây cân bằng duy trì bao lồi.
+Ở đây bài viết giới thiệu một cách không truyền thống: dùng phân nhóm nhị
+phân.
+
+Ta chia dãy thành một số nhóm liên tiếp, mỗi nhóm duy trì bao lồi của nó. Ban
+đầu dãy rỗng. Mỗi khi chèn một phần tử mới, tách riêng phần tử này thành một
+nhóm; hiển nhiên bao lồi của nhóm đó chính là phần tử này. Nếu hai nhóm cuối
+có kích thước bằng nhau, hợp nhất hai nhóm cuối thành một nhóm.
+
+Dễ chứng minh cách phân nhóm này khiến kích thước mỗi nhóm đều là một lũy
+thừa của \(2\), và kích thước các nhóm giảm nghiêm ngặt, nên tại mọi thời điểm
+số nhóm không vượt quá \(O(\log n)\).
+
+Xét việc hợp nhất hai nhóm có kích thước bằng nhau, giả sử kích thước là
+\(m\). Vì bao lồi của hợp hai tập điểm chắc chắn nằm trong hợp hai bao lồi, ta
+có thể trực tiếp trộn hai bao lồi theo khóa là tọa độ \(x\), rồi dùng thuật
+toán Graham tính lại bao lồi trong \(O(m)\).
+
+Phân tích độ phức tạp của quá trình hợp nhất: xét đóng góp của mỗi phần tử.
+Mỗi khi một phần tử bị hợp nhất một lần, kích thước nhóm chứa nó chắc chắn
+tăng gấp đôi. Vì thế đóng góp của mỗi phần tử cho độ phức tạp không vượt quá
+\(O(\log n)\), nên độ phức tạp là \(O(n\log n)\).
+
+Chú ý thao tác truy vấn phải nhị phân một lần trên bao lồi của từng nhóm, nên
+độ phức tạp là \(O(n\log^2 n)\). Do đó tổng độ phức tạp của thuật toán này là
+\(O(n\log^2 n)\).
+
+\subsubsection*{5.6. Thuật toán 4: đảo ngược thời gian}
+
+Tính chất đặc biệt của điểm kiểm tra 5: mọi thao tác loại \(2\) đều nằm sau
+thao tác loại \(1\), và truy vấn loại \(3\) luôn hỏi toàn bộ đoạn.
+
+Phân nhóm nhị phân chỉ liên quan tới tạo mới và hợp nhất, không xử lý được xóa
+trực tiếp. Quan sát tính chất của kiểu dữ liệu này, mọi thao tác xóa đều nằm
+sau thao tác chèn; điều đó gợi ý ta chia dãy thao tác thành hai phần.
+
+Với nửa trước, dùng cách phân nhóm nhị phân của điểm kiểm tra 4. Với nửa sau,
+ta đảo ngược thời gian; khi đó thao tác xóa biến thành thao tác chèn, vẫn có
+thể áp dụng phân nhóm nhị phân.
+
+Độ phức tạp thời gian là \(O(n\log^2 n)\). Ý tưởng chia dãy thành hai phần gợi
+ý ta suy nghĩ theo hướng chia để trị.
+
+\subsubsection*{5.7. Thuật toán 5: cây đoạn duy trì dãy tĩnh}
+
+Tính chất đặc biệt của điểm kiểm tra 6: mọi thao tác loại \(3\) đều nằm sau
+các thao tác loại \(1\) và loại \(2\).
+
+Sau khi xử lý xong mọi thao tác chèn, xóa, các truy vấn nằm trên một dãy tĩnh
+\(S\). Với truy vấn đoạn trên dãy tĩnh, ta có thể dùng cấu trúc dữ liệu đoạn
+kinh điển là cây đoạn.
+
+Với mỗi đoạn \([a,b]\) trên cây đoạn, ta duy trì bao lồi của mọi phần tử trong
+đoạn đó. Khi xây cây, có thể trực tiếp dùng cách hợp nhất bao lồi tuyến tính
+đã nêu trong điểm kiểm tra 4. Phần này có độ phức tạp
+\[
+  T(n)=2T\left(\frac n2\right)+O(n)=O(n\log n).
+\]
+
+Tiếp theo xét truy vấn một đoạn \([l,r]\). Một đoạn có thể biểu diễn thành
+hợp của \(O(\log n)\) đoạn ứng với các nút cây đoạn; ta chỉ cần nhị phân trên
+bao lồi lưu ở các nút này. Độ phức tạp thời gian là \(O(n\log^2 n)\).
+
+\subsubsection*{5.8. Thuật toán 6: chia để trị trên cây thao tác}
+
+Tính chất đặc biệt của điểm kiểm tra 7: với mọi thao tác loại \(3\), \(l=1\),
+và giới hạn bộ nhớ là \(128\) MB.
+
+\paragraph{\term{5.8.1. Cách dùng cấu trúc dữ liệu}.}
+Bài không yêu cầu bắt buộc trực tuyến. Vì vậy với một truy vấn \([l,r]\), chắc
+chắn tồn tại một thời điểm mà độ dài dãy vừa đúng bằng \(r\) và dãy khi đó
+giống hệt dãy tại thời điểm truy vấn. Ta ghi truy vấn vào thời điểm đó. Lại vì
+\(l=1\), việc này tương đương với mỗi lần truy vấn toàn bộ dãy; ta chỉ cần duy
+trì bao lồi của mọi phần tử.
+
+Xét dùng Splay để duy trì. Chú ý khi chèn một điểm, các điểm bị thay khỏi bao
+lồi cũ chắc chắn tạo thành một đoạn trên bao lồi cũ. Nếu ghi lại hệ số góc
+trên các nút, ta có thể nhị phân hai đầu của đoạn này, rồi tách đoạn đó khỏi
+Splay và lưu lại. Khi xóa phần tử cuối, ta hợp nhất lại đoạn đã tách ra.
+
+Trong hình minh họa của nguồn, sau khi thêm điểm \(H\), ba điểm \(B,C,D\) bị
+thay khỏi bao lồi và được lưu lại. Vì đã ghi hệ số góc, truy vấn có thể nhị
+phân trực tiếp trên Splay; do đó độ phức tạp của mọi thao tác đều là
+\(O(\log n)\), tổng cộng \(O(n\log n)\).
+
+\paragraph{\term{5.8.2. Cách làm trên dãy}.}
+Chèn và xóa có cấu trúc hơi khó xét, nên trước tiên xét trường hợp dãy tĩnh,
+trong đó mỗi truy vấn hỏi một tiền tố \([1,p]\).
+
+Ta có thể dùng chia để trị. Xét xử lý một đoạn \([l,r]\), đặt
+\(\mathit{mid}=(l+r)/2\). Lấy ra mọi truy vấn có \(p\ge \mathit{mid}\); các
+truy vấn này đều phủ đoạn \([l,\mathit{mid}]\). Ta xử lý một lượt đóng góp của
+các phần tử trong đoạn \([l,\mathit{mid}]\) đối với các truy vấn có \(p\) nằm
+trong \([\mathit{mid},r]\). Sau khi xử lý xong đóng góp, dựa vào
+\(p<\mathit{mid}\) hay \(p\ge \mathit{mid}\) để chia truy vấn thành hai phần
+và đệ quy sang trái, phải. Khi chia để trị tới đoạn chỉ còn một phần tử, dùng
+trực tiếp phần tử đó cập nhật mọi truy vấn tại điểm này.
+
+Tiếp theo xét cách nhanh chóng xử lý đóng góp của các phần tử trong
+\([l,\mathit{mid}]\) đối với các truy vấn trong \([\mathit{mid},r]\).
+
+\paragraph{\term{Cách A}.}
+Ta dựng bao lồi cho các phần tử trong đoạn \([l,\mathit{mid}]\), rồi liệt kê
+từng truy vấn bên phải và nhị phân trên bao lồi đã dựng ở bên trái. Một lần
+tính đóng góp có độ phức tạp \(O(n\log n)\).
+
+\paragraph{\term{Cách B}.}
+Tương tự, trước hết dựng bao lồi cho các phần tử trong đoạn
+\([l,\mathit{mid}]\). Sau đó sắp xếp các truy vấn trong đoạn
+\([\mathit{mid},r]\) theo thứ tự góc cực. Khi xử lý truy vấn từ trước ra sau,
+điểm tối ưu trên bao lồi di chuyển đơn điệu. Vì vậy chỉ cần đặt hai con trỏ
+\(i,j\) lần lượt quét trên dãy truy vấn và trên bao lồi. Giả mã như sau:
+\[
+\begin{array}{l}
+\textbf{for } i=0 \textbf{ to } |Q|-1 \textbf{ do}\\
+\quad \textbf{while } j+1<|H| \textbf{ and } H_{j+1}\cdot Q_i>H_j\cdot Q_i
+  \textbf{ do}\\
+\quad\quad j=j+1\\
+\quad \textbf{end while}\\
+\quad \operatorname{ans}_i=\max(\operatorname{ans}_i,H_j\cdot Q_i)\\
+\textbf{end for.}
+\end{array}
+\]
+
+Một lần quét có độ phức tạp \(O(n)\). Vì cần sắp xếp, độ phức tạp thực tế là
+\(O(n\log n)\). Chú ý việc sắp xếp có thể hoàn thành đồng thời với chia để trị
+bằng sắp xếp trộn, nên tổng độ phức tạp là
+\[
+  T(n)=2T\left(\frac n2\right)+O(n)=O(n\log n).
+\]
+
+Trên dãy tĩnh, thuật toán chia để trị không ưu thế hơn cách dùng cây cân bằng
+duy trì bao lồi, nhưng nó có khả năng mở rộng tốt hơn.
+
+\paragraph{\term{5.8.3. Mở rộng lên cây thao tác}.}
+Quan sát cách dùng cấu trúc dữ liệu, ta thấy nó rất giống quá trình DFS trên
+một cây. Vì bài toán có thể làm ngoại tuyến, ta xây hẳn cây thao tác. Cách
+xây như sau:
+\begin{enumerate}
+  \item Ban đầu tạo một nút gốc \(\mathit{root}\), đặt con trỏ
+  \(p=\mathit{root}\).
+  \item Với thao tác chèn, tạo nút mới \(x\), đặt \(\operatorname{father}_x=p\),
+  rồi đặt \(p=x\).
+  \item Với thao tác xóa, đặt \(p=\operatorname{father}_p\).
+\end{enumerate}
+
+Vì chỉ tạo nút khi chèn, số nút của cây thao tác dựng được không vượt quá số
+thao tác chèn. Tiếp đó ta nhận ra đoạn truy vấn chính là một chuỗi đi từ trên
+xuống dưới trên cây. Trong điểm kiểm tra này, đầu trên của chuỗi là
+\(\mathit{root}\); ta ghi truy vấn cho chuỗi \(\mathit{root}\to p\) tại nút
+\(p\).
+
+Ta xét mở rộng thuật toán chia để trị. Trên cây thao tác, có thể dùng trực
+tiếp chia để trị theo trọng tâm. Để tiện, trong chia để trị theo trọng tâm,
+với một khối liên thông trên cây, định nghĩa nút có độ sâu nhỏ nhất trong
+khối làm gốc của khối, ký hiệu là \(R\), và trọng tâm ký hiệu là \(G\).
+
+Tại mỗi tầng của cấu trúc chia để trị, ta xử lý một lượt đóng góp của các phần
+tử trên chuỗi \(R\to G\) đối với mọi truy vấn trong cây con của \(G\). Việc này
+có thể áp dụng trực tiếp Cách A hoặc Cách B ở trên. Vì cấu trúc chia để trị
+trên cây không dễ dùng sắp xếp trộn để tối ưu, nên một lần tính đóng góp theo
+Cách A hoặc Cách B đều có độ phức tạp \(O(n\log n)\).
+
+Do trọng tâm chia cây thành ít nhất hai khối liên thông, mỗi khối có kích
+thước không quá \(n/2\), tổng độ phức tạp là
+\[
+  T(n)=2T\left(\frac n2\right)+O(n\log n)=O(n\log^2 n).
+\]
+
+\subsubsection*{5.9. Thuật toán 7: nghiệm đầy đủ A}
+
+Qua việc suy nghĩ trường hợp \(l=1\), tức điểm kiểm tra 7, ta có được một công
+cụ mạnh: chia để trị trên cây. Bây giờ xét bài toán gốc.
+
+Trước hết áp dụng thuật toán 6 để dựng cây thao tác, rồi chia để trị theo
+trọng tâm trên cây thao tác. Điểm khác duy nhất nằm ở việc tính đóng góp của
+các phần tử trên chuỗi \(R\to G\) đối với mọi truy vấn trong cây con của \(G\).
+Vì điều kiện \(l=1\) không còn thỏa mãn, đoạn truy vấn trong cây con của \(G\)
+không nhất thiết chứa trọn chuỗi \(R\to G\), mà có thể là một hậu tố của chuỗi
+này.
+
+Tách riêng vấn đề này ra sẽ thấy nó tương đương với bài toán truy vấn tiền tố
+trên dãy ở Mục 5.8.2. Do đó ta lấy chuỗi \(R\to G\), đảo ngược nó, thêm các
+truy vấn vào rồi dùng cách ở Mục 5.8.2. Nếu chọn Cách B có tối ưu sắp xếp
+trộn, mỗi lần tính có độ phức tạp \(O(n\log n)\).
+
+Vì vậy độ phức tạp thời gian của thuật toán là \(O(n\log^2 n)\). Chia để trị
+trên cây và sắp xếp trộn đều có độ phức tạp không gian \(O(n)\), nên độ phức
+tạp không gian là \(O(n)\). Thuật toán này có thể đạt \(100\) điểm.
+
+\subsubsection*{5.10. Thuật toán 8: nghiệm đầy đủ B}
+
+Quan sát bản chất bài toán: sau khi các thao tác chèn, xóa được dựng thành
+một cây thao tác, đoạn truy vấn thực chất là một đường đi từ trên xuống dưới
+trên cây.
+
+Ta vẫn xét chia để trị theo trọng tâm, mỗi lần xử lý mọi truy vấn đi qua trọng
+tâm \(G\). Trước hết tách một truy vấn \(u\to v\) đi qua \(G\) thành hai chuỗi
+truy vấn \(G\to u\) và \(G\to v\). Quan sát bài toán này, nếu lấy \(G\) làm
+gốc thì nó hoàn toàn giống trường hợp ở điểm kiểm tra 7. Dùng trực tiếp cách
+cấu trúc dữ liệu trong Mục 5.8.1 có thể nhận được thuật toán
+\(O(n\log n)\) cho một tầng.
+
+Do đó tổng độ phức tạp là \(O(n\log^2 n)\). Chia để trị trên cây và Splay đều
+có độ phức tạp không gian \(O(n)\), nên không gian cũng là \(O(n)\). Thuật
+toán này có thể đạt \(100\) điểm.
+
+\subsubsection*{5.11. Thuật toán 9: nghiệm đầy đủ C}
+
+Phần chia để trị trên cây giống thuật toán 7. Khi tính đóng góp của các phần
+tử trên chuỗi \(R\to G\) đối với mọi truy vấn trong cây con của \(G\), ta dùng
+cấu trúc dữ liệu để duy trì. Bắt đầu từ \(G\), đi ngược lên \(R\) và lần lượt
+thêm các nút, dùng cấu trúc dữ liệu duy trì bao lồi của các nút đã thêm. Với
+mỗi truy vấn hậu tố, khi thêm tới vị trí tương ứng, ta nhị phân trên cấu trúc
+dữ liệu để lấy đáp án.
+
+Vì cấu trúc dữ liệu ở đây chỉ cần hỗ trợ thêm điểm, mà khi thêm điểm có thể
+duy trì bao lồi bằng bạo lực với bảo đảm độ phức tạp, nên phần lớn cây cân
+bằng hoặc trực tiếp \texttt{set} đều làm được.
+
+Độ phức tạp thời gian là \(O(n\log^2 n)\), đủ đạt \(100\) điểm.
+
+\subsubsection*{5.12. Thuật toán 10: phân rã chuỗi nặng nhẹ}
+
+Trong Mục 5.8.3, ta đã chuyển đoạn truy vấn thành chuỗi trên cây. Đa số bài
+toán chuỗi trên cây, ngoài chia để trị theo trọng tâm, còn có thể giải bằng
+phân rã chuỗi nặng nhẹ. Bản thân thuật toán phân rã chuỗi nặng nhẹ đã khá phổ
+biến, ở đây không nhắc lại.
+
+Sau khi phân rã chuỗi nặng nhẹ, một chuỗi trên cây bị tách thành
+\(O(\log n)\) đoạn thứ tự DFS. Quan sát tính chất của các đoạn này, ngoài đoạn
+có độ sâu nhỏ nhất, mọi đoạn còn lại đều là tiền tố của một chuỗi nặng nào đó.
+
+Ta xây cây đoạn theo thứ tự DFS như thuật toán 5, rồi dùng cây đoạn truy vấn
+cập nhật các đoạn không phải tiền tố chuỗi nặng. Tiếp theo xét mọi chuỗi nặng:
+với mỗi chuỗi nặng, chèn nút từ trên xuống dưới và dùng cấu trúc dữ liệu duy
+trì.
+
+Tương tự, chỉ cần hỗ trợ chèn, nên phần lớn cây cân bằng hoặc \texttt{set} đều
+có thể hoàn thành.
+
+Xét độ phức tạp thời gian: xây cây đoạn là \(O(n\log n)\); với mỗi truy vấn,
+phần không phải tiền tố chuỗi nặng được hỏi trên cây đoạn trong
+\(O(\log^2 n)\); quét từng chuỗi nặng và duy trì bao lồi bằng Splay có độ phức
+tạp \(O(n\log n)\). Vì mỗi truy vấn bị tách thành \(O(\log n)\) tiền tố chuỗi
+nặng, và mỗi tiền tố cần một lần nhị phân, tổng độ phức tạp là
+\[
+  O(n\log^2 n).
+\]
+
+Do cần xây cây đoạn và các bao lồi, độ phức tạp không gian của thuật toán là
+\(O(n\log n)\), nên có thể đạt khoảng \(90\) điểm.
+
+\subsubsection*{5.13. Thuật toán 11: chia để trị bằng cây đoạn}
+
+Tiếp tục xét thuật toán 10. Một truy vấn bị tách thành \(O(\log n)\) đoạn thứ
+tự DFS. Với cập nhật hoặc truy vấn đoạn trên dãy, ta có thể xử lý ngoại tuyến
+bằng cây đoạn; phương pháp này gọi là chia để trị bằng cây đoạn. Trước hết xét
+một ví dụ.
+
+\paragraph{\term{5.13.1. Ví dụ: Vector}.}
+Cần duy trì một tập vector, hỗ trợ các thao tác:
+\begin{enumerate}
+  \item Thêm một vector \((x,y)\).
+  \item Xóa vector được thêm ở lần thứ \(i\).
+  \item Hỏi giá trị lớn nhất của tích vô hướng giữa tập hiện tại và \((x,y)\).
+  Nếu tập hiện tại rỗng thì xuất \(0\).
+\end{enumerate}
+Cho phép làm ngoại tuyến. Với \(100\%\) dữ liệu, \(n\le 200000\) và
+\(1\le x,y\le 10^9\). Nguồn bài: đề mô phỏng NOI 2015 của HEB.
+
+Với mỗi vector, ta có thể tiền xử lý thời điểm nó được thêm vào tập và thời
+điểm nó bị xóa khỏi tập. Như vậy mỗi vector tương ứng một đoạn trên trục thời
+gian.
+
+Xét xây cây đoạn trên trục thời gian. Đưa một vector vào cây đoạn có thể phân
+tách thành \(O(\log n)\) nút trên cây đoạn.
+
+Tiếp đó, với mỗi nút, dựng bao lồi của các vector thuộc nút ấy. Với mỗi truy
+vấn, chỉ cần hỏi từ gốc xuống dưới qua các đoạn chứa nó. Độ phức tạp là
+\(O(n\log^2 n)\).
+
+Có thể tối ưu thêm: sắp xếp truy vấn theo góc cực, rồi dùng cách tuyến tính ở
+Mục 5.8.2 để lấy đáp án. Khi đó nút thắt nằm ở sắp xếp.
+
+Thực ra, nếu đưa mọi vector vào theo thứ tự tọa độ \(x\), và đưa mọi truy vấn
+vào theo thứ tự góc cực, thì tại các nút cây đoạn không cần sắp xếp nữa. Tổng
+độ phức tạp trở thành
+\[
+  O(n\log n+Q\log Q+Q\log n).
+\]
+
+\paragraph{\term{5.13.2. Chia để trị bằng cây đoạn trong bài này}.}
+Chú ý bài \emph{Vector} khác bài này ở chỗ: truy vấn trong \emph{Vector} là
+một điểm thời gian, còn các vector trong tập phủ các đoạn; trong bài này, ta
+truy vấn thông tin đoạn của một dãy vector.
+
+Ta vẫn có thể dùng cách chia để trị bằng cây đoạn. Trước hết đưa các truy vấn
+vào cây đoạn theo thứ tự góc cực, rồi DFS trên cây đoạn. Với mỗi nút cây đoạn,
+dùng hợp nhất để tính bao lồi của đoạn mà nút đại diện; tiếp đó vẫn dùng thuật
+toán ở Mục 5.8.2 để cập nhật đáp án.
+
+Độ phức tạp như vậy là \(O(n\log n+Q\log Q)\). Vì ta dùng phân rã chuỗi nặng
+nhẹ tách một truy vấn thành \(O(\log n)\) truy vấn nhỏ, nên \(Q=O(n\log n)\),
+tổng độ phức tạp là \(O(n\log^2 n)\).
+
+Do phải lưu \(O(n\log^2 n)\) truy vấn trên cây đoạn, độ phức tạp không gian là
+\(O(n\log^2 n)\). Cách này có thể đạt khoảng \(70\)--\(90\) điểm.
+
+\subsubsection*{5.14. Thuật toán 12: xét lại phân nhóm nhị phân}
+
+Các thuật toán 6--11 đều yêu cầu cho phép làm ngoại tuyến. Vậy có cách nào hỗ
+trợ trực tuyến hay không?
+
+Trong thuật toán 3, ta đã đưa vào một cách xử lý chèn trực tuyến: phân nhóm
+nhị phân. Bây giờ xét cải tiến thuật toán này.
+
+Ta xây \(t+1\) tầng nhóm, trong đó \(t\) là số nguyên nhỏ nhất thỏa
+\(2^t>n\), với \(n\) là độ dài đoạn hiện tại. Kích thước mỗi nhóm ở tầng \(i\)
+\((0\le i\le t)\) là \(2^i\), và số nhóm ở tầng đó là \(\mathit{siz}_i\). Chú
+ý mỗi nhóm ở tầng \(i\) được chia đều thành hai đoạn cùng độ dài ở tầng
+\(i-1\), nên đây là một cấu trúc cây đoạn; vì vậy có thể định nghĩa quan hệ
+con trái, con phải và cha như trên cây đoạn.
+
+Nếu chỉ có chèn thì cách làm vẫn như cũ. Trước hết thêm một nhóm ở tầng \(0\).
+Sau đó bắt đầu từ tầng \(i=1\); nếu tầng \(i\) có thể tăng thêm một nhóm, thì
+hợp nhất hai nhóm con trái, phải để nhận được nhóm mới được thêm.
+
+Thao tác xóa khó xử lý hơn, vì xóa một phần tử có thể khiến thông tin nhóm
+cuối của vài tầng đầu trở nên sai. Nếu mỗi lần đều xây lại bạo lực thì độ
+phức tạp là \(O(n)\), không chấp nhận được. Ta đưa vào tư tưởng của cây
+scapegoat: khi thông tin của một nhóm bị sai, ta không xây lại ngay mà đánh
+dấu nhóm đó. Khi truy vấn tới nhóm này, ta đệ quy xuống hai con của nó, cho
+tới khi gặp nhóm chưa bị đánh dấu thì mới nhị phân trong nhóm để tính đáp án.
+Tuy nhiên cũng không thể mãi không cập nhật, nếu không khi truy vấn, số nút
+đệ quy xuống tận đáy có thể đạt \(O(n)\), cũng không chấp nhận được. Vì vậy
+xét cơ chế cập nhật sau:
+\[
+  \text{ở mỗi tầng, nhiều nhất chỉ cho phép nhóm cuối cùng bị đánh dấu.}
+\]
+
+Như vậy, khi tầng \(i\) cần tăng thêm một nhóm, ta mới cập nhật bạo lực nhóm
+cuối cũ; khi xóa, chỉ cần đánh dấu từ dưới lên trên.
+
+Tiếp theo tính độ phức tạp của thuật toán này.
+
+\paragraph{\term{5.14.1. Độ phức tạp của tái xây dựng}.}
+Với tầng \(i\), ta thống kê hai loại sự kiện:
+\begin{enumerate}
+  \item Nhóm cuối bị đánh dấu, độ phức tạp \(O(1)\).
+  \item Tái xây dựng nhóm cuối và thêm một nhóm mới có đánh dấu, độ phức tạp
+  \(O(2^i)\).
+\end{enumerate}
+
+Gọi \(\mathit{len}\) là tổng độ dài của các nhóm không bị đánh dấu ở tầng
+\(i\), và đặt \(B_i=n-\mathit{len}\). Khi sự kiện 1 xảy ra, \(B_i\) tăng từ
+\(0\) thành \(2^i\); khi sự kiện 2 xảy ra, \(B_i\) giảm từ \(2^{i+1}\) xuống
+\(2^i\). Một thao tác chèn hoặc xóa chỉ làm \(B_i\) thay đổi nhiều nhất \(1\).
+
+Xét hàm thế năng
+\[
+  \Phi(i)=|B_i-2^i|.
+\]
+Một thao tác chèn hoặc xóa đóng góp nhiều nhất \(1\) vào \(\Phi(i)\), còn một
+sự kiện làm giảm thế năng \(2^i\). Vì vậy giữa hai lần sự kiện phải có ít
+nhất \(2^i\) thao tác, nên độ phức tạp bình quân là \(O(n)\) trên toàn bộ dãy
+thao tác của tầng đang xét.
+
+Vì có \(t\) tầng, tổng độ phức tạp tái xây dựng là \(O(tn)\).
+
+\paragraph{\term{5.14.2. Độ phức tạp truy vấn}.}
+Như đã nói, cấu trúc này là một cây đoạn. Trước hết tách đoạn truy vấn
+\([l,r]\) thành \(O(\log n)\) nhóm. Với mỗi nhóm, có ba trường hợp:
+\begin{enumerate}
+  \item Không bị đánh dấu. Khi đó trực tiếp truy vấn nhóm này.
+  \item Bị đánh dấu nhưng hai con đều không bị đánh dấu. Khi đó truy vấn lần
+  lượt trong hai con, chỉ làm hằng số nhân \(2\).
+  \item Bị đánh dấu và con phải cũng bị đánh dấu. Khi đó truy vấn ở con trái
+  rồi đệ quy xuống con phải. Chú ý con trái ở đây chắc chắn là nhóm áp chót
+  của một tầng nào đó; những nhóm như vậy chỉ có \(O(\log n)\).
+\end{enumerate}
+
+Vì vậy số đoạn thực sự được truy vấn là \(O(\log n)\). Do đó độ phức tạp của
+một thao tác truy vấn là \(O(\log^2 n)\). Tổng độ phức tạp là
+\[
+  O(tn+n\log^2 n)=O(n\log^2 n).
+\]
+Vì cần duy trì \(t\) tầng, độ phức tạp không gian là
+\[
+  O(tn)=O(n\log n).
+\]
+Cách này có thể đạt khoảng \(90\) điểm.
+
+\subsection*{6. Tóm tắt ý tưởng}
+
+Bài này tương đối phức tạp; nếu suy nghĩ trực tiếp sẽ khá khó. Có thể chia đại
+khái thành vài bước.
+
+Trước hết phân tích thông tin cần duy trì. Trong bài này, ta cần duy trì bao
+lồi của tập truy vấn, và bao lồi là ví dụ điển hình của loại thông tin không
+dễ hợp nhất nhanh.
+
+Tiếp đó xét điểm từng phần và lấy gợi ý từ chúng.
+
+Phần chỉ có chèn và truy vấn toàn cục có thể xử lý trực tuyến bằng phân nhóm
+nhị phân.
+
+Phần không có sửa đổi có thể dùng cây đoạn.
+
+Phần \(l=1\) là phần khá then chốt, đồng thời khó hơn. Ta xét tình huống trên
+dãy và đưa ra cách chia để trị. Sau đó đưa vào khái niệm cây thao tác và mở
+rộng thuật toán chia để trị lên cây, tức thuật toán chia để trị theo trọng
+tâm.
+
+Sau khi có công cụ chia để trị theo trọng tâm, ta thử giải bài gốc. Quan sát
+điểm khác giữa bài gốc và phần \(l=1\): truy vấn trong cây con không nhất
+thiết là chuỗi từ gốc tới trọng tâm, mà có thể là một hậu tố của chuỗi này.
+Tiếp tục quan sát sẽ thấy đây chính là bài toán trên dãy của phần \(l=1\), và
+có thể tiếp tục dùng chia để trị để giải. Như vậy ta thu được một thuật toán
+tốt với thời gian \(O(n\log^2 n)\) và không gian \(O(n)\).
+
+Có thể thấy, tuy đề bài có tên ``Chúng ta vẫn chưa biết tên cấu trúc dữ liệu
+đã nhìn thấy hôm ấy'', thuật toán đạt điểm tối đa mà tác giả đưa ra lại không
+dùng cấu trúc dữ liệu phức tạp, mà dùng hai lần chia để trị để đơn giản hóa
+bài toán.
+
+Bản chất thật ra là đặt tư tưởng CDQ chia để trị lên cây: chia để trị trên dãy
+trở thành chia để trị theo trọng tâm; quan sát rằng thống kê đóng góp ở mỗi
+tầng chia để trị là một bài con đặc biệt trên dãy và tiếp tục áp dụng chia để
+trị chính là mấu chốt để giải bài này.
+
+Các thuật toán trên yêu cầu làm ngoại tuyến. Nếu xét phiên bản tăng cường bắt
+buộc trực tuyến, yêu cầu không gian được nới tới \(O(n\log n)\).
+
+Điều này khiến ta nhớ lại phần điểm chỉ có chèn, vốn hỗ trợ bắt buộc trực
+tuyến. Vì vậy ta cải tiến phân nhóm nhị phân thành cấu trúc cây đoạn và đưa
+vào tư tưởng cây scapegoat.
+
+Cuối cùng, ta quy định mỗi tầng nhiều nhất chỉ có đoạn cuối bị đánh dấu, và
+phân tích được độ phức tạp duy trì thông tin là \(O(n\log n)\). Do truy vấn
+không đủ tốt, tổng độ phức tạp là \(O(n\log^2 n)\).
+
+Có thể nói đây là thuật toán trực tuyến khá tổng quát cho loại bài này, với
+độ phức tạp không gian \(O(n\log n)\).
+
+Tới đây bài toán đã được giải quyết trọn vẹn, nhưng ý nghĩa của bài không chỉ
+dừng ở đó. Những tư tưởng và phương pháp dùng trong quá trình giải bài có giá
+trị thực dụng và khả năng mở rộng rất lớn.
+
+\subsection*{7. Mở rộng đơn giản}
+
+\subsubsection*{7.1. Chèn, xóa ở hai đầu}
+
+Các thảo luận ở trên đều giới hạn trong bài toán chèn, xóa phần tử ở cuối.
+Thực ra có thể mở rộng rất dễ sang bài toán chèn, xóa ở cả hai đầu.
+
+\paragraph{\term{7.1.1. Mở rộng thuật toán 7}.}
+Với thuật toán 7, ta xét cải tiến cách xây cây thao tác:
+\begin{enumerate}
+  \item Ban đầu tạo một nút gốc \(\mathit{root}\), đặt hai con trỏ
+  \(p=q=\mathit{root}\).
+  \item Với thao tác chèn ở đầu, tạo nút mới \(x\), đặt
+  \(\operatorname{father}_x=p\), rồi đặt \(p=x\).
+  \item Với thao tác chèn ở cuối, tạo nút mới \(x\), đặt
+  \(\operatorname{father}_x=q\), rồi đặt \(q=x\).
+  \item Với thao tác xóa ở đầu, đặt \(p=\operatorname{father}_p\).
+  \item Với thao tác xóa ở cuối, đặt \(q=\operatorname{father}_q\).
+\end{enumerate}
+
+Với mỗi truy vấn đoạn \([l,r]\), chuỗi tương ứng trên cây là chuỗi gồm các nút
+từ nút thứ \(l\) tới nút thứ \(r\) trên đường đi \(p\to q\). Tuy nhiên không
+thể trực tiếp dùng thuật toán 7, vì thuật toán 7 yêu cầu chuỗi truy vấn là một
+đoạn đi từ trên xuống dưới trên cây, còn cây thao tác sau cải tiến không đảm
+bảo điểm này.
+
+Do đó cần cải tiến thêm: chỉ cần tách một chuỗi truy vấn \(u\to v\) thành hai
+chuỗi \(w\to u\) và \(w\to v\), trong đó \(w=\operatorname{LCA}(u,v)\).
+
+Tương tự, thuật toán 9 cũng có thể mở rộng lên cây thao tác cải tiến. Thuật
+toán 8 vốn xử lý các truy vấn đi qua gốc, nên không cần tách truy vấn thành
+hai chuỗi từ trên xuống; có thể xử lý trực tiếp. Cách mở rộng chi tiết tương
+tự thuật toán 7, ở đây không trình bày thêm.
+
+\paragraph{\term{7.1.2. Mở rộng thuật toán 12}.}
+Phân nhóm nhị phân chỉ hỗ trợ thao tác ở một đầu. Xét phân nhóm nhị phân cải
+tiến trong thuật toán 12: về bản chất nó là một cấu trúc cây đoạn, nên có thể
+dùng trực tiếp cây đoạn để thay thế.
+
+Ban đầu xây cây đoạn có độ dài \(2^t\), và đặt vị trí ban đầu ở chính giữa.
+Ta sửa cơ chế cập nhật thành: mỗi tầng nhiều nhất cho phép hai nhóm bị đánh
+dấu, một ở trái và một ở phải. Khi chèn, xóa thì dùng trực tiếp phương pháp xử
+lý của thuật toán 12. Mọi phân tích độ phức tạp vẫn đúng ở đây; ta chỉ cần
+tính riêng thế năng bên trái và bên phải. Riêng lúc truy vấn, vì nhóm áp chót
+của cả hai phía đều có thể bị truy cập, hằng số sẽ nhân thêm \(2\).
+
+\subsubsection*{7.2. Duy trì những thông tin đoạn khác không thể hợp nhất nhanh}
+
+Trên thực tế, khi thông tin không dễ hợp nhất nhanh, các bài yêu cầu hỗ trợ
+chèn, xóa ở cuối và truy vấn đoạn phần lớn đều có thể dùng các thuật toán được
+trình bày trong bài này. Xét một ví dụ.
+
+\paragraph{\term{7.2.1. Ví dụ: cây Ji Li}.}
+Cho một cây \(n\) đỉnh có trọng số cạnh. Cần duy trì một dãy và hỗ trợ ba thao
+tác:
+\begin{enumerate}
+  \item Chèn một điểm \(x\) vào cuối.
+  \item Xóa điểm cuối.
+  \item Hỏi trong đoạn \([l,r]\), điểm xa \(x\) nhất có khoảng cách tới \(x\)
+  là bao nhiêu.
+\end{enumerate}
+Số thao tác là \(m\), với \(m\le 100000\).
+
+Subtask 1: cho phép làm ngoại tuyến. Subtask 2: bắt buộc trực tuyến. Nguồn
+bài: Ji Ruyi.
+
+\paragraph{\term{Xét thông tin cần duy trì}.}
+Nếu cho trước một cây, làm sao tìm điểm xa \(x\) nhất? Có thể dùng quy hoạch
+động trên cây để tiền xử lý điểm xa nhất cho mỗi đỉnh, độ phức tạp là
+\(O(n)\).
+
+Nếu cho một cây và một tập đỉnh \(S\), cần tìm khoảng cách từ \(x\) tới điểm
+xa nhất trong \(S\), giải thế nào? Vẫn có thể dùng quy hoạch động trên cây để
+tiền xử lý, độ phức tạp vẫn là \(O(n)\). Tuy nhiên khi số truy vấn lớn, độ
+phức tạp này chưa đủ tốt. Ta xét dùng thuật toán cây ảo. Thuật toán cây ảo đã
+khá phổ biến trong thi tin học, nên ở đây không mở rộng.
+
+Ta biết xây cây ảo có độ phức tạp \(O(|S|\log n)\). Sau đó, trên cây ảo, dùng
+quy hoạch động trên cây để tiền xử lý với mỗi điểm \(z\) trên cây ảo khoảng
+cách \(d_z\) tới điểm xa nhất trong tập. Với mỗi điểm truy vấn \(x\), nhị phân
+trên thứ tự DFS để tìm hai điểm gần \(x\) nhất trên cây ảo, gọi là \(u,v\).
+Hiển nhiên \(u,v\) là hai đầu của một cạnh trên cây ảo. Giả sử \(u\) là cha
+của \(v\), đặt \(t=\operatorname{LCA}(v,x)\).
+
+Điểm xa nhất của \(x\) nằm ở một trong hai phía, \(u\) hoặc \(v\). Nếu phía đó
+là \(s\), đáp án có dạng
+\[
+  \operatorname{dist}(x,t)+d_s-\operatorname{dist}(s,t).
+\]
+Vì vậy
+\[
+\begin{aligned}
+\operatorname{ans}(x)=\max(&\operatorname{dist}(x,t)+d_u-\operatorname{dist}(u,t),\\
+&\operatorname{dist}(x,t)+d_v-\operatorname{dist}(v,t)).
+\end{aligned}
+\]
+Hình nguồn minh họa trường hợp \(d_v=\operatorname{dist}(v,w)\), khi đó
+\[
+  \operatorname{ans}(x)=\operatorname{dist}(x,w)
+  =\operatorname{dist}(x,t)+d_v-\operatorname{dist}(v,t).
+\]
+
+\paragraph{\term{Lời giải Subtask 1}.}
+Trước hết dựng cây thao tác để biến đoạn truy vấn thành một chuỗi trên cây.
+
+Nếu dùng thuật toán 7, tức chia để trị theo trọng tâm lồng chia để trị, vấn đề
+cần giải là hợp nhất thông tin đoạn.
+
+Việc dựng cây ảo dựa trên thứ tự DFS. Vì vậy chỉ cần duy trì kết quả sắp xếp
+các phần tử trong đoạn theo thứ tự DFS. Hợp nhất hai bảng có thứ tự là
+\(O(n)\). Do nút thắt khi dựng cây ảo là tìm LCA, mà LCA có thể được tối ưu
+bằng dãy Euler cộng RMQ để truy vấn \(O(1)\), tổng độ phức tạp cho một lần
+hợp nhất là \(O(n)\).
+
+Như vậy có thể giải bài con này với độ phức tạp \(O(n\log^2 n)\).
+
+Xét cách khác, chẳng hạn thuật toán 8; khi đó cần giải thao tác chèn phần tử
+\(x\).
+
+Ta dùng cây cân bằng để duy trì các nút cây ảo theo thứ tự DFS. Khi chèn phần
+tử, nhị phân trong cây cân bằng để tìm cạnh gần \(x\) nhất trên cây ảo, từ đó
+tìm điểm \(y\) gần \(x\) nhất trên cạnh cây ảo. Đưa cả \(x\) và \(y\) vào tập.
+Như vậy mỗi lần chèn chỉ cần thêm nhiều nhất hai nút vào cây cân bằng, số lần
+sửa cạnh cây ảo cũng là \(O(1)\), độ phức tạp \(O(\log n)\). Khi DFS, dùng
+ngăn xếp để lưu các sửa đổi và hoàn tác.
+
+Lời giải theo thuật toán 9 tương tự thuật toán 8, không nhắc lại.
+
+\paragraph{\term{Lời giải Subtask 2}.}
+Thuật toán 12 chỉ cần hợp nhất đoạn, mà trong Mục 7.2.1 thông tin đoạn đã có
+thể hợp nhất với độ phức tạp \(O(n)\). Do đó trực tiếp thay thông tin đoạn mà
+thuật toán 12 duy trì bằng cây ảo là có thể giải bài này. Phân tích độ phức
+tạp hoàn toàn giống bài \emph{Unknown}: tái xây dựng cập nhật có độ phức tạp
+bình quân \(O(n\log n)\), truy vấn \(O(n\log^2 n)\), đủ giải bài.
+
+\subsection*{8. Ý tưởng ra đề và tổng kết}
+
+\subsubsection*{8.1. Ý tưởng ra đề \emph{Unknown}}
+
+Những năm gần đây xuất hiện rất nhiều bài yêu cầu duy trì thông tin đoạn. Loại
+bài này đa số dùng cấu trúc dữ liệu đoạn để duy trì. Trong các thông tin tương
+đối khó duy trì, bao lồi trên xuất hiện thường xuyên nhất; những bài cần dùng
+các phương pháp không truyền thống như chia để trị theo thời gian, phân nhóm
+nhị phân để giải cũng ngày càng nhiều.
+
+Bài thứ ba ngày 2 của NOI 2014, \emph{Gou Piao}, là một bài điển hình cần duy
+trì bao lồi và hỗ trợ truy vấn đoạn để tối ưu DP. Anh Lu Kaifeng tại hiện
+trường đã dùng thuật toán chia để trị trên cây để AC bài này, và không lâu sau
+đó chia sẻ tư tưởng này cho tác giả. Tư tưởng đó gợi mở rất nhiều cho tác giả
+và khơi dậy hứng thú nghiên cứu các phương pháp duy trì loại thông tin này.
+
+Bài kiểm tra chéo đội tuyển tập huấn mà tác giả nghiên cứu và ra đề,
+\emph{Chúng ta vẫn chưa biết tên cấu trúc dữ liệu đã nhìn thấy hôm ấy}, là một
+bài có độ khó cao. Các lời giải điểm từng phần của nó bao phủ nhiều nhánh dùng
+phương pháp không truyền thống để giải bài cấu trúc dữ liệu truyền thống, như
+phân nhóm nhị phân, đảo ngược thời gian, chia để trị bằng cây đoạn. Để tìm
+được lời giải đầy đủ, thí sinh cần quan sát nhạy bén, phân tích nghiêm cẩn và
+hiểu sâu, nắm vững thuật toán chia để trị. Đồng thời bài này cũng yêu cầu khả
+năng cài đặt khá cao; dự kiến thí sinh có thể cần \(2\)--\(4\) giờ mới lấy
+được toàn bộ điểm.
+
+\subsubsection*{8.2. Tổng kết phương pháp}
+
+Cuối bài, ta tổng kết quy trình suy nghĩ và phương pháp giải chung cho loại
+bài chèn, xóa ở đầu mút và duy trì thông tin đoạn không dễ hợp nhất nhanh.
+
+Nếu cho phép ngoại tuyến, hãy dựng cây thao tác và xét chia để trị. Nếu có thể
+hợp nhất đoạn trong \(O(n)\), tiếp tục lồng chia để trị như thuật toán 7; nếu
+không, quan sát thông tin có đồng thời hỗ trợ thêm và xóa phần tử hay không.
+Nếu có, dùng cấu trúc dữ liệu DFS từ trọng tâm để thống kê như thuật toán 8;
+nếu chỉ hỗ trợ một trong hai thao tác chèn nhanh hoặc xóa nhanh, có thể quét
+chuỗi từ gốc tới trọng tâm theo một thứ tự nào đó như thuật toán 9.
+
+Các thuật toán trên đều có độ phức tạp thời gian \(O(n\log^2 n)\), độ phức tạp
+không gian \(O(n)\).
+
+Nếu bắt buộc trực tuyến, xét đưa tư tưởng cây scapegoat vào phân nhóm nhị phân
+như thuật toán 12. Trong phân tích độ phức tạp, nút thắt không nằm ở tái xây
+dựng cập nhật mà nằm ở truy vấn. Vì vậy ta có thể chấp nhận độ phức tạp tái
+xây dựng \(O(n\log n)\), miễn là đảm bảo truy vấn \(O(n\log^2 n)\). Với một số
+bài, ta có thể dùng cách truy vấn tốt hơn, chẳng hạn định vị bằng hợp nhất, để
+tối ưu truy vấn xuống \(O(\log n)\), từ đó giảm tổng độ phức tạp xuống
+\(O(n\log n)\).
+
+Do phải xây cấu trúc phân nhóm \(O(\log n)\) tầng, độ phức tạp không gian là
+\(O(n\log n)\).
+
+\emph{Unknown} chỉ là một đại diện trong rất nhiều bài thuộc loại này. Có
+nhiều cách giải khác nhau, mỗi cách có ưu điểm riêng và đều có tính thực dụng
+nhất định. Vì vậy tác giả cho rằng ý nghĩa của việc khơi gợi thí sinh suy
+nghĩ về các thuật toán này thậm chí còn lớn hơn bản thân đề bài. Hy vọng bài
+này có thể đóng vai trò gợi mở, khiến mọi người quan tâm hơn tới loại bài này
+và đề xuất những thuật toán hiệu quả hơn, thuận tiện hơn. Nếu có thu hoạch
+nghiên cứu trong hướng này, rất hoan nghênh mọi người trao đổi với tác giả.
+
+\subsection*{9. Lời cảm ơn}
+
+\begin{itemize}
+  \item Xin cảm ơn thầy Ye Guoping đã chỉ dẫn và quan tâm trong học tập, đời
+  sống.
+  \item Xin cảm ơn CCF đã cung cấp nền tảng và cơ hội giao lưu.
+  \item Xin cảm ơn anh Lu Kaifeng đã cung cấp cảm hứng ra đề.
+  \item Xin cảm ơn các bạn Ji Ruyi, Yang Jiaqi, Wu Zuofan và Mao Xiao đã giúp
+  đỡ.
+  \item Xin cảm ơn các bạn Wu Zuofan, Ji Ruyi, Ni Xingyu và Wang Biyun đã đọc
+  kiểm tra bản thảo.
+\end{itemize}
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item Lời giải bài SDOI 2014 \emph{Vector Set}:
+  \href{http://www.cnblogs.com/joyouth/p/5350714.html}{http://www.cnblogs.com/joyouth/p/5350714.html}.
+  \item Xu Haoran, \emph{Bàn sơ lược về vài cách giải phi kinh điển cho bài
+  cấu trúc dữ liệu}, tập luận văn ứng viên đội tuyển quốc gia Trung Quốc
+  Olympic Tin học năm 2013.
+  \item Chen Danqi, \emph{Từ Cash bàn về ứng dụng của một lớp thuật toán chia
+  để trị}.
 \end{enumerate}
 
 \end{document}
