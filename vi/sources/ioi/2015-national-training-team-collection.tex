@@ -2460,4 +2460,546 @@ Xin cảm ơn cha mẹ đã quan tâm và chăm sóc tôi.
   University Press.
 \end{enumerate}
 
+\section{Suffix automaton và ứng dụng}
+
+\begin{center}
+\textbf{Zhang Tianyang}\\
+Trường Trung học số 1 Trường Sa, Hồ Nam
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Suffix automaton là một công cụ xử lý xâu mới nổi trong OI, ngày càng được
+nhiều người ra đề ưa chuộng. Bài viết này nhằm tổng kết các tính chất và một
+số ứng dụng của suffix automaton, đồng thời thông qua một số ví dụ để nghiên
+cứu sâu hơn các tính chất của nó.
+
+\subsection{Định nghĩa và xây dựng suffix automaton}
+
+\subsubsection{Định nghĩa suffix automaton}
+
+Suffix automaton (SAM) của một xâu \(S\) là một automaton hữu hạn xác định
+(DFA); nó có thể, và chỉ có thể, chấp nhận mọi hậu tố của \(S\), đồng thời có
+số trạng thái và số chuyển nhỏ nhất.
+
+Ta sẽ chứng minh bên dưới rằng số trạng thái và số chuyển của suffix automaton
+của một xâu \(S\) đều là \(O(|S|)\).
+
+\subsubsection{Cách xây dựng suffix automaton}
+
+\paragraph{Một vài định nghĩa.}
+Gọi xâu mẹ của suffix automaton là \(S\). Ký hiệu \(S[l,r]\) là xâu con gồm các
+ký tự từ vị trí \(l\) đến vị trí \(r\) trong \(S\). Ký hiệu hậu tố bắt đầu tại
+vị trí \(i\) là \(\mathrm{suf}_i\), và tiền tố kết thúc tại vị trí \(i\) là
+\(\mathrm{pre}_i\).
+
+Ký hiệu \(\mathrm{SAM}_{str}\) là trạng thái (hay nút) nhận được sau khi bắt đầu
+từ trạng thái đầu và đọc xâu \(str\).
+
+Với một xâu con \(str\) của \(S\), ký hiệu \(\mathrm{right}_{str}\) là tập các
+vị trí đầu mút phải của mọi lần xuất hiện của \(str\) trong \(S\).
+
+Nếu không nói khác, ta giả sử bảng chữ cái gồm mọi chữ cái thường. Kích thước
+bảng chữ cái được xem là hằng số và không tính vào độ phức tạp.
+
+\paragraph{Chứng minh độ phức tạp.}
+Xét một xâu \(str\). Nếu \(str\) là một xâu con của \(S\), thì
+\(\mathrm{SAM}_{str}\) phải là một trạng thái hợp lệ. Lý do là ta có thể thêm
+một số ký tự vào sau \(str\) để biến nó thành một hậu tố của \(S\); hậu tố này
+phải là một trạng thái chấp nhận được, nên \(\mathrm{SAM}_{str}\) cũng phải là
+một trạng thái hợp lệ. Ngược lại, nếu \(str\) không phải xâu con của \(S\), thì
+\(\mathrm{SAM}_{str}\) phải là trạng thái không hợp lệ (hay trạng thái rỗng),
+vì dù thêm ký tự thế nào nó cũng không thể trở thành một hậu tố của \(S\).
+
+Nói cách khác, với mỗi xâu con của \(S\), trong suffix automaton đều phải có
+một trạng thái tương ứng. Tuy nhiên rõ ràng ta không thể dựng riêng một trạng
+thái cho từng xâu con, vì số xâu con là \(O(|S|^2)\).
+
+Xét một xâu con \(str\) của \(S\). Nếu \(\mathrm{right}_{str}\) và
+\(\mathrm{right}_{a+str}\) (trong đó \(a\) là một xâu) hoàn toàn giống nhau, thì
+ta có thể gộp chúng vào cùng một trạng thái. Từ hai xâu này, các ký tự có thể
+thêm vào để thu được hậu tố là như nhau (hay nói khác đi, ngoài phần xâu \(a\)
+ở phía trước thì giống nhau). Tương đương, từ các trạng thái của chúng, các
+trạng thái chấp nhận có thể chuyển tới cũng giống nhau. Do đó hai xâu này có
+bản chất như nhau trong suffix automaton và có thể gộp vào một trạng thái.
+
+Tiếp theo xét hai xâu con \(A,B\) của \(S\). Nếu \(\mathrm{right}_A\) và
+\(\mathrm{right}_B\) giao nhau, thì hiển nhiên một xâu là hậu tố của xâu còn
+lại; giả sử \(A\) là hậu tố của \(B\), khi đó dễ thấy
+\[
+  \mathrm{right}_A \supset \mathrm{right}_B.
+\]
+Nghĩa là, với hai xâu con bất kỳ của \(S\), hai tập \(\mathrm{right}\) của
+chúng hoặc rời nhau, hoặc một tập chứa tập kia. Ta định nghĩa trạng thái cha
+của một trạng thái \(s\), ký hiệu \(\mathrm{fa}_s\), là trạng thái thỏa
+\[
+  \mathrm{right}_s \subset \mathrm{right}_{\mathrm{fa}_s}
+\]
+và \(|\mathrm{right}_{\mathrm{fa}_s}|\) nhỏ nhất. Khi đó mọi trạng thái tạo
+thành một cấu trúc cây, gọi là cây \(\mathrm{parent}\).
+
+Rõ ràng tập \(\mathrm{right}\) của trạng thái đầu chứa mọi số nguyên từ \(1\)
+đến \(|S|\). Với mỗi nút lá, kích thước tập \(\mathrm{right}\) của nó là \(1\).
+Do đó số nút lá là \(O(|S|)\). Mỗi nút không phải lá có ít nhất hai con; nếu chỉ
+có một con thì có thể gộp nó với con đó. Vì thế số nút không phải lá nhiều nhất
+cũng là \(O(|S|)\), và số trạng thái của suffix automaton là \(O(|S|)\).
+
+Xét các chuyển. Vì số trạng thái là \(O(|S|)\), ta xét một đồ thị cây của
+automaton bắt đầu từ trạng thái đầu; số cạnh trên cây hiển nhiên là
+\(O(|S|)\). Vậy chỉ cần xét các cạnh không thuộc cây.
+
+Xét một cạnh không thuộc cây \(u\to v\). Từ trạng thái đầu, đi theo cạnh cây
+tới \(u\), rồi đi qua cạnh không thuộc cây này tới \(v\), sau đó tiếp tục đi
+xuống thì chắc chắn tới được ít nhất một hậu tố. Nói cách khác, nếu mỗi hậu tố
+phủ cạnh không thuộc cây đầu tiên mà nó đi qua, thì mọi cạnh không thuộc cây
+đều được phủ. Vì vậy số cạnh không thuộc cây không vượt quá số hậu tố. Ta đã
+chứng minh được số chuyển của suffix automaton là \(O(|S|)\).
+
+\paragraph{Phương pháp xây dựng.}
+Suffix automaton có một cách xây dựng rất đơn giản: phương pháp tăng dần.
+
+Với mỗi trạng thái \(s\), ghi \(\mathrm{len}_s\) là độ dài xâu con dài nhất mà
+nó đại diện.
+
+Giả sử hiện tại ta đã có suffix automaton của \(|S|-1\) ký tự đầu, và trong
+automaton hiện tại, xâu \(S[1,|S|-1]\) nằm ở trạng thái \(\mathrm{last}\). Bây
+giờ thêm ký tự thứ \(|S|\), giả sử là \(c\). Ta tạo trạng thái mới \(np\); rõ
+ràng \(\mathrm{len}_{np}=|S|\).
+
+Sau đó xét các chuyển. Hiển nhiên ta cần thêm một chuyển
+\(\mathrm{last}\to np\), và cũng cần thêm một chuyển \(\mathrm{fa}_{last}\to
+np\), cứ như vậy cho đến khi gặp một trạng thái đã có chuyển bằng ký tự \(c\).
+Giả sử trạng thái này là \(p\), và trạng thái sau khi đi bằng \(c\) là \(q\).
+
+Lúc này \(\mathrm{right}_q\) sẽ có thêm một xâu: xâu có đầu mút phải là \(|S|\)
+và độ dài dài nhất là \(\mathrm{len}_p+1\). Có hai trường hợp:
+\begin{enumerate}
+  \item \(\mathrm{len}_q=\mathrm{len}_p+1\). Khi đó mọi xâu do \(q\) đại diện
+  vẫn có cùng tập \(\mathrm{right}\), nên chỉ cần đặt
+  \(\mathrm{fa}_{np}=q\).
+  \item \(\mathrm{len}_q>\mathrm{len}_p+1\). Trong các xâu do \(q\) đại diện,
+  các xâu có độ dài không quá \(\mathrm{len}_p+1\) sẽ có thêm giá trị
+  \(|S|\) trong tập \(\mathrm{right}\), còn các xâu dài hơn thì không. Để duy
+  trì tính chất mọi xâu trong một trạng thái có cùng tập \(\mathrm{right}\),
+  ta tạo một trạng thái mới \(nq\). Trạng thái \(nq\) đại diện cho mọi xâu do
+  \(q\) đại diện trước đây có độ dài không quá \(\mathrm{len}_p+1\), nên
+  \(\mathrm{len}_{nq}=\mathrm{len}_p+1\); các thuộc tính khác của \(nq\)
+  (\(\mathrm{fa}\) và các chuyển) giống hệt \(q\). Đồng thời dễ thấy
+  \(\mathrm{fa}_q=\mathrm{fa}_{np}=nq\).
+
+  Sau đó ta lại bắt đầu từ \(p\). Trước đây chuyển bằng ký tự \(c\) của \(p\)
+  tới \(q\); bây giờ nó phải chuyển tới \(nq\). Tương tự, nếu chuyển bằng ký tự
+  \(c\) của \(\mathrm{fa}_p\) tới \(q\), thì nó cũng phải chuyển tới \(nq\),
+  cứ như vậy cho đến khi gặp một điểm mà chuyển bằng ký tự \(c\) không tới
+  \(q\).
+\end{enumerate}
+
+Đến đây, ta hoàn thành việc xây dựng suffix automaton.
+
+\subsubsection{Một vài tính chất cơ bản của suffix automaton}
+
+Các tính chất cơ bản đã được nhắc tới ở trên, tổng kết như sau:
+
+\paragraph{Tính chất 1.}
+Các độ dài của những xâu mà mỗi trạng thái \(s\) đại diện tạo thành khoảng
+\[
+  (\mathrm{len}_{\mathrm{fa}_s},\ \mathrm{len}_s].
+\]
+
+\paragraph{Tính chất 2.}
+Mọi xâu mà một trạng thái \(s\) đại diện có cùng số lần xuất hiện trong xâu gốc
+và cùng các vị trí đầu mút phải của mỗi lần xuất hiện.
+
+\paragraph{Tính chất 3.}
+Trong cây \(\mathrm{parent}\), tập \(\mathrm{right}\) của mỗi trạng thái là tập
+con của tập \(\mathrm{right}\) của trạng thái cha.
+
+\subsubsection{Cách tính tập \texorpdfstring{\(\mathrm{right}\)}{right}}
+
+Trước hết, thêm \(i\) vào tập \(\mathrm{right}\) của trạng thái chứa
+\(\mathrm{pre}_i\).
+
+Sau đó, theo thứ tự độ sâu giảm dần trong cây \(\mathrm{parent}\), lần lượt gộp
+tập \(\mathrm{right}\) của mỗi trạng thái vào tập \(\mathrm{right}\) của trạng
+thái cha.
+
+Như vậy có thể tính được tập \(\mathrm{right}\) của mỗi trạng thái, nhưng làm
+trực tiếp tốn \(O(|S|^2)\).
+
+Tùy bài toán cụ thể, ta có thể chỉ cần kích thước, giá trị lớn nhất, hay một số
+đại lượng khác của tập \(\mathrm{right}\); các đại lượng này có thể tính trong
+\(O(|S|)\). Nếu thật sự cần tập \(\mathrm{right}\) của từng trạng thái, có thể
+dùng cây cân bằng để duy trì, khi gộp dùng heuristic merging,\footnote{Vấn đề
+heuristic merging trên cây cân bằng không liên quan trực tiếp tới bài viết này
+nên không bàn thêm; độc giả quan tâm có thể xem lời giải bài \emph{Cây non và
+tập hợp}.} đạt độ phức tạp \(O(|S|\log |S|)\). Nếu cần online, có thể dùng cây
+cân bằng persistent.
+
+\subsubsection{Dùng suffix automaton để tìm suffix tree và suffix array}
+
+Ngoài suffix automaton, suffix tree và suffix array cũng là các cấu trúc dữ
+liệu hậu tố thường dùng. Tuy nhiên việc xây dựng chúng thường không tiện:
+xây suffix tree tuyến tính có thể nói là khá rắc rối, còn xây suffix array
+tuyến tính có hằng số tương đối lớn. Vì suffix automaton có hằng số nhỏ và cách
+xây dựng khá ngắn gọn, ta có thể dùng nó để tìm suffix tree và suffix array.
+
+\paragraph{Tính chất 4.}
+Cây \(\mathrm{parent}\) của suffix automaton chính là cây tiền tố ngược của xâu
+gốc.\footnote{Thực chất chính là suffix tree của xâu đảo.}
+
+Trước hết, cây tiền tố ngược được định nghĩa như sau: đưa xâu đảo của mỗi tiền
+tố vào một trie, rồi gộp các dây không phân nhánh giống như trong suffix tree.
+
+Tính chất này dễ nhận ra. Xét trạng thái của một tiền tố trên suffix automaton.
+Ta liên tục đi theo con trỏ \(\mathrm{fa}\); mỗi lần, xâu hiện tại trở thành
+một hậu tố của xâu trước đó, cho tới khi thành xâu rỗng. Nếu nhìn ngược quá
+trình này, đó chính là đi từ trên xuống dưới trong cây tiền tố ngược.
+
+Vậy nếu ta xây suffix automaton của xâu đảo của xâu ban đầu, thì cây
+\(\mathrm{parent}\) của nó chính là suffix tree của xâu ban đầu.
+
+Để khôi phục suffix tree, ta có thể tìm một giá trị bất kỳ trong tập
+\(\mathrm{right}\) của mỗi trạng thái trên suffix automaton, chẳng hạn giá trị
+lớn nhất. Sau đó dễ dàng xác định xâu nằm trên cạnh nối mỗi nút với cha của nó
+trong suffix tree.
+
+Cuối cùng, chỉ cần DFS suffix tree một lần là có thể thu được suffix array.
+
+\subsection{Ứng dụng của suffix automaton}
+
+\subsubsection{Một cách diễn giải}
+
+Khi nói ``đưa một xâu chạy trên suffix automaton'', ta có thể liên tưởng tới
+cách chạy KMP và AC automaton: bắt đầu từ trạng thái đầu; nếu tồn tại chuyển
+tương ứng thì đi theo chuyển đó, nếu không thì nhảy ngược theo con trỏ
+\(\mathrm{fa}\), cho tới khi tồn tại chuyển tương ứng hoặc đã nhảy ra khỏi
+suffix automaton.
+
+\subsubsection{Một vài bài toán kinh điển}
+
+Trước hết ta thảo luận lời giải của một vài bài toán kinh điển.
+
+\paragraph{Xâu con chung dài nhất.}
+Ta xây suffix automaton cho một trong hai xâu. Đưa xâu còn lại chạy trên suffix
+automaton và luôn duy trì độ dài xâu con hiện tại.
+
+Với xâu con chung dài nhất của nhiều xâu (nhiều hơn \(2\)), ta xây suffix
+automaton cho một xâu, rồi lần lượt đưa các xâu còn lại chạy trên automaton.
+Với mỗi trạng thái, duy trì độ dài khớp dài nhất của trạng thái đó đối với từng
+xâu. Sau đó, với mỗi trạng thái lấy \(\min\) của các độ dài khớp dài nhất trên
+mọi xâu, rồi lấy \(\max\) trên mọi trạng thái.
+
+\paragraph{Xâu con thứ \(k\) theo thứ tự từ điển.}
+Ta topo một lượt suffix automaton để tính từ mỗi điểm có thể đi tới bao nhiêu
+xâu con. Sau đó DFS từ trạng thái đầu: nếu số xâu con mà trạng thái hiện tại có
+thể đi tới không nhỏ hơn \(k\) thì tiếp tục DFS; nếu không, trừ \(k\) đi số xâu
+con đó rồi quay lui.
+
+Nếu cần tìm xâu con thứ \(k\) khác nhau thì không cần kích thước tập
+\(\mathrm{right}\); nếu tính cả số lần xuất hiện thì cần kích thước
+\(\mathrm{right}\) của mỗi điểm.
+
+\paragraph{Hậu tố nhỏ nhất theo thứ tự từ điển (biểu diễn vòng nhỏ nhất).}
+Sao chép xâu gốc một lần và nối vào phía sau, rồi xây suffix automaton.
+
+Bắt đầu từ trạng thái đầu, mỗi lần đi theo chuyển nhỏ nhất theo thứ tự từ điển;
+sau khi đi \(|S|\) lần, xâu nhận được chính là biểu diễn vòng nhỏ nhất.
+
+Nếu cần hậu tố nhỏ nhất, ta thêm vào sau xâu gốc một ký tự kết thúc nhỏ hơn mọi
+ký tự trong bảng chữ cái, rồi sao chép xâu một lần nữa là được.
+
+Tiếp theo ta dùng một số ví dụ đơn giản để thảo luận các ứng dụng cơ bản của
+suffix automaton.
+
+\paragraph{Ví dụ 1: \emph{Strings}.}
+\emph{Nguồn bài: Adera 1 Cup, bài mô phỏng trại đông.}
+
+\emph{Tóm tắt đề.}
+Cho \(n\) xâu, hỏi với mỗi xâu có bao nhiêu xâu con không rỗng là xâu con của
+ít nhất \(k\) trong \(n\) xâu.
+\[
+  1\le n,k\le 10^5,\qquad \sum |S_i|\le 10^5.
+\]
+
+\emph{Phân tích.}
+Trước hết nối \(n\) xâu lại với nhau, giữa các xâu dùng một ký tự không nằm
+trong bảng chữ cái gốc để phân tách. Sau đó xây suffix automaton của xâu nối
+này. Với mỗi nút trong suffix automaton, ta cần tính nó là xâu con của bao
+nhiêu trong \(n\) xâu ban đầu.
+
+Ý tưởng cơ bản là đưa từng xâu chạy trên suffix automaton. Với mỗi nút đi tới,
+tăng số lần xuất hiện của mọi nút trên đường đi theo con trỏ \(\mathrm{fa}\)
+lên gốc thêm \(1\). Nhưng làm vậy sẽ gây trùng lặp. Ta có thể ghi lại ở mỗi
+trạng thái xâu cuối cùng đã đi tới nó; khi tới một điểm, chỉ cần đi ngược lên
+tới điểm đầu tiên mà xâu hiện tại đã từng đi tới là đủ. Nếu làm thô bạo, độ
+phức tạp là \(O(n\sqrt n)\).\footnote{Phải có xâu rất đặc biệt mới đạt tới độ
+phức tạp này, và hằng số rất nhỏ.} Dùng heavy-light decomposition có thể đạt
+\(O(n\log^2 n)\).
+
+Sau đó chỉ cần quy hoạch một lượt để tính trên đường từ mỗi nút theo
+\(\mathrm{fa}\) lên gốc có bao nhiêu xâu xuất hiện ít nhất \(k\) lần. Cuối cùng
+đưa từng xâu chạy trên suffix automaton, cộng giá trị của mỗi nút mà nó đi tới
+là được.
+
+\paragraph{Ví dụ 2: \emph{Palindrome}.}
+\emph{Nguồn bài: APIO 2014.}
+
+\emph{Tóm tắt đề.}
+Cho một xâu độ dài \(n\), tìm giá trị lớn nhất của số lần xuất hiện nhân với độ
+dài trên mọi xâu con palindrome của nó.
+\[
+  1\le n\le 3\times 10^5.
+\]
+
+\emph{Phân tích.}
+Xây suffix automaton của xâu gốc và tính giá trị lớn nhất
+\(\mathrm{rmax}\) trong tập \(\mathrm{right}\) của mỗi nút.
+
+Sau đó đưa xâu đảo chạy trên suffix automaton. Nếu xâu khớp hiện tại trong xâu
+đảo, ký hiệu \([l,r]\), phủ \(\mathrm{rmax}\) của nút hiện tại, thì
+\([l,\mathrm{rmax}]\) là một palindrome.\footnote{Ở đây chỉ vị trí trong xâu
+gốc.}
+
+Chi tiết xem tài liệu tham khảo [4].
+
+\paragraph{Ví dụ 3: Nhận diện xâu con.}
+
+\emph{Tóm tắt đề.}
+Cho một xâu độ dài \(n\). Định nghĩa xâu con nhận diện của vị trí \(i\) là một
+xâu con chứa vị trí này và chỉ xuất hiện một lần trong xâu gốc. Hãy tìm độ dài
+xâu con nhận diện ngắn nhất cho mỗi vị trí.
+\[
+  1\le n\le 10^5.
+\]
+
+\emph{Phân tích.}
+Hiển nhiên mọi xâu con nhận diện đều nằm ở những nút có kích thước tập
+\(\mathrm{right}\) bằng \(1\) trong suffix automaton. Vì thế trước hết ta tìm
+tất cả các nút như vậy. Với mỗi nút có kích thước tập bằng \(1\), ta dễ dàng
+biết đầu mút phải duy nhất của lần xuất hiện.
+
+Nếu một xâu xuất hiện đúng một lần, thì mở rộng nó sang trái thêm một đoạn vẫn
+xuất hiện đúng một lần. Do đó, với mỗi nút có kích thước tập \(\mathrm{right}\)
+bằng \(1\), ta tính đầu mút phải này cần mở rộng sang trái ít nhất bao xa để
+vẫn có số lần xuất hiện bằng \(1\). Khi đó mỗi tập \(\mathrm{right}\) tương ứng
+với một đoạn và một giá trị lấy \(\min\), cùng với một tiền tố và một cấp số
+cộng có công sai \(-1\) lấy \(\min\). Việc này có thể thực hiện bằng cách sắp
+xếp rồi mô phỏng đơn giản.
+
+Độ phức tạp là \(O(n\log n)\).
+
+\paragraph{Ví dụ 4: \emph{Difference}.}
+\emph{Nguồn bài: AHOI 2013.}
+
+\emph{Tóm tắt đề.}
+Cho một xâu độ dài \(n\), tính tổng độ dài LCP của mọi cặp hậu tố của nó.
+\[
+  1\le n\le 5\times 10^5.
+\]
+
+\emph{Phân tích.}
+Trước hết đảo xâu này lại. Khi đó bài toán trở thành tính tổng độ dài hậu tố
+chung dài nhất của mọi cặp tiền tố.\footnote{Ở đây đã trình bày đề bài sau khi
+biến đổi đơn giản từ đề gốc.}
+
+\paragraph{Tính chất 5.}
+Hậu tố chung dài nhất của hai xâu nằm ở trạng thái LCA của hai trạng thái tương
+ứng với hai xâu đó trên cây \(\mathrm{parent}\).
+
+Lý do là mọi tổ tiên của trạng thái tương ứng với một xâu đều là hậu tố của nó,
+và độ sâu càng lớn thì độ dài càng lớn.
+
+Vì vậy, ta tô đen các nút chứa từng tiền tố. Bài toán trở thành: mỗi nút là LCA
+của bao nhiêu cặp nút đen. Đây là một bài toán đơn giản; chỉ cần quy hoạch từ
+dưới lên trên trong cây \(\mathrm{parent}\).
+
+Suffix automaton cũng có thể kết hợp với các cấu trúc dữ liệu và công cụ xử lý
+xâu khác để giải một số bài toán khó hơn.
+
+\paragraph{Ví dụ 5: \emph{Jeweler}.}
+\emph{Nguồn bài: CTSC 2010.}
+
+\emph{Tóm tắt đề.}
+Cho một cây gồm \(n\) đỉnh, mỗi đỉnh có một ký tự. Cho thêm một xâu \(S\) độ dài
+\(m\). Với mỗi cặp đỉnh, các đỉnh trên đường đi giữa chúng tạo thành một xâu;
+tính tổng số lần xuất hiện trong \(S\) của tất cả các xâu như vậy.
+\[
+  1\le n,m\le 5\times 10^4.
+\]
+
+\emph{Phân tích.}
+Xét dùng centroid decomposition. Vì \(n,m\) cùng bậc, khi tính độ phức tạp ta
+thống nhất dùng \(n\).
+\begin{enumerate}
+  \item Nếu kích thước khối phân rã nhỏ hơn \(\sqrt n\), ta DFS trực tiếp mọi
+  đường đi và thống kê số lần xuất hiện trong suffix automaton của \(S\). Vì
+  các khối này rời nhau, chi phí tính một khối là \(O(\mathrm{size}^2)\), nên
+  tổng độ phức tạp nhiều nhất là \(O(n\sqrt n)\).
+
+  \item Nếu kích thước khối phân rã lớn hơn \(\sqrt n\), xét cách tính các
+  đường đi qua trọng tâm của khối hiện tại; các đường đi khác được xử lý đệ quy
+  bằng phân rã.
+\end{enumerate}
+
+Xét các vị trí xuất hiện trong \(S\) của ký tự \(c\) ở trọng tâm \(x\). Nếu một
+đường đi có dạng \(a\to x\to b\), thì tập \(\mathrm{right}\) của đoạn
+\(a\to x\) trong \(S\) chắc chắn là tập con của các vị trí xuất hiện của \(c\)
+trong \(S\). Tương tự, nếu đảo đoạn \(x\to b\), thì tập \(\mathrm{right}\) của
+nó trong xâu đảo của \(S\) cũng chắc chắn là tập con của các vị trí xuất hiện
+của \(c\) trong \(S\).
+
+Vậy ta bắt đầu DFS khối phân rã từ \(x\). Mỗi lần, duy trì vị trí của xâu hiện
+tại trên suffix tree của xâu gốc và của xâu đảo. Sau đó ta đẩy thông tin trên
+hai suffix tree một lượt từ trên xuống dưới để tính số lượng khớp của mỗi hậu
+tố, tức mỗi vị trí. Cuối cùng nhân số lượng khớp ở hai vị trí tương ứng trên
+hai suffix tree, ta thu được tổng số lần xuất hiện trong xâu gốc của các đường
+đi qua trọng tâm.
+
+Chú ý cách làm này đếm thừa trường hợp \(a,b\) nằm trong cùng một cây con của
+trọng tâm; vì vậy với từng cây con của trọng tâm, ta dùng cùng phương pháp tính
+riêng một lượt rồi trừ đi.
+
+Chi phí tính một khối phân rã là \(O(\mathrm{size}+n)\). Số khối phân rã có kích
+thước lớn hơn \(\sqrt n\) nhiều nhất là \(O(\sqrt n)\),\footnote{Ý tưởng chứng
+minh: sau mỗi lần phân rã, kích thước cây con giảm ít nhất một nửa; sau \(k\)
+lần phân rã, khối lớn nhất không vượt quá \(n/2^k\) và số khối là \(2^k\). Đặt
+khối lớn nhất không vượt quá \(\sqrt n\) là thu được kết luận.} nên độ phức tạp
+là \(O(n\sqrt n)\).
+
+Tóm lại, ta thu được một thuật toán tốt với độ phức tạp \(O(n\sqrt n)\).
+
+\paragraph{Ví dụ 6: \emph{str}.}
+\emph{Nguồn bài: Feyat Cup 1.5; tác giả đề: Huang Zhixiang.}
+
+\emph{Tóm tắt đề.}
+Cho hai xâu có độ dài lần lượt là \(n,m\). Định nghĩa hai xâu là khớp nếu chúng
+có nhiều nhất một vị trí khác nhau. Hãy tìm xâu con chung dài nhất của hai xâu
+theo định nghĩa khớp này.
+\[
+  1\le n,m\le 10^5.
+\]
+
+\emph{Phân tích.}
+Xét xâu cuối cùng có thể khớp được: ở giữa nó có một vị trí không khớp, còn hai
+phía trái và phải của vị trí đó khớp tương ứng. Nếu đã biết xâu phía trái, ta
+dễ biết mọi vị trí xuất hiện của nó trong hai xâu, rồi lấy LCP\footnote{Longest
+common prefix.} của các xâu phía phải tương ứng theo từng cặp là được.
+
+Ta nối hai xâu lại, ở giữa thêm một ký tự không thuộc bảng chữ cái gốc, rồi xây
+suffix automaton của xâu này. Xét một nút trong suffix automaton: trong tập
+\(\mathrm{right}\) của nó, một phần xuất hiện bên trong xâu thứ nhất, phần còn
+lại xuất hiện bên trong xâu thứ hai. Ví dụ có một giá trị \(\mathrm{right}\)
+là \(a\), nằm trong xâu thứ nhất, và một giá trị \(\mathrm{right}\) khác là
+\(b\), nằm trong xâu thứ hai. Khi đó LCP của \(a+2\) và \(b+2\) chính là độ dài
+khớp dài nhất tương ứng. Nếu ta tính được LCP tương ứng của mọi cặp \((a,b)\)
+như vậy, lấy giá trị lớn nhất cộng với \(\mathrm{len}\) của nút hiện tại, thì
+đó là đáp án của nút này. Lấy lớn nhất trên mọi nút là đáp án cuối cùng.
+
+Tuy nhiên tính LCP cho mọi cặp \((a,b)\) chắc chắn không đủ nhanh. Ta xét thứ tự
+mọi hậu tố. Với một nút, nếu trộn mọi \(a\) và \(b\) rồi sắp theo thứ tự hậu tố
+tương ứng, thì ta chỉ cần tính LCP của các cặp kề nhau sau khi sắp xếp mà xuất
+hiện trong hai xâu khác nhau. Với bài toán này, ta xét các nút theo thứ tự từ
+dưới lên trên trên cây \(\mathrm{parent}\), dùng cây cân bằng để duy trì toàn
+bộ dãy. Khi gộp cây cân bằng, duy trì thêm thông tin cần thiết, ta đạt độ phức
+tạp
+\[
+  O((n+m)\log(n+m)).
+\]
+
+\subsection{Suffix automaton của cây chữ cái}
+
+Ta có thể mở rộng thuật toán KMP lên cây chữ cái để tạo thành AC automaton.
+Tương tự, ta cũng có thể mở rộng suffix automaton lên cây chữ cái.
+
+Trước hết xem một ví dụ.
+
+\paragraph{Ví dụ 7: Xâu của pty.}
+\emph{Tác giả đề: Peng Tianyi.}
+
+\emph{Tóm tắt đề.}
+Cho một cây có gốc gồm \(n\) nút, mỗi cạnh có một ký tự. Định nghĩa một đường
+đi là bắt đầu từ một nút nào đó, đi xuống tới một nút nào đó; các ký tự trên
+cạnh tạo thành một xâu. Hai xâu khớp nếu chúng hoàn toàn giống nhau. Cho thêm
+một xâu độ dài \(m\), hỏi có bao nhiêu cặp khớp giữa xâu con của nó và đường đi
+trên cây.
+\[
+  1\le n\le 8\times 10^5,\qquad 1\le m\le 8\times 10^6.
+\]
+
+\emph{Phân tích.}
+Cách cơ bản là xây suffix automaton cho xâu và tính kích thước tập
+\(\mathrm{right}\), rồi DFS cây chữ cái.
+
+Nhưng trong bài này, vì xâu quá dài, xây suffix automaton cho xâu không chấp
+nhận được về bộ nhớ.\footnote{Có lẽ cách lưu cạnh bằng hash vẫn dùng được.}
+Cần tìm hướng khác.
+
+Xét xây suffix automaton cho cây chữ cái đã cho. Khi chèn một nút, ta dùng trạng
+thái của tiền tố của cha nó trong suffix automaton làm trạng thái
+\(\mathrm{last}\) để chèn.\footnote{Tiền tố ở đây là đường đi từ gốc tới nút
+đó.} Nhưng có một vấn đề: một nút có thể có hai con mà ký tự trên cạnh nối tới
+chúng giống nhau.
+
+Cách xử lý thực ra rất đơn giản: gộp các nút con có cùng ký tự dưới cùng một
+nút; kích thước \(\mathrm{right}\) ban đầu của nút sau khi gộp là số nút được
+gộp.
+
+Cuối cùng, đưa xâu đã cho chạy trên suffix automaton và thống kê đáp án.
+
+Xem thêm một ví dụ khác.
+
+\paragraph{Ví dụ 8: \emph{Vùng đất huyễn tưởng được chư thần ưu ái}.}
+\emph{Nguồn bài: ZJOI 2015; tác giả đề: Chen Lijie.}
+
+\emph{Tóm tắt đề.}
+Cho một cây gồm \(n\) nút, mỗi nút có một ký tự. Định nghĩa một đường đi là xâu
+tạo bởi các ký tự trên các nút giữa hai điểm nào đó. Hỏi trên cây có bao nhiêu
+đường đi đôi một khác nhau.
+\[
+  1\le n\le 10^5,
+\]
+bảng chữ cái có kích thước \(10\), và cây có nhiều nhất \(20\) nút lá.
+
+\emph{Phân tích.}
+Chú ý đặc điểm của đề: số nút lá rất ít. Vì vậy ta lần lượt lấy mỗi nút lá làm
+gốc, rồi hợp nhất các cây thu được để tạo thành một cây chữ cái.
+
+Bài toán tiếp theo là trên cây chữ cái này có bao nhiêu đường đi từ trên xuống
+dưới khác nhau. Ta xây suffix automaton cho nó; với mỗi nút, cộng
+\[
+  \mathrm{len}-\mathrm{len}_{\mathrm{fa}}
+\]
+vào đáp án.
+
+\subsection{Tổng kết}
+
+Là một công cụ xử lý xâu mới nổi trong OI, suffix automaton có ưu điểm là chức
+năng toàn diện, mã nguồn ngắn gọn, độ phức tạp thấp và hằng số nhỏ. Tương ứng,
+trong quá trình ứng dụng, nó đòi hỏi ta phải suy nghĩ và nghiên cứu nhiều hơn
+để hiểu được vẻ đẹp của suffix automaton.
+
+\subsection{Lời cảm ơn}
+
+\begin{itemize}
+  \item Xin cảm ơn CCF đã cung cấp nền tảng học tập và giao lưu.
+  \item Xin cảm ơn Chen Lijie đã giới thiệu suffix automaton.
+  \item Xin cảm ơn bạn Shi Wenbin đã dạy tôi suffix automaton.
+  \item Xin cảm ơn các bạn Chen Xiaobo và Lu Kaifeng đã giúp đỡ trong quá trình
+  viết luận văn.
+  \item Xin cảm ơn thầy huấn luyện Zhou Zusong đã hỗ trợ.
+\end{itemize}
+
+\subsection*{Tài liệu tham khảo của bài viết}
+
+\begin{enumerate}[label={[\arabic*]},leftmargin=3em]
+  \item Chen Lijie, \emph{Suffix Automaton}, trao đổi học viên trại đông 2012.
+  \item Fan Haoqiang, \emph{Suffix automaton và xây dựng suffix tree tuyến tính}.
+  \item WRIA, \emph{Lời giải mới cho CTSC 2010 Jeweler}, bài tập đội tuyển quốc
+  gia 2013.
+  \item Zhang Tianyang, \emph{Lời giải APIO 2014 Palindrome}, bài tập đội tuyển
+  quốc gia 2015.
+  \item Chen Lijie, \emph{Lời giải ZJOI 2015 Day 1}.
+  \item \#22334, \emph{Lời giải Feyat Cup 1.5}.
+\end{enumerate}
+
 \end{document}

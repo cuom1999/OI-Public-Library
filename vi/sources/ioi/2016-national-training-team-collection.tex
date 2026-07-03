@@ -21,19 +21,22 @@ bìa và mục lục có lớp văn bản đọc được, nhưng ngay từ bài
 đã bị lỗi ánh xạ phông chữ và trích xuất thành mojibake. Bản dịch này chuyển
 ngữ các thông tin đầu sách, mục lục, bài đầu tiên của Ren Zhizhou về một số
 phương pháp tính tổng hàm nhân tính, bài thứ hai của Jiang Zhihao về một số
-phương pháp mô hình hóa bằng luồng mạng, và bài thứ ba của Dong Kefan về quy
-hoạch tuyến tính cùng bài toán đối ngẫu. Phần thân các bài được dựng từ OCR và
-đối chiếu công thức với lớp văn bản PDF.
+phương pháp mô hình hóa bằng luồng mạng, bài thứ ba của Dong Kefan về quy
+hoạch tuyến tính cùng bài toán đối ngẫu, và bài thứ tư của Wang Wentao về
+một số thuật toán cùng ứng dụng cho bài toán cắt nhỏ nhất trên đồ thị vô
+hướng. Phần thân các bài được dựng từ OCR và đối chiếu công thức với lớp văn
+bản PDF.
 \end{abstract}
 
 \section{Trạng thái và ghi chú trích xuất}
 
-Đã dịch ba bài đầu tiên trong tập luận văn. Bài 1 dùng trang vật lý 5--20 của
+Đã dịch bốn bài đầu tiên trong tập luận văn. Bài 1 dùng trang vật lý 5--20 của
 PDF nguồn, tương ứng trang in 1--16. Bài 2 dùng trang vật lý 21--35, tương ứng
 trang in 17--31; trang vật lý 36, tương ứng trang in 32, là trang trắng ngăn
 cách trước bài kế tiếp. Bài 3 bắt đầu ở trang vật lý 37, tương ứng trang in
-33, và kết thúc ở trang vật lý 66, tương ứng trang in 62; bài kế tiếp bắt đầu
-ở trang in 63. Phần thân các bài 2 và 3 có lớp văn bản bị mojibake, nên được
+33, và kết thúc ở trang vật lý 66, tương ứng trang in 62. Bài 4 dùng trang vật
+lý 67--84, tương ứng trang in 63--80; bài kế tiếp bắt đầu ở trang in 81. Phần
+thân các bài 2, 3 và 4 có lớp văn bản bị mojibake, nên được
 OCR bằng
 \texttt{pdftoppm} và \texttt{tesseract -l chi\_sim+eng}, rồi lọc nhiễu thủ
 công khi dựng bản dịch.
@@ -2656,5 +2659,787 @@ nên
 \]
 Vì kỳ vọng là trung bình của mọi phương án, tồn tại \(x\in(0,1]\) sao cho
 \(|\operatorname{cut}_x(s,t)|\le z^*\). Chứng minh hoàn tất.
+
+\section*{Bài 4. Bàn sơ lược về một số thuật toán và ứng dụng cho bài toán cắt nhỏ nhất trên đồ thị vô hướng}
+\addcontentsline{toc}{section}{Bài 4. Bàn sơ lược về một số thuật toán và ứng dụng cho bài toán cắt nhỏ nhất trên đồ thị vô hướng}
+
+\begin{center}
+Wang Wentao, Trường Trung học số 1 Thiệu Hưng
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết nghiên cứu một lớp bài toán cắt nhỏ nhất định nghĩa trên đồ thị vô
+hướng có trọng số cạnh không âm trong thi tin học. Tác giả giới thiệu một số
+thuật toán xử lý lớp bài toán này, gồm thuật toán dựng cây Gomory-Hu (cây cắt
+nhỏ nhất), thuật toán dựng cây luồng tương đương của Gusfield, thuật toán
+Stoer-Wagner và thuật toán Karger. Qua một vài ví dụ, bài viết cũng trình bày
+ngắn gọn cách đưa những bài toán thi về mô hình cắt nhỏ nhất vô hướng.
+
+\subsection*{1. Dẫn nhập}
+
+Trong thi tin học và trong một số bài toán thực tế, ta không chỉ gặp bài toán
+tìm luồng cực đại hoặc cắt nhỏ nhất giữa một nguồn và một đích trong đồ thị có
+hướng với trọng số cạnh không âm, mà còn gặp bài toán tìm luồng cực đại hoặc
+cắt nhỏ nhất giữa hai đỉnh bất kỳ trên đồ thị vô hướng có trọng số cạnh không
+âm. Với trường hợp đồ thị có hướng, các luận văn trước đã nghiên cứu khá
+nhiều thuật toán và dạng bài liên quan; còn trường hợp sau tạm thời chưa có
+nhiều khảo cứu sâu. Bài viết này triển khai theo hướng đó.
+
+Trong Mục 2, để thuận tiện cho phần mô tả sau, tác giả định nghĩa một số khái
+niệm liên quan đến lát cắt trên đồ thị vô hướng.
+
+Mục 3 giới thiệu cây Gomory-Hu, còn gọi là cây cắt nhỏ nhất, và cây luồng
+tương đương dùng để giải bài toán cắt nhỏ nhất giữa hai đỉnh bất kỳ, cùng các
+thuật toán dựng chúng.
+
+Mục 4 giới thiệu thuật toán tất định Stoer-Wagner và thuật toán ngẫu nhiên
+Karger để tìm cắt nhỏ nhất toàn cục.
+
+Với các thuật toán này, tác giả đưa ra chứng minh và cách cài đặt tóm lược.
+
+Mục 5 quan sát qua vài ví dụ cách áp dụng các thuật toán đó trong quá trình
+giải bài thi tin học.
+
+\subsection*{2. Các định nghĩa liên quan đến lát cắt}
+
+Cho đồ thị vô hướng có trọng số \(G=(V,E,c)\), trong đó
+\(c:E\to\mathbb{R}_{\ge 0}\) là ánh xạ trọng số. Trong bài viết này, mọi đồ
+thị đều mặc định là đồ thị vô hướng có trọng số không âm như vậy.
+
+Với một tập cạnh \(S\subseteq E\), định nghĩa
+\[
+  c(S)=\sum_{e\in S}c(e).
+\]
+
+Với hai tập đỉnh rời nhau \(A,B\), định nghĩa \(c(A,B)\) là tổng trọng số của
+mọi cạnh \((u,v)\) thỏa \(u\in A\), \(v\in B\).
+
+Một \term{lát cắt} của đồ thị \(G\) là một phân hoạch \((U,V\setminus U)\) của
+tập đỉnh \(V\). Ta gọi \(U\) và \(V\setminus U\) là hai phía của lát cắt.
+
+Tập cạnh của lát cắt này là tập mọi cạnh \((u,v)\) thỏa
+\(u\in U\), \(v\in V\setminus U\), ký hiệu là \(\delta(U)\).
+
+Trọng số của lát cắt là \(c(\delta(U))\), hoặc ký hiệu \(c(U,V\setminus U)\).
+
+Nếu \(u\in U\) và \(v\in V\setminus U\), ta gọi \((U,V\setminus U)\) là một
+lát cắt \(u,v\). Khi đó \(U\) là phía \(u\), còn \(V\setminus U\) là phía
+\(v\).
+
+Định nghĩa \term{cắt nhỏ nhất \(u,v\)} là lát cắt \(u,v\) có trọng số nhỏ
+nhất. Ký hiệu một tập cạnh cắt nhỏ nhất như vậy là \(\alpha(u,v)\), và ký hiệu
+trọng số của nó là \(\lambda(u,v)\).
+
+Dễ thấy cắt nhỏ nhất \(u,v\) tương đương với cắt nhỏ nhất \(v,u\).
+
+Chú ý rằng khuyên không ảnh hưởng tới lát cắt, nên trong mọi đồ thị dưới đây
+ta mặc định đã bỏ khuyên.
+
+\subsection*{3. Cắt nhỏ nhất giữa hai đỉnh bất kỳ}
+
+Bài toán ở đây là tìm cắt nhỏ nhất cho mọi cặp đỉnh trong đồ thị.
+
+Cách dễ nghĩ nhất là liệt kê trực tiếp mọi cặp đỉnh rồi chạy thuật toán luồng
+cực đại một lần cho mỗi cặp. Nhưng như vậy cần \(\Theta(|V|^2)\) lần luồng
+cực đại, hiệu quả khá thấp. Vì thế ta cần khai thác tính chất của cắt nhỏ
+nhất để giảm số lần tính luồng cực đại.
+
+\subsubsection*{3.1. Cây cắt nhỏ nhất}
+
+Định nghĩa một cây \(T=(V,E_T)\) là \term{cây Gomory-Hu}, hay \term{cây cắt
+nhỏ nhất}, nếu với mọi cạnh \((s,t)\in E_T\), tập \(\delta(W)\) là một
+\(\alpha(s,t)\), trong đó \(W\) là một trong hai thành phần liên thông sinh ra
+sau khi xóa cạnh \((s,t)\) khỏi cây \(T\).
+
+Tất nhiên, hiện tại ta chưa biết cây Gomory-Hu có tồn tại hay không. Nhưng
+phần sau sẽ chứng minh tính đúng đắn của thuật toán dựng cây, qua đó cũng
+chứng minh sự tồn tại. Vì vậy tạm thời có thể giả sử cây này tồn tại.
+
+\paragraph{\term{Định lý 1}.}
+Với ba đỉnh khác nhau bất kỳ \(a,b,c\),
+\[
+  \lambda(a,b)\ge \min(\lambda(a,c),\lambda(c,b)).
+\]
+
+\paragraph{\term{Chứng minh}.}
+Với ba đỉnh khác nhau bất kỳ \(a,b,c\), xét cặp nhỏ nhất trong
+\(\lambda(a,b),\lambda(b,c),\lambda(c,a)\); không mất tính tổng quát, giả sử
+cặp đó là \(\lambda(a,b)\). Xét \(c\) nằm ở phía nào của
+\(\alpha(a,b)\); giả sử \(c\) nằm ở phía \(b\), phía còn lại làm tương tự.
+Khi đó có \(\lambda(a,c)\le \lambda(a,b)\). Mặt khác, do \(\lambda(a,b)\) là
+cặp nhỏ nhất nên \(\lambda(a,c)\ge \lambda(a,b)\). Suy ra
+\(\lambda(a,c)=\lambda(a,b)\). Vậy với ba đỉnh khác nhau bất kỳ, trong ba giá
+trị \(\lambda(a,b),\lambda(b,c),\lambda(c,a)\), luôn có hai giá trị nhỏ bằng
+nhau và một giá trị lớn hơn hoặc bằng chúng. Mệnh đề được chứng minh.
+
+Thực ra ta còn có thể mở rộng định lý này thành:
+\[
+  \lambda(u,v)\ge
+  \min(\lambda(u,w_1),\lambda(w_1,w_2),\ldots,\lambda(w_k,v))
+\]
+với hai đỉnh khác nhau bất kỳ \(u,v\).
+
+\paragraph{\term{Định lý 2}.}
+Với mọi \(u,v\in V\), giả sử \((s,t)\) là cạnh có \(\lambda(s,t)\) nhỏ nhất
+trên đường đi duy nhất từ \(u\) đến \(v\) trong cây Gomory-Hu \(T\). Khi đó
+\[
+  \lambda(u,v)=\lambda(s,t).
+\]
+Nói cách khác, cắt nhỏ nhất \(s,t\) chính là cắt nhỏ nhất \(u,v\), và cắt nhỏ
+nhất \(u,v\) bằng trọng số nhỏ nhất trên đường đi từ \(u\) đến \(v\) trong cây
+Gomory-Hu.
+
+\paragraph{\term{Chứng minh}.}
+Từ phần mở rộng của Định lý 1, có \(\lambda(u,v)\ge\lambda(s,t)\). Theo định
+nghĩa, \(u\) và \(v\) nằm ở hai phía của \(\alpha(s,t)\), nên
+\(\lambda(u,v)\le\lambda(s,t)\). Do đó \(\lambda(u,v)=\lambda(s,t)\).
+
+\paragraph{\term{Định nghĩa 1}.}
+Với một tập \(V\), xét hàm \(f(U)\) trên các tập con \(U\subseteq V\). Nếu với
+mọi \(A,B\subseteq V\),
+\[
+  f(A)+f(B)\ge f(A\cup B)+f(A\cap B),
+\]
+thì \(f\) được gọi là \term{hàm dưới mô-đun} (submodular).
+
+\paragraph{\term{Định lý 3}.}
+Hàm trọng số lát cắt \(c(\delta(U))\) là hàm dưới mô-đun.
+
+\paragraph{\term{Chứng minh}.}
+Với hai tập đỉnh \(A,B\), chia mọi đỉnh thành bốn phần:
+\[
+  A\cap B,\qquad A\setminus B,\qquad B\setminus A,\qquad
+  V\setminus(A\cup B).
+\]
+Đếm đóng góp của các cạnh giữa bốn phần này vào hai vế của bất đẳng thức dưới
+mô-đun cho thấy mỗi loại cạnh ở vế trái xuất hiện không ít hơn ở vế phải.
+Vì vậy
+\[
+  c(\delta(A))+c(\delta(B))
+  \ge c(\delta(A\cup B))+c(\delta(A\cap B)).
+\]
+
+\paragraph{\term{Định nghĩa 2}.}
+Với một hàm \(f\) trên các tập con của \(V\), nếu
+\[
+  f(U)=f(V\setminus U),
+\]
+thì \(f\) được gọi là \term{hàm đối xứng}.
+
+\paragraph{\term{Định nghĩa 3}.}
+Với một hàm \(f\) trên các tập con của \(V\), nếu với mọi \(A,B\subseteq V\),
+\[
+  f(A)+f(B)\ge f(A\setminus B)+f(B\setminus A),
+\]
+thì \(f\) được gọi là \term{hàm phản mô-đun} (posi-modular). Tác giả nguồn
+không tìm được dịch ngữ tương ứng, nên dùng tên ``phản mô-đun'' để thay thế.
+
+\paragraph{\term{Định lý 4}.}
+Nếu \(f\) vừa là hàm dưới mô-đun, vừa là hàm đối xứng, thì \(f\) là hàm phản
+mô-đun.
+
+\paragraph{\term{Chứng minh}.}
+\[
+\begin{aligned}
+  f(A)+f(B)
+  &= f(V\setminus A)+f(B)\\
+  &\ge f((V\setminus A)\cap B)+f((V\setminus A)\cup B)\\
+  &= f(B\setminus A)+f(V\setminus(A\setminus B))\\
+  &= f(B\setminus A)+f(A\setminus B).
+\end{aligned}
+\]
+Hiển nhiên, hàm trọng số lát cắt cũng là hàm phản mô-đun.
+
+\paragraph{\term{Định lý 5}.}
+Xét một cắt nhỏ nhất \(\alpha(s,t)\) của hai đỉnh \(s,t\). Gọi \(W\) là một
+phía của \(\alpha(s,t)\). Khi đó với mọi \(u,v\in W\), \(u\ne v\), tồn tại
+một cắt nhỏ nhất \(u,v\) là \(\delta(X)\) sao cho \(X\subseteq W\).
+
+\paragraph{\term{Chứng minh}.}
+Không mất tính tổng quát, giả sử \(s\in W\), và chọn một cắt nhỏ nhất
+\(u,v\) là \(\delta(X)\) sao cho \(u\in X\), \(v\notin X\). Các trường hợp
+khác đều có thể đổi ký hiệu để đưa về dạng này.
+
+Xét hai trường hợp.
+
+Nếu \(t\notin X\), do hàm trọng số lát cắt là dưới mô-đun, có
+\[
+  c(\delta(X))+c(\delta(W))
+  \ge c(\delta(X\cap W))+c(\delta(X\cup W)).
+\]
+Ở đây \(\delta(X\cap W)\) là một lát cắt \(u,v\), nên
+\(c(\delta(X\cap W))\ge c(\delta(X))\). Đồng thời, \(\delta(X\cup W)\) là một
+lát cắt \(s,t\), nên \(c(\delta(X\cup W))\ge c(\delta(W))\). Vì thế mọi bất
+đẳng thức ở trên đều phải lấy dấu bằng, và \(\delta(X\cap W)\) là một cắt nhỏ
+nhất \(u,v\).
+
+Nếu \(t\in X\), do hàm trọng số lát cắt là phản mô-đun, có
+\[
+  c(\delta(X))+c(\delta(W))
+  \ge c(\delta(W\setminus X))+c(\delta(X\setminus W)).
+\]
+Ở đây \(\delta(W\setminus X)\) là một lát cắt \(u,v\), nên
+\(c(\delta(W\setminus X))\ge c(\delta(X))\). Đồng thời, \(\delta(X\setminus
+W)\) là một lát cắt \(s,t\), nên \(c(\delta(X\setminus W))\ge c(\delta(W))\).
+Vì vậy mọi bất đẳng thức cũng lấy dấu bằng, và \(\delta(W\setminus X)\) là
+một cắt nhỏ nhất \(u,v\).
+
+Kết hợp hai trường hợp, mệnh đề được chứng minh.
+
+Đây là định lý quan trọng và cốt lõi nhất để dựng cây Gomory-Hu. Nó cho thấy
+các cắt nhỏ nhất có thể được chọn để ``không giao nhau'': những cặp đỉnh nằm
+trong cùng một phía của một cắt nhỏ nhất có cắt nhỏ nhất không liên quan tới
+phía kia, từ đó sinh ra cấu trúc đệ quy.
+
+\paragraph{\term{Định nghĩa 4}.}
+Cho đồ thị \(G=(V,E)\) và tập đỉnh \(R\subseteq V\). Định nghĩa cây
+Gomory-Hu của \(R\) trong \(G\) là một cặp \((T,C)\), trong đó
+\(T=(R,E_T)\), còn \(C=(C_r\mid r\in R)\) là một phân hoạch của \(V\) theo
+tập đỉnh \(R\), thỏa:
+\begin{itemize}
+  \item Với mọi \(r\in R\), có \(r\in C_r\).
+  \item Với mọi cạnh \((s,t)\in E_T\), hai thành phần của
+  \(T-(s,t)\) biểu diễn một cắt nhỏ nhất \(s,t\) trong \(G\). Cụ thể, nếu một
+  thành phần của \(T-(s,t)\) là \(X\), thì
+  \[
+    \delta\left(\bigcup_{r\in X} C_r\right)
+  \]
+  là một cắt nhỏ nhất \(s,t\) trong \(G\).
+\end{itemize}
+
+Chú ý rằng cây Gomory-Hu của \(G\) chính là trường hợp \(R=V\).
+
+\paragraph{\term{Thuật toán}.}
+Mã giả của cách dựng đệ quy:
+\begin{quote}
+\small
+\begin{verbatim}
+Gomory-Hu(G, R)
+  if |R| = 1 then
+    T = ({r}, empty)
+    C_r = V
+    return (T, C)
+  end if
+
+  choose r1, r2 in R, r1 != r2
+  let delta(W) be a minimum r1,r2 cut, with r1 in W
+  G1 = graph obtained from G by contracting V \ W into v1
+  R1 = R cap W
+  G2 = graph obtained from G by contracting W into v2
+  R2 = R \ W
+
+  (T1, (C^1_r | r in R1)) = Gomory-Hu(G1, R1)
+  (T2, (C^2_r | r in R2)) = Gomory-Hu(G2, R2)
+
+  choose r'  with v1 in C^1_{r'}
+  choose r'' with v2 in C^2_{r''}
+  T = (R1 union R2, E_T1 union E_T2 union {(r', r'')})
+
+  for all r in R1 do C_r = C^1_r end for
+  for all r in R2 do C_r = C^2_r end for
+  C_{r'}  = C_{r'}  \ {v1}
+  C_{r''} = C_{r''} \ {v2}
+  return (T, C)
+\end{verbatim}
+\end{quote}
+
+\paragraph{\term{Chứng minh tính đúng đắn}.}
+Theo định nghĩa cây Gomory-Hu, ta cần chứng minh mọi cạnh
+\((s,t)\in E_T\) đều thỏa: hai thành phần của \(T-(s,t)\) biểu diễn một cắt
+nhỏ nhất \(s,t\) trong \(G\). Khi \(|R|=1\) điều này hiển nhiên.
+
+Với trường hợp tổng quát, nếu \((s,t)\in T_1\) hoặc \((s,t)\in T_2\), theo
+Định lý 5, các đỉnh ngoài \(T_1\) hoặc \(T_2\) không ảnh hưởng đến cắt nhỏ
+nhất giữa các đỉnh bên trong, nên \(T_1\) và \(T_2\) đều là cây Gomory-Hu hợp
+lệ.
+
+Vì vậy chỉ cần chứng minh cạnh mới thêm \((r',r'')\) là hợp lệ. Gọi
+\(\delta(W)\) là cắt nhỏ nhất \(r_1,r_2\) được thuật toán tìm, với
+\(r_1\in W\). Ta cần chứng minh \(\delta(W)\) cũng là cắt nhỏ nhất
+\(r',r''\). Do \(\delta(W)\) đã là một lát cắt \(r',r''\), chỉ cần chứng minh
+\(\lambda(r',r'')\ge \lambda(r_1,r_2)\).
+
+Giả sử \(r_1\ne r'\) và \(r_2\ne r''\); các trường hợp còn lại tương tự. Nếu
+\(\lambda(r_1,r')<\lambda(r_1,r_2)\), thì do trong \(G_1\) tập
+\(V\setminus W\) bị co thành một đỉnh \(v_1\), và \(v_1\in C^1_{r'}\), cắt
+nhỏ nhất \(r_1,r'\) cũng sẽ là một lát cắt \(r_1,r_2\), mâu thuẫn với việc
+\(\lambda(r_1,r_2)\) là cắt nhỏ nhất \(r_1,r_2\). Do đó
+\(\lambda(r_1,r')\ge \lambda(r_1,r_2)\). Tương tự,
+\(\lambda(r_2,r'')\ge \lambda(r_1,r_2)\).
+
+Theo Định lý 1,
+\[
+  \lambda(r',r'')
+  \ge \min\{\lambda(r',r_1),\lambda(r_1,r_2),\lambda(r_2,r'')\}
+  = \lambda(r_1,r_2).
+\]
+Mệnh đề được chứng minh. Nếu \(r'=r_1\) hoặc \(r''=r_2\), chỉ là bớt một số
+hạng trong biểu thức \(\min\), kết luận vẫn giống hệt.
+
+\paragraph{\term{Hệ quả 1}.}
+Để dựng cây Gomory-Hu của \(R\subseteq V\) trong đồ thị \(G\), chỉ cần tính
+\(|R|-1\) lần cắt nhỏ nhất trên đồ thị có kích thước không vượt quá \(G\).
+
+Khi \(R=V\), cây dựng được là cây Gomory-Hu của \(G\). Vì vậy toàn bộ thuật
+toán chỉ cần \(\Theta(|V|)\) lần luồng cực đại.
+
+\paragraph{\term{Cài đặt không đệ quy}.}
+Trong thuật toán đệ quy ở trên, việc nối cạnh cần dùng phân hoạch \(C\), mà
+phân hoạch này khá khó ghi lại trong cài đặt cụ thể. Vì thế ta xét cách cài
+đặt không đệ quy.
+
+Thứ tự đệ quy không quan trọng. Có thể nhìn thuật toán như sau: tại mỗi thời
+điểm có nhiều tập đỉnh. Mỗi lần chọn tùy ý một tập có kích thước lớn hơn
+\(1\), tách nó thành hai tập, và tiếp tục cho đến khi mọi tập đều có kích
+thước \(1\). Các cạnh của cây Gomory-Hu cũng có thể được duy trì động: tại
+mỗi thời điểm, mỗi cạnh không nối hai đỉnh đơn lẻ mà nối hai tập đỉnh. Nếu
+xem mỗi tập đỉnh là một đỉnh lớn, các cạnh đó tạo thành một cây trên các đỉnh
+lớn, còn những đỉnh bị co trong thuật toán đệ quy chính là các cây con kề với
+mỗi tập đỉnh. Khi tách một tập đỉnh, phân hoạch của những đỉnh bị co cũng
+chính là phân hoạch các cạnh kề với tập đó.
+
+Ta cài đặt thuật toán không đệ quy như sau. Với mỗi tập đỉnh, chọn đỉnh có
+chỉ số nhỏ nhất làm đại diện. Với mỗi đỉnh \(x\), ghi một đỉnh mà nó trỏ tới
+là \(fa_x\). Nếu \(x\) là đại diện của tập chứa nó, cạnh từ \(x\) đến
+\(fa_x\) biểu diễn một cạnh thật của cây Gomory-Hu, nối tập có đại diện \(x\)
+với tập có đại diện \(fa_x\), đồng thời đã có trọng số. Nếu \(x\) không phải
+đại diện của tập chứa nó, \(fa_x\) biểu diễn quan hệ thuộc tập; \(fa_x\) là
+đại diện của tập đó. Ban đầu mọi đỉnh nằm trong cùng một tập, nên ngoài đỉnh
+\(1\), mọi \(fa_x\) đều bằng \(1\).
+
+Sau đó liệt kê \(u=2,3,\ldots,|V|\). Nếu \(fa_u\) đang biểu diễn quan hệ
+thuộc tập, ta tách tập chứa \(u\). Đặt \(v=fa_u\), chọn \(v\) và \(u\) làm hai
+đỉnh dùng để tách theo cắt nhỏ nhất. Sau khi tính cắt nhỏ nhất, ta chia tập
+đỉnh thành hai phần, đồng thời sửa mọi cạnh cây kề với tập hiện tại. Cụ thể,
+mọi đỉnh \(x\) được chia về phía \(u\) và thỏa \(fa_x=v\) đều được đổi thành
+\(fa_x=u\), trọng số không đổi. Bước này vừa xử lý các đỉnh trong tập, vừa xử
+lý các cạnh cây thật. Riêng với cạnh giữa \(u\) và \(v\), nếu tập mà \(fa_v\)
+đại diện cũng bị chia về phía \(u\), cần đặt \(fa_u=fa_v\), chuyển trọng số
+cũ sang \(u\), rồi đặt \(fa_v=u\) với trọng số bằng giá trị cắt nhỏ nhất.
+Ngược lại, đặt \(fa_u=v\) với trọng số bằng giá trị cắt nhỏ nhất. Như vậy một
+lần tách hoàn tất.
+
+Mã giả:
+\begin{quote}
+\small
+\begin{verbatim}
+Gomory-Hu Incremental Method(G)
+  w_1, w_2, ..., w_|V| = NULL
+  fa_1 = NULL
+  fa_2, fa_3, ..., fa_|V| = 1
+
+  for u = 2 to |V| do
+    v = fa_u
+    compute a minimum v,u cut after contracting other current sets
+    obtain alpha(v,u) and lambda(v,u)
+
+    for x = 1 to |V| do
+      if x != u and fa_x = v and x is on the u side then
+        fa_x = u
+      end if
+    end for
+
+    if fa_v is on the u side then
+      fa_u = fa_v
+      w_u = w_v
+      fa_v = u
+      w_v = lambda(v,u)
+    else
+      fa_u = v
+      w_u = lambda(v,u)
+    end if
+  end for
+
+  E = empty
+  for u = 1 to |V| do
+    if fa_u != NULL then
+      add edge (fa_u, u) to E with weight w_u
+    end if
+  end for
+  return T = (V, E, c)
+\end{verbatim}
+\end{quote}
+
+Mỗi lần tách chỉ biến cạnh \(u\to fa_u\) từ một cạnh biểu diễn quan hệ thuộc
+tập thành cạnh thật của cây. Vì thế trong quá trình liệt kê, những đỉnh đã
+liệt kê trước đó đều có cạnh \(fa\) là cạnh cây, còn những đỉnh chưa liệt kê
+đều có cạnh \(fa\) biểu diễn quan hệ thuộc tập. Do đó khi liệt kê tới một
+đỉnh, chắc chắn ta sẽ thực hiện đúng một lần tách cho nó.
+
+\subsubsection*{3.2. Thuật toán dựng cây luồng tương đương của Gusfield}
+
+Đôi khi ta không yêu cầu cây Gomory-Hu phản ánh cụ thể cắt nhỏ nhất là gì, mà
+chỉ cần biết trọng số cắt nhỏ nhất. Nói cách khác, ta cần một cây sao cho cắt
+nhỏ nhất \(u,v\) bằng trọng số nhỏ nhất trên đường đi giữa \(u\) và \(v\) của
+cây; với mỗi cạnh cây, trọng số cạnh là trọng số cắt nhỏ nhất giữa hai đầu
+cạnh, nhưng không yêu cầu hai thành phần liên thông sau khi xóa cạnh đó biểu
+diễn đúng lát cắt nhỏ nhất của hai đầu cạnh. Ta gọi cây như vậy là \term{cây
+luồng tương đương} (equivalent flow tree).
+
+Thuật toán Gusfield để dựng cây luồng tương đương đơn giản hơn nhiều so với
+cây Gomory-Hu. Ta chỉ cần sửa nhẹ thuật toán dựng cây Gomory-Hu: trong quá
+trình đệ quy, không chọn hai đỉnh theo cách cũ để nối cạnh, mà trực tiếp nối
+một cạnh có trọng số bằng cắt nhỏ nhất tương ứng giữa nguồn \(s\) và đích
+\(t\). Chứng minh cũng đơn giản hơn. Trước hết, hai phần đệ quy đều dựng ra
+cây luồng tương đương hợp lệ. Sau khi nối thêm cạnh ở giữa, ta chỉ cần chứng
+minh mọi đường đi từ một đỉnh \(u\) ở phía \(s\) tới một đỉnh \(v\) ở phía
+\(t\) đều thỏa tính chất cắt nhỏ nhất tương đương:
+\[
+  \lambda(u,v)
+  = \min\{\text{trọng số nhỏ nhất trên đường }u\to s,\,
+          \lambda(s,t),\,
+          \text{trọng số nhỏ nhất trên đường }t\to v\}.
+\]
+Từ Định lý 1, vế trái không nhỏ hơn vế phải. Vì vậy chỉ cần chứng minh vế
+trái không lớn hơn vế phải.
+
+Hiển nhiên, cắt nhỏ nhất \(s,t\) cũng là một lát cắt \(u,v\), nên
+\(\lambda(u,v)\le\lambda(s,t)\). Xét cắt nhỏ nhất được biểu diễn bởi cạnh nhẹ
+nhất trên đường \(u\to s\). Theo Định lý 5, cắt nhỏ nhất này chắc chắn không
+cắt rời tập đỉnh phía \(t\); vì vậy toàn bộ tập phía \(t\) hoặc nằm ở phía
+\(s\), hoặc nằm ở phía \(u\) của lát cắt này. Nếu nằm ở phía \(s\), lát cắt
+đó cũng là lát cắt \(u,v\). Nếu nằm ở phía \(u\), lát cắt đó cũng là lát cắt
+\(s,t\), nên trọng số không thể nhỏ hơn \(\lambda(s,t)\). Lập luận với cạnh
+nhẹ nhất trên đường \(t\to v\) cũng tương tự. Kết hợp lại, ta chứng minh được
+kết luận trên.
+
+Chú ý rằng cắt nhỏ nhất \(s,t\) tìm trong bước đệ quy có thể giao với cắt nhỏ
+nhất bên ngoài tập đỉnh đang xử lý. Nếu có giao, theo các định lý trước luôn
+có thể chỉnh thành một cắt nhỏ nhất cùng trọng số và không giao, còn cách nó
+chia tập đỉnh hiện tại không đổi. Vì vậy thuật toán Gusfield không cần co
+đỉnh, dễ cài đặt bằng mã hơn.
+
+Trên thực tế, thuật toán Gusfield có thể cài đặt đệ quy hoặc không đệ quy. Mã
+giả dạng không đệ quy:
+\begin{quote}
+\small
+\begin{verbatim}
+Gusfield's Algorithm(G)
+  fa_1 = NULL
+  fa_2, fa_3, ..., fa_|V| = 1
+
+  for u = 2 to |V| do
+    v = fa_u
+    compute alpha(v,u), lambda(v,u)
+    w_u = lambda(v,u)
+    for x = u + 1 to |V| do
+      if fa_x = v and x is on the u side then
+        fa_x = u
+      end if
+    end for
+  end for
+
+  E = empty
+  for u = 2 to |V| do
+    add edge (fa_u, u) to E with weight w_u
+  end for
+  return T = (V, E, c)
+\end{verbatim}
+\end{quote}
+
+\subsection*{4. Cắt nhỏ nhất toàn cục}
+
+Bài toán ở đây là tìm một lát cắt nhỏ nhất trong toàn bộ đồ thị, tức cắt nhỏ
+nhất toàn cục.
+
+Một cách làm là dựng cây Gomory-Hu, rồi lấy cạnh có trọng số nhỏ nhất trên
+cây; cạnh đó chính là cắt nhỏ nhất toàn cục. Nhưng có những thuật toán đạt độ
+phức tạp tốt hơn.
+
+\subsubsection*{4.1. Thuật toán Stoer-Wagner}
+
+Với hai đỉnh bất kỳ trong đồ thị, chúng có thể nằm cùng phía hoặc khác phía
+trong cắt nhỏ nhất toàn cục. Nếu nằm cùng phía, hiển nhiên ta có thể co hai
+đỉnh đó thành một đỉnh mà không ảnh hưởng đến đáp án. Nếu nằm khác phía, cắt
+nhỏ nhất giữa hai đỉnh đó chính là cắt nhỏ nhất toàn cục. Vì thế, chỉ cần lặp
+thao tác: mỗi lần chọn hai đỉnh bất kỳ, tìm cắt nhỏ nhất giữa chúng để cập
+nhật đáp án, rồi co hai đỉnh đó lại; khi chỉ còn một đỉnh thì đã tìm được cắt
+nhỏ nhất toàn cục.
+
+Vậy tìm một cặp đỉnh thích hợp trong đồ thị bằng cách nào? Thuật toán sau đưa
+ra một phương án khả thi.
+
+\paragraph{\term{Tìm kiếm kề lớn nhất}.}
+Ta có một tập đỉnh \(A\). Ban đầu \(A\) chứa một đỉnh khởi đầu tùy ý. Mỗi
+lần, chọn một đỉnh \(v\notin A\) sao cho \(c(A,\{v\})\) lớn nhất, rồi thêm
+\(v\) vào \(A\). Lặp đến khi mọi đỉnh đều đã được thêm vào \(A\).
+
+\paragraph{\term{Định lý}.}
+Gọi đỉnh thứ \(i\) được thêm vào \(A\) là \(v_i\). Khi đó
+\((\{v_n\},V\setminus\{v_n\})\) là cắt nhỏ nhất giữa hai đỉnh cuối cùng
+\(v_{n-1}\) và \(v_n\) trong tìm kiếm kề lớn nhất.
+
+\paragraph{\term{Chứng minh}.}
+Khi \(n=2\), mệnh đề hiển nhiên. Giả sử \(n>2\), xét ba đỉnh cuối cùng được
+thêm vào là \(v_{n-2},v_{n-1},v_n\). Trước hết có thể xóa cạnh
+\((v_{n-1},v_n)\), vì mọi lát cắt \(v_{n-1},v_n\) đều cắt qua cạnh này; việc
+xóa nó không làm thay đổi thứ tự tương đối giữa các lát cắt đó.
+
+Ta chứng minh
+\[
+  c(\{v_1,\ldots,v_{n-2},v_n\},\{v_{n-1}\})
+  \le \lambda(v_{n-2},v_{n-1}).
+\]
+Xét đồ thị sau khi bỏ \(v_n\) cùng các cạnh kề nó. Nếu chạy lại tìm kiếm kề
+lớn nhất theo thứ tự cũ, \(v_{n-2}\) và \(v_{n-1}\) sẽ trở thành hai đỉnh
+cuối cùng. Theo giả thiết quy nạp,
+\((\{v_1,\ldots,v_{n-2}\},\{v_{n-1}\})\) là cắt nhỏ nhất
+\(v_{n-2},v_{n-1}\).
+
+Thêm \(v_n\) cùng các cạnh kề nó trở lại. Hiển nhiên cắt nhỏ nhất
+\(v_{n-2},v_{n-1}\) không thể tốt hơn trước. Vì \(v_n\) không còn cạnh nối tới
+\(v_{n-1}\), có thể thêm \(v_n\) vào phía của \(v_{n-2}\) trong lát cắt cũ mà
+không đổi trọng số. Do đó
+\((\{v_1,\ldots,v_{n-2},v_n\},\{v_{n-1}\})\) vẫn là một cắt nhỏ nhất
+\(v_{n-2},v_{n-1}\).
+
+Theo lựa chọn ở bước áp chót của tìm kiếm kề lớn nhất,
+\[
+  c(\{v_1,\ldots,v_{n-2}\},\{v_n\})
+  \le c(\{v_1,\ldots,v_{n-2}\},\{v_{n-1}\}).
+\]
+Do \(v_{n-1}\) không có cạnh nối tới \(v_n\) sau bước xóa cạnh đã nói ở trên,
+suy ra
+\[
+  c(\{v_1,\ldots,v_{n-1}\},\{v_n\})
+  \le c(\{v_1,\ldots,v_{n-2},v_n\},\{v_{n-1}\}),
+\]
+tức
+\[
+  c(\{v_1,\ldots,v_{n-1}\},\{v_n\})
+  \le \lambda(v_{n-2},v_{n-1}).
+\]
+
+Tương tự, bằng cách bỏ tạm \(v_{n-1}\), có thể chứng minh
+\[
+  c(\{v_1,\ldots,v_{n-1}\},\{v_n\})
+  \le \lambda(v_{n-2},v_n).
+\]
+
+Kết hợp hai phần,
+\[
+  \lambda(v_{n-1},v_n)
+  \le c(\{v_1,\ldots,v_{n-1}\},\{v_n\})
+  \le \min(\lambda(v_{n-1},v_n),\lambda(v_{n-2},v_n)).
+\]
+Lại theo Định lý 1,
+\[
+  \lambda(v_{n-1},v_n)
+  \ge \min(\lambda(v_{n-1},v_n),\lambda(v_{n-2},v_n)).
+\]
+Vì vậy mọi bất đẳng thức ở trên đều lấy dấu bằng. Nói cách khác,
+\[
+  \lambda(v_{n-1},v_n)
+  = c(\{v_1,\ldots,v_{n-1}\},\{v_n\}).
+\]
+Mệnh đề được chứng minh.
+
+\paragraph{\term{Cài đặt}.}
+Với tìm kiếm kề lớn nhất, ta có thể dùng một heap để duy trì mọi giá trị
+\(c(A,\{v\})\). Nếu dùng heap nhị phân, độ phức tạp là
+\(O(|E|\log |V|)\); dùng heap Fibonacci có thể đạt
+\(O(|E|+|V|\log |V|)\) cho mỗi pha.
+
+\subsubsection*{4.2. Thuật toán Karger}
+
+Đây là thuật toán ngẫu nhiên, không bảo đảm đúng tuyệt đối, nhưng có thể tăng
+xác suất đúng bằng cách chạy nhiều lần.
+
+\paragraph{\term{Đồ thị không trọng số}.}
+Với đồ thị không trọng số, thuật toán như sau: mỗi lần chọn ngẫu nhiên đều
+một cạnh của đồ thị, giả sử cạnh đó không nằm trên cắt nhỏ nhất toàn cục, rồi
+co hai đầu của cạnh thành một đỉnh lớn. Sau khi co, bỏ mọi khuyên. Lặp quá
+trình co cạnh cho đến khi đồ thị chỉ còn hai đỉnh; các cạnh giữa hai đỉnh đó
+tạo thành một lát cắt thu được.
+
+Xét xác suất đúng. Nếu kết quả cuối cùng là cắt nhỏ nhất toàn cục, thì mọi
+cạnh bị co trong quá trình đều không được nằm trên cắt nhỏ nhất. Giả sử cắt
+nhỏ nhất toàn cục có \(k\) cạnh. Khi đó bậc của mọi đỉnh đều không nhỏ hơn
+\(k\); nếu có một đỉnh bậc nhỏ hơn \(k\), riêng đỉnh đó đã tạo thành một lát
+cắt nhỏ hơn. Vì vậy tổng số cạnh ít nhất là \(k|V|/2\). Xác suất để một lần
+chọn ngẫu nhiên rơi vào cắt nhỏ nhất toàn cục không vượt quá
+\[
+  \frac{k}{|E|}\le \frac{2}{|V|}.
+\]
+Do đó xác suất không chọn vào cắt nhỏ nhất ở bước có \(i\) đỉnh ít nhất là
+\(1-2/i\). Mỗi lần co cạnh làm số đỉnh giảm \(1\), nên xác suất cuối cùng thu
+được cắt nhỏ nhất toàn cục không nhỏ hơn
+\[
+  \prod_{i=|V|}^{3}\left(1-\frac{2}{i}\right)
+  = \frac{2}{|V|(|V|-1)}.
+\]
+
+Vậy xác suất một lần chạy không thu được cắt nhỏ nhất toàn cục là
+\[
+  1-\frac{2}{|V|(|V|-1)}.
+\]
+Do \(1-x<e^{-x}\), nếu chạy thuật toán \(m\) lần rồi lấy đáp án tốt nhất, xác
+suất đúng ít nhất là
+\[
+  1-\left(1-\frac{2}{|V|(|V|-1)}\right)^m
+  > 1-e^{-2m/(|V|(|V|-1))}.
+\]
+Chọn \(m=|V|(|V|-1)/2\) thì đạt xác suất đúng ít nhất \(1-e^{-1}\). Nói cách
+khác, chỉ cần chạy \(O(|V|^2)\) lần là có được một xác suất đúng hằng số.
+
+\paragraph{\term{Cài đặt}.}
+Với quá trình chọn cạnh ngẫu nhiên, có thể sinh trước một hoán vị ngẫu nhiên
+của mọi cạnh, rồi liệt kê cạnh theo thứ tự trong hoán vị đó để thử co cạnh
+cho tới khi đồ thị chỉ còn hai đỉnh. Nếu cạnh đang xét đã trở thành khuyên
+trong đồ thị hiện tại, bỏ qua nó. Dễ thấy cách chọn này tương đương với cách
+chọn ở trên.
+
+Khó khăn chính nằm ở thao tác co đỉnh. Nếu lưu cạnh bằng danh sách kề hoặc ma
+trận kề, mỗi lần co đỉnh cần \(O(|V|)\) thời gian, tổng thời gian khá lớn. Cần
+tối ưu hóa bước này.
+
+Nếu dùng danh sách liên kết để lưu cạnh, có thể giống thuật toán Kruskal cho
+cây khung nhỏ nhất: duy trì một cấu trúc hợp nhất-tìm kiếm cho các đỉnh. Khi
+co hai đỉnh \(u,v\), nối trực tiếp danh sách cạnh của \(v\) vào sau danh sách
+cạnh của \(u\), rồi trong cấu trúc hợp nhất-tìm kiếm cho \(v\) trỏ tới \(u\).
+Tại mọi thời điểm, với một cạnh trong đồ thị, hai đầu cạnh đều được tra qua
+cấu trúc hợp nhất-tìm kiếm. Khi đó độ phức tạp cho một lần chạy là
+\(O(|E|\alpha(|V|))\).
+
+Còn có một cách đạt độ phức tạp tốt hơn. Trên hoán vị cạnh, nhị phân thời
+điểm mà đồ thị bắt đầu chỉ còn hai đỉnh. Ví dụ ở bước đầu, tính xem nếu lần
+lượt thao tác trên nửa đầu \(|E|/2\) cạnh thì đồ thị có chỉ còn hai đỉnh
+không; điều này có thể kiểm tra bằng DFS. Nếu có, nhị phân ở nửa trái. Nếu
+không, co trực tiếp trên đồ thị những đỉnh được nối bởi các cạnh trong nửa
+trái, tính lại hai đầu của mọi cạnh ở nửa phải trong đồ thị mới, rồi nhị phân
+ở nửa phải. Các thao tác này đều giải quyết được trong \(O(|E|)\), và vì số
+cạnh mỗi lần giảm một nửa, độ phức tạp cuối cùng vẫn là \(O(|E|)\).
+
+\paragraph{\term{Đồ thị có trọng số}.}
+Với một cạnh có trọng số, có thể xem nó như nhiều cạnh song song trọng số đơn
+vị, từ đó chuyển về đồ thị không trọng số. Khi chọn cạnh ngẫu nhiên, cần sửa
+phân bố xác suất: xác suất chọn một cạnh phải bằng trọng số của cạnh đó chia
+cho tổng trọng số của mọi cạnh còn lại. Vì vậy cần duy trì một tập có thứ tự
+các cạnh để hỗ trợ thao tác chọn cạnh. Mỗi lần sinh ngẫu nhiên một số trong
+khoảng tổng trọng số mọi cạnh còn lại, tìm cạnh đầu tiên sao cho tổng trọng
+số từ đầu tới cạnh đó không nhỏ hơn số vừa sinh, chọn cạnh đó để co, rồi xóa
+cạnh đó khỏi tập. Tập này có thể duy trì bằng cây Fenwick. Độ phức tạp là
+\(O(|E|\log |E|)\) cho một lần chạy.
+
+\subsection*{5. Ứng dụng}
+
+\subsubsection*{5.1. Ví dụ 1: [ZJOI2011] Cắt nhỏ nhất}
+
+Cho một đồ thị vô hướng có trọng số. Có nhiều truy vấn; mỗi truy vấn cho một
+số \(x\), hỏi có bao nhiêu cặp đỉnh có dung lượng cắt nhỏ nhất giữa hai đỉnh
+không vượt quá \(x\).
+
+\paragraph{\term{Cách làm}.}
+Đây là một bài toán về cắt nhỏ nhất giữa hai đỉnh bất kỳ. Ta có thể dựng cây
+Gomory-Hu. Sau đó xử lý các cạnh cây theo trọng số tăng dần; mỗi lần dùng cấu
+trúc hợp nhất-tìm kiếm để hợp nhất hai thành phần liên thông mà cạnh đó nối,
+đồng thời cộng tích kích thước của hai thành phần vào đáp án. Như vậy ta tìm
+được số cặp đỉnh có cắt nhỏ nhất không vượt quá từng trọng số có thể xuất
+hiện. Khi trả lời truy vấn, chỉ cần dùng \texttt{lower\_bound} trên mảng này.
+
+\subsubsection*{5.2. Ví dụ 2: Codeforces Round \#200 Div.1 E. Pumping Stations}
+
+Cho một đồ thị vô hướng có trọng số. Hãy tìm một hoán vị của mọi đỉnh sao cho
+tổng luồng cực đại giữa hai đỉnh kề nhau trong hoán vị là lớn nhất.
+
+\paragraph{\term{Cách làm}.}
+Trước hết, luồng cực đại bằng cắt nhỏ nhất. Tương tự, ta dựng cây Gomory-Hu.
+Sau đây chứng minh kết luận: đáp án của hoán vị tối ưu bằng tổng trọng số mọi
+cạnh trên cây Gomory-Hu.
+
+Một hoán vị tương ứng với một đường đi qua các đỉnh trên cây. Xét cạnh có
+trọng số nhỏ nhất trên cây, nếu có nhiều cạnh thì chọn tùy ý một cạnh. Khi đi
+từ một đỉnh ở một phía của cạnh này sang một đỉnh ở phía kia, giá trị chắc
+chắn bằng trọng số của cạnh đó. Nếu một đường đi vượt qua cạnh này nhiều hơn
+một lần, ta có thể điều chỉnh để đáp án không xấu đi: cắt đường đi tại mọi vị
+trí vượt qua cạnh này, ta được nhiều đoạn đường không vượt qua cạnh đó. Giả
+sử vượt qua \(k\) lần, ta thu được \(k+1\) đoạn. Ghép đầu cuối các đoạn ở
+cùng một phía lại với nhau, ta được một đường đi không vượt cạnh ở mỗi phía.
+Sau đó nối hai đường đi của hai phía lại, lúc này bắt buộc chỉ vượt qua cạnh
+giữa đúng một lần. Vì cạnh ở giữa là cạnh nhỏ nhất, việc không đi qua nó
+không thể kém hơn việc đi qua nó. Do đó điều chỉnh này không làm đáp án xấu
+đi.
+
+Sau đó, áp dụng lập luận này đệ quy cho hai phía của cạnh. Như vậy ta chứng
+minh được kết luận, đồng thời trong quá trình đệ quy cũng dựng được một
+nghiệm tối ưu.
+
+\subsubsection*{5.3. Ví dụ 3: UVALive 5099 Nubulsa Expo}
+
+Cho một đồ thị vô hướng. Với một nguồn đã cố định, hãy tìm giá trị nhỏ nhất
+của luồng cực đại từ nguồn đó tới mọi đích có thể.
+
+\paragraph{\term{Cách làm}.}
+Trước hết, luồng cực đại bằng cắt nhỏ nhất. Hiển nhiên đáp án chính là cắt
+nhỏ nhất toàn cục. Một cắt nhỏ nhất toàn cục chia đồ thị thành hai phần; tất
+yếu một phần chứa nguồn đã cho. Chỉ cần chọn một đỉnh bất kỳ ở phần còn lại
+làm đích, cắt nhỏ nhất toàn cục sẽ là cắt nhỏ nhất giữa nguồn và đích đó.
+
+\subsubsection*{5.4. Ví dụ 4: Chu trình nhỏ nhất trong đồ thị phẳng có trọng số cạnh không âm}
+
+Cho một đồ thị phẳng, mỗi cạnh có trọng số không âm. Hãy tìm chu trình có
+tổng trọng số nhỏ nhất.
+
+\paragraph{\term{Một cách làm}.}
+Dựng đồ thị đối ngẫu của đồ thị phẳng. Khi đó một chu trình trong đồ thị
+phẳng tương ứng với một lát cắt trong đồ thị đối ngẫu, và trọng số chu trình
+chính là trọng số lát cắt. Vì vậy chỉ cần tìm cắt nhỏ nhất toàn cục của đồ
+thị đối ngẫu.
+
+Có thể tồn tại thuật toán có độ phức tạp tốt hơn.
+
+\subsection*{6. Tổng kết}
+
+Khi gặp lớp bài toán này trong thi tin học, ta thường trước hết cần dựa vào
+điều kiện đề bài để chuyển mô hình về cắt nhỏ nhất trên đồ thị vô hướng. Sau
+đó hoặc trực tiếp áp dụng cấu trúc hay thuật toán phù hợp, hoặc khai thác các
+tính chất của cắt nhỏ nhất vô hướng để tiếp tục chuyển bài toán thành dạng có
+thể giải bằng thuật toán hoặc cấu trúc dữ liệu khác.
+
+Với lớp bài toán này, giới học thuật còn có nhiều nghiên cứu sâu hơn, cùng
+nhiều thuật toán khác có thể giải hiệu quả. Bài viết này chỉ trình bày một
+phần rất nhỏ; bạn đọc quan tâm có thể tiếp tục nghiên cứu sâu hơn. Hy vọng
+bài viết có thể đóng vai trò gợi mở.
+
+\subsection*{7. Lời cảm ơn}
+
+Xin cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao lưu.
+
+Xin cảm ơn các thầy cô Chen Heli, Dong Yehua, Shao Hongxiang và You Guangmiao
+của Trường Trung học số 1 Thiệu Hưng đã nhiều năm quan tâm và chỉ dẫn tôi.
+
+Xin cảm ơn các huấn luyện viên đội tuyển quốc gia Yu Linyun và Chen Xumin đã
+chỉ đạo.
+
+Xin cảm ơn các đàn anh Yu Yili, Dong Honghua, He Qizheng, Zhang Hengjie, Wang
+Jianhao, Jia Yuekai ở Đại học Thanh Hoa đã giúp đỡ tôi.
+
+Xin cảm ơn các bạn Ren Zhizhou, Hong Huadun, Tao Yuanzheng, Ye Zhaodao, Li
+Yang và nhiều bạn học khác ở Trường Trung học số 1 Thiệu Hưng đã giúp đỡ và
+gợi mở cho tôi.
+
+Xin cảm ơn những thầy cô và bạn học khác đã từng giúp đỡ hoặc gợi ý cho tôi.
+
+Xin cảm ơn cha mẹ đã quan tâm và ủng hộ.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item R. E. Gomory, T. C. Hu. Multi-terminal network flows. \emph{Journal of
+  the Society for Industrial and Applied Mathematics}, vol. 9, 1961.
+  \item Dan Gusfield (1990). ``Very Simple Methods for All Pairs Network Flow
+  Analysis''. \emph{SIAM J. Comput.} 19 (1): 143--155.
+  \item David R. Karger, \emph{Global Min-cuts in RNC, and Other Ramifications
+  of a Simple Min-Cut Algorithm}, Department of Computer Science, Stanford
+  University.
+  \item David Morrison, Chandra Chekuri, ``Gomory-Hu Trees'', CS 598CSC:
+  Combinatorial Optimization Lecture 6.
+  \item Uri Zwick, lecture notes for ``Analysis of Algorithms'': Global minimum
+  cuts. School of Computer Science, Tel Aviv University.
+  \item Gomory-Hu tree -- Wikipedia.
+  \item Karger's algorithm -- Wikipedia.
+  \item Ghi chú thuật toán -- Cut.
+\end{enumerate}
 
 \end{document}

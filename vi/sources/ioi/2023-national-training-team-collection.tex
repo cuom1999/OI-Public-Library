@@ -21,7 +21,7 @@
 PDF nguồn là tập hợp luận văn đội tuyển quốc gia Trung Quốc năm 2023. Tệp được
 tạo bằng LaTeX với lớp văn bản Unicode đọc được; mục lục và các trang thân bài
 đã kiểm tra đều trích xuất tốt bằng \texttt{pdftotext}. Bản LaTeX này chuyển
-ngữ phần nhận diện tập sách, toàn bộ mục lục và sáu bài đầu tiên, đồng thời ghi
+ngữ phần nhận diện tập sách, toàn bộ mục lục và bảy bài đầu tiên, đồng thời ghi
 lại các chủ đề chính để phục vụ bản dịch chi tiết hơn.
 \end{abstract}
 
@@ -4299,6 +4299,273 @@ separator; cảm ơn thầy Huang Xinjun của Trường Trung học Ba Thục, 
   \item \emph{Handbook of Combinatorics}, Volume 1.
   \item Lovasz. \emph{Discrete Mathematics}.
   \item Zhan Xingzhi. \emph{Matrix Theory}.
+\end{enumerate}
+
+\section{Bàn về các thuật toán liên quan tới xâu palindrome và ứng dụng}
+
+\begin{center}
+Trường Trung học số 2 Hàng Châu\\
+Xu Anyi
+\end{center}
+
+\renewcommand{\abstractname}{Tóm tắt}
+\begin{abstract}
+Các bài toán liên quan tới xâu palindrome là một lớp bài thường gặp trong thi
+tin học. Bài viết giới thiệu một số thuật toán thông dụng cho palindrome: hash
+xâu, thuật toán Manacher, cây palindrome và cách duy trì mọi hậu tố palindrome
+dưới dạng các cấp số cộng. Ngoài ra, bài viết trình bày ứng dụng mở rộng của
+việc duy trì thông tin mọi hậu tố palindrome bằng cấp số cộng.
+\end{abstract}
+
+\subsection{Mở đầu}
+
+Palindrome có nhiều tính chất đẹp, nhưng số thuật toán xử lý trực tiếp bài toán
+palindrome không quá nhiều. Tác giả hệ thống lại các thuật toán và ví dụ liên
+quan, đồng thời giới thiệu một tính chất khi nghiên cứu palindrome: mọi hậu tố
+palindrome có thể được duy trì bằng các cấp số cộng, hỗ trợ hợp nhất thông tin
+và giải một số bài toán xâu có cập nhật động.
+
+\subsection{Ký hiệu và định nghĩa}
+
+Gọi $S$ là một xâu. Ký hiệu $|S|$ là độ dài của $S$, $S[i]$ là ký tự thứ $i$,
+và $S[l\ldots r]$ là xâu con từ vị trí $l$ đến $r$; nếu $l>r$ thì đó là xâu
+rỗng. Ký hiệu $\Sigma$ là kích thước bảng chữ cái.
+
+Một xâu $S$ là palindrome nếu
+\[
+  \forall 1\le i\le |S|,\quad S[i]=S[|S|+1-i].
+\]
+Với palindrome con $S[l\ldots r]$, tâm palindrome là $(l+r)/2$. Bán kính
+palindrome tại vị trí $i$ là giá trị lớn nhất $x$ sao cho
+$S[i-x+1\ldots i+x-1]$ là palindrome.
+
+\subsection{Các thuật toán thường dùng}
+
+\subsubsection{Hash xâu}
+
+Một hàm ánh xạ xâu sang số nguyên được gọi là hàm hash. Nếu hai xâu $S,T$ có
+$f(S)\ne f(T)$ thì chắc chắn $S\ne T$; nếu $f(S)=f(T)$, ta thường coi như
+$S=T$, trừ khi xảy ra va chạm hash. Chọn hàm hash phù hợp giúp xác suất va chạm
+rất nhỏ, và cho phép kiểm tra hai xâu bằng nhau trong $O(1)$.
+
+Một lựa chọn phổ biến là
+\[
+  f(S)=\left(\sum_{i=1}^{|S|} B^{|S|-i}\operatorname{val}(S[i])\right)\bmod P,
+\]
+trong đó $\operatorname{val}$ ánh xạ các ký tự khác nhau vào các số khác nhau
+trong $[1,\Sigma]$, $P$ là số nguyên tố lớn hơn $\Sigma$, còn $B$ là số nguyên
+dương nằm giữa $\Sigma$ và $P$. Với prefix hash, có thể tính nhanh
+\[
+  f(S[l\ldots r])
+  =
+  \bigl(f(S[1\ldots r])-f(S[1\ldots l-1])B^{r-l+1}\bigr)\bmod P.
+\]
+
+Về xác suất đúng, nếu hai xâu khác nhau $S,T$ vẫn có cùng hash, đặt
+\[
+  h(B)=f(S)-f(T)=\sum_{i=1}^{l}(s[i]-t[i])B^{l-i},
+  \quad l=\max(|S|,|T|).
+\]
+Đây là đa thức không đồng nhất bậc không quá $l-1$. Nếu $B$ được chọn đều trong
+$[0,P)$, xác suất va chạm không vượt quá $(l-1)/P$. Trong thực tế có thể dùng
+nhiều cặp $(P,B)$ để giảm xác suất lỗi.
+
+\subsubsection{Thuật toán Manacher}
+
+Manacher tính bán kính palindrome tại mọi vị trí trong thời gian tuyến tính. Để
+tránh phân biệt độ dài chẵn/lẻ và xử lý biên, chèn một ký tự đặc biệt giữa mọi
+cặp ký tự, rồi thêm hai ký tự chặn khác nhau ở đầu và cuối. Ví dụ
+\texttt{aabbacab} biến thành
+\texttt{\$\#a\#a\#b\#b\#a\#c\#a\#b\#@}. Trên xâu mới $S$, cần tính $R[i]$,
+bán kính palindrome tại $i$.
+
+Thuật toán duyệt $i$ từ trái sang phải, duy trì $r$ là biên phải xa nhất của
+palindrome đã biết và $\mathit{pos}$ là tâm tương ứng. Khi tính $R[i]$:
+\begin{itemize}
+  \item nếu $r<i$, ta có cận dưới $R[i]\ge 1$;
+  \item nếu $r\ge i$, do đối xứng qua $\mathit{pos}$,
+  \[
+    R[i]\ge \min(R[2\mathit{pos}-i],\,r-i+1).
+  \]
+\end{itemize}
+Từ cận dưới đó, mở rộng $R[i]$ cho tới khi hai ký tự đối xứng không còn bằng
+nhau, rồi cập nhật $r,\mathit{pos}$. Mỗi lần mở rộng làm $r$ tăng, nên tổng số
+lần mở rộng là $O(n)$.
+
+\subsubsection{Cây palindrome}
+
+Cây palindrome của xâu $S$ gồm hai gốc: gốc lẻ và gốc chẵn. Mỗi đỉnh ngoài gốc
+biểu diễn một palindrome khác nhau; xâu của một đỉnh thu được bằng cách thêm ký
+tự ghi trên cạnh vào hai đầu xâu của cha. Gốc chẵn biểu diễn xâu rỗng; gốc lẻ
+biểu diễn một xâu giả độ dài $-1$, giúp xử lý biên. Mỗi đỉnh $u$ có con trỏ
+thất bại $\mathit{fail}_u$ trỏ tới đỉnh biểu diễn hậu tố palindrome dài nhất
+thật sự của xâu tại $u$.
+
+Cây được dựng tăng dần. Giả sử đã có cây của $S$, thêm ký tự $c$ vào cuối. Trong
+$Sc$, palindrome mới không xuất hiện trong $S$ có nhiều nhất một xâu, chính là
+hậu tố palindrome dài nhất. Thật vậy, mọi palindrome mới đều chứa ký tự $c$ nên
+là hậu tố palindrome; nếu không phải dài nhất, nó sẽ xuất hiện đối xứng bên
+trong hậu tố dài nhất và đã có trong $S$.
+
+Do đó ta đi theo chuỗi $\mathit{fail}$ từ hậu tố palindrome dài nhất hiện tại
+cho tới khi tìm được đỉnh có thể kẹp thêm ký tự $c$ hai bên. Nếu cạnh ký tự $c$
+chưa tồn tại, tạo đỉnh mới và thiết lập cha cùng con trỏ thất bại của nó bằng
+cách tiếp tục đi theo $\mathit{fail}$ để tìm palindrome kẹp được $c$ tiếp theo.
+
+Thêm ký tự ở đầu xâu cũng tương tự: vì mỗi đỉnh biểu diễn palindrome, con trỏ
+thất bại vừa là hậu tố palindrome dài nhất vừa tương ứng với tiền tố palindrome
+dài nhất theo hướng ngược, và mỗi lần thêm đầu cũng chỉ sinh nhiều nhất một
+palindrome bản chất mới.
+
+\subsubsection{Duy trì mọi hậu tố palindrome bằng cấp số cộng}
+
+Một tính chất quan trọng là mọi hậu tố palindrome của $S$, nếu sắp theo độ dài,
+có thể chia thành $O(\log |S|)$ đoạn cấp số cộng. Dựa vào đó, ta duy trì tập hậu
+tố palindrome ở dạng các cấp số cộng.
+
+Khi thêm ký tự $c$ vào cuối $S$, các hậu tố palindrome mới của $S'=Sc$ gồm:
+\begin{enumerate}
+  \item palindrome một ký tự $c$;
+  \item các hậu tố palindrome cũ được mở rộng bằng ký tự $c$ ở hai đầu.
+\end{enumerate}
+Với một cấp số cộng cực đại của các hậu tố cũ, viết các xâu tương ứng thành
+\[
+  A,\ BA,\ BBA,\ B^3A,\ldots,B^kA.
+\]
+Nếu ký tự cuối của $B$ là $c$, thì toàn bộ cấp số cộng trừ hạng $B^kA$ còn xuất
+hiện trong hậu tố palindrome mới; nếu không, các hạng đó không xuất hiện. Hạng
+cuối chỉ cần kiểm tra ký tự bên trái nó có phải $c$ hay không. Sau đó gộp các
+cấp số cộng liền kề có cùng công sai để giữ số đoạn là $O(\log |S|)$.
+
+\subsection{Phân tích ví dụ}
+
+\subsubsection{APIO 2014 Palindrome}
+
+Bài toán: cho xâu $S$, tìm palindrome có giá trị lớn nhất bằng số lần xuất hiện
+nhân với độ dài; $|S|\le 3\cdot 10^5$.
+
+Dựng cây palindrome của $S$. Mỗi đỉnh ứng với đúng một palindrome bản chất khác
+nhau. Để đếm số lần xuất hiện, với mỗi vị trí $i$, tìm đỉnh ứng với hậu tố
+palindrome dài nhất kết thúc tại $i$ rồi cộng một trên đường đi theo
+$\mathit{fail}$ về gốc. Có thể tối ưu bằng tổng tiền tố trên cây thất bại. Cuối
+cùng duyệt mọi đỉnh và cập nhật đáp án bằng độ dài nhân số lần xuất hiện.
+
+\subsubsection{Codeforces 1738H Palindrome Addicts}
+
+Bài toán cần duy trì xâu $S$ ban đầu rỗng với hai thao tác:
+\begin{itemize}
+  \item \texttt{push c}: thêm ký tự $c$ vào cuối;
+  \item \texttt{pop}: xóa ký tự đầu, bảo đảm xâu không rỗng.
+\end{itemize}
+Sau mỗi thao tác, hỏi số palindrome bản chất khác nhau trong $S$; $1\le Q\le
+10^6$.
+
+Mỗi thao tác làm đáp án đổi không quá $1$. Với \texttt{push}, chỉ cần tìm hậu
+tố palindrome dài nhất và kiểm tra nó đã xuất hiện trong xâu trước đó hay chưa.
+Với \texttt{pop}, làm tương tự cho tiền tố palindrome dài nhất và kiểm tra sau
+khi xóa. Có thể xử lý offline, mỗi lần thêm cuối và dùng dạng cấp số cộng để
+duy trì mọi hậu tố palindrome, từ đó tìm hậu tố dài nhất; tiền tố làm tương tự.
+Hash của xâu được đưa vào bảng băm để kiểm tra xuất hiện nhanh.
+
+Cũng có thể không dùng cấp số cộng, mà nhảy bội trên chuỗi $\mathit{fail}$ của
+cây palindrome để tìm tiền tố/hậu tố palindrome dài nhất. Một cách đơn giản hơn
+nữa là duy trì trực tiếp hậu tố palindrome dài nhất hiện tại: khi thêm ký tự ở
+cuối, độ dài của nó tăng không quá $1$; nếu không còn palindrome thì giảm dần
+cho tới khi tìm được hậu tố mới.
+
+\subsubsection{Internal Longest Palindrome Queries}
+
+Bài toán: cho xâu $S$ độ dài $n$, có $Q$ truy vấn, mỗi truy vấn cho đoạn
+$[l,r]$ và hỏi palindrome dài nhất trong $S[l\ldots r]$; $1\le n,Q\le
+2\cdot 10^5$.
+
+Trước hết cần tìm tiền tố palindrome dài nhất $S[l\ldots i]$ và hậu tố
+palindrome dài nhất $S[j\ldots r]$ của đoạn. Nếu một palindrome trong đoạn có
+tâm nằm bên trái $(l+i)/2$, độ dài của nó không thể vượt tiền tố palindrome dài
+nhất. Tương tự, mọi palindrome có tâm trong khoảng
+\[
+  \left[\frac{l+i}{2},\frac{j+r}{2}\right]
+\]
+đều nằm hoàn toàn trong $[l,r]$; nếu không, nó sẽ tạo tiền tố hoặc hậu tố
+palindrome dài hơn, mâu thuẫn.
+
+Vì vậy, sau khi biết tiền tố và hậu tố palindrome dài nhất, chỉ cần truy vấn giá
+trị lớn nhất của bán kính Manacher $R[x]$ trên đoạn tâm tương ứng. Tiền tố/hậu
+tố dài nhất có thể tìm offline bằng cây palindrome và nhảy bội, hoặc dùng DSU
+tuyến tính trên cây. Truy vấn cực đại trên $R[x]$ là RMQ kinh điển: dùng sparse
+table cho $O(n\log n)$ tiền xử lý, $O(1)$ truy vấn, hoặc chia khối cỡ $\log n$
+kết hợp sparse table ngoài và đơn điệu stack bitmask trong khối để đạt $O(n)$
+tiền xử lý, $O(1)$ truy vấn.
+
+\subsubsection{Bài \emph{Palindrome} trong thi thử đội tuyển 2022}
+
+Bài toán: cho xâu chữ thường $S$, có $Q$ thao tác:
+\begin{enumerate}
+  \item đổi $S_i$ thành ký tự $c$;
+  \item hỏi $S[l\ldots r]$ có bao nhiêu hậu tố palindrome.
+\end{enumerate}
+Với $1\le |S|,Q\le 2\cdot 10^5$.
+
+Dựng cây đoạn. Mỗi nút $[l,r]$ duy trì mọi tiền tố palindrome và hậu tố
+palindrome của $S[l\ldots r]$ dưới dạng các cấp số cộng. Nếu có thể hợp nhất
+nhanh thông tin hai con, thao tác đổi ký tự là cập nhật điểm, còn truy vấn đoạn
+là hợp nhất các nút được chọn.
+
+Giả sử con trái là xâu $S$, con phải là $T$, cần tính hậu tố palindrome của
+$ST$. Các hậu tố mới có bốn loại:
+\begin{enumerate}
+  \item không đi qua $S$, kế thừa trực tiếp từ $T$;
+  \item đi qua $S$ và tâm nằm trong $T$;
+  \item đi qua $S$ và tâm nằm giữa $S$ và $T$;
+  \item đi qua $S$ và tâm nằm trong $S$.
+\end{enumerate}
+Loại thứ hai sinh từ các tiền tố palindrome của $T$. Với một cấp số cộng cực
+đại
+\[
+  A,\ AB,\ ABB,\ AB^3,\ldots,AB^k
+\]
+và $T=AB^kC$ trong đó $B$ không phải tiền tố của $C$, nếu $C$ là tiền tố của
+$B$ thì một hậu tố của cấp số cộng này đóng góp thành một cấp số cộng mới; độ
+dài phần đóng góp phụ thuộc vào $S$ và có thể tìm bằng nhị phân. Nếu $C$ không
+phải tiền tố của $B$, nhiều nhất một hạng đóng góp. Loại thứ ba nhiều nhất tạo
+một hậu tố palindrome mới, kiểm tra trực tiếp. Loại thứ tư tương tự bài toán
+thêm ký tự cuối, chỉ khác là đầu thêm đảo của $T$ và cuối thêm cả xâu $T$.
+
+Trong quá trình hợp nhất cần kiểm tra nhanh hai xâu con có bằng nhau hay không;
+có thể dùng hash xâu theo khối để cập nhật $O(\sqrt{|S|})$ và truy vấn $O(1)$.
+Thời gian hợp nhất là $O(\log(|S|+|T|))$, vì các cấp số cộng lồng nhau làm tổng
+số hạng cần xét chỉ logarithmic. Tổng độ phức tạp là
+\[
+  O\bigl(n\log n+Q(\log^2 n+\sqrt n)\bigr).
+\]
+
+\subsection{Kết luận}
+
+Cây palindrome rất mạnh vì mỗi đỉnh ứng với đúng một palindrome bản chất khác
+nhau. Với các bài có cập nhật, có thể thử kết hợp cây đoạn với biểu diễn mọi
+tiền tố/hậu tố palindrome bằng cấp số cộng; tính chất hợp nhất này là điều cây
+palindrome thông thường không trực tiếp cung cấp. Khi một bài có nhiều hướng
+giải, nên cân nhắc cả độ khó hiện thực để chọn phương án phù hợp.
+
+\subsection{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và giao
+lưu; cảm ơn các huấn luyện viên đội tuyển quốc gia Peng Sijin và Yang Yaoliang
+đã hướng dẫn; cảm ơn cha mẹ, nhà trường, thầy Li Jian và các bạn học đã giúp
+đỡ; cảm ơn Wang Xiangwen đã trao đổi, gợi ý và đọc bản thảo; cảm ơn những tài
+liệu được tham khảo và cảm ơn độc giả đã dành thời gian đọc bài viết.
+
+\subsection{Tài liệu tham khảo}
+
+\begin{enumerate}
+  \item OI Wiki. Cây palindrome. \url{https://oi-wiki.org/string/pam/}.
+  \item Weng Wentao. Cây palindrome và ứng dụng. Tập luận văn đội tuyển quốc gia
+  IOI 2017.
+  \item Chen Sunli. Thuật toán liên quan tới truy vấn chu kỳ xâu con và ứng dụng.
+  Tập luận văn đội tuyển quốc gia IOI 2019.
+  \item Kazuki Mitani, Takuya Mieno, Kazuhisa Seto and Takashi Horiyama.
+  Internal Longest Palindrome Queries in Optimal Time. arXiv:2210.02000v2,
+  2022.
 \end{enumerate}
 
 \end{document}
