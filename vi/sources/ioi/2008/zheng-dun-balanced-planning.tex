@@ -1,9 +1,18 @@
 % Vietnamese translation for OI Public Library
 % Source-File: IOI中国国家候选队论文/2008/Day1/2.郑暾《平衡规划——浅析一类平衡思想的应用》/平衡规划.doc
 \documentclass[11pt]{article}
+\usepackage{tikz}
 \usepackage{oipl-vn}
 
 \newcommand{\Oh}{\mathcal{O}}
+
+\tikzset{
+  graphv/.style={circle,draw,fill=white,inner sep=1pt,minimum size=0.28cm},
+  treev/.style={circle,fill=black,inner sep=1.35pt},
+  matched/.style={line width=1.2pt},
+  freeedge/.style={dashed},
+  chain/.style={line width=1.25pt}
+}
 
 \title{Quy hoạch cân bằng\\{\large Bàn sơ về ứng dụng của một lớp tư tưởng cân bằng trong thi tin học}}
 \author{Zheng Dun\\Trường Trung học số 8 Phúc Châu, Phúc Kiến}
@@ -94,11 +103,41 @@ gian thi. Vì vậy ta xét một thuật toán thay thế.
 
 Khi giải ghép cặp cực đại trên đồ thị hai phía, thao tác chính là liên tục
 tìm cây tăng luân phiên rồi điều chỉnh. Với đồ thị tổng quát, cách làm này
-không luôn đúng. Trong hình gốc, các cạnh đậm là cạnh đã ghép, các cạnh nét
-đứt là cạnh chưa ghép. Nếu cây tăng đang xét có dạng như hình 2 thì cách mở
-rộng đơn giản không tìm thấy đường tăng, dù trên thực tế vẫn tồn tại một
-đường tăng trong hình 1. Tìm đường tăng bằng tìm kiếm tổng quát là quá tốn
-kém.
+không luôn đúng. Trong sơ đồ dưới đây, các cạnh đậm là cạnh đã ghép, các cạnh
+nét đứt là cạnh chưa ghép. Nếu cây tăng đang xét có dạng ở bên phải thì cách
+mở rộng đơn giản không tìm thấy đường tăng, dù trên thực tế vẫn tồn tại một
+đường tăng như cấu hình bên trái. Tìm đường tăng bằng tìm kiếm tổng quát là
+quá tốn kém.
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm,every node/.style={font=\small}]
+  \node[graphv,label=left:\(s\)] (s) at (0,0) {};
+  \node[graphv] (a) at (0.9,0.6) {};
+  \node[graphv] (b) at (1.8,0.0) {};
+  \node[graphv] (c) at (2.7,0.6) {};
+  \node[graphv] (d) at (3.6,0.0) {};
+  \node[graphv,label=right:\(t\)] (t) at (4.5,0.6) {};
+  \draw[freeedge] (s)--(a);
+  \draw[matched] (a)--(b);
+  \draw[freeedge] (b)--(c);
+  \draw[matched] (c)--(d);
+  \draw[freeedge] (d)--(t);
+  \node at (2.25,-0.55) {hình 1: có đường tăng};
+
+  \node[graphv,label=left:\(r\)] (r) at (6.0,0.25) {};
+  \node[graphv] (u) at (7.0,0.95) {};
+  \node[graphv] (v) at (7.0,-0.45) {};
+  \node[graphv] (w) at (8.0,0.25) {};
+  \node[graphv,label=right:\(z\)] (z) at (9.0,0.25) {};
+  \draw[freeedge] (r)--(u);
+  \draw[freeedge] (r)--(v);
+  \draw[matched] (u)--(v);
+  \draw[freeedge] (u)--(w);
+  \draw[freeedge] (v)--(w);
+  \draw[freeedge] (w)--(z);
+  \node at (7.6,-0.95) {hình 2: cây luân phiên bị kẹt};
+\end{tikzpicture}
+\end{center}
 
 Một quan sát quan trọng là: với cách điều chỉnh theo đường tăng, nếu một đỉnh
 đã từng được ghép, thì sau các lần điều chỉnh nó vẫn có thể được ghép. Vì
@@ -106,7 +145,7 @@ vậy, với một đỉnh chưa ghép, việc có tìm được đường tăng
 không là chìa khóa để cải thiện lời giải. Khả năng tìm được cây tăng lại phụ
 thuộc mạnh vào thứ tự mở rộng trước đó; các dữ liệu làm hỏng cách tìm này
 thường cũng dựa vào một thứ tự mở rộng đặc biệt. Điều đó gợi ý dùng thứ tự
-mở rộng ngẫu nhiên để tránh các cấu hình đặc biệt như trong hình gốc.
+mở rộng ngẫu nhiên để tránh các cấu hình đặc biệt như trong sơ đồ trên.
 
 Chương trình của tác giả sinh hai hoán vị ngẫu nhiên: một cho thứ tự thăm
 đỉnh lần đầu, một cho thứ tự mở rộng. Sau đó chương trình dùng trực tiếp
@@ -322,17 +361,40 @@ từ điểm chia đi xuống con tương ứng rồi tiếp tục đệ quy.
 
 Nhược điểm chính là ngoài điểm chia ban đầu được liệt kê, các cây con đều
 lấy gốc cây con làm điểm chia. Điều này làm phương án dễ dựng nhưng có thể
-không tối ưu. Hình phản ví dụ trong tài liệu gốc cho một cây mà thuật toán
-tham lam cần \(4\) thám tử, trong khi phương án tối ưu chỉ cần \(3\): giữ
-thám tử ở \texttt{root}, phối hợp hai thám tử khác đi vào các nhánh sâu, thu
-hồi và tái sử dụng họ theo thứ tự khéo léo. Vì thuật toán luôn chia cây con
-tại gốc của nó nên không tìm được cấu trúc phối hợp ấy.
+không tối ưu. Sơ đồ phản ví dụ dưới đây biểu diễn một cây mà thuật toán tham
+lam cần \(4\) thám tử, trong khi phương án tối ưu chỉ cần \(3\): giữ thám tử
+ở \texttt{root}, phối hợp hai thám tử khác đi vào các nhánh sâu, thu hồi và
+tái sử dụng họ theo thứ tự khéo léo. Vì thuật toán luôn chia cây con tại gốc
+của nó nên không tìm được cấu trúc phối hợp ấy.
+
+\begin{center}
+\begin{tikzpicture}[x=0.85cm,y=0.8cm,every node/.style={font=\small}]
+  \node[treev,label=above:{\texttt{root}}] (r) at (0,4) {};
+  \foreach \x/\n in {-2/a,0/b,2/c} {
+    \node[treev] (\n1) at (\x,3) {};
+    \node[treev] (\n2) at (\x,2) {};
+    \node[treev] (\n3) at (\x,1) {};
+    \draw (r)--(\n1)--(\n2)--(\n3);
+  }
+  \node[treev] (a4) at (-2.6,0) {};
+  \node[treev] (a5) at (-1.4,0) {};
+  \draw (a3)--(a4) (a3)--(a5);
+  \node[treev] (b4) at (-0.6,0) {};
+  \node[treev] (b5) at (0.6,0) {};
+  \draw (b3)--(b4) (b3)--(b5);
+  \node[treev] (c4) at (1.4,0) {};
+  \node[treev] (c5) at (2.6,0) {};
+  \draw (c3)--(c4) (c3)--(c5);
+  \node[align=center] at (0,-0.75)
+    {chia tại gốc cây con dễ cần \(4\); phối hợp thứ tự quét có thể dùng \(3\)};
+\end{tikzpicture}
+\end{center}
 
 Dù vậy thuật toán vẫn có ý nghĩa. Chất lượng nghiệm tại một đỉnh chỉ chịu
 ảnh hưởng của hai cây con có nhu cầu lớn nhất; các cây con còn lại dù hơi
 kém cũng không làm tăng đáp án cuối. Nói cách khác, lời giải có một khoảng
-đàn hồi nhất định. Dữ liệu khắc chế cục bộ cũng khó dựng: phản ví dụ trong
-bài gốc cần khoảng ba mươi đỉnh mới đủ hình dạng. Khi kích thước dữ liệu
+đàn hồi nhất định. Dữ liệu khắc chế cục bộ cũng khó dựng: một phản ví dụ đầy
+đủ cần khoảng ba mươi đỉnh mới đủ hình dạng. Khi kích thước dữ liệu
 tăng, dữ liệu ngẫu nhiên dù chứa vài cấu trúc xấu cũng khó ảnh hưởng đến
 kết quả cuối. Việc liệt kê gốc ban đầu làm độ phức tạp tăng lên
 \(\Oh(N^2)\), nhưng thời gian vẫn rộng rãi và chất lượng nghiệm tăng rõ.
@@ -452,10 +514,45 @@ vậy mọi đỉnh thuộc đúng một dây tách, một số dây có thể c
 đưa trọng số cạnh xuống đỉnh con giúp các cạnh bị cắt giữa hai dây không cần
 xử lý riêng như cạnh độc lập.
 
-Hình gốc minh họa một cây được tách thành năm dây; các cạnh đậm là cạnh
+Sơ đồ dưới đây minh họa một cây được tách thành năm dây; các cạnh đậm là cạnh
 trong dây. Với mỗi dây, ta dựng một segment tree. Vì có thao tác đổi dấu, mỗi
 nút segment tree cần giữ cả giá trị lớn nhất và nhỏ nhất. Quan hệ giữa các
 dây có thể lưu bằng cấu trúc hợp nhất hoặc mảng đại diện.
+
+\begin{center}
+\begin{tikzpicture}[x=0.9cm,y=0.75cm,every node/.style={font=\small}]
+  \node[treev,label=above:{1}] (r) at (0,4) {};
+  \node[treev] (a) at (-0.4,3.2) {};
+  \node[treev] (b) at (-0.8,2.4) {};
+  \node[treev] (c) at (-1.2,1.6) {};
+  \draw[chain] (r)--(a)--(b)--(c);
+  \node at (-1.7,2.8) {dây 1};
+
+  \node[treev] (d) at (0.9,2.7) {};
+  \node[treev] (e) at (1.5,1.9) {};
+  \draw (a)--(d);
+  \draw[chain] (d)--(e);
+  \node at (2.2,2.3) {dây 2};
+
+  \node[treev] (f) at (-0.2,1.55) {};
+  \node[treev] (g) at (0.45,0.75) {};
+  \draw (b)--(f);
+  \draw[chain] (f)--(g);
+  \node at (1.1,1.2) {dây 3};
+
+  \node[treev] (h) at (-2.1,0.9) {};
+  \node[treev] (i) at (-2.6,0.1) {};
+  \draw (c)--(h);
+  \draw[chain] (h)--(i);
+  \node at (-3.25,0.45) {dây 4};
+
+  \node[treev] (j) at (0.6,3.45) {};
+  \node[treev] (k) at (1.25,3.0) {};
+  \draw (r)--(j);
+  \draw[chain] (j)--(k);
+  \node at (2.0,3.25) {dây 5};
+\end{tikzpicture}
+\end{center}
 
 Ba thao tác được xử lý như sau.
 \begin{enumerate}
@@ -557,7 +654,7 @@ sửa; cảm ơn huấn luyện viên Liu Rujia và các thầy Chen Guang, Hu S
 Tài liệu gốc kèm toàn văn đề của URAL 1099, PKU 2103, NOI 2007
 \emph{Catch} và PKU 3237. Các phụ lục dài này không được dịch nguyên văn ở
 đây; nội dung cần thiết cho mạch phân tích đã được nêu gọn trong từng ví dụ.
-Các hình trong DOC gốc chỉ dùng để minh họa cấu hình đồ thị hoặc cây, nên
-được mô tả bằng lời trong bản dịch.
+Các hình minh họa cấu hình đồ thị hoặc cây đã được dựng lại bằng sơ đồ
+TikZ gọn trong bản dịch.
 
 \end{document}
