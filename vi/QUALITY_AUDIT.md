@@ -51,16 +51,18 @@ do not inflate the count of full translated documents.
 
 ## Lower-Confidence Compression Suspects
 
-These files have low line-per-page ratios. Some may be acceptable condensed
-translations, but they should be reviewed after the high-confidence items.
+These files were flagged by low line-per-page ratios. The current rows below
+have been reviewed as slide-deck companion notes rather than full article/book
+translations. The manifest marks them as `companion-note`, so they do not
+inflate the full translated-document count.
 
 | Translation | Source pages | Notes |
 | --- | ---: | --- |
-| `sources/dynamic-programming/tree-dp-selected-topics-gu-yihong.tex` | 142 | Short for source size; verify against PDF. |
-| `sources/graph-theory/making-graphs-into-trees-immortalco-wronganswer.tex` | 172 | Short for source size; verify against PDF. |
-| `sources/others/pb-ds-in-oi-yu-jiping.tex` | 186 | Short for source size; likely condensed. |
-| `sources/ioi/2008/matrix-multiplication-applications-yu-huacheng-slides.tex` | 44 | PDF slide deck; may be acceptable as companion, but mark as such. |
-| `sources/ioi/2009-jin-bin-euclidean-algorithm-slides.tex` | 77 | PDF slide deck; may be acceptable as companion, but mark as such. |
+| `sources/dynamic-programming/tree-dp-selected-topics-gu-yihong.tex` | 142 | Reviewed as Beamer overlay deck: about 40 logical slides. Companion note keeps the DP states, transitions and examples. |
+| `sources/graph-theory/making-graphs-into-trees-immortalco-wronganswer.tex` | 172 | Reviewed as Beamer overlay deck: about 51 logical slides. Companion note keeps DFS/BFS/cactus concepts and describes omitted figures in prose. |
+| `sources/others/pb-ds-in-oi-yu-jiping.tex` | 186 | Reviewed as slide deck with damaged text extraction. Companion note is self-contained and keeps the interfaces, code snippets and performance tables. |
+| `sources/ioi/2008/matrix-multiplication-applications-yu-huacheng-slides.tex` | 44 | Reviewed as slide companion for the matrix-multiplication paper. Core formulas and periodic-transition method are preserved. |
+| `sources/ioi/2009-jin-bin-euclidean-algorithm-slides.tex` | 77 | Reviewed as slide companion. The source has a separate 14-page paper translation; this note keeps the slide-level Euclidean-algorithm examples. |
 
 ## Explicitly Acceptable Short Files
 

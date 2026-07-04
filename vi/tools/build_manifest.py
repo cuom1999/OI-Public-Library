@@ -31,6 +31,13 @@ REFERENCE_NOTE_SOURCES = {
     "英文资料 ENGLISH MATERIALS/Data Structures and Network Algorithms - Tarjan [1987-01-01].pdf",
     "USACO/【由 BirDOR 整理】USACO 2001-2007 月赛测试数据+题目+题解/USACO月赛十年题典v10.pdf",
 }
+COMPANION_NOTE_SOURCES = {
+    "动态规划 DYNAMIC PROGRAMMING/树形DP选讲 - 顾逸宏.pdf",
+    "图论 GRAPH THEORY/Making Graphs into Trees - immortalCO, WrongAnswer.pdf",
+    "其他 OTHERS/C++的pb-ds库在OI中的应用 - 于纪平.pdf",
+    "IOI中国国家候选队论文/2008/Day1/10.俞华程《矩阵乘法在信息学中的应用》/slide.pdf",
+    "IOI中国国家候选队论文/2009/金斌/slide.pdf",
+}
 
 
 def git_files() -> list[str]:
@@ -75,7 +82,12 @@ def rows() -> list[dict[str, str]]:
         if not kind:
             continue
         if path in translated:
-            status = "reference-note" if path in REFERENCE_NOTE_SOURCES else "translated"
+            if path in REFERENCE_NOTE_SOURCES:
+                status = "reference-note"
+            elif path in COMPANION_NOTE_SOURCES:
+                status = "companion-note"
+            else:
+                status = "translated"
         else:
             status = "todo"
         data.append(
@@ -87,7 +99,7 @@ def rows() -> list[dict[str, str]]:
                 "translation": translated.get(path, ""),
             }
         )
-    status_order = {"todo": 0, "reference-note": 1, "translated": 2}
+    status_order = {"todo": 0, "reference-note": 1, "companion-note": 2, "translated": 3}
     data.sort(key=lambda r: (status_order.get(r["status"], 99), r["kind"], r["source"]))
     return data
 
@@ -98,6 +110,7 @@ def write_manifest(data: list[dict[str, str]]) -> None:
         counts[row["kind"]] = counts.get(row["kind"], 0) + 1
     translated = sum(1 for row in data if row["status"] == "translated")
     reference_notes = sum(1 for row in data if row["status"] == "reference-note")
+    companion_notes = sum(1 for row in data if row["status"] == "companion-note")
     todo = sum(1 for row in data if row["status"] == "todo")
 
     lines = [
@@ -108,6 +121,7 @@ def write_manifest(data: list[dict[str, str]]) -> None:
         f"- Tracked source documents: {len(data)}",
         f"- Translated documents: {translated}",
         f"- Reference-note documents: {reference_notes}",
+        f"- Companion-note documents: {companion_notes}",
         f"- Remaining documents: {todo}",
         "",
         "## Counts By Type",
