@@ -459,6 +459,154 @@ Khi gặp một chứng minh xác suất trong tài liệu thuật toán, nên k
 Những câu hỏi này là phần giá trị nhất của cách tiếp cận Resnick: chúng buộc
 người đọc tách trực giác xác suất rời rạc khỏi các giả thiết toán học cần thiết.
 
+\section{Phụ lục kiểm lỗi lập luận xác suất}
+
+Trong lời giải thuật toán, lỗi xác suất thường không nằm ở công thức cuối mà ở
+giả thiết bị dùng ngầm: độc lập, khả tích, đổi giới hạn, hoặc lựa chọn nguồn
+ngẫu nhiên. Phần này chuyển ngôn ngữ của Resnick thành các phép kiểm thực dụng
+trước khi tin một chứng minh randomized.
+
+\subsection{Nguồn ngẫu nhiên và lượng từ}
+
+Trước hết cần tách ba phát biểu khác nhau:
+\begin{itemize}
+  \item với mọi input cố định, xác suất theo random nội bộ của thuật toán nhỏ;
+  \item với input lấy ngẫu nhiên từ một phân phối, thuật toán tốt trung bình;
+  \item với xác suất cao trên cả input và random nội bộ, kết quả tốt.
+\end{itemize}
+
+Ba phát biểu này không thay thế nhau. Một thuật toán tốt với input ngẫu nhiên có
+thể bị phá bởi test đối nghịch. Ngược lại, một thuật toán Las Vegas có thể luôn
+đúng nhưng thời gian chạy là biến ngẫu nhiên. Khi viết chứng minh, nên đặt rõ
+không gian xác suất \(\Omega\): chuỗi bit ngẫu nhiên, hoán vị ngẫu nhiên, hàm
+hash được chọn, mẫu dữ liệu, hay kết hợp nhiều nguồn.
+
+\subsection{Độc lập, phụ thuộc và điều kiện hóa}
+
+Nhiều phép tính quen thuộc chỉ cần tuyến tính kỳ vọng, nhưng tail bound thường
+cần độc lập hoặc dạng phụ thuộc được kiểm soát. Cần phân biệt:
+\begin{itemize}
+  \item độc lập đôi một không đủ cho mọi công thức về tích nhiều biến;
+  \item độc lập có điều kiện theo một trường sigma không đồng nghĩa độc lập vô
+        điều kiện;
+  \item các biến sinh từ cùng một cấu trúc, như bucket hash hoặc sampling không
+        hoàn lại, thường phụ thuộc âm hoặc phụ thuộc có ràng buộc;
+  \item seed giả ngẫu nhiên trong chương trình không phải nguồn iid toán học nếu
+        không được mô hình hóa.
+\end{itemize}
+
+Nếu chứng minh dùng
+\[
+  P(A\cap B)=P(A)P(B)
+\]
+hoặc nhân hàm sinh/hàm đặc trưng, cần chỉ ra vì sao các biến cố hoặc biến ngẫu
+nhiên tương ứng độc lập. Nếu chỉ cần kỳ vọng của tổng, đừng thêm giả thiết độc
+lập không cần thiết; điều đó vừa yếu hóa lời giải, vừa che mất bản chất của
+biến chỉ thị.
+
+\subsection{Đổi kỳ vọng, tổng và giới hạn}
+
+Các phép đổi thứ tự như
+\[
+  E\sum_i X_i=\sum_i E X_i
+\]
+luôn an toàn với tổng hữu hạn. Với tổng vô hạn hoặc giới hạn, cần định lý:
+Tonelli cho biến không âm, Fubini khi khả tích tuyệt đối, hội tụ đơn điệu cho
+dãy tăng, hội tụ bị chặn khi có biến chặn khả tích, hoặc Fatou khi chỉ có cận
+dưới.
+
+Một bẫy thường gặp là biết \(X_n\to X\) theo xác suất rồi kết luận
+\(E X_n\to E X\). Điều này không đúng nếu không có thêm khả tích đều hoặc một
+điều kiện kiểm soát đuôi. Trong phân tích thuật toán, xác suất gặp trường hợp
+xấu có thể rất nhỏ nhưng chi phí trường hợp xấu quá lớn, làm kỳ vọng không hội
+tụ như trực giác.
+
+\subsection{Union bound và khuếch đại xác suất}
+
+Union bound
+\[
+  P\left(\bigcup_i A_i\right)\le\sum_i P(A_i)
+\]
+không cần độc lập, nhưng tổng bên phải phải đủ nhỏ. Nếu có \(m\) bước và mỗi
+bước lỗi xác suất \(p\), muốn lỗi tổng thể nhỏ cần \(mp\) nhỏ, không chỉ \(p\)
+nhỏ. Với nhiều cấp đệ quy, nhiều truy vấn hoặc nhiều cặp phần tử, số biến cố
+cần union bound có thể là \(O(n^2)\), \(O(n\log n)\) hoặc lớn hơn.
+
+Khuếch đại xác suất bằng lặp độc lập chỉ hợp lệ khi các lần lặp thật sự độc lập
+hoặc có nguồn random mới đủ mạnh. Với Monte Carlo một phía, có thể lấy OR/AND
+tùy hướng lỗi; với lỗi hai phía, thường lấy đa số và cần Chernoff/Hoeffding.
+Với Las Vegas, lặp lại giới hạn thời gian có thể biến thành Monte Carlo nếu ta
+dừng và trả lời mặc định; cần nói rõ xác suất sai hoặc xác suất không trả lời.
+
+\subsection{Tail bound: chọn đúng bất đẳng thức}
+
+Các bất đẳng thức có mức giả thiết khác nhau:
+\begin{itemize}
+  \item Markov: cần biến không âm và kỳ vọng hữu hạn;
+  \item Chebyshev: cần phương sai hữu hạn;
+  \item Chernoff/Hoeffding: cần độc lập hoặc giả thiết tương tự và biến bị chặn;
+  \item Azuma--Hoeffding: cần martingale với bước nhảy bị chặn;
+  \item Freedman/Bernstein: dùng thêm phương sai có điều kiện.
+\end{itemize}
+
+Không nên dùng Chernoff cho các biến phụ thuộc chỉ vì chúng là chỉ thị. Nếu các
+biến đến từ sampling không hoàn lại, có thể cần phiên bản cho phụ thuộc âm. Nếu
+biến có đuôi nặng, Markov có thể là công cụ đúng nhưng cận yếu; khi đó cần cắt
+cụt, median-of-means hoặc phân tích riêng phần đuôi.
+
+\subsection{Borel--Cantelli và xác suất cao}
+
+``Với xác suất cao'' thường nghĩa là xác suất lỗi tiến về 0 khi \(n\to\infty\),
+nhưng không tự nói điều gì về một dãy vô hạn chạy cùng lúc. Nếu muốn chứng minh
+chỉ hữu hạn nhiều lỗi xảy ra gần như chắc chắn, cần điều kiện kiểu
+\[
+  \sum_n P(A_n)<\infty.
+\]
+Đây là Borel--Cantelli chiều dễ. Nếu chỉ biết \(P(A_n)\to0\), tổng vẫn có thể
+phân kỳ và lỗi có thể xảy ra vô hạn lần.
+
+Trong thuật toán online hoặc cấu trúc dữ liệu chạy theo thời gian dài, phân biệt
+``mỗi thời điểm lỗi xác suất nhỏ'' với ``toàn bộ lịch sử không lỗi xác suất
+lớn''. Cần union bound theo thời gian hữu hạn, hoặc Borel--Cantelli nếu xét vô
+hạn thời điểm.
+
+\subsection{Martingale và thời điểm dừng}
+
+Optional stopping là công cụ mạnh nhưng nguy hiểm. Một martingale dừng tại thời
+điểm ngẫu nhiên \(\tau\) không tự động thỏa \(E X_\tau=E X_0\). Cần điều kiện
+như \(\tau\) bị chặn, bước nhảy bị chặn kèm điều kiện khả tích phù hợp, hoặc
+các giả thiết chuẩn khác trong định lý dừng.
+
+Khi dùng martingale cho thuật toán:
+\begin{itemize}
+  \item xác định lọc \(\mathcal{F}_t\) là thông tin đã lộ sau bước \(t\);
+  \item chứng minh \(X_t\) đo được theo \(\mathcal{F}_t\);
+  \item kiểm tra \(E(|X_t|)<\infty\);
+  \item chứng minh điều kiện martingale/submartingale bằng kỳ vọng có điều kiện;
+  \item nêu rõ bound trên bước nhảy hoặc phương sai có điều kiện trước khi dùng
+        tail bound.
+\end{itemize}
+
+Nếu thuật toán chọn bước tiếp theo dựa trên lịch sử, điều đó không phá martingale
+miễn kỳ vọng có điều kiện được tính theo đúng lịch sử. Đây là lợi thế chính của
+ngôn ngữ lọc so với cách nói ``các bước độc lập'' quá thô.
+
+\subsection{Checklist trước khi chấp nhận chứng minh}
+
+\begin{enumerate}
+  \item Xác suất đang lấy theo random nội bộ, input, hay cả hai?
+  \item Biến cố/biến ngẫu nhiên có đo được trong mô hình đã chọn không?
+  \item Những biến nào thật sự độc lập, và độc lập ở mức nào?
+  \item Có phép đổi tổng/kỳ vọng/giới hạn nào cần Tonelli, Fubini hoặc hội tụ
+        bị chặn không?
+  \item Tail bound được dùng có đúng giả thiết không?
+  \item Nếu có union bound, số lượng biến cố đã được đếm đủ chưa?
+  \item Nếu có thời điểm dừng, điều kiện optional stopping đã được kiểm tra
+        chưa?
+  \item Phát biểu cuối là kỳ vọng, xác suất cao, hầu chắc chắn hay hội tụ theo
+        phân phối?
+\end{enumerate}
+
 \section{Các điểm cần kiểm tra khi chuyển thành LaTeX đầy đủ}
 
 Nếu sau này dịch từng chương chi tiết hơn, các phần dễ sai nhất là:
