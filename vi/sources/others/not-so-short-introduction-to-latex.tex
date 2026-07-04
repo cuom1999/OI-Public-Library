@@ -1556,6 +1556,182 @@ Một ``thanh chống'' là một hộp vô hình dùng để ép chiều cao ho
 Kỹ thuật này hữu ích trong bảng khi muốn các hàng cao đều hơn mà không vẽ gì
 thêm.
 
+\section{Phụ lục thực hành}
+
+Phần này gom các ghi chú thực hành mà người đọc thường cần sau khi đã đọc năm
+chương chính. Nó không thay thế chỉ mục đầy đủ của bản gốc, nhưng bổ sung một
+lớp tra cứu nhanh cho quy trình soạn tài liệu kỹ thuật bằng \LaTeX\ hiện đại,
+đặc biệt khi viết tiếng Việt và biên dịch bằng LuaLaTeX.
+
+\subsection{Quy trình biên dịch hiện đại}
+
+Với tài liệu đơn giản, một lần chạy LuaLaTeX có thể đủ:
+\begin{verbatim}
+lualatex document.tex
+\end{verbatim}
+Nhưng tài liệu có mục lục, tham chiếu chéo, danh sách hình bảng, thư mục hoặc
+chỉ mục thường cần nhiều bước. Một chu trình đầy đủ hơn là:
+\begin{enumerate}
+  \item chạy \texttt{lualatex} để tạo \file{.aux}, \file{.toc}, \file{.idx} và
+        các tập tin phụ;
+  \item nếu dùng \BibTeX, chạy \texttt{bibtex document};
+  \item nếu dùng chỉ mục, chạy \texttt{makeindex document};
+  \item chạy \texttt{lualatex} thêm một hoặc hai lần để nhãn, số trang, mục lục
+        và liên kết ổn định.
+\end{enumerate}
+
+Các công cụ như \texttt{latexmk} tự động hóa chu trình này:
+\begin{verbatim}
+latexmk -lualatex document.tex
+\end{verbatim}
+Khi biên dịch trong một dự án lớn, nên để tập tin sinh ra nằm trong thư mục
+build riêng, như cách thư viện này sinh PDF vào \file{vi/build/...}. Điều đó
+giữ nguồn \file{.tex} sạch và giúp dễ xóa toàn bộ sản phẩm tạm khi cần.
+
+\subsection{Đọc lỗi biên dịch}
+
+Thông báo lỗi của \TeX\ có thể dài, nhưng thường có cấu trúc lặp lại. Dòng bắt
+đầu bằng dấu chấm than là lỗi chính; số dòng gần đó chỉ vị trí \TeX\ phát hiện
+vấn đề, không phải lúc nào cũng là nguyên nhân thật.
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}p{0.35\linewidth}p{0.52\linewidth}}
+Undefined control sequence & Sai tên lệnh hoặc thiếu gói định nghĩa lệnh đó.\\
+Missing \$ inserted & Đưa ký hiệu toán vào văn bản thường, hoặc quên đóng/mở
+  chế độ toán.\\
+Extra \} & Thừa ngoặc nhọn đóng hoặc thiếu ngoặc mở trước đó.\\
+Runaway argument & Một tham số bắt buộc chưa được đóng, thường do thiếu
+  \texttt{\}} hoặc môi trường chưa kết thúc.\\
+Environment ... undefined & Sai tên môi trường hoặc thiếu gói cung cấp môi
+  trường.\\
+File ... not found & Đường dẫn hình/gói/tập tin nhập không đúng hoặc chưa cài
+  gói.
+\end{tabular}
+\end{center}
+
+Khi lỗi khó hiểu, hãy thu nhỏ ví dụ. Sao chép phần lời mở đầu cần thiết và một
+đoạn văn tối thiểu vào tập tin mới; nếu lỗi biến mất, thêm dần các phần cho đến
+khi tìm được lệnh gây lỗi. Đây là cách làm nhanh hơn nhiều so với đọc toàn bộ
+nhật ký biên dịch của một tài liệu dài.
+
+\subsection{Tiếng Việt và Unicode}
+
+Với tài liệu tiếng Việt hiện đại, LuaLaTeX hoặc XeLaTeX thường thuận tiện hơn
+quy trình \texttt{latex} cổ điển vì chúng đọc trực tiếp Unicode và dùng phông
+OpenType qua \pkg{fontspec}. Một lời mở đầu tối thiểu có thể là:
+\begin{verbatim}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
+\end{verbatim}
+
+Các điểm cần chú ý:
+\begin{itemize}
+  \item lưu nguồn bằng UTF-8, không trộn nhiều bảng mã trong cùng dự án;
+  \item chọn phông có đủ dấu tiếng Việt và ký tự toán/ký hiệu cần dùng;
+  \item với toán học, dùng \pkg{unicode-math} nếu muốn phông toán Unicode;
+  \item trong \env{verbatim} hoặc mã nguồn, phông mono phải có đủ ký tự cần
+        hiển thị;
+  \item không dùng \pkg{inputenc} như giải pháp chính trong LuaLaTeX, vì nó
+        thuộc quy trình \LaTeX\ truyền thống hơn.
+\end{itemize}
+
+Nếu một chữ có dấu biến thành ô vuông trong PDF, nguyên nhân thường là phông
+không có glyph đó, không phải do \LaTeX\ không hiểu tiếng Việt. Nếu chữ hiện
+sai ngay trong nguồn, hãy kiểm tra mã hóa tập tin trước khi sửa lệnh \LaTeX.
+
+\subsection{Hình, bảng và vật thể nổi}
+
+Hình và bảng nên được đặt trong môi trường nổi khi chúng có chú thích và được
+tham chiếu từ văn bản:
+\begin{verbatim}
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\linewidth]{figures/example.pdf}
+  \caption{Một hình minh họa.}
+  \label{fig:example}
+\end{figure}
+\end{verbatim}
+
+Lệnh \cmd{label} nên đặt sau \cmd{caption} để số hình/bảng được ghi đúng. Với
+bảng, nên ưu tiên cấu trúc rõ ràng, ít đường kẻ dọc, và canh cột theo nghĩa dữ
+liệu. Gói \pkg{booktabs} thường cho bảng đẹp hơn:
+\begin{verbatim}
+\begin{tabular}{ll}
+\toprule
+Tên & Ý nghĩa\\
+\midrule
+n & Số phần tử\\
+\bottomrule
+\end{tabular}
+\end{verbatim}
+
+Nếu hình gốc là sơ đồ thuật toán đơn giản, có thể vẽ lại bằng TikZ để giữ PDF
+sắc nét và văn bản tìm kiếm được. Nếu hình là ảnh chụp hoặc biểu đồ phức tạp,
+chèn ảnh raster/vector gốc thường tốt hơn. Không nên để lại một chú thích hình
+đứng một mình khi hình đã bị bỏ; hoặc khôi phục hình, hoặc chuyển nội dung hình
+thành prose rõ ràng.
+
+\subsection{Thư mục tài liệu tham khảo}
+
+Với tài liệu nhỏ, môi trường \env{thebibliography} là đủ:
+\begin{verbatim}
+\begin{thebibliography}{9}
+\bibitem{lamport}
+Leslie Lamport. \emph{LaTeX: A Document Preparation System}.
+\end{thebibliography}
+\end{verbatim}
+Trích dẫn bằng \cmd{cite}:
+\begin{verbatim}
+See Lamport~\cite{lamport}.
+\end{verbatim}
+
+Với tài liệu lớn hoặc nhiều nguồn, nên dùng \BibTeX\ hoặc \texttt{biblatex}.
+Cơ sở dữ liệu \file{.bib} giúp tách dữ liệu nguồn khỏi kiểu trình bày. Dù dùng
+công cụ nào, khóa trích dẫn nên ổn định và có ý nghĩa, ví dụ
+\texttt{knuth1984texbook}, thay vì \texttt{ref1}.
+
+\subsection{Chỉ mục}
+
+Chỉ mục giúp người đọc tìm thuật ngữ trong tài liệu dài. Quy trình cơ bản:
+\begin{verbatim}
+\usepackage{makeidx}
+\makeindex
+...
+term\index{term}
+...
+\printindex
+\end{verbatim}
+Sau lần chạy \LaTeX, dùng:
+\begin{verbatim}
+makeindex document
+\end{verbatim}
+rồi biên dịch lại để đưa chỉ mục đã sắp xếp vào PDF.
+
+Khi làm chỉ mục tiếng Việt, cần thống nhất cách ghi mục từ: có dấu hay không
+dấu, tiếng Việt hay thuật ngữ gốc, viết hoa hay viết thường. Một tài liệu kỹ
+thuật thường dùng dạng ``thuật ngữ tiếng Việt (term tiếng Anh)'' ở lần xuất
+hiện đầu, rồi chỉ mục cả hai nếu người đọc có thể tra theo một trong hai cách.
+
+\subsection{Bảng thuật ngữ rút gọn}
+
+\begin{longtable}{p{0.28\linewidth}p{0.58\linewidth}}
+\textbf{Thuật ngữ} & \textbf{Ghi chú}\\
+\hline
+lời mở đầu & Phần trước \cmd{begin\{document\}}, nơi chọn lớp, gói và thiết lập
+toàn cục.\\
+thân tài liệu & Phần giữa \cmd{begin\{document\}} và \cmd{end\{document\}}.\\
+lớp tài liệu & Tập \file{.cls}, quyết định cấu trúc và bố cục lớn.\\
+gói & Tập \file{.sty}, bổ sung lệnh hoặc môi trường.\\
+môi trường & Cặp \cmd{begin\{...\}} và \cmd{end\{...\}} tạo một vùng có quy tắc
+dàn trang riêng.\\
+vật thể nổi & Hình hoặc bảng được \LaTeX\ tự đặt ở vị trí phù hợp.\\
+nhãn & Khóa dùng với \cmd{label} và \cmd{ref} để tham chiếu chéo.\\
+nhật ký & Tập \file{.log}, chứa cảnh báo, lỗi và thông tin biên dịch.\\
+overfull box & Dòng hoặc hộp vượt quá chiều rộng cho phép.\\
+underfull box & Dòng hoặc hộp bị giãn quá mức để lấp đầy không gian.\\
+\end{longtable}
+
 \section*{Kết luận}
 \addcontentsline{toc}{section}{Kết luận}
 
