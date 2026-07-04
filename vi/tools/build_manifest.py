@@ -37,7 +37,6 @@ COMPANION_NOTE_SOURCES = {
     "动态规划 DYNAMIC PROGRAMMING/树形DP选讲 - 顾逸宏.pdf",
     "数据结构 DATA STRUCTURE/Link Cut Trees.pdf",
     "图论 GRAPH THEORY/Making Graphs into Trees - immortalCO, WrongAnswer.pdf",
-    "数据结构 DATA STRUCTURE/后缀自动机 - 陈立杰.pdf",
     "其他 OTHERS/C++的pb-ds库在OI中的应用 - 于纪平.pdf",
     "其他 OTHERS/CDQ分治入门经典.pdf",
     "其他 OTHERS/博弈论相关 - 李晓潇.pdf",
