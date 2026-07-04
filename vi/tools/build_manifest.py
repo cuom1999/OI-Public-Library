@@ -33,6 +33,7 @@ REFERENCE_NOTE_SOURCES = {
     "其他 OTHERS/一份不太简短的LATEX介绍.pdf",
 }
 COMPANION_NOTE_SOURCES = {
+    "USACO/USACO题解(NOCOW整理版)47P.pdf",
     "动态规划 DYNAMIC PROGRAMMING/树形DP选讲 - 顾逸宏.pdf",
     "动态规划 DYNAMIC PROGRAMMING/动态规划的优化 - 唐文斌.pdf",
     "动态规划 DYNAMIC PROGRAMMING/初探数位dp.pdf",

@@ -34,6 +34,8 @@ They remain `translated`.
 | --- | ---: | --- |
 | `sources/data-structure/power-of-statistics-segment-tree-zhang-kunwei.tex` | 102 | Source is an Impress slide deck. The Vietnamese file follows the slide sequence from range sums and heap layout through lazy tags, order statistics, dynamic segment trees, balanced trees, and the practice problem; decorative/interlude slides and figures are folded into prose. |
 | `sources/mathematics/simple-mathematical-logic-li-kaiwei.tex` | 40 | Source is an Impress slide deck. The translation covers propositional logic, equivalence laws, normal forms, SAT/2-SAT, DPLL, SMT, bit-vector examples, applications, and references. |
+| `sources/others/functional-programming-guo-jiabao.tex` | 54 | Source is a PowerPoint slide deck. The translation follows the lecture from halting problem and lambda calculus through recursion, fixed points, Haskell basics, lazy evaluation, higher-order functions, and mainstream language features. |
+| `sources/mathematics/inclusion-exclusion-zhang-kunlong.tex` | 39 | Source is a PowerPoint-style lecture deck. The translation covers the union/intersection formulas, Sylvester formula, restricted permutations, sieve applications, Euler phi, derangements, rook polynomials, generalized inclusion--exclusion, Stirling numbers, non-adjacent combinations, and couple-seating example. |
 | `sources/ioi/2002/wang-zhikun-search-order-selection.tex` | 22 | Source is an Impress slide deck with one blank final page. The translation covers every nonblank slide: interval arrangement, search-order principles, operator decoding, static/dynamic ordering, Prime Square, Basketball Championship, pruning, Birthday Cake, and conclusion. |
 | `sources/ioi/2002/luo-ji-game-problem-two-methods.tex` | 41 | Source is an Impress slide deck. The translation reconstructs the slide diagrams/proofs in prose and covers the full arc: stone-taking, general method, limitations, special method, Fibonacci proof, comparison, and conclusion. |
 
@@ -83,6 +85,7 @@ inflate the full translated-document count.
 
 | Translation | Source pages | Notes |
 | --- | ---: | --- |
+| `sources/usaco/usaco-nocow-solutions.tex` | 47 | Reviewed as A4 solution-note anthology. Companion note covers the USACO Training problem list and main ideas, but compresses alternate explanations, detailed derivations, sample details, and long source commentary into short per-problem notes. |
 | `sources/dynamic-programming/tree-dp-selected-topics-gu-yihong.tex` | 142 | Reviewed as Beamer overlay deck: about 40 logical slides. Companion note keeps the DP states, transitions and examples. |
 | `sources/dynamic-programming/dp-optimization-tang-wenbin.tex` | 23 | Reviewed as PowerPoint slide deck. Companion note keeps the LIS, Fibonacci subsequence, Painting the Balls, Divide, and quadrangle-inequality examples. |
 | `sources/dynamic-programming/intro-digit-dp.tex` | 26 | Reviewed as image-only slide deck. Companion note covers the contents-page topics: HDU2089, HDU3652, URAL1057, `test-09-07-p1`, SPOJ Sorted Bit Sequence, and references. |
