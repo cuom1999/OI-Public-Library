@@ -23,6 +23,14 @@ TRACKED_EXTS = {
     ".md": "md",
 }
 SKIP_PREFIXES = ("vi/", ".git/")
+REFERENCE_NOTE_SOURCES = {
+    "英文资料 ENGLISH MATERIALS/Introduction To Algorithm - 3rd Edition.pdf",
+    "英文资料 ENGLISH MATERIALS/Computer Systems, A Programmer’s Perspective 3rd Edition.pdf",
+    "英文资料 ENGLISH MATERIALS/Concrete Mathematics - 2nd Edition.pdf",
+    "英文资料 ENGLISH MATERIALS/A Probability Path - Resnick.pdf",
+    "英文资料 ENGLISH MATERIALS/Data Structures and Network Algorithms - Tarjan [1987-01-01].pdf",
+    "USACO/【由 BirDOR 整理】USACO 2001-2007 月赛测试数据+题目+题解/USACO月赛十年题典v10.pdf",
+}
 
 
 def git_files() -> list[str]:
@@ -66,16 +74,21 @@ def rows() -> list[dict[str, str]]:
         kind = TRACKED_EXTS.get(ext)
         if not kind:
             continue
+        if path in translated:
+            status = "reference-note" if path in REFERENCE_NOTE_SOURCES else "translated"
+        else:
+            status = "todo"
         data.append(
             {
-                "status": "translated" if path in translated else "todo",
+                "status": status,
                 "kind": kind,
                 "pages": page_count(path),
                 "source": path,
                 "translation": translated.get(path, ""),
             }
         )
-    data.sort(key=lambda r: (r["status"] != "todo", r["kind"], r["source"]))
+    status_order = {"todo": 0, "reference-note": 1, "translated": 2}
+    data.sort(key=lambda r: (status_order.get(r["status"], 99), r["kind"], r["source"]))
     return data
 
 
@@ -84,6 +97,8 @@ def write_manifest(data: list[dict[str, str]]) -> None:
     for row in data:
         counts[row["kind"]] = counts.get(row["kind"], 0) + 1
     translated = sum(1 for row in data if row["status"] == "translated")
+    reference_notes = sum(1 for row in data if row["status"] == "reference-note")
+    todo = sum(1 for row in data if row["status"] == "todo")
 
     lines = [
         "# Vietnamese Translation Manifest",
@@ -92,7 +107,8 @@ def write_manifest(data: list[dict[str, str]]) -> None:
         "",
         f"- Tracked source documents: {len(data)}",
         f"- Translated documents: {translated}",
-        f"- Remaining documents: {len(data) - translated}",
+        f"- Reference-note documents: {reference_notes}",
+        f"- Remaining documents: {todo}",
         "",
         "## Counts By Type",
         "",
@@ -125,7 +141,11 @@ def write_manifest(data: list[dict[str, str]]) -> None:
 
     csv_path = VI / "MANIFEST.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["status", "kind", "pages", "source", "translation"])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["status", "kind", "pages", "source", "translation"],
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(data)
 

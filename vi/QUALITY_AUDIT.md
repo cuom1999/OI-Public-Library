@@ -37,16 +37,17 @@ but they should not be counted as ToC-only or partially covered collections.
 ## Large Reference PDFs That Are Only Notes
 
 These are not IOI team reports, but they also should not be counted as full
-book translations.
+book translations. The manifest marks these rows as `reference-note`, so they
+do not inflate the count of full translated documents.
 
 | Translation | Source pages | Current state | Recommendation |
 | --- | ---: | --- | --- |
-| `sources/english/introduction-to-algorithms-3e-clrs.tex` | 1313 | Book metadata and chapter-structure note | Either mark as reference-index only or translate selected chapters explicitly. |
-| `sources/english/computer-systems-programmers-perspective-3e.tex` | 1120 | Book metadata and chapter-structure note | Keep as reference-index unless the project scope expands beyond OI texts. |
-| `sources/english/concrete-mathematics-graham-knuth-patashnik.tex` | 670 | Book metadata and chapter-structure note | Translate selected chapters if needed for math background. |
-| `sources/english/a-probability-path-resnick.tex` | 459 | Book metadata and chapter-structure note | Translate selected probability chapters if needed. |
-| `sources/english/data-structures-network-algorithms-tarjan.tex` | 142 | ToC/preface-focused note | Candidate for full translation; source is shorter and relevant. |
-| `sources/usaco/usaco-ten-year-problem-anthology-v10.tex` | 266 | Preface and recovered index only | Needs OCR or replacement text before full problem translation. |
+| `sources/english/introduction-to-algorithms-3e-clrs.tex` | 1313 | Book metadata and chapter-structure note | Keep as `reference-note` unless selected licensed chapters are translated explicitly. |
+| `sources/english/computer-systems-programmers-perspective-3e.tex` | 1120 | Book metadata and chapter-structure note | Keep as `reference-note` unless selected licensed chapters are translated explicitly. |
+| `sources/english/concrete-mathematics-graham-knuth-patashnik.tex` | 670 | Book metadata and chapter-structure note | Keep as `reference-note`; translate selected math background excerpts only when scope and rights are clear. |
+| `sources/english/a-probability-path-resnick.tex` | 459 | Book metadata and chapter-structure note | Keep as `reference-note`; translate selected probability excerpts only when scope and rights are clear. |
+| `sources/english/data-structures-network-algorithms-tarjan.tex` | 142 | ToC/preface-focused note | Keep as `reference-note`; it remains the shortest candidate if selected licensed chapters are later requested. |
+| `sources/usaco/usaco-ten-year-problem-anthology-v10.tex` | 266 | Preface and recovered index only | Keep as `reference-note`; needs OCR or replacement source text before any detailed problem translation. |
 
 ## Lower-Confidence Compression Suspects
 
