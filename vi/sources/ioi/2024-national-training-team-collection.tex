@@ -10974,4 +10974,906 @@ mojibake, nên bản dịch dựa trên OCR tại \texttt{/tmp/oipl2024a19/ocr.t
 không nhập lại hình, mà ghi nội dung cần dùng của hình trong phần phân tích độ
 phức tạp.
 
+\section*{Bài 20. Bàn về lý thuyết tính toán và các bài toán khó trong OI}
+\addcontentsline{toc}{section}{Bài 20. Bàn về lý thuyết tính toán và các bài toán khó trong OI}
+
+\begin{center}
+Yan Chenxiao, Trường Ngoại ngữ Nam Kinh
+\end{center}
+
+\subsection*{Tóm tắt}
+
+Bài viết xuất phát từ định nghĩa máy Turing, chứng minh tính NP-đầy đủ của một
+loạt bài toán, giải thích vì sao các bài toán NP-đầy đủ là khó, và giúp thí
+sinh OI nhận ra nhanh hơn những hướng suy nghĩ đã dẫn tới bài toán NP-đầy đủ.
+
+\subsection*{1. Mở đầu}
+
+\subsubsection*{1.1. Nội dung}
+
+Lý thuyết tính toán là một nhánh quan trọng của khoa học máy tính lý thuyết.
+Bài viết xoay quanh mô hình tính toán cơ bản là máy Turing, định nghĩa chặt chẽ
+các khái niệm như tính toán và độ phức tạp tính toán, giới thiệu một số lớp bài
+toán, dùng phép quy về để trình bày cách chứng minh độ khó của bài toán, và đưa
+ra nhiều bài toán NP-đầy đủ kinh điển.
+
+Phần 2 giới thiệu các mô hình tính toán và tính chất của chúng từ máy Turing.
+Phần 3 bàn về độ phức tạp thời gian và các lớp như P, NP. Phần 4 xuất phát từ
+bài toán SAT, dùng quy về để chứng minh tính NP-đầy đủ của một số bài toán
+thường gặp. Phần 5 là tổng kết ngắn.
+
+\subsubsection*{1.2. Kí hiệu và quy ước}
+
+Khi không gây nhầm lẫn, ta dùng kí hiệu \(\bot\) để chỉ không tồn tại, chưa xác
+định, kí tự trắng và các ý nghĩa tương tự. Kí hiệu \(\Sigma\) là một tập hữu
+hạn cố định, gọi là bảng chữ cái; phần tử của nó gọi là kí tự. Ta không cần
+quan tâm giá trị cụ thể của \(\Sigma\), nhưng mặc định nó chứa các kí tự đặc
+biệt \(0,1\), và không chứa \(\bot\). Đặt
+\[
+  \Sigma_{\bot}=\Sigma\cup\{\bot\}.
+\]
+
+Một dãy hữu hạn các kí tự gọi là xâu, tức là một phần tử của
+\[
+  \Sigma^*=\bigcup_{n\ge 0}\Sigma^n,
+\]
+trong đó \(\Sigma^n\) là tích Descartes \(n\) lần. Với xâu \(x\in\Sigma^*\),
+\(|x|\) là độ dài của \(x\), nên \(x\in\Sigma^{|x|}\); \(x_i\) là kí tự thứ
+\(i\) của \(x\), với \(1\le i\le |x|\).
+
+Với tập \(S\), đặt
+\[
+  \mathcal P(S)=\{T\mid T\subseteq S\}
+\]
+là tập lũy thừa của \(S\). Ta dùng các kí hiệu tiệm cận theo nghĩa chuẩn:
+\(u=O(v)\) nếu tồn tại \(c>0\) sao cho \(u\le cv\); \(u=\Omega(v)\) nếu
+\(v=O(u)\); \(u=\Theta(v)\) nếu đồng thời \(u=O(v)\) và \(u=\Omega(v)\);
+\(u=\operatorname{poly}(v)\) nếu tồn tại \(c>0\) sao cho \(u=O(v^c)\).
+
+\subsection*{2. Mô hình tính toán}
+
+\subsubsection*{2.1. Bài toán}
+
+\paragraph{Định nghĩa 2.1.}
+Một hàm \(f:\Sigma^*\to\Sigma^*\) được gọi là một \emph{bài toán}. Đặc biệt,
+nếu miền giá trị của \(f\) nằm trong \(\{0,1\}\), thì \(f\) là một bài toán
+\emph{quyết định}.
+
+Định nghĩa này phù hợp với trực giác: nhiệm vụ của máy tính là nhận một xâu đầu
+vào, rồi theo mục tiêu tính toán sinh ra một xâu đầu ra; hàm \(f\) mô tả đúng
+mục tiêu đó.
+
+\paragraph{Định nghĩa 2.2.}
+Một tập xâu \(L\subseteq\Sigma^*\) được gọi là một \emph{ngôn ngữ}.
+
+Bài toán quyết định và ngôn ngữ tương ứng một-một với nhau. Chỉ cần lấy hàm đặc
+trưng của ngôn ngữ \(L\):
+\[
+  f:\Sigma^*\to\{0,1\},\qquad
+  f(x)=
+  \begin{cases}
+    1,& x\in L,\\
+    0,& x\notin L.
+  \end{cases}
+\]
+Vì vậy phần sau không phân biệt quá kĩ hai cách nói này.
+
+\subsubsection*{2.2. Máy Turing}
+
+\paragraph{Định nghĩa 2.3.}
+Một máy Turing \(k\) băng là một cặp \(M=(Q,\delta)\), trong đó \(Q\) là tập
+hữu hạn các trạng thái, ít nhất chứa trạng thái bắt đầu \(S\) và trạng thái
+dừng \(H\); còn
+\[
+  \delta:(Q\setminus\{H\})\times\Sigma_{\bot}^k
+  \to Q\times\Sigma_{\bot}^k\times\{-1,0,1\}^k
+\]
+là hàm chuyển.
+
+Ta mô tả quy tắc chạy của máy Turing \(k\) băng như sau. Tưởng tượng có \(k\)
+băng giấy kéo dài vô hạn về hai phía và được chia thành các ô liên tiếp. Ban
+đầu xâu vào được ghi lên băng, sau đó đầu đọc-ghi đọc \(k\) kí tự hiện tại, dựa
+vào hàm chuyển để sửa kí tự, sửa trạng thái và di chuyển các đầu đọc-ghi sang
+trái, đứng yên hoặc sang phải, cho tới khi máy dừng.
+
+Hình thức hóa, sau khi nhận đầu vào \(x\in\Sigma^*\), tại thời điểm \(t\in
+\mathbb N\), cấu hình của \(M\) được mô tả bởi
+\[
+  \sigma_t=(q_t,A_{t,1\sim k},h_{t,1\sim k}).
+\]
+Ở đây \(A_{t,i}:\mathbb Z\to\Sigma_{\bot}\) là nội dung băng thứ \(i\), và
+\(h_{t,i}\in\mathbb Z\) là vị trí đầu đọc-ghi trên băng đó. Cấu hình ban đầu là
+\[
+  q_0=S,\qquad h_{0,i}=1,\qquad
+  A_{0,i}(j)=
+  \begin{cases}
+    x_j,& i=1,\ 1\le j\le |x|,\\
+    \bot,& \text{ngược lại.}
+  \end{cases}
+\]
+Nếu
+\[
+  \Delta_t=\delta\bigl(q_t,(A_{t,i}(h_{t,i}))_{i=1}^{k}\bigr)
+  =(q',(A'_i)_{i=1}^{k},(d_i)_{i=1}^{k}),
+\]
+thì cấu hình kế tiếp được cho bởi
+\[
+  q_{t+1}=q',\qquad h_{t+1,i}=h_{t,i}+d_i,\qquad
+  A_{t+1,i}(j)=
+  \begin{cases}
+    A_{t,i}(j),& j\ne h_{t,i},\\
+    A'_i,& j=h_{t,i}.
+  \end{cases}
+\]
+Nếu \(q_t=H\), máy dừng tại thời điểm \(t\); với mọi \(t'>t\), coi
+\(\sigma_{t'}\) không tồn tại và ghi là \(\bot\). Ta viết
+\(\sigma_t\xrightarrow{\Delta_t}\sigma_{t+1}\) cho một bước chuyển, và quy ước
+\(\bot\to\bot\).
+
+Nếu \(M\) chạy trên \(x\) rồi dừng, gọi nội dung băng thứ \(k\) tại thời điểm
+dừng là \(A_H\). Nếu tồn tại \(r\in\mathbb N\) sao cho \(A_H(i)=\bot\) khi và
+chỉ khi \(i<1\) hoặc \(i>r\), thì đặt
+\[
+  M(x)=A_H(1)A_H(2)\cdots A_H(r).
+\]
+Trong các trường hợp khác, tức là máy không dừng hoặc băng ra không có dạng
+hợp lệ, đặt \(M(x)=\bot\).
+
+Ta nói \(M\) tính bài toán \(f\) nếu với mọi \(x\in\Sigma^*\) đều có
+\(f(x)=M(x)\). Nếu tồn tại máy Turing tính được \(f\), ta nói \(f\) là tính
+được. Với bài toán quyết định tương ứng ngôn ngữ \(L\), ta cũng nói máy Turing
+\emph{quyết định} \(L\), hay \(L\) là quyết định được.
+
+\subsubsection*{2.3. Máy Turing không xác định}
+
+\paragraph{Định nghĩa 2.4.}
+Một máy Turing không xác định \(k\) băng là một cặp \(N=(Q,\delta)\), trong đó
+\(Q\) vẫn là tập hữu hạn các trạng thái chứa \(S,H\), còn
+\[
+  \delta:(Q\setminus\{H\})\times\Sigma_{\bot}^k
+  \to \mathcal P\bigl(Q\times\Sigma_{\bot}^k\times\{-1,0,1\}^k\bigr)
+\]
+là hàm chuyển.
+
+So với máy Turing thường, khác biệt duy nhất là mỗi trạng thái hiện tại không
+cho một lệnh chuyển, mà cho một tập các lệnh chuyển. Khi chạy, ở mỗi thời điểm
+máy chọn tùy ý một lệnh trong tập đó rồi thực hiện như trên. Nếu cấu hình của
+máy Turing thường tạo thành một chuỗi, thì cấu hình của máy không xác định tạo
+thành một cây: một số nhánh hữu hạn và dừng tại lá, một số nhánh có thể kéo dài
+vô hạn.
+
+Trong bài viết này chỉ xét máy không xác định cho bài toán quyết định. Với máy
+\(N\) và đầu vào \(x\), một dãy lệnh chuyển \(\Delta=(\Delta_i)_{i\ge0}\) được
+gọi là một đường chuyển nếu dãy cấu hình
+\[
+  \sigma_0\xrightarrow{\Delta_0}\sigma_1\xrightarrow{\Delta_1}
+  \sigma_2\to\cdots
+\]
+hợp lệ, tức là mọi \(\Delta_i\ne\bot\) đều thuộc tập lệnh chuyển tương ứng. Kí
+hiệu \(N(x;\Delta)\) là kết quả tính trên đường đó.
+
+Nếu tồn tại đường chuyển \(\Delta\) sao cho \(N(x;\Delta)=1\), đặt
+\(N(x)=1\); ngược lại đặt \(N(x)=0\). Ta nói \(N\) tính bài toán quyết định
+\(f\), hoặc quyết định ngôn ngữ tương ứng \(L\), nếu với mọi \(x\in\Sigma^*\)
+đều có \(f(x)=N(x)\). Trực giác là: máy không xác định chấp nhận \(x\in L\) khi
+và chỉ khi có ít nhất một đường chạy chấp nhận.
+
+\subsubsection*{2.4. Hàm thời gian}
+
+\paragraph{Định nghĩa 2.5.}
+Nếu máy Turing \(M\) dừng trên mọi đầu vào \(x\in\Sigma^*\), ta gọi \(M\) là
+một máy Turing \emph{đầy đủ}. Tương tự, nếu máy Turing không xác định \(N\) dừng
+trên mọi đầu vào và mọi đường chuyển, ta gọi \(N\) là một máy không xác định
+\emph{đầy đủ}. Thuật ngữ ``đầy đủ'' ở đây chỉ dùng trong bài viết này.
+
+Ta chủ yếu làm việc với các máy luôn dừng, vì tính chất này tốt hơn cho phân
+tích độ phức tạp.
+
+\paragraph{Định nghĩa 2.6.}
+Với máy Turing đầy đủ \(M\), hàm thời gian \(T_M:\mathbb N\to\mathbb N\) được
+định nghĩa sao cho \(T_M(n)\) là thời điểm dừng lớn nhất của \(M\) trên mọi đầu
+vào độ dài không quá \(n\). Khi đó nói \(M\) dừng trong thời gian \(T_M(n)\).
+Với máy không xác định đầy đủ \(N\), \(T_N(n)\) được định nghĩa tương tự, nhưng
+lấy cực đại trên mọi đầu vào độ dài không quá \(n\) và mọi đường chuyển.
+
+Thông thường ta chỉ xét cấp tiệm cận của hàm thời gian. Nếu
+\(T_{M_1}(n)=O(T_{M_2}(n))\), ta coi \(M_1\) tính không chậm hơn đáng kể so với
+\(M_2\); nếu hai hàm là \(\Theta\) của nhau, ta coi thời gian tính của chúng là
+cùng bậc.
+
+\subsubsection*{2.5. Mã hóa}
+
+Đầu vào và đầu ra của máy Turing chỉ là xâu trên bảng chữ cái hữu hạn. Đây là
+một ràng buộc thuận tiện cho lý thuyết, nhưng nhiều khi ta muốn dùng số tự
+nhiên hoặc cấu trúc dữ liệu như cây, đồ thị làm đầu vào và đầu ra. Khi đó cần
+mã hóa chúng thành xâu, tức là dựng một đơn ánh vào \(\Sigma^*\).
+
+Vì số xâu hữu hạn là đếm được, một điều kiện cần để mã hóa một lớp đối tượng là
+lớp đó cũng đếm được. Ngoài ra, ta cần đảm bảo máy Turing đọc được thông tin
+trong mã hóa. Thực tế không cần quá lo về điểm này: năng lực tính toán của máy
+Turing tương đương với máy tính hiện đại dựa trên kiến trúc von Neumann, còn
+người đọc đã quen với việc lập trình xử lý dữ liệu.
+
+Với máy \(M\), ta viết
+\[
+  M(a,b,c,\ldots)=(A,B,C,\ldots)
+\]
+để chỉ việc mã hóa các dữ liệu không phải xâu thành đầu vào cho \(M\), rồi giải
+mã kết quả. Thông thường không cần quy định quá chi tiết cách mã hóa cụ thể.
+Nếu mã hóa không phải là toàn ánh lên \(\Sigma^*\), và ta muốn \(M\) luôn dừng,
+thì ngầm hiểu \(M\) kiểm tra thêm đầu vào có hợp lệ hay không; việc này thường
+là tầm thường.
+
+\paragraph{Định lý 2.1.}
+Tồn tại một mã hóa dễ giải đọc cho toàn bộ các máy Turing và máy Turing không
+xác định.
+
+\emph{Chứng minh.}
+Với hai tập hữu hạn \(Q_1,Q_2\) cùng kích thước, một máy dùng \(Q_1\) làm tập
+trạng thái luôn tương đương với một máy dùng \(Q_2\). Vì vậy ta chỉ cần quan
+tâm kích thước \(n\) của tập trạng thái. Khi \(n\) đã cố định, số hàm chuyển là
+hữu hạn; do đó tổng số máy là đếm được.
+
+Để mã hóa, cố định một thứ tự trên tập trạng thái \(Q\) và bảng chữ cái
+\(\Sigma_{\bot}\). Khi đó hàm chuyển có thể biểu diễn thành một ánh xạ từ dãy
+số tự nhiên sang dãy số tự nhiên, hoặc sang tập các dãy như vậy trong trường
+hợp không xác định. Ghép các dãy theo thứ tự từ điển, kèm hữu hạn dấu phân
+cách. Mỗi số tự nhiên lại được viết ở hệ nhị phân và ngăn cách bởi dấu phân
+cách.
+
+\subsubsection*{2.6. Máy Turing phổ dụng}
+
+Sau khi có mã hóa của máy \(M\), ta có thể đưa mã đó vào một máy khác để mô
+phỏng \(M\). Máy mô phỏng được mọi \(M\) như vậy gọi là máy Turing phổ dụng.
+
+\paragraph{Định lý 2.2.}
+Tồn tại một máy Turing một băng \(U\) sao cho với mọi máy Turing \(M\) và mọi
+\(x\in\Sigma^*\), ta có \(U(M,x)=M(x)\). Hơn nữa, nếu tính toán \(M(x)\) dừng
+trong thời điểm \(T\), thì \(U(M,x)\) dừng trong thời gian
+\[
+  \operatorname{poly}(|M|T),
+\]
+trong đó \(|M|\) là độ dài mã hóa của \(M\).
+
+\emph{Chứng minh.}
+Giả sử \(M\) là máy \(k\) băng. Để dùng một băng của \(U\) lưu thông tin của
+\(k\) băng, chia các ô của băng theo một số lớp dư. Một lớp dư lưu mã hóa của
+\(M\); với mỗi băng của \(M\), dùng hai lớp dư liên tiếp, một lớp lưu kí tự và
+một lớp lưu bit \(0/1\) cho biết đầu đọc-ghi có ở vị trí đó hay không. Việc
+nhảy giữa các lớp dư có thể điều khiển bằng \(O(k)\) trạng thái.
+
+Tại thời điểm \(T\) của \(M(x)\), mọi vị trí hữu hiệu trên băng đều nằm trong
+một đoạn độ dài \(O(|M|+T)=O(|M|T)\), vì có thể giả sử \(T<|M|T\). Một bước mô
+phỏng của \(U\) chỉ cần quét qua đoạn này và dùng trạng thái để ghi nhớ thông
+tin, nên tốn thời gian đa thức theo \(|M|T\). Tổng thời gian vẫn là
+\(\operatorname{poly}(|M|T)\).
+
+\paragraph{Định lý 2.3.}
+Tồn tại một máy Turing không xác định một băng \(U\) sao cho với mọi máy không
+xác định \(N\) và mọi \(x\), \(U(N,x)=N(x)\). Nếu mọi đường chuyển của \(N(x)\)
+dừng trong thời điểm \(T\), thì mọi đường chuyển của \(U(N,x)\) dừng trong
+\(\operatorname{poly}(|N|T)\).
+
+\emph{Chứng minh.}
+Gần giống định lý 2.2. Khi mô phỏng một bước chuyển từ một cấu hình của \(N\)
+tới một cấu hình con, các bước trung gian của \(U\) có thể là xác định, tức là
+tập lệnh chuyển có kích thước \(1\).
+
+\subsubsection*{2.7. So sánh các mô hình}
+
+\paragraph{Một băng và nhiều băng.}
+Máy \(k+1\) băng hiển nhiên không yếu hơn máy \(k\) băng, vì nó có thể không
+dùng băng thứ \(k+1\). Chiều ngược lại cũng đúng nếu chỉ xét năng lực tính toán
+và bậc đa thức của thời gian.
+
+\paragraph{Định lý 2.4.}
+Nếu máy \(k\) băng đầy đủ \(M_1\), có thể là không xác định, tính bài toán
+\(f\), thì tồn tại máy một băng đầy đủ \(M_2\) cùng loại tính \(f\), và
+\[
+  T_{M_2}(n)=\operatorname{poly}(T_{M_1}(n)).
+\]
+
+\emph{Chứng minh.}
+Cho \(M_2\) khi nhận \(x\) thì chép thêm mã hóa của \(M_1\) vào băng, rồi nối
+sang thuật toán của máy phổ dụng. Vì \(M_1\) là hằng số cố định trong bài toán,
+\(|M_1|\) được hấp thụ vào kí hiệu đa thức.
+
+Do đó số băng khác nhau không làm thay đổi tập bài toán tính được, và thời gian
+chỉ sai khác ở mức đa thức. Ta có thể dùng mô hình tiện cho xây dựng thuật toán
+để nghiên cứu tính chất của máy một băng.
+
+\paragraph{Máy xác định và máy không xác định.}
+Máy Turing thường là trường hợp đặc biệt của máy không xác định, nên năng lực
+tính toán của máy không xác định chứa máy xác định. Ngược lại, với máy không
+xác định đầy đủ cũng có kết luận tương tự về khả năng tính được.
+
+\paragraph{Định lý 2.5.}
+Nếu máy Turing không xác định đầy đủ \(N\) tính bài toán \(f\), thì tồn tại máy
+Turing \(M\) tính \(f\), và
+\[
+  T_M(n)=\operatorname{poly}(n)\exp(O(T_N(n))).
+\]
+
+\emph{Chứng minh.}
+Chỉ cần xét \(N\) một băng; trường hợp nhiều băng đưa về bằng định lý 2.4. Cây
+cấu hình của \(N(x)\) có số con của mỗi nút bị chặn bởi hằng số và độ sâu không
+quá \(T_N(|x|)+1\), nên số nút là \(\exp(O(T_N(|x|)))\). Cho \(M\) mô phỏng tìm
+kiếm theo BFS trên cây này. Dùng hai băng: một băng lưu cấu hình hiện tại của
+\(N\), một băng duy trì hàng đợi. Mỗi cấu hình trong hàng đợi có kích thước
+\(O(|x|)\), và các thao tác hàng đợi thực hiện được trong thời gian đa thức.
+
+Cần chú ý rằng vẫn có những máy không xác định tính được theo nghĩa mở rộng mà
+máy Turing thường không tính được, nguyên nhân là nhánh không dừng của máy không
+xác định không nhất thiết cho kết quả \(\bot\) theo cách giống máy xác định.
+
+\subsection*{3. Độ phức tạp thời gian}
+
+\subsubsection*{3.1. Một số lớp bài toán}
+
+\paragraph{Định nghĩa 3.1.}
+Kí hiệu P là tập các bài toán quyết định được tính bởi máy Turing \(M\) có
+\(T_M(n)=\operatorname{poly}(n)\). Kí hiệu EXP là tập các bài toán quyết định
+được tính bởi máy Turing \(M\) có \(T_M(n)=\exp\operatorname{poly}(n)\).
+
+Tương tự, NP là tập các bài toán quyết định được tính bởi máy Turing không xác
+định \(N\) có \(T_N(n)=\operatorname{poly}(n)\), và NEXP là lớp tương ứng với
+\(T_N(n)=\exp\operatorname{poly}(n)\).
+
+Các định nghĩa trên không phụ thuộc số băng, vì ta đã chứng minh rằng đổi số
+băng chỉ làm thay đổi thời gian ở mức đa thức.
+
+\paragraph{Định lý 3.1.}
+\[
+  \mathrm P\subseteq \mathrm{NP}\subseteq \mathrm{EXP}\subseteq \mathrm{NEXP}.
+\]
+
+\emph{Chứng minh.}
+Máy Turing thường là trường hợp đặc biệt của máy không xác định, nên
+\(\mathrm P\subseteq\mathrm{NP}\) và \(\mathrm{EXP}\subseteq\mathrm{NEXP}\).
+Định lý 2.5 cho \(\mathrm{NP}\subseteq\mathrm{EXP}\).
+
+Câu hỏi liệu \(\mathrm P=\mathrm{NP}\) hay không là một bài toán cực kì khó,
+đến nay vẫn chưa được chứng minh hay phủ định.
+
+\subsubsection*{3.2. Mô tả NP bằng máy kiểm chứng}
+
+\paragraph{Định nghĩa 3.2.}
+Với ngôn ngữ \(L\), nếu máy Turing đầy đủ \(M\) thỏa
+\[
+  x\in L\quad\Longleftrightarrow\quad \exists c\in\Sigma^*,\ M(x,c)=1,
+\]
+thì \(M\) được gọi là một \emph{máy kiểm chứng} của \(L\). Xâu \(c\) là một
+chứng cứ cho \(x\in L\), gọi là \emph{chứng chỉ}. Hàm thời gian của máy kiểm
+chứng \(M\) được định nghĩa là thời gian dừng lớn nhất của \(M(x,c)\) với
+\(|x|\le n\) và mọi \(c\).
+
+\paragraph{Định lý 3.2.}
+\(L\in\mathrm{NP}\) khi và chỉ khi tồn tại một máy kiểm chứng \(M\) của \(L\)
+có \(T_M(n)=\operatorname{poly}(n)\).
+
+\emph{Chứng minh.}
+Trước hết, với máy kiểm chứng dừng trong \(\operatorname{poly}(|x|)\), mọi
+chứng chỉ dài hơn đa thức đều vô hiệu, vì máy thậm chí không đọc hết chúng. Ta
+ngầm yêu cầu \(M\) tự dừng kịp thời trước các chứng chỉ như vậy; điều này không
+khó.
+
+Khi đó số chứng chỉ hữu hiệu chỉ là \(\exp\operatorname{poly}(|x|)\). Một máy
+không xác định có thể dùng nhánh của nó để liệt kê các chứng chỉ này, rồi nối
+vào thuật toán kiểm chứng của \(M\), và mỗi đường chạy vẫn có độ dài đa thức.
+
+Ngược lại, nếu có máy không xác định đa thức \(N\) quyết định \(L\), xây dựng
+máy kiểm chứng \(M\) bằng cách xem chứng chỉ \(c\) là mô tả một đường chuyển của
+\(N(x)\), mô phỏng đường đó và trả về kết quả của nó.
+
+Nói nôm na, một ngôn ngữ được máy không xác định quyết định trong thời gian đa
+thức khi và chỉ khi nó có thể được máy xác định kiểm chứng trong thời gian đa
+thức. Tính không xác định ở đây dùng để liệt kê chứng chỉ.
+
+\subsubsection*{3.3. Máy có thần dụ và phép quy về}
+
+\paragraph{Định nghĩa 3.3.}
+Máy Turing thần dụ là một mở rộng của máy Turing, kí hiệu \(M^?\), trong đó dấu
+\(?\) có thể điền một bài toán \(f\). So với máy thường, \(M^f\) có thêm một
+băng gọi là băng thần dụ và hai trạng thái \(\texttt{query}\),
+\(\texttt{answer}\). Khi đi vào trạng thái \(\texttt{query}\), nếu trên băng
+thần dụ từ vị trí \(1\) tới trước kí tự trắng đầu tiên là xâu \(x\), thì bước
+tính này thay nội dung băng đó bằng \(f(x)\) từ vị trí \(1\), xóa các ô còn
+lại thành trắng, rồi đi vào trạng thái \(\texttt{answer}\).
+
+\paragraph{Định nghĩa 3.4.}
+Với hai bài toán \(f,g\), nếu tồn tại máy thần dụ \(M^g\) tính \(f\), ta nói
+\(f\) \emph{quy về Turing} được \(g\), kí hiệu \(f\le_T g\). Nếu thêm điều kiện
+\(T_{M^g}(n)=\operatorname{poly}(n)\), ta nói \(f\) \emph{quy về Cook} được
+\(g\), kí hiệu \(f\le_C g\).
+
+\paragraph{Định lý 3.3.}
+Nếu \(f\le_T g\le_T h\), thì \(f\le_T h\). Quy về Cook cũng có tính bắc cầu.
+
+\paragraph{Định lý 3.4.}
+Nếu \(f\le_T g\), thì \(g\) tính được kéo theo \(f\) tính được. Nếu \(f\le_C g\),
+thì \(g\) tính được trong thời gian đa thức kéo theo \(f\) tính được trong thời
+gian đa thức. Đặc biệt, với bài toán quyết định, \(g\in\mathrm P\) kéo theo
+\(f\in\mathrm P\).
+
+\emph{Chứng minh.}
+Với quy về Turing, giả sử máy \(M'\) tính \(g\). Chỉ cần biến máy thần dụ
+\(M^g\) thành một máy thường \(M\) bằng cách gắn toàn bộ băng của \(M'\) vào
+dưới \(M\). Khi \(M^g\) đi vào \(\texttt{query}\), dùng các băng mới chạy thuật
+toán của \(M'\); sau khi \(M'\) dừng, chép nội dung băng ra của nó về băng thần
+dụ, xóa các băng phụ và đi vào \(\texttt{answer}\).
+
+Với quy về Cook, trên đầu vào \(x\), mọi xâu từng được ghi trên băng thần dụ có
+độ dài không quá \(T_{M^g}(|x|)\), và số lần đi vào \(\texttt{query}\) cũng
+không quá \(T_{M^g}(|x|)\). Vì vậy thời gian mô phỏng không vượt quá
+\[
+  O\bigl(T_{M^g}(|x|)\,T_g(T_{M^g}(|x|))\bigr)=\operatorname{poly}(|x|).
+\]
+
+Phép quy về là công cụ so sánh độ khó: nếu biết cách tính \(g\) thì có thể tính
+\(f\), nên \(f\) không khó hơn \(g\).
+
+\subsubsection*{3.4. Bài toán NP-Hard và NPC}
+
+\paragraph{Định nghĩa 3.5.}
+NP-Hard là tập các bài toán \(f\) thỏa: với mọi \(g\in\mathrm{NP}\), đều có
+\(g\le_C f\). Đặt
+\[
+  \mathrm{NPC}=\mathrm{NP}\cap\mathrm{NP\text{-}Hard}.
+\]
+Các bài toán trong NPC gọi là bài toán NP-đầy đủ.
+
+Nói cách khác, một bài toán NP-Hard không yếu hơn bất kì bài toán NP nào theo
+nghĩa tính trong thời gian đa thức. Bài toán NPC bản thân lại nằm trong NP, nên
+là những bài toán khó nhất trong NP.
+
+\paragraph{Định lý 3.5.}
+Nếu \(A\in\mathrm{NP\text{-}Hard}\) và \(A\in\mathrm P\), thì
+\(\mathrm P=\mathrm{NP}\).
+
+Do bài toán \(\mathrm P=\mathrm{NP}\) quá khó, khi chứng minh được một bài toán
+là NP-Hard, ta thường coi nó gần như không có thuật toán đa thức; nếu có thì
+cũng cực kì khó tìm.
+
+Trong OI, các bài toán hầu như luôn yêu cầu thuật toán đa thức, trừ khi miền dữ
+liệu rất nhỏ và điều này dễ nhận ra. Khi trong quá trình suy nghĩ, thí sinh
+tổng quát hóa bài gốc thành một bài NP-Hard, nên sớm từ bỏ hướng đó. Điều này
+giúp tiết kiệm đáng kể thời gian tư duy.
+
+\subsubsection*{3.5. Bài toán không tính được}
+
+Năng lực của máy Turing rất mạnh, nhưng nó vẫn không tính được gần như mọi bài
+toán.
+
+Một mặt, số máy Turing chỉ là \(\aleph_0\), trong khi riêng số bài toán quyết
+định đã là
+\[
+  2^{|\Sigma^*|}=2^{\aleph_0}.
+\]
+Vì vậy ánh xạ từ máy Turing tới bài toán mà nó tính không thể là toàn ánh, và
+tồn tại không đếm được nhiều bài toán không tính được.
+
+\paragraph{Phương pháp đường chéo.}
+Xét ngôn ngữ
+\[
+  L_0=\{x\in\Sigma^*\mid M_x=\bot\ \text{hoặc}\ M_x(x)=0\},
+\]
+trong đó \(M_x\) là máy Turing có mã hóa \(x\), còn \(M_x=\bot\) nghĩa là máy
+đó không tồn tại.
+
+Ta chứng minh \(L_0\) không thể được bất kì máy Turing nào quyết định. Giả sử
+có máy \(M\) quyết định \(L_0\), và \(x\) là một mã hóa của \(M\). Nếu \(x\in
+L_0\), theo định nghĩa của \(L_0\) phải có \(M(x)=0\), mâu thuẫn với việc \(M\)
+quyết định \(L_0\). Nếu \(x\notin L_0\), định nghĩa của \(L_0\) cho
+\(M(x)\ne0\), cũng mâu thuẫn.
+
+Với máy không xác định cũng có thể dựng ví dụ tương tự, vì chúng cũng mã hóa
+được. Cách lập luận này tương đương lật đường chéo của một ma trận vô hạn
+\(M_i(j)\), khiến không máy nào khớp với một hàng của ma trận mới; đó là
+phương pháp đường chéo.
+
+\paragraph{Bài toán dừng.}
+Từ ví dụ \(L_0\), xét bài toán dừng nổi tiếng:
+\[
+  \operatorname{HALT}(M,x)=
+  \begin{cases}
+    1,& \text{máy Turing }M\text{ dừng sau khi nhận }x,\\
+    0,& \text{ngược lại.}
+  \end{cases}
+\]
+Ta có \(L_0\le_T\operatorname{HALT}\). Thật vậy, xây dựng máy thần dụ nhận
+\(x\), trước hết kiểm tra \(x\) có phải mã hóa hợp lệ của một máy hay không;
+nếu không thì chấp nhận theo định nghĩa của \(L_0\). Nếu có, gọi thần dụ
+\(\operatorname{HALT}(M_x,x)\). Nếu không dừng thì chắc chắn \(x\notin L_0\);
+nếu dừng thì nối vào máy phổ dụng để mô phỏng \(M_x(x)\) và đọc kết quả. Như
+vậy nếu \(\operatorname{HALT}\) tính được thì \(L_0\) tính được, mâu thuẫn. Do
+đó \(\operatorname{HALT}\) cũng không tính được.
+
+\subsection*{4. Một số bài toán NPC hoặc NP-Hard thường gặp}
+
+\subsubsection*{4.1. Bài toán thỏa được Boolean}
+
+\paragraph{Khái niệm cơ bản.}
+Một hàm \(f:\{0,1\}^n\to\{0,1\}\) gọi là hàm Boolean. Với \(n\) biến mệnh đề
+\(x_{1\sim n}\), biểu thức tạo bởi các toán tử \(\neg,\land,\lor\) và các biến
+này gọi là biểu thức Boolean \(\varphi\), và nó cảm sinh một hàm Boolean
+thường kí hiệu là \(f_{\varphi}\). Biểu thức \(\varphi\) là thỏa được nếu tồn
+tại \(x\in\{0,1\}^n\) sao cho \(f_{\varphi}(x)=1\); nếu \(x\) như vậy là duy
+nhất, \(\varphi\) là thỏa được duy nhất. Kích thước \(|\varphi|\) được tính
+bằng số toán tử hai ngôi \(\land,\lor\) trong nó.
+
+Một biến mệnh đề \(x_i\) hoặc phủ định \(\neg x_i\) gọi là một literal. Hội của
+một số literal gọi là hạng hội; tuyển của một số literal gọi là mệnh đề tuyển.
+Tuyển của các hạng hội là dạng chuẩn tuyển; hội của các mệnh đề tuyển là dạng
+chuẩn hội.
+
+\paragraph{Định lý 4.1.}
+Mỗi hàm Boolean \(n\) biến đều có một dạng chuẩn tuyển và một dạng chuẩn hội
+kích thước \(O(n2^n)\).
+
+\emph{Chứng minh.}
+Dạng chuẩn tuyển chính lấy tuyển trên mọi phép gán làm hàm bằng \(1\), mỗi
+phép gán đóng góp một hạng hội mô tả chính xác phép gán đó. Dạng chuẩn hội
+chính lấy hội trên mọi phép gán làm hàm bằng \(0\), mỗi phép gán đóng góp một
+mệnh đề tuyển loại bỏ phép gán đó.
+
+\paragraph{Định nghĩa 4.3.}
+SAT là ngôn ngữ gồm mọi dạng chuẩn hội thỏa được. \(k\)SAT là ngôn ngữ con yêu
+cầu mỗi mệnh đề tuyển trong dạng chuẩn hội chứa không quá \(k\) literal.
+
+\paragraph{Mô tả máy Turing bằng dạng chuẩn hội.}
+
+\paragraph{Định lý 4.2.}
+Với máy Turing một băng đầy đủ \(M\), với mỗi \(x\in\Sigma^*\) đều tồn tại một
+dạng chuẩn hội \(\varphi_x\) sao cho
+\[
+  M(x)=1\quad\Longleftrightarrow\quad \varphi_x\text{ thỏa được.}
+\]
+
+\emph{Chứng minh.}
+Điều kiện \(M(x)=1\) tương đương tồn tại một dãy cấu hình hợp lệ bắt đầu từ cấu
+hình ban đầu, mỗi cấu hình chuyển được sang cấu hình kế tiếp, và một cấu hình
+dừng cho kết quả \(1\). Mã hóa dãy cấu hình này thành một xâu \(01\) là
+\(\alpha\), rồi dựng dạng chuẩn hội kiểm tra \(\alpha\) có hợp lệ hay không.
+Vì tính toán của \(M(x)\) là xác định, nhiều nhất một \(\alpha\) làm công thức
+thỏa được.
+
+Đặt \(m=T_M(|x|)\). Trong \(m\) bước, đầu đọc-ghi chỉ có thể đi trong đoạn độ
+dài \(O(m)\), chẳng hạn \([-m+1,m+1]\). Với mỗi thời điểm, trạng thái cần
+\(O(\log|Q|)\) bit; mỗi ô băng trong đoạn hữu hiệu cần \(O(\log|\Sigma_{\bot}|)\)
+bit cho kí tự và thêm một bit đánh dấu đầu đọc-ghi. Vì \(|Q|\) và
+\(|\Sigma_{\bot}|\) là hằng số, toàn bộ mã hóa có kích thước \(O(m^2)\).
+
+Công thức được viết thành
+\[
+  \varphi_x=\varphi_{\mathrm{start}}\land
+  \varphi_{\mathrm{halt}}\land
+  \varphi_{\mathrm{transit}}.
+\]
+Phần đầu kiểm tra cấu hình ban đầu, kích thước \(O(m)\). Phần dừng kiểm tra có
+một cấu hình dừng cho đầu ra \(1\), kích thước \(O(m^2)\). Phần chuyển kiểm tra
+mỗi cặp cấu hình liên tiếp: trạng thái và các ô gần đầu đọc-ghi phải đúng theo
+hàm chuyển, còn các ô xa đầu đọc-ghi giữ nguyên. Mỗi ràng buộc cục bộ có thể
+viết thành một biểu thức Boolean kích thước hằng số rồi chuyển sang dạng chuẩn
+hội bằng định lý 4.1. Do đó \(\varphi_x\) có kích thước đa thức theo \(|x|\).
+
+\paragraph{Tính NP-đầy đủ của SAT và 3SAT.}
+
+\paragraph{Định lý 4.3.}
+\(\mathrm{SAT}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+SAT nằm trong NP: chứng chỉ là phép gán cho mọi biến mệnh đề, và việc kiểm tra
+công thức có nhận giá trị \(1\) hay không làm được trong thời gian đa thức.
+
+Để chứng minh NP-Hard, lấy tùy ý \(L\in\mathrm{NP}\) và một máy kiểm chứng đa
+thức \(M\) của \(L\). Với đầu vào \(x\), dùng xây dựng ở định lý 4.2 để mô tả
+điều kiện \(M(x,c)=1\). Vì thời gian của máy kiểm chứng chỉ phụ thuộc vào
+\(|x|\), ta lấy \(m=T_M(|x|)\). Để biểu diễn tồn tại chứng chỉ \(c\), chỉ cần
+bỏ các ràng buộc cố định nội dung của phần \(c\) trong cấu hình ban đầu. Từ
+\(M\) và \(x\), công thức này dựng được trong thời gian đa thức; gọi thần dụ SAT
+một lần sẽ biết \(x\in L\) hay không. Vậy \(L\le_C\mathrm{SAT}\).
+
+SAT là bài toán NPC đầu tiên được phát hiện và có vị trí rất quan trọng. Chứng
+minh của nó không dựa vào quy về từ một bài toán cụ thể, còn hầu hết chứng minh
+NPC khác đều trực tiếp hoặc gián tiếp xuất phát từ SAT.
+
+\paragraph{Định lý 4.4.}
+\(\mathrm{3SAT}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+Hiển nhiên 3SAT thuộc NP. Theo tính bắc cầu của quy về Cook, để chứng minh
+NP-Hard chỉ cần chứng minh \(\mathrm{SAT}\le_C\mathrm{3SAT}\).
+
+Ta biến mỗi mệnh đề tuyển dài thành một công thức tương đương kích thước đa
+thức mà mỗi mệnh đề có không quá \(3\) literal. Với mệnh đề
+\[
+  x_1\lor x_2\lor\cdots\lor x_k,
+\]
+khi \(k>3\), thêm biến phụ \(y\) và tách thành
+\[
+  (x_1\lor x_2\lor y)\land
+  (\neg y\lor x_3\lor x_4\lor\cdots\lor x_k),
+\]
+rồi tiếp tục tách mệnh đề thứ hai. Mỗi lần giảm độ dài mệnh đề dài đi \(1\);
+sau \(k-3\) lần, mọi mệnh đề có không quá \(3\) literal.
+
+\paragraph{Ví dụ 4.1: Game.}
+Cho một mảng \(a\) độ dài \(n\). Mỗi vị trí \(i\) có tập giá trị khả dĩ
+\(A_i\), trong đó \(A_i\) có thể là \(\{1,2\}\), \(\{1,3\}\), \(\{2,3\}\) hoặc
+\(\{1,2,3\}\). Có \(m\) điều kiện dạng \((i,u,j,v)\): nếu \(a_i=u\) thì bắt
+buộc \(a_j=v\). Hỏi có mảng \(a\) thỏa mọi điều kiện hay không. Ràng buộc là
+\[
+  n\le 5\cdot 10^4,\qquad m\le 10^5,
+\]
+và số vị trí có \(A_i=\{1,2,3\}\) không vượt quá \(w=8\).
+
+Đặt biến mệnh đề \(x_{i,j}\) biểu diễn \(a_i=j\). Cần dùng dạng chuẩn hội mô tả
+các hạn chế kéo theo và điều kiện mỗi \(a_i\) nhận đúng một giá trị: ``nhiều
+nhất một'' viết bằng các cặp giá trị không thể cùng đúng, còn ``ít nhất một''
+là một mệnh đề tuyển chứa \(|A_i|\) literal.
+
+Nếu không có vị trí nào với \(A_i=\{1,2,3\}\), bài toán trở thành 2SAT. Nếu có,
+bài toán tổng quát là 3SAT và không có thuật toán đa thức đã biết. Vì \(w\) nhỏ,
+có thể liệt kê \(3^w\) cách gán cho các vị trí ba giá trị, mỗi lần chạy 2SAT,
+độ phức tạp \(O(3^w(n+m))\). Có thể tối ưu bằng cách chỉ liệt kê một vị trí ba
+giá trị có nhận \(3\) hay không; khi không nhận \(3\), hai giá trị còn lại để
+2SAT xử lý. Khi đó có \(2^w\) trường hợp và độ phức tạp \(O(2^w(n+m))\).
+
+\subsubsection*{4.2. Một số bài toán đồ thị}
+
+Các định nghĩa đồ thị cơ bản không nhắc lại. Khi mã hóa đồ thị \(G=(V,E)\) thành
+xâu, mặc định mã hóa chứa cả tên đỉnh, nên độ dài luôn là \(\Omega(|V|)\); do
+\(|E|\le |V|^2\), độ dài cũng có cận trên \(O(|V|^2)\).
+
+\paragraph{Độc lập và clique.}
+Với đồ thị vô hướng \(G=(V,E)\), nếu \(S\subseteq V\) có các đỉnh đôi một không
+kề nhau, \(S\) là một tập độc lập; nếu các đỉnh đôi một kề nhau, \(S\) là một
+clique. Ngôn ngữ IS gồm các cặp \((G,k)\) sao cho \(G\) có tập độc lập kích
+thước ít nhất \(k\). Ngôn ngữ Clique định nghĩa tương tự với clique.
+
+\paragraph{Định lý 4.5.}
+\(\mathrm{IS},\mathrm{Clique}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+Hai bài toán thuộc NP là rõ: chứng chỉ là xâu \(01\) cho biết mỗi đỉnh có thuộc
+tập được chọn hay không.
+
+Ta chứng minh \(\mathrm{SAT}\le_C\mathrm{IS}\). Với dạng chuẩn hội
+\[
+  \varphi=\bigwedge_i\bigvee_j x_{i,j},
+\]
+trong đó \(x_{i,j}\) là literal, dựng đồ thị có một đỉnh \((i,j)\) cho mỗi
+literal xuất hiện. Nối cạnh giữa hai đỉnh nếu chúng thuộc cùng một mệnh đề
+tuyển, hoặc nếu hai literal tương ứng mâu thuẫn nhau. Khi đó tập độc lập kích
+thước bằng số mệnh đề phải chọn đúng một literal ở mỗi mệnh đề và các literal
+được chọn không mâu thuẫn. Vì vậy \(\varphi\) thỏa được khi và chỉ khi đồ thị
+có tập độc lập đủ lớn.
+
+Mặt khác, tập độc lập trong \(G\) tương đương clique trong đồ thị bù của \(G\),
+nên \(\mathrm{IS}\le_C\mathrm{Clique}\).
+
+Do đó bài toán tối ưu tìm tập độc lập lớn nhất và clique lớn nhất là NP-Hard.
+Chúng không thuộc NP theo định nghĩa trên vì không phải bài toán quyết định.
+
+\paragraph{Phủ đỉnh.}
+Với đồ thị vô hướng \(G=(V,E)\), nếu \(S\subseteq V\) sao cho mỗi cạnh có ít
+nhất một đầu mút trong \(S\), thì \(S\) là một phủ đỉnh. Ngôn ngữ VC gồm các cặp
+\((G,k)\) sao cho \(G\) có phủ đỉnh kích thước nhiều nhất \(k\).
+
+\paragraph{Định lý 4.6.}
+\(\mathrm{VC}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+VC thuộc NP vì có thể liệt kê các đỉnh trong phủ và kiểm tra. Nếu \(S\) là một
+phủ đỉnh, thì \(V\setminus S\) là tập độc lập, và ngược lại. Do đó
+\(\mathrm{IS}\le_C\mathrm{VC}\). Bài toán tối ưu tìm phủ đỉnh nhỏ nhất là
+NP-Hard.
+
+\paragraph{Tô màu đồ thị.}
+Với đồ thị vô hướng \(G=(V,E)\), một hàm
+\[
+  c:V\to\{0,1,\ldots,k-1\}
+\]
+gọi là một \(k\)-tô màu của \(G\) nếu với mọi cạnh \((x,y)\in E\) đều có
+\(c(x)\ne c(y)\). Ngôn ngữ Color gồm các cặp \((G,k)\) sao cho \(G\) có
+\(k\)-tô màu; \(k\)Color gồm các đồ thị có \(k\)-tô màu với \(k\) cố định.
+
+\paragraph{Định lý 4.7.}
+\(\mathrm{Color}\in\mathrm{NPC}\), và với mọi \(k\ge3\),
+\(k\mathrm{Color}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+Color và \(k\)Color thuộc NP vì có thể dùng một phép tô màu \(c\) làm chứng
+chỉ. Ngay cả với Color, độ dài mã hóa của \(c\) là \(O(n\log k)\), vẫn đa thức
+theo độ dài đầu vào.
+
+Ta chứng minh \(\mathrm{SAT}\le_C 3\mathrm{Color}\). Với dạng chuẩn hội
+\[
+  \varphi=\bigwedge_{i=1}^{k}\bigvee_j x_{i,j},
+\]
+dựng đồ thị \(G\) sao cho \(G\) có 3-tô màu khi và chỉ khi \(\varphi\) thỏa
+được. Trước hết dựng tam giác \(T,F,R\). Trong mọi 3-tô màu, ba đỉnh này có ba
+màu khác nhau; giả sử \(c(F)=0\), \(c(T)=1\), \(c(R)=2\). Với mỗi biến \(x_i\),
+thêm hai đỉnh \(a_i,b_i\) biểu diễn hai giá trị của \(x_i\), nối chúng với
+\(R\) và nối \(a_i\) với \(b_i\). Khi đó \(\{c(a_i),c(b_i)\}=\{0,1\}\), và giá
+trị thật của \(x_i\) là đỉnh nhận màu \(1\).
+
+Ta dùng một gadget giống cổng logic: với hai đỉnh đã có \(u,v\), thêm một tam
+giác \(i_1,i_2,o\), coi \(i_1,i_2\) là đầu vào và \(o\) là đầu ra, rồi nối
+\((u,i_1)\), \((v,i_2)\). Gadget này có tính chất: nếu \(c(u)=c(v)\), thì bắt
+buộc \(c(o)=c(u)\); nếu không, màu của \(o\) không bị ràng buộc. Lặp gadget này
+cho các literal trong một mệnh đề tuyển \(\bigvee_j x_{i,j}\), ta nối các đỉnh
+tương ứng thành một gadget lớn: khi mọi \(x_{i,j}=0\), đầu ra bị ép màu \(0\);
+ngược lại đầu ra có thể khác \(0\). Nối đầu ra này với \(F\), ta buộc mỗi mệnh
+đề phải có ít nhất một literal đúng.
+
+Với \(k\ge3\), quy về \(3\mathrm{Color}\le_C k\mathrm{Color}\) bằng cách thêm
+một clique kích thước \(k-3\) và nối clique đó với mọi đỉnh cũ. Quy về
+\(3\mathrm{Color}\le_C\mathrm{Color}\) là hiển nhiên.
+
+Lưu ý rằng tham số \(k\) trong tô màu mạnh hơn tham số \(k\) ở các bài toán
+trước: ngay cả khi \(k\) là hằng số, tô màu vẫn NP-Hard, còn các bài như tập
+độc lập kích thước \(k\) có thể vét cạn \(O(n^k)\).
+
+\paragraph{Phủ clique.}
+Với đồ thị vô hướng \(G=(V,E)\), ngôn ngữ CC gồm các cặp \((G,k)\) sao cho
+\(V\) có thể chia thành \(k\) clique. Ngôn ngữ \(k\)CC gồm các đồ thị có thể
+chia \(V\) thành \(k\) clique với \(k\) cố định.
+
+\paragraph{Định lý 4.8.}
+\(\mathrm{CC}\in\mathrm{NPC}\), và với mọi \(k\ge3\),
+\(k\mathrm{CC}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+Tô màu đồ thị tương đương phủ tập độc lập; trên đồ thị bù, điều này chính là
+phủ bằng clique.
+
+\subsubsection*{4.3. Hai bài toán phủ tập hợp}
+
+\paragraph{Phủ tập hợp.}
+Ngôn ngữ SC gồm các cặp \((S,k)\), trong đó \(S\) là một tập hữu hạn mà mỗi
+phần tử của nó là một tập hữu hạn, sao cho tồn tại \(T\subseteq S\) thỏa
+\[
+  |T|\le k,\qquad \bigcup_{U\in T}U=\bigcup_{U\in S}U.
+\]
+
+\paragraph{Định lý 4.9.}
+\(\mathrm{SC}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+SC thuộc NP vì có thể đưa \(T\subseteq S\) làm chứng chỉ. Phủ đỉnh là một
+trường hợp đặc biệt của phủ tập hợp: mỗi cạnh là một phần tử cần được phủ, và
+mỗi đỉnh tương ứng tập các cạnh kề nó; mỗi phần tử xuất hiện đúng trong hai tập
+ứng với hai đầu mút. Do đó \(\mathrm{VC}\le_C\mathrm{SC}\). Bài toán tối ưu phủ
+tập hợp nhỏ nhất là NP-Hard.
+
+\paragraph{Phủ chính xác.}
+Ngôn ngữ EC gồm các tập \(S\), trong đó \(S\) là tập hữu hạn các tập hữu hạn,
+sao cho tồn tại \(T\subseteq S\) thỏa
+\[
+  \biguplus_{U\in T}U=\bigcup_{U\in S}U,
+\]
+trong đó \(\biguplus\) là hợp rời.
+
+\paragraph{Định lý 4.10.}
+\(\mathrm{EC}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+EC thuộc NP vì có thể đưa \(T\subseteq S\) làm chứng chỉ. Ta chứng minh
+\(\mathrm{SAT}\le_C\mathrm{EC}\). Với dạng chuẩn hội
+\[
+  \varphi=\bigwedge_{i=1}^{k}\bigvee_j x_{i,j},
+\]
+với mỗi biến \(x_u\), thêm hai tập
+\[
+  T_u=\{x_u\}\cup\{(i,j)\mid x_{i,j}=\neg x_u\},\qquad
+  F_u=\{x_u\}\cup\{(i,j)\mid x_{i,j}=x_u\}.
+\]
+Sau đó không thêm tập nào chứa \(x_u\) nữa; vì vậy trong phủ chính xác, \(T_u\)
+và \(F_u\) phải chọn đúng một tập, biểu diễn giá trị của \(x_u\). Với mỗi
+literal \(x_{i,j}\), thêm hai singleton \(\{(i,j)\}\) và \(\{i,(i,j)\}\). Khi
+đó \(S\) có phủ chính xác khi và chỉ khi \(\varphi\) thỏa được: để phần tử
+\(i\) được phủ, cần ít nhất một literal \(x_{i,j}\) phù hợp với giá trị của nó.
+
+\subsubsection*{4.4. Bài toán tổng con}
+
+Ngôn ngữ SS gồm các cặp \((S,s)\), trong đó \(S\) là một đa tập các số tự nhiên
+và \(s\) là số tự nhiên, sao cho tồn tại \(T\subseteq S\) thỏa
+\[
+  \sum_{x\in T}x=s.
+\]
+
+\paragraph{Định lý 4.11.}
+\(\mathrm{SS}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+SS thuộc NP vì có thể liệt kê \(T\subseteq S\) để kiểm tra. Ta chứng minh
+\(\mathrm{EC}\le_C\mathrm{SS}\). Với một tập hữu hạn các tập hữu hạn \(T\), đặt
+\[
+  A=\bigcup_{U\in T}U,\qquad n=|A|,\qquad m=|T|.
+\]
+Xét một ánh xạ \(f:A\to\{0,1,\ldots,n-1\}\). Đặt
+\[
+  S=\left\{\sum_{x\in U}(m+1)^{f(x)}\mid U\in T\right\},\qquad
+  s=\frac{(m+1)^n-1}{m}.
+\]
+Khi đó \(S\) có tập con tổng bằng \(s\) khi và chỉ khi \(T\) có phủ chính xác.
+Mã hóa của \(S\) có độ dài \(O(mn\log m)\), là đa thức theo độ dài mã hóa của
+\(T\).
+
+Cần chú ý bài toán này liên quan tới số tự nhiên. Quy hoạch động cho ta thuật
+toán \(O(|S|s)\), nhưng điều này không phải thời gian đa thức theo độ dài đầu
+vào, vì mã hóa của \(s\) chỉ dài \(O(\log s)\), nên \(s\) có thể là hàm mũ theo
+độ dài đầu vào. Thời gian đa thức theo giá trị của số tự nhiên đầu vào như vậy
+gọi là thời gian giả đa thức.
+
+\subsubsection*{4.5. Bài toán ba lô 01}
+
+Ngôn ngữ 01Knapsack gồm các bộ
+\[
+  (n,w_{1\sim n},v_{1\sim n},W,V),
+\]
+trong đó \(w_i,v_i,W,V\) là các số tự nhiên, sao cho tồn tại
+\(x_{1\sim n}\in\{0,1\}^n\) thỏa
+\[
+  \sum_{i=1}^{n}x_iw_i\le W,\qquad
+  \sum_{i=1}^{n}x_iv_i\ge V.
+\]
+
+\paragraph{Định lý 4.13.}
+\(\mathrm{01Knapsack}\in\mathrm{NPC}\).
+
+\emph{Chứng minh.}
+01Knapsack thuộc NP vì có thể đưa \(x_{1\sim n}\) làm chứng chỉ. Với một đa
+tập số tự nhiên \(S\) và số tự nhiên \(s\), đặt \(n=|S|\), \(w_i=v_i=S_i\) với
+\(S_i\) là phần tử thứ \(i\) của \(S\), và \(W=V=s\). Khi đó thu được
+\(\mathrm{SS}\le_C\mathrm{01Knapsack}\).
+
+Phiên bản tối ưu của bài toán ba lô 01 là NP-Hard. Tương tự tổng con, phiên bản
+tối ưu của ba lô 01 có thuật toán giả đa thức \(O(nW)\).
+
+\subsection*{5. Tổng kết}
+
+Nội dung của lý thuyết tính toán rất rộng và sâu; do trình độ tác giả có hạn,
+bài viết chỉ trình bày một số kiến thức nền tảng và một góc nhỏ của lĩnh vực.
+
+Các lớp NPC và NP-Hard giúp ta nhận ra những bài toán OI gần như không khả thi.
+Thực ra, không chỉ các lớp liên quan tới NP mới làm được điều này: các lớp như
+FP, \#P và \#PC mô tả độ phức tạp của bài toán đếm, còn lý thuyết độ phức tạp
+tinh vi cho các cận dưới ở cấp đa thức.
+
+Tác giả hi vọng bài viết có thể đóng vai trò gợi mở, thu hút thêm nhiều thí
+sinh học tập và nghiên cứu lý thuyết tính toán.
+
+\subsection*{Lời cảm ơn}
+
+Tác giả cảm ơn China Computer Federation đã cung cấp nền tảng học tập và trao
+đổi; cảm ơn các thầy Zhang Chao, Li Shu và Shi Wailei đã hướng dẫn; cảm ơn các
+bạn Yang Minxing, Cheng Siyuan và đàn anh Li Baitian đã trao đổi; cảm ơn cha mẹ
+đã quan tâm và ủng hộ trong nhiều năm.
+
+\subsection*{Tài liệu tham khảo}
+
+\begin{enumerate}
+\item Xu Zhe'an. \emph{Bàn về automaton trạng thái hữu hạn và ứng dụng}, tập
+luận văn đội tuyển quốc gia Trung Quốc IOI, 2021.
+\item Arindama Singh. \emph{Elements of Computation Theory}, Springer London,
+2009.
+\item Michael Sipser. \emph{Introduction to the Theory of Computation}, Cengage
+Learning India Private Limited, 2012.
+\item Fu Yuxi. \emph{Lý thuyết độ phức tạp tính toán}, Tsinghua University
+Press, 2023.
+\item Wikipedia, \emph{Nondeterministic Turing machine}.
+\item Wikipedia, \emph{Karp's 21 NP-complete problems}.
+\end{enumerate}
+
+\subsection*{Ghi chú trích xuất}
+
+Bài thứ hai mươi được dịch từ OCR tiếng Trung trên ảnh PDF trang 329--343,
+tương ứng trang in 321--335. Trang PDF 344 được kiểm tra là bắt đầu bài kế tiếp
+ở trang in 336. Lớp văn bản gốc của bài trích xuất thành mojibake, nên bản dịch
+dựa trên OCR tại \texttt{/tmp/oipl2024a20/ocr.txt} và đối chiếu các công thức
+khó đọc bằng ảnh trang PDF. Bài gốc không có hình minh họa thuật toán cần nhập
+lại.
+
 \end{document}

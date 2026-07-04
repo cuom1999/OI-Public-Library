@@ -15,8 +15,7 @@ source documents.
 
 | Priority | Translation | Source pages | Current state | Extraction status | Required work |
 | ---: | --- | ---: | --- | --- | --- |
-| 1 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first nineteen articles translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue from article 20 onward with OCR-backed article translations. |
-| 2 | `sources/ioi/2025-national-training-team-collection.tex` | 168 | ToC plus first twenty-one articles translated | `pdftotext` is readable but two-up layout interleaves pages | Continue from article 22 onward, splitting/cropping pages where needed. |
+| 1 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first twenty articles translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue from article 21 onward with OCR-backed article translations. |
 
 ## Article-Coverage Complete Annual Collections
 
@@ -33,6 +32,7 @@ but they should not be counted as ToC-only or partially covered collections.
 | `sources/ioi/2017-national-training-team-collection.tex` | 204 | ToC plus all fifteen articles translated | Final genome-reconstruction report translated from physical PDF pages 192--204. |
 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | ToC plus all fifteen articles translated | Final Euler graph generation/counting article translated from physical PDF pages 194--210. |
 | `sources/ioi/2019-national-training-team-collection.tex` | 231 | ToC plus all fifteen articles translated | Final Young tableau article translated after filtering watermark/header noise. |
+| `sources/ioi/2025-national-training-team-collection.tex` | 168 | ToC plus all twenty-three articles translated | Final linear-congruence-inequality article translated from physical PDF pages 161--168. |
 | `sources/ioi/2020-national-training-team-collection.tex` | 196 | ToC plus all fourteen articles translated | Proofread mathematical notation and examples when polishing. |
 | `sources/ioi/2022-national-training-team-collection.tex` | 246 | ToC plus all fourteen articles translated | OCR-backed collection; proofread formulas, pseudocode, and diagram descriptions. |
 | `sources/ioi/2023-national-training-team-collection.tex` | 249 | ToC plus all eighteen articles translated | Final convexity-optimization article translated from physical PDF pages 234--249. |
