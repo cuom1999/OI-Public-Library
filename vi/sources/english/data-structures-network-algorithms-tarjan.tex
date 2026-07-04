@@ -1063,6 +1063,95 @@ ràng buộc bậc, một đỉnh bị ràng buộc còn quy về MST thường;
 Phiên bản có hướng là bài toán arborescence nhỏ nhất, có thuật toán
 \(O(\min\{m\log n,n^2\})\).
 
+\subsection*{Bổ sung từ chứng minh và cài đặt của Chương 6}
+
+Điểm đáng học trong Chương 6 không chỉ là tên ba thuật toán MST, mà là cách
+Tarjan chứng minh mọi phiên bản tham lam bằng cùng một bất biến màu. Với quy
+tắc xanh, giả sử cạnh \(e\) nhẹ nhất qua một cut được tô xanh nhưng một MST
+\(T\) đang xét chưa chứa \(e\). Thêm \(e\) vào \(T\) tạo một chu trình; trên
+đường trong \(T\) nối hai đầu của \(e\) phải có một cạnh \(e'\) cũng cắt cut.
+Vì cut không có cạnh xanh và \(T\) không chứa cạnh đỏ, cạnh \(e'\) chưa tô; do
+\(e\) nhẹ nhất qua cut nên
+\[
+  \operatorname{cost}(e)\le \operatorname{cost}(e').
+\]
+Thay \(e'\) bằng \(e\) giữ được một MST thỏa bất biến mới.
+
+Với quy tắc đỏ, giả sử cạnh \(e\) nặng nhất trên một chu trình chưa có cạnh đỏ
+được tô đỏ nhưng một MST \(T\) lại chứa \(e\). Xóa \(e\) khỏi \(T\) tách cây
+thành hai phần; chu trình phải có một cạnh khác \(e'\) nối qua hai phần này.
+Cạnh \(e'\) không thuộc \(T\), chưa bị tô đỏ, và theo quy tắc đỏ có
+\[
+  \operatorname{cost}(e')\le \operatorname{cost}(e).
+\]
+Thêm \(e'\) và bỏ \(e\) lại cho một MST không dùng cạnh đỏ mới. Hai lập luận
+đổi cạnh này là bản chất của cut property và cycle property trong mọi sách MST.
+
+Khi một cạnh chưa tô còn tồn tại, thuật toán màu không thể bị kẹt. Các cạnh
+xanh luôn tạo một rừng. Nếu cạnh chưa tô \(e\) có hai đầu trong cùng một cây
+xanh, đường xanh giữa hai đầu cộng với \(e\) tạo chu trình để áp dụng quy tắc
+đỏ. Nếu hai đầu ở hai cây xanh khác nhau, lấy cut là tập đỉnh của một trong hai
+cây xanh; không cạnh xanh nào cắt cut đó, nên quy tắc xanh áp dụng được. Vì
+vậy quá trình tô màu sẽ đi tới lúc mọi cạnh có màu và các cạnh xanh là MST.
+
+Trong Boruvka, mỗi cây xanh chọn cạnh nhẹ nhất liên thuộc. Một cạnh có thể được
+hai cây cùng chọn trong một vòng, nhưng chỉ được tô xanh một lần. Nếu chi phí
+bằng nhau, cần phá hòa để có thứ tự toàn phần; Tarjan gợi ý đánh số cạnh hoặc
+đỉnh rồi so sánh từ điển theo \((\operatorname{cost},\operatorname{number})\).
+Chi tiết này quan trọng: nếu không có quy tắc phá hòa ổn định, việc nhiều cây
+cùng chọn cạnh có thể làm chứng minh dựa trên quy tắc xanh khó phát biểu sạch.
+
+Trong Prim, các cạnh \emph{xanh nhạt} là ứng viên nối cây hiện tại \(T\) với
+biên. Với mỗi đỉnh \(v\notin T\) kề \(T\), chỉ giữ một cạnh xanh nhạt nhẹ nhất
+nối \(v\) vào \(T\). Các cạnh xanh cộng cạnh xanh nhạt tạo một cây trên \(T\)
+và các đỉnh biên. Khi thêm một đỉnh mới \(v\) vào \(T\), xét mọi cạnh
+\(\{v,w\}\):
+\begin{itemize}
+  \item nếu \(w\) chưa thuộc \(T\) và chưa có cạnh xanh nhạt, đặt
+        \(\{v,w\}\) làm cạnh xanh nhạt;
+  \item nếu \(w\) đã có cạnh xanh nhạt đắt hơn, tô cạnh cũ đỏ và thay bằng
+        \(\{v,w\}\);
+  \item nếu \(w\in T\), cạnh này không thể giúp nối thêm đỉnh mới.
+\end{itemize}
+Trong cài đặt của Tarjan, mỗi đỉnh lưu \(\operatorname{blue}(v)\) và
+\(\operatorname{key}(v)\). Nếu \(v\) chưa thuộc \(T\) và chưa ở biên thì
+\(\operatorname{key}(v)=\infty\); nếu \(v\) ở biên thì key là chi phí cạnh xanh
+nhạt; nếu \(v\in T\) thì key là \(-\infty\). Khi kết thúc, các cạnh
+\(\operatorname{blue}(v)\) với \(v\ne s\) chính là cây khung nhỏ nhất.
+
+Phân tích của Prim với \(d\)-heap đếm \(n-1\) lần \textsc{Delete-Min},
+\(n-1\) lần \textsc{Insert}, và nhiều nhất \(m-n+1\) lần \textsc{Sift-Up}
+do giảm khóa. Tổng thời gian là
+\[
+  O(n d\log_d n + m\log_d n).
+\]
+Chọn \(d=2+\lceil m/n\rceil\) cho cận
+\[
+  O(m\log_{2+m/n}n).
+\]
+Nếu \(m=\Omega(n^{1+\varepsilon})\), cận này là \(O(m/\varepsilon)\), giải
+thích vì sao Prim--Johnson hợp với đồ thị dày, trong khi Kruskal mạnh khi cạnh
+đã được sắp hoặc có thể sắp tuyến tính.
+
+Trong round robin, mỗi cạnh ban đầu nằm trong hai heap, một ở mỗi đầu. Khi
+cạnh \(\{v,w\}\) được tô xanh và hai cây được link, cả hai bản sao của cạnh đó
+tự trở thành cạnh đã xóa vì hai đầu giờ có cùng đại diện union-find. Hàm
+\(\operatorname{deleted}(e)\) chỉ cần kiểm tra \(\operatorname{find}(v)=
+\operatorname{find}(w)\). Vì hàng đợi phải xóa tùy ý cây ở đầu kia của cạnh,
+Tarjan khuyên dùng danh sách liên kết đôi hoặc mảng kèm vị trí để xóa trong
+\(O(1)\).
+
+Phân tích round robin gọi \(T_i\) là cây được xử lý ở bước tô màu thứ \(i\),
+\(m_i\) là kích thước heap lúc xử lý, và \(k_i\) là số cạnh bị purge trong
+\textsc{Find-Min}. Một lượt xử lý các cây có mặt trong hàng đợi từ lượt trước.
+Ở lượt \(j\), mỗi cây có ít nhất \(2^j\) đỉnh vì nó được tạo từ ít nhất hai cây
+của lượt trước. Hai cây được xử lý trong cùng lượt là rời đỉnh, nên tổng kích
+thước heap trong một lượt không vượt quá \(2m+n-1\): mỗi cạnh thật xuất hiện
+tối đa hai lần, còn cạnh giả do lazy meld chỉ có \(n-1\). Chia các lần
+\textsc{Find-Min} thành nhỏ/lớn theo số cạnh purge cho phép chặn tổng chi phí
+heap bởi \(O(m\log\log n)\); sau đó số phép \textsc{Find} cũng nằm trong cùng
+cận nhờ kết quả union-find của Chương 2.
+
 \section{Chương 7: Đường đi ngắn nhất}
 
 Chương này trình bày cây đường đi ngắn nhất, thuật toán gán nhãn và thao tác
