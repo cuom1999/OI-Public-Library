@@ -41,6 +41,7 @@ or reclassified.
 | `sources/ioi/2002/jin-kai-network-flow-applications.tex` | 28 | Repaired from companion-note status: restored the slide-only network diagrams for racing, train scheduling, and the restaurant towel example in TikZ, kept the four network-flow models, and explicitly preserves the source's limitation for the CTSC2001 Agent statement. |
 | `sources/ioi/2003-wu-yu-symmetric-2sat.tex` | 24 | Repaired from companion-note status: OCR-checked the rasterized slide deck and restored the implication-graph example, SCC-contraction diagram, symmetry-transmission proof diagram, and bottom-up DAG selection figure in TikZ. |
 | `sources/ioi/2008/matrix-multiplication-applications-yu-huacheng-slides.tex` | 44 | Repaired from companion-note status: OCR-checked the slide deck overlays, removed companion-only wording, and restored the path-counting and Swamp Crocodile visual examples in TikZ while preserving the matrix-power derivation and periodic-transition method. |
+| `sources/ioi/2009-zhou-erjin-estimation-functions-slides.tex` | 36 | Repaired from companion-note status: checked the extractable Impress slide text against the translation, removed companion-only wording, preserved the repeated overlay content as merged prose, and kept the Mines, Largest Fence, summary, and A/A* appendix material aligned with the source deck. |
 | `sources/ioi/2007-wang-xinshang-layered-network-flow.tex` | 26 | Repaired from companion-note status: restored the source table of contents, footnotes, residual/layered-graph, Dinic DFS, matrix-game, and MPM throughput diagrams as compact translated figures, and expanded the Profit and Matrix Game appendices with full statements, input/output formats, samples, scoring notes, and constraints. |
 | `sources/ioi/2009-zhou-erjin-estimation-functions.tex` | 19 | Repaired from companion-note status: restored the source Mines, Sokoban, Largest Fence, and TSP/MST figures, added the Mines before/after generated-node tables, restored the Sokoban board/deadlock layouts and benchmark tables, and expanded the chart discussions so the examples carry the evidence used in the original paper. |
 
@@ -229,7 +230,6 @@ inflate the full translated-document count.
 | `sources/others/game-theory-li-xiaoxiao.tex` | 60 | Reviewed as slide deck. Companion note keeps the impartial-game definitions, Sprague--Grundy examples, and airplane-game DP discussion. |
 | `sources/mathematics/linear-programming-simplex-wu-yifan.tex` | 40 | Reviewed as Beamer slide deck. Companion note keeps standard/slack forms, simplex pivots, Bland rule, duality, network flow, and BZOJ3876. |
 | `sources/ioi/2009-jin-bin-euclidean-algorithm-slides.tex` | 77 | Reviewed as slide companion. The source has a separate 14-page paper translation; this note keeps the slide-level Euclidean-algorithm examples. |
-| `sources/ioi/2009-zhou-erjin-estimation-functions-slides.tex` | 36 | Reviewed as Impress slide deck. Companion note keeps search heuristics, DP optimization, near-optimal solution examples, and A/A* appendix material. |
 
 ## Explicitly Acceptable Short Files
 

@@ -55,7 +55,6 @@ COMPANION_NOTE_SOURCES = {
     "其他 OTHERS/博弈论相关 - 李晓潇.pdf",
     "数学 MATHEMATICS/线性规划与单纯形算法 - 吴一凡.pdf",
     "IOI中国国家候选队论文/2009/金斌/slide.pdf",
-    "IOI中国国家候选队论文/2009/周而进/演示文稿.pdf",
 }
 CODE_TEMPLATE_SOURCES = {
     "模板 TEMPLATES/HEOI2018模板复习手册 - Kvar_ispw17.pdf",
