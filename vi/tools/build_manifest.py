@@ -34,7 +34,6 @@ REFERENCE_NOTE_SOURCES = {
 }
 COMPANION_NOTE_SOURCES = {
     "IOI中国国家候选队论文/2001/刘汝佳(不完整).pdf",
-    "IOI中国国家候选队论文/2007/day2/7.胡伯涛《最小割模型在信息学竞赛中的应用》.pdf",
     "USACO/USACO题解(NOCOW整理版)47P.pdf",
     "动态规划 DYNAMIC PROGRAMMING/树形DP选讲 - 顾逸宏.pdf",
     "动态规划 DYNAMIC PROGRAMMING/动态规划的优化 - 唐文斌.pdf",
