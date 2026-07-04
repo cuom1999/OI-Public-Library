@@ -28,6 +28,8 @@ là phân trị CDQ. Tư tưởng chính là chia miền chỉ số thành hai n
 trái trước, xử lý toàn bộ ảnh hưởng của nửa trái lên nửa phải, rồi tiếp tục
 giải nửa phải. Cách nhìn này biến nhiều bài toán trực tuyến khó xử lý thành
 các bài toán offline có thể sắp xếp, quét và dùng cấu trúc dữ liệu chuẩn.
+Nguồn là bộ slide dạng ảnh; bản tiếng Việt này chuyển các slide thành ghi chú
+đồng hành, giữ mạch ví dụ và các truy hồi độ phức tạp chính.
 \end{abstract}
 
 \tableofcontents
@@ -373,6 +375,77 @@ theo dạng
   \log k\cdot(k\log m+n\log n).
 \]
 
+\section{K-th trong ma trận con}
+
+Một ví dụ khác trong slide là bài toán truy vấn thứ tự trên ma trận:
+cho ma trận \(A\) kích thước \(n\times n\), có \(q\) truy vấn
+\[
+  (x_1,y_1,x_2,y_2,k),
+\]
+hỏi số nhỏ thứ \(k\) trong hình chữ nhật
+\([x_1,y_1]\) đến \([x_2,y_2]\). Ràng buộc minh họa là
+\[
+  n\le 500,\qquad q\le 60000,
+\]
+và cho phép xử lý offline.
+
+Với một truy vấn đơn lẻ, có thể nhị phân đáp án. Với một giá trị
+\(\mathit{mid}\), đặt
+\[
+  D_{i,j}=[A_{i,j}\le \mathit{mid}],
+\]
+rồi dùng tổng tiền tố hai chiều để kiểm tra trong hình chữ nhật có ít nhất
+\(k\) phần tử không vượt quá \(\mathit{mid}\) hay không.
+
+Để xử lý nhiều truy vấn, định nghĩa \(\Solve(l,r,S)\) là thủ tục xử lý tập
+truy vấn \(S\) mà đáp án nằm trong miền giá trị \([l,r]\). Tách tại
+\(\mathit{mid}\), dùng cấu trúc dữ liệu để tính với từng truy vấn có bao
+nhiêu phần tử \(\le\mathit{mid}\), rồi đưa truy vấn sang nửa trái hoặc nửa
+phải. Nếu dùng trực tiếp cây Fenwick hai chiều, mỗi thao tác có thể xem như
+\(\Oh(\log^2 n)\), dẫn đến truy hồi dạng
+\[
+  F(n)=2F(n/2)+\Oh(q\log^2 n).
+\]
+
+Slide cũng nhắc cách tối ưu để tránh cấu trúc dữ liệu hai chiều: biến các ô
+được chèn và các truy vấn hình chữ nhật thành các sự kiện, sắp xếp/ghép theo
+tọa độ \(x\), rồi chỉ cần một cây Fenwick theo tọa độ \(y\). Khi đó bước giữa
+còn \(\Oh(n\log n)\) theo số sự kiện của tầng đang xét, và độ phức tạp toàn
+cục giảm một thừa số \(\log n\).
+
+\section{ZJOI2013 K-th Query}
+
+Bài toán có \(n\) vị trí và \(m\) thao tác. Có hai loại thao tác:
+\begin{itemize}
+  \item \(\texttt{1 a b c}\): thêm một số \(c\) vào mọi vị trí từ \(a\) đến
+  \(b\);
+  \item \(\texttt{2 a b c}\): hỏi trong tất cả các số đang nằm ở các vị trí
+  từ \(a\) đến \(b\), số lớn thứ \(c\) là bao nhiêu.
+\end{itemize}
+Các ràng buộc trong slide là \(n,m\le 50000\); với thao tác thêm thì
+\(c\le n\), còn trong truy vấn \(c\) có thể lớn tới miền số nguyên dài.
+
+Cách dùng cấu trúc dữ liệu trực tiếp là cây đoạn lồng cây cân bằng: tầng ngoài
+theo giá trị được chèn, tầng trong theo tọa độ vị trí, thường cần cấp phát
+động. Với một truy vấn đơn, ta lại có thể nhị phân đáp án và duy trì cây đoạn
+hoặc Fenwick để kiểm tra số phần tử trong đoạn.
+
+CDQ theo miền giá trị cho ta một cách làm offline. Gọi \(\Solve(l,r,S)\) xử
+lý mọi thao tác/truy vấn trong \(S\) có đáp án thuộc \([l,r]\). Ở giữa
+\(\mathit{mid}\), chỉ các thao tác thêm có \(c\le\mathit{mid}\) mới ảnh hưởng
+tới câu hỏi ``có bao nhiêu số không vượt quá \(\mathit{mid}\) trong đoạn
+\([a,b]\)?''. Ta sắp các thao tác theo thời gian và dùng Fenwick theo vị trí
+để cộng/xóa các đoạn tác động, rồi chia \(S\) sang hai nửa.
+
+Sau khi phân bổ chi phí mỗi thao tác ở một tầng, bước giữa ở mức
+\(\Oh(n\log n)\), nên truy hồi vẫn có dạng quen thuộc
+\[
+  T(n)=2T(n/2)+\Oh(n\log n)=\Oh(n\log^2 n).
+\]
+Ba ví dụ liên tiếp trong phần này có cùng điểm chung: biến câu hỏi thứ tự
+thành nhiều phép kiểm tra theo ngưỡng, rồi dùng phân trị trên miền đáp án để
+xử lý toàn bộ truy vấn offline.
+
 \section{Một mẫu bài khác: Package}
 
 Với bài \emph{Package}, định nghĩa \(\Solve(l,r)\) để xử lý mọi truy vấn có
@@ -397,6 +470,99 @@ Nếu mỗi lần gộp trạng thái ba lô tốn \(\Oh(nm)\), truy hồi là
 \]
 Đây là một ví dụ khác của cùng khuôn: tại mỗi nhánh, ta đưa toàn bộ ảnh
 hưởng của phần còn lại vào trạng thái, để câu hỏi tại lá trở nên trực tiếp.
+
+\section{HNOI2010 City}
+
+Bài toán cho đồ thị vô hướng \(n\) đỉnh, \(m\) cạnh, mỗi cạnh có trọng số
+\(w_i\). Có \(q\) thao tác \((E_i,Z_i)\), nghĩa là đổi trọng số cạnh thứ
+\(E_i\) thành \(Z_i\). Sau mỗi thao tác cần in trọng lượng cây khung nhỏ nhất
+hiện tại. Ràng buộc trong slide:
+\[
+  n\le 20000,\quad m\le 50000,\quad q\le 50000,\quad
+  w_i,Z_i\le 10^8.
+\]
+
+Nếu trọng số của một cạnh chỉ giảm, khi cập nhật cạnh \((x,y)\), cây khung nhỏ
+nhất hoặc không đổi, hoặc cạnh \((x,y)\) được thêm vào và một cạnh lớn nhất
+trên đường đi từ \(x\) đến \(y\) trong cây cũ bị loại. Khi đó có thể duy trì cây
+khung bằng Link-Cut Tree: thêm một cạnh, xóa một cạnh, và hỏi cạnh lớn nhất
+trên đường đi. Trường hợp trọng số chỉ tăng là đối xứng hơn nhưng vẫn khó nếu
+muốn xử lý trực tuyến đơn giản.
+
+Ở đây lợi thế là toàn bộ dãy thao tác đã biết trước. Ta phân trị trên thời
+gian. Gọi \(S\) là tập cạnh bị sửa trong đoạn thao tác đang xét. Trước khi đệ
+quy xuống đoạn con, ta muốn thu nhỏ đồ thị mà vẫn giữ đúng mọi đáp án trong
+đoạn đó. Slide dùng hai phép: \term{reduction} và \term{contraction}.
+
+\subsection{Reduction}
+
+Cho đồ thị có trọng số \(G\) và một tập cạnh \(S\). Đặt trọng số các cạnh
+trong \(S\) thành \(+\infty\), rồi lấy cây khung nhỏ nhất \(T\) của \(G\).
+Khi đó dù trọng số các cạnh trong \(S\) thay đổi thế nào, cây khung nhỏ nhất
+của \(G\) không cần dùng bất kỳ cạnh nào ngoài \(T\cup S\). Thật vậy, với một
+cạnh \(e\notin T\cup S\), hai đầu của \(e\) nối với nhau bằng một đường trong
+\(T\). Các cạnh trên đường này đều không thuộc \(S\), nên trọng số của chúng
+không đổi khi ta thay đổi \(S\); theo tính chất chu trình của MST, \(e\) không
+thể trở thành cạnh cần thiết.
+
+Vì vậy ta có thể xóa mọi cạnh ngoài \(T\cup S\). Số cạnh còn lại không vượt
+quá \(n+|S|-1\). Bước này gọi là reduction, mục tiêu là giảm số cạnh. Chi phí
+cùng bậc với chạy MST, thường viết \(\Oh(m\log m)\).
+
+\subsection{Contraction}
+
+Ngược lại, đặt trọng số các cạnh trong \(S\) thành \(-\infty\), rồi lấy cây
+khung nhỏ nhất \(T\). Khi đó dù trọng số các cạnh trong \(S\) thay đổi thế
+nào, mọi cạnh trong \(T\setminus S\) chắc chắn thuộc cây khung nhỏ nhất cuối
+cùng. Có thể hình dung tăng dần trọng số từng cạnh của \(S\): mỗi lần thay đổi,
+cây khung hoặc không đổi, hoặc một cạnh trong \(S\) bị thay thế; các cạnh
+ngoài \(S\) đã được chọn trong \(T\) không bị loại ra theo quá trình này.
+
+Do đó ta có thể co các cạnh trong \(T\setminus S\) thành các thành phần liên
+thông và cập nhật lại danh sách cạnh theo thành phần. Bước này gọi là
+contraction, mục tiêu là giảm số đỉnh. Sau contraction, số đỉnh còn khoảng
+\(|S|+1\).
+
+\subsection{Phân trị theo thao tác}
+
+Từ hai phép trên, với một đồ thị \(G\) và tập thao tác \(S\) của một đoạn thời
+gian, ta có thể trong \(\Oh(m\log m)\) rút đồ thị về số cạnh không quá
+\(n+|S|-1\) và số đỉnh không quá \(|S|+1\) mà vẫn giữ nguyên kết quả trong
+đoạn đang xét.
+
+Định nghĩa \(\Solve(l,r,G)\) để xử lý các thao tác từ \(l\) đến \(r\) trên đồ
+thị đã được rút gọn phù hợp với đoạn đó:
+\[
+\begin{array}{l}
+\Solve(l,r,G):\\
+\quad \text{reduction}(G);\\
+\quad \text{contraction}(G);\\
+\quad \Solve(l,\midp,G);\\
+\quad \Solve(\midp+1,r,G);\\
+\quad \text{recover}(G).
+\end{array}
+\]
+Tại lá, sau một thao tác, đồ thị đã nhỏ tới mức chỉ còn trường hợp cơ bản; có
+thể trực tiếp xét hai đỉnh và một cạnh tương ứng để cập nhật đáp án. Trong
+mỗi lời gọi \(\Solve(l,r,G)\), sau reduction--contraction, số đỉnh và số cạnh
+của \(G\) đều là \(\Oh(r-l)\). Vì vậy chi phí mỗi tầng là \(\Oh(n\log n)\) theo
+kích thước đoạn, và truy hồi tổng quát là
+\[
+  T(n)=2T(n/2)+\Oh(n\log n).
+\]
+
+\section{FJOI2012 Point}
+
+Slide cuối nêu thêm một bài gợi ý. Có một mảng độ dài \(n\), ban đầu rỗng.
+Thực hiện \(n\) thao tác \((P_i,Q_i)\), nghĩa là điền giá trị \(Q_i\) vào vị
+trí \(P_i\). Hai dãy \(P_i\) và \(Q_i\) đều là hoán vị của \(1,\ldots,n\). Sau
+mỗi thao tác, cần in số nghịch thế của dãy hiện tại; \(n\le 50000\).
+
+Các cấu trúc như cây lồng cây hoặc danh sách khối có thể đạt gần
+\(\Oh(n\log^2 n)\), nhưng trong kỳ thi chúng không dễ viết và không phải lúc
+nào cũng đạt trọn điểm. Bài giảng dùng câu hỏi này để nhấn mạnh tinh thần của
+CDQ: nếu tìm được một trục thời gian phù hợp, ta có thể hy vọng giảm bớt một
+thừa số \(\log n\) bằng cách đưa các truy vấn động về xử lý offline.
 
 \section{Ghi nhớ khi áp dụng}
 

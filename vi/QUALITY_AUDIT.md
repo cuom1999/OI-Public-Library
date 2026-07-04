@@ -59,14 +59,24 @@ inflate the full translated-document count.
 | Translation | Source pages | Notes |
 | --- | ---: | --- |
 | `sources/dynamic-programming/tree-dp-selected-topics-gu-yihong.tex` | 142 | Reviewed as Beamer overlay deck: about 40 logical slides. Companion note keeps the DP states, transitions and examples. |
+| `sources/dynamic-programming/dp-optimization-tang-wenbin.tex` | 23 | Reviewed as PowerPoint slide deck. Companion note keeps the LIS, Fibonacci subsequence, Painting the Balls, Divide, and quadrangle-inequality examples. |
 | `sources/graph-theory/making-graphs-into-trees-immortalco-wronganswer.tex` | 172 | Reviewed as Beamer overlay deck: about 51 logical slides. Companion note keeps DFS/BFS/cactus concepts and describes omitted figures in prose. |
+| `sources/data-structure/suffix-automaton-chen-lijie.tex` | 57 | Reviewed as slide deck with diagram/code-image pages. Companion note reconstructs the SAM construction and applications in lecture order. |
 | `sources/others/pb-ds-in-oi-yu-jiping.tex` | 186 | Reviewed as slide deck with damaged text extraction. Companion note is self-contained and keeps the interfaces, code snippets and performance tables. |
+| `sources/others/cdq-divide-and-conquer-introduction.tex` | 74 | Repaired after OCR of pages 51--74; companion note now includes submatrix k-th, ZJOI2013 K-th Query, HNOI2010 City, and FJOI2012 Point. |
+| `sources/others/game-theory-li-xiaoxiao.tex` | 60 | Reviewed as slide deck. Companion note keeps the impartial-game definitions, Sprague--Grundy examples, and airplane-game DP discussion. |
+| `sources/mathematics/linear-programming-simplex-wu-yifan.tex` | 40 | Reviewed as Beamer slide deck. Companion note keeps standard/slack forms, simplex pivots, Bland rule, duality, network flow, and BZOJ3876. |
+| `sources/ioi/2003-wu-yu-symmetric-2sat.tex` | 24 | Reviewed as rasterized slide deck. Companion note keeps the Peaceful Commission example, implication graph symmetry, and construction algorithm. |
 | `sources/ioi/2008/matrix-multiplication-applications-yu-huacheng-slides.tex` | 44 | Reviewed as slide companion for the matrix-multiplication paper. Core formulas and periodic-transition method are preserved. |
 | `sources/ioi/2009-jin-bin-euclidean-algorithm-slides.tex` | 77 | Reviewed as slide companion. The source has a separate 14-page paper translation; this note keeps the slide-level Euclidean-algorithm examples. |
+| `sources/ioi/2009-zhou-erjin-estimation-functions-slides.tex` | 36 | Reviewed as Impress slide deck. Companion note keeps search heuristics, DP optimization, near-optimal solution examples, and A/A* appendix material. |
 
 ## Explicitly Acceptable Short Files
 
-- Code templates are not part of the translation quality target.
+- Code templates are not part of the translation quality target. The manifest
+  marks source notebooks under `模板 TEMPLATES/` as `code-template` when the
+  useful Vietnamese work is a translated index, heading map, or light notes
+  around preserved code.
 - PowerPoint-only files may remain concise companion notes when slide text is
   limited or heavily image-based, provided the file says that clearly.
 - Temporary Microsoft Word lock files such as `~$*.doc` can remain short

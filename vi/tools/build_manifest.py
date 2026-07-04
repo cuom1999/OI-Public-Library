@@ -33,10 +33,28 @@ REFERENCE_NOTE_SOURCES = {
 }
 COMPANION_NOTE_SOURCES = {
     "动态规划 DYNAMIC PROGRAMMING/树形DP选讲 - 顾逸宏.pdf",
+    "动态规划 DYNAMIC PROGRAMMING/动态规划的优化 - 唐文斌.pdf",
     "图论 GRAPH THEORY/Making Graphs into Trees - immortalCO, WrongAnswer.pdf",
+    "数据结构 DATA STRUCTURE/后缀自动机 - 陈立杰.pdf",
     "其他 OTHERS/C++的pb-ds库在OI中的应用 - 于纪平.pdf",
+    "其他 OTHERS/CDQ分治入门经典.pdf",
+    "其他 OTHERS/博弈论相关 - 李晓潇.pdf",
+    "数学 MATHEMATICS/线性规划与单纯形算法 - 吴一凡.pdf",
+    "IOI中国国家候选队论文/2003/伍昱/由对称性解2-SAT问题.pdf",
     "IOI中国国家候选队论文/2008/Day1/10.俞华程《矩阵乘法在信息学中的应用》/slide.pdf",
     "IOI中国国家候选队论文/2009/金斌/slide.pdf",
+    "IOI中国国家候选队论文/2009/周而进/演示文稿.pdf",
+}
+CODE_TEMPLATE_SOURCES = {
+    "模板 TEMPLATES/HEOI2018模板复习手册 - Kvar_ispw17.pdf",
+    "模板 TEMPLATES/Macac_rio_Maratona_de_Programa__o.pdf",
+    "模板 TEMPLATES/NOIP2017模板复习手册 - Kvar_ispw17.pdf",
+    "模板 TEMPLATES/chota1219.pdf",
+    "模板 TEMPLATES/kuangbin的ACM模板（新）.pdf",
+    "模板 TEMPLATES/上海交通大学ACM模板.pdf",
+    "模板 TEMPLATES/吉林大学ACM模板.pdf",
+    "模板 TEMPLATES/计算几何模板 - 吉如一.md",
+    "模板 TEMPLATES/计算几何模板-HIT.pdf",
 }
 
 
@@ -84,6 +102,8 @@ def rows() -> list[dict[str, str]]:
         if path in translated:
             if path in REFERENCE_NOTE_SOURCES:
                 status = "reference-note"
+            elif path in CODE_TEMPLATE_SOURCES:
+                status = "code-template"
             elif path in COMPANION_NOTE_SOURCES:
                 status = "companion-note"
             else:
@@ -99,7 +119,13 @@ def rows() -> list[dict[str, str]]:
                 "translation": translated.get(path, ""),
             }
         )
-    status_order = {"todo": 0, "reference-note": 1, "companion-note": 2, "translated": 3}
+    status_order = {
+        "todo": 0,
+        "reference-note": 1,
+        "code-template": 2,
+        "companion-note": 3,
+        "translated": 4,
+    }
     data.sort(key=lambda r: (status_order.get(r["status"], 99), r["kind"], r["source"]))
     return data
 
@@ -110,6 +136,7 @@ def write_manifest(data: list[dict[str, str]]) -> None:
         counts[row["kind"]] = counts.get(row["kind"], 0) + 1
     translated = sum(1 for row in data if row["status"] == "translated")
     reference_notes = sum(1 for row in data if row["status"] == "reference-note")
+    code_templates = sum(1 for row in data if row["status"] == "code-template")
     companion_notes = sum(1 for row in data if row["status"] == "companion-note")
     todo = sum(1 for row in data if row["status"] == "todo")
 
@@ -121,6 +148,7 @@ def write_manifest(data: list[dict[str, str]]) -> None:
         f"- Tracked source documents: {len(data)}",
         f"- Translated documents: {translated}",
         f"- Reference-note documents: {reference_notes}",
+        f"- Code-template documents: {code_templates}",
         f"- Companion-note documents: {companion_notes}",
         f"- Remaining documents: {todo}",
         "",
