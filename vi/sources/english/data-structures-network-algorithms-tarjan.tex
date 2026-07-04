@@ -1045,6 +1045,109 @@ chu trình âm, cần quét lặp để lan truyền cải thiện.
 Phần mọi cặp đỉnh nối bài toán đơn nguồn với các phương pháp quy hoạch động
 và nhân ma trận theo đại số min-plus.
 
+\subsection*{Cây đường đi ngắn nhất và gán nhãn}
+
+Đầu vào là đồ thị có hướng với độ dài thực trên cạnh, có thể âm. Độ dài đường
+đi là tổng độ dài cạnh. Chương phân biệt bốn phiên bản: một cặp nguồn-đích,
+một nguồn tới mọi đỉnh, mọi đỉnh tới một đích, và mọi cặp. Hai phiên bản một
+nguồn/một đích là đối ngẫu qua đảo hướng cạnh; các thuật toán một cặp thường
+giải ít nhất một phần bài toán một nguồn, nên chương tập trung vào một nguồn.
+
+Nếu tồn tại đường đi từ \(s\) tới \(t\), đường đi ngắn nhất tồn tại khi và chỉ khi
+không có đường đi từ \(s\) tới \(t\) chứa chu trình âm. Nếu có đường đi ngắn nhất,
+có một đường đi ngắn nhất đơn, vì có thể bỏ mọi chu trình không âm khỏi đường.
+Do đó khi có chu trình âm đạt được từ nguồn, bài toán nên trả ra chu trình âm
+thay vì một cây đường đi ngắn nhất.
+
+Một cây đường đi ngắn nhất gốc \(s\) là cây phủ có gốc \(s\), trong đó đường từ
+\(s\) tới mỗi đỉnh là ngắn nhất. Nếu \(T\) là cây có gốc \(s\) và
+\(\operatorname{distance}(v)\) là độ dài đường trong \(T\) từ \(s\) tới \(v\),
+thì \(T\) là cây đường đi ngắn nhất khi và chỉ khi mọi cạnh \([v,w]\) thỏa
+\[
+  \operatorname{distance}(v)+\operatorname{length}(v,w)
+  \ge \operatorname{distance}(w).
+\]
+Điều kiện này vừa là phép kiểm \(O(m)\), vừa gợi ý thuật toán cải thiện lặp.
+
+Thuật toán gán nhãn của Ford giữ khoảng cách tạm \(\operatorname{dist}(v)\) và
+cha tạm \(p(v)\). Ban đầu \(\operatorname{dist}(s)=0\), các đỉnh khác là vô cực,
+và mọi cha là null. Khi có cạnh \([v,w]\) vi phạm
+\[
+  \operatorname{dist}(v)+\operatorname{length}(v,w)<\operatorname{dist}(w),
+\]
+ta giảm \(\operatorname{dist}(w)\) và đặt \(p(w)=v\). Khi không còn cạnh vi phạm,
+các nhãn là khoảng cách ngắn nhất và cha tạo cây đường đi ngắn nhất trên phần đạt
+được từ \(s\). Nếu quá trình tạo chu trình theo cha, chu trình đó có tổng độ dài
+âm.
+
+\subsection*{Gán nhãn và quét}
+
+Phiên bản hiệu quả hơn là gán nhãn-quét. Mỗi đỉnh ở một trong ba trạng thái:
+chưa gán nhãn, đã gán nhãn, đã quét. Ban đầu chỉ \(s\) đã gán nhãn. Mỗi bước
+chọn một đỉnh đã gán nhãn \(v\), quét mọi cạnh ra \([v,w]\), và nếu cạnh cải
+thiện \(\operatorname{dist}(w)\) thì cập nhật \(w\) và chuyển \(w\) sang trạng
+thái đã gán nhãn. Khi không còn đỉnh đã gán nhãn, thuật toán dừng. Hiệu quả phụ
+thuộc hoàn toàn vào thứ tự quét.
+
+Với đồ thị phi chu trình, quét theo thứ tự topo. Mỗi đỉnh cần quét đúng một lần,
+và tổng thời gian là \(O(m)\), kể cả tìm thứ tự topo. Đổi dấu độ dài cạnh biến
+bài toán đường đi dài nhất trong DAG thành đường đi ngắn nhất, đây là lõi của
+phân tích PERT.
+
+Nếu mọi cạnh không âm, quét theo thứ tự ngắn nhất trước: trong các đỉnh đã gán
+nhãn, chọn đỉnh có \(\operatorname{dist}\) nhỏ nhất. Đây là thuật toán Dijkstra.
+Khi một đỉnh được quét, khoảng cách của nó đã tối ưu và sẽ không cần gán nhãn
+lại. Cài đặt giống Prim: heap chứa các đỉnh đã gán nhãn, khóa là
+\(\operatorname{dist}\). Với \(d\)-heap và \(d=2+\lceil m/n\rceil\), thời gian là
+\[
+  O(m\log_{2+m/n} n).
+\]
+Dùng tập không có thứ tự cho heap cho cận \(O(n^2)\), phù hợp đồ thị dày. Nếu
+độ dài là số nguyên nhỏ, có thể dùng mảng bucket để đạt cận theo \(m\), độ dài
+cạnh lớn nhất và khoảng cách lớn nhất.
+
+Trong trường hợp tổng quát có cạnh âm nhưng không có chu trình âm đạt được,
+thứ tự quét theo chiều rộng cho thuật toán Bellman--Moore. Các đỉnh đã gán nhãn
+được giữ trong hàng đợi; mỗi lần lấy đỉnh đầu hàng đợi ra quét, và nếu một đỉnh
+được cải thiện nhưng chưa nằm trong hàng đợi thì thêm nó vào cuối. Chia quá
+trình thành các lượt: hết lượt \(k\), mọi đường đi ngắn nhất dùng nhiều nhất
+\(k\) cạnh đã được phản ánh. Nếu không có chu trình âm đạt được, thuật toán dừng
+sau nhiều nhất \(n-1\) lượt, thời gian \(O(nm)\).
+
+Để phát hiện chu trình âm, có thể đếm lượt. Nếu sau lượt \(n-1\) hàng đợi vẫn
+không rỗng, tồn tại đỉnh \(v\) và số \(k\) sao cho \(p^k(v)=v\); chu trình theo
+con trỏ cha là chu trình âm. Trong thực tế có các thứ tự lai giữa BFS và DFS có
+thể nhanh hơn trên một số đồ thị, nhưng cận xấu nhất có thể kém hơn.
+
+\subsection*{Mọi cặp đỉnh}
+
+Nếu mọi độ dài không âm, chạy Dijkstra \(n\) lần cho \(n\) nguồn cho thời gian
+\(O(nm\log_{2+m/n} n)\). Nếu có cạnh âm nhưng không có chu trình âm, dùng phép
+đổi trọng số của Edmonds--Karp/Johnson. Thêm nguồn mới \(s\) nối tới mọi đỉnh
+bằng cạnh độ dài \(0\), chạy thuật toán một nguồn tổng quát để lấy
+\(\operatorname{distance}(v)\), rồi đặt
+\[
+  \operatorname{length}'(v,w)=
+  \operatorname{length}(v,w)+\operatorname{distance}(v)-\operatorname{distance}(w).
+\]
+Mọi độ dài mới không âm, và mọi đường từ \(a\) tới \(b\) bị cộng cùng một lượng
+\(\operatorname{distance}(a)-\operatorname{distance}(b)\), nên đường ngắn nhất
+được bảo toàn. Sau đó chạy Dijkstra cho từng nguồn rồi đổi ngược khoảng cách.
+
+Với đồ thị dày, Floyd--Warshall đơn giản hơn. Duy trì
+\(\operatorname{dist}(v,w)\), là độ dài đường ngắn nhất từ \(v\) tới \(w\) mà
+các đỉnh trung gian chỉ thuộc tập đã xử lý. Ban đầu là độ dài cạnh trực tiếp,
+\(0\) trên đường chéo, vô cực nếu không có cạnh. Khi xử lý đỉnh \(u\), cập nhật
+\[
+  \operatorname{dist}(v,w) =
+  \min\{\operatorname{dist}(v,w),
+       \operatorname{dist}(v,u)+\operatorname{dist}(u,w)\}.
+\]
+Nếu \(\operatorname{dist}(u,u)<0\), phát hiện chu trình âm. Để phục hồi đường
+đi, lưu thêm cha \(p(v,w)\) của \(w\) trong cây đường đi ngắn nhất gốc \(v\).
+Floyd chạy \(O(n^3)\), dùng \(O(n^2)\) bộ nhớ, thường tốt trên đồ thị dày nhưng
+không tận dụng được độ thưa.
+
 \section{Chương 8: Luồng mạng}
 
 Luồng mạng được trình bày qua định nghĩa luồng, lát cắt và đường tăng. Từ
