@@ -24,6 +24,19 @@ or reclassified.
 | `sources/ioi/2009-jia-zhihao-sg-game-variants.tex` | 24 | Restored the article front matter: preface, reading advice, stated article features, and acknowledgments. The technical SG-game body had already been translated. |
 | `sources/ioi/2009-cao-qinxiang-k-dynamic-subtraction-games.tex` | 44 | Expanded compressed passages from the A4 article: contest significance of game theory, CEOI 2008 knight pattern/strategy intuition, and the BOI 2008 Game official-solution critique, counterexample, and optimized interval-state argument. |
 
+## Low-Density Files Reviewed And Kept As Translated
+
+These files still look short by line/page ratio, but source inspection showed
+that the low density is explained by slide formatting or sparse source text.
+They remain `translated`.
+
+| Translation | Source pages | Evidence |
+| --- | ---: | --- |
+| `sources/data-structure/power-of-statistics-segment-tree-zhang-kunwei.tex` | 102 | Source is an Impress slide deck. The Vietnamese file follows the slide sequence from range sums and heap layout through lazy tags, order statistics, dynamic segment trees, balanced trees, and the practice problem; decorative/interlude slides and figures are folded into prose. |
+| `sources/mathematics/simple-mathematical-logic-li-kaiwei.tex` | 40 | Source is an Impress slide deck. The translation covers propositional logic, equivalence laws, normal forms, SAT/2-SAT, DPLL, SMT, bit-vector examples, applications, and references. |
+| `sources/ioi/2002/wang-zhikun-search-order-selection.tex` | 22 | Source is an Impress slide deck with one blank final page. The translation covers every nonblank slide: interval arrangement, search-order principles, operator decoding, static/dynamic ordering, Prime Square, Basketball Championship, pruning, Birthday Cake, and conclusion. |
+| `sources/ioi/2002/luo-ji-game-problem-two-methods.tex` | 41 | Source is an Impress slide deck. The translation reconstructs the slide diagrams/proofs in prose and covers the full arc: stone-taking, general method, limitations, special method, Fibonacci proof, comparison, and conclusion. |
+
 ## Article-Coverage Complete Annual Collections
 
 These annual collections now have a translated section for every ToC article.
@@ -74,6 +87,7 @@ inflate the full translated-document count.
 | `sources/dynamic-programming/dp-optimization-tang-wenbin.tex` | 23 | Reviewed as PowerPoint slide deck. Companion note keeps the LIS, Fibonacci subsequence, Painting the Balls, Divide, and quadrangle-inequality examples. |
 | `sources/dynamic-programming/intro-digit-dp.tex` | 26 | Reviewed as image-only slide deck. Companion note covers the contents-page topics: HDU2089, HDU3652, URAL1057, `test-09-07-p1`, SPOJ Sorted Bit Sequence, and references. |
 | `sources/dynamic-programming/resource-allocation-dp-lou-tiancheng.tex` | 17 | Reviewed as slide deck. Companion note covers machine allocation, system reliability, fast-food production, shopping offers, and Jinming's budget. |
+| `sources/data-structure/link-cut-trees.tex` | 81 | Reviewed as Word-exported A4 tutorial. Companion note preserves definitions, core operations, Splay details, practice-problem ideas, and complexity, but abridges walkthrough figures, full statements, sample I/O, and complete implementations. |
 | `sources/graph-theory/making-graphs-into-trees-immortalco-wronganswer.tex` | 172 | Reviewed as Beamer overlay deck: about 51 logical slides. Companion note keeps DFS/BFS/cactus concepts and describes omitted figures in prose. |
 | `sources/graph-theory/bipartite-graph-he-zhenhao.tex` | 22 | Reviewed as slide deck. Companion note covers the seven listed bipartite-graph topics; missing attached code is a code-template exception. |
 | `sources/graph-theory/classic-network-flow-tutorial.tex` | 51 | Reviewed as slide deck. Companion note rewrites transport, max-flow, bounded-flow, min-cost-flow, worked examples, and homework slides as prose. |
