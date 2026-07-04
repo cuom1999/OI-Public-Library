@@ -316,6 +316,149 @@ tài chính toán học. Với thuật toán, martingale thường xuất hiện
 quá trình tiết lộ dần thông tin, bounding difference, thời điểm dừng, hoặc sai
 số tích lũy qua nhiều bước thích nghi.
 
+\section{Phụ lục kết nối với phân tích thuật toán ngẫu nhiên}
+
+Resnick không phải sách thuật toán, nhưng ngôn ngữ độ đo của sách giúp đọc và
+viết chứng minh xác suất chính xác hơn. Phần này tóm tắt các mẫu dùng nhiều
+khi phân tích thuật toán randomized, lấy mẫu, hashing, random walk hoặc quá
+trình online.
+
+\subsection{Mô hình hóa không gian xác suất}
+
+Trước khi tính xác suất, cần nói rõ nguồn ngẫu nhiên là gì. Với một thuật toán
+ngẫu nhiên, \(\Omega\) thường là tập mọi chuỗi bit ngẫu nhiên mà thuật toán có
+thể dùng; input có thể cố định đối nghịch. Với phân tích average-case, \(\Omega\)
+lại có thể là phân phối trên input. Hai mô hình này cho các phát biểu khác
+nhau:
+\begin{itemize}
+  \item randomized quicksort: input cố định, pivot ngẫu nhiên;
+  \item hashing: bảng khóa có thể cố định, hàm hash hoặc seed ngẫu nhiên;
+  \item Monte Carlo: thuật toán có xác suất lỗi nhỏ trên random nội bộ;
+  \item Las Vegas: kết quả luôn đúng, thời gian chạy là biến ngẫu nhiên.
+\end{itemize}
+
+Khi viết lời giải, nên ghi rõ xác suất đang lấy theo random nào. Một thuật toán
+có kỳ vọng tốt theo input ngẫu nhiên không tự động chống được test đối nghịch.
+
+\subsection{Biến chỉ thị và tuyến tính kỳ vọng}
+
+Nếu một đại lượng đếm được có thể viết thành tổng biến chỉ thị
+\[
+  X=\sum_{i\in I}1_{A_i},
+\]
+thì
+\[
+  E X=\sum_{i\in I}P(A_i)
+\]
+miễn tổng hữu hạn hoặc điều kiện tích phân phù hợp. Không cần độc lập. Đây là
+lý do biến chỉ thị là công cụ đầu tiên nên thử trong phân tích kỳ vọng.
+
+Ví dụ mẫu:
+\begin{itemize}
+  \item số inversion của hoán vị ngẫu nhiên là tổng trên mọi cặp \((i,j)\);
+  \item số lần so sánh trong quicksort là tổng trên mọi cặp phần tử bị so sánh;
+  \item số bucket rỗng trong hashing là tổng trên từng bucket;
+  \item số collision là tổng trên từng cặp khóa.
+\end{itemize}
+
+Độc lập chỉ cần khi tính phương sai, xác suất đuôi hoặc phân phối đầy đủ. Nếu
+chỉ cần kỳ vọng, hãy tránh đưa vào giả thiết độc lập không cần thiết.
+
+\subsection{Borel--Cantelli và sự kiện xảy ra vô hạn lần}
+
+Bổ đề Borel--Cantelli rất hữu ích khi thuật toán chạy theo pha vô hạn hoặc khi
+ta muốn chứng minh lỗi chỉ xảy ra hữu hạn lần. Nếu \(\sum_n P(A_n)<\infty\),
+thì xác suất để vô hạn nhiều \(A_n\) xảy ra bằng 0. Diễn giải thực hành: nếu xác
+suất lỗi pha \(n\) giảm đủ nhanh, ví dụ \(O(n^{-2})\), thì gần như chắc chắn chỉ
+có hữu hạn pha lỗi.
+
+Chiều ngược lại cần độc lập hoặc điều kiện gần độc lập. Nếu \(\sum_n P(A_n)\)
+phân kỳ nhưng các biến cố phụ thuộc mạnh, không thể kết luận chúng xảy ra vô
+hạn lần. Đây là một nguồn sai phổ biến trong chứng minh randomized.
+
+\subsection{Các dạng hội tụ trong thuật toán}
+
+Các phát biểu ``thuật toán ổn định khi \(n\) lớn'' có thể có nhiều nghĩa:
+\begin{itemize}
+  \item \term{hội tụ theo xác suất}: xác suất sai khác lớn hơn \(\varepsilon\)
+        tiến về 0;
+  \item \term{hội tụ hầu chắc chắn}: với xác suất 1, từ một dãy kết quả cụ thể
+        ta thấy hội tụ điểm-một;
+  \item \term{hội tụ trong \(L^1\)}: kỳ vọng sai số tuyệt đối tiến về 0;
+  \item \term{hội tụ theo phân phối}: phân phối của đại lượng chuẩn hóa tiến
+        tới một luật giới hạn.
+\end{itemize}
+
+Monte Carlo thường cần hội tụ theo xác suất hoặc kiểm soát xác suất lỗi. Ước
+lượng kỳ vọng cần \(L^1\) hoặc khả tích đều nếu có đuôi nặng. Phân tích thời
+gian chạy chuẩn hóa thường dùng hội tụ theo phân phối hoặc CLT.
+
+\subsection{Luật số lớn và lấy mẫu}
+
+Luật mạnh số lớn nói trung bình mẫu iid hội tụ hầu chắc chắn về kỳ vọng nếu
+kỳ vọng tuyệt đối hữu hạn. Điều này giải thích vì sao lấy nhiều mẫu độc lập làm
+giảm nhiễu trong ước lượng. Tuy nhiên tốc độ hội tụ không được nêu chỉ bằng
+luật số lớn; để có bound hữu hạn mẫu cần Markov, Chebyshev, Chernoff, Hoeffding
+hoặc các bất đẳng thức martingale.
+
+Khi biến có đuôi nặng, trung bình mẫu có thể hội tụ rất chậm hoặc kỳ vọng không
+tồn tại. Trong phân tích thuật toán, điều này xuất hiện ở thời gian chạy có xác
+suất nhỏ nhưng chi phí cực lớn. Khi đó median-of-means, cắt cụt hoặc phân tích
+đuôi trực tiếp an toàn hơn chỉ báo kỳ vọng.
+
+\subsection{Hàm đặc trưng và tổng biến độc lập}
+
+Hàm đặc trưng biến tích chập thành tích:
+\[
+  \varphi_{X+Y}(t)=\varphi_X(t)\varphi_Y(t)
+\]
+khi \(X,Y\) độc lập. Đây là lý do nó xuất hiện trong chứng minh CLT. Với thuật
+toán, cách nhìn này tương ứng với việc một đại lượng tổng hợp từ nhiều đóng góp
+độc lập hoặc gần độc lập thường có phân phối xấp xỉ chuẩn sau chuẩn hóa, miễn
+không có một hạng tử lớn thống trị.
+
+Điều kiện Lindeberg trong mảng tam giác có thể hiểu như câu ``không có biến
+thành phần nào tự mình quyết định giới hạn''. Khi phân tích cấu trúc dữ liệu
+ngẫu nhiên hoặc thuật toán trên nhiều block, đây là giả thiết cần kiểm tra thay
+vì mặc định dùng CLT iid.
+
+\subsection{Martingale và quá trình tiết lộ thông tin}
+
+Martingale phù hợp với thuật toán lộ dần random: xử lý cạnh theo thứ tự ngẫu
+nhiên, thêm mẫu từng bước, random walk, hoặc thuật toán online. Lọc
+\(\mathcal{F}_t\) biểu diễn thông tin đã biết sau \(t\) bước. Nếu \(X_t\) là kỳ
+vọng có điều kiện của đại lượng cuối cùng khi biết \(\mathcal{F}_t\), thì
+\((X_t)\) thường là martingale Doob.
+
+Mẫu dùng trong chứng minh:
+\begin{enumerate}
+  \item chọn đại lượng cuối \(Z\) cần chặn;
+  \item đặt \(X_t=E(Z\mid\mathcal{F}_t)\);
+  \item chứng minh hiệu \(|X_t-X_{t-1}|\) bị chặn hoặc có phương sai có điều
+        kiện nhỏ;
+  \item áp dụng bất đẳng thức martingale thích hợp để lấy tail bound.
+\end{enumerate}
+
+Optional stopping không được dùng tùy tiện. Cần điều kiện về thời điểm dừng,
+tính khả tích hoặc bound trên bước nhảy. Nếu bỏ các điều kiện này, các ``chiến
+lược dừng khi thắng'' trong trò chơi công bằng sẽ tạo ra kết luận sai.
+
+\subsection{Checklist khi đọc chứng minh xác suất}
+
+Khi gặp một chứng minh xác suất trong tài liệu thuật toán, nên kiểm tra:
+\begin{itemize}
+  \item không gian xác suất và nguồn random đã được nêu rõ chưa;
+  \item biến đang xét có đo được và khả tích không;
+  \item độc lập là độc lập đôi một, độc lập toàn phần, hay độc lập có điều kiện;
+  \item phép đổi giới hạn và kỳ vọng dùng định lý nào;
+  \item tail bound là cho input cố định hay trung bình theo input;
+  \item nếu dùng union bound, tổng xác suất lỗi có thật đủ nhỏ không;
+  \item nếu dừng ngẫu nhiên, điều kiện optional stopping có được thỏa không.
+\end{itemize}
+
+Những câu hỏi này là phần giá trị nhất của cách tiếp cận Resnick: chúng buộc
+người đọc tách trực giác xác suất rời rạc khỏi các giả thiết toán học cần thiết.
+
 \section{Các điểm cần kiểm tra khi chuyển thành LaTeX đầy đủ}
 
 Nếu sau này dịch từng chương chi tiết hơn, các phần dễ sai nhất là:
