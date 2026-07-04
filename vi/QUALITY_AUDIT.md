@@ -10,12 +10,8 @@ tables of contents.
 
 ## High-Confidence Undertranslated Files
 
-These files currently compile, but they are not full translations of their
-source documents.
-
-| Priority | Translation | Source pages | Current state | Extraction status | Required work |
-| ---: | --- | ---: | --- | --- | --- |
-| 1 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first twenty-four articles translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue from article 25 onward with OCR-backed article translations. |
+No annual national training-team collection is currently known to be
+article-incomplete.
 
 ## Article-Coverage Complete Annual Collections
 
@@ -32,6 +28,7 @@ but they should not be counted as ToC-only or partially covered collections.
 | `sources/ioi/2017-national-training-team-collection.tex` | 204 | ToC plus all fifteen articles translated | Final genome-reconstruction report translated from physical PDF pages 192--204. |
 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | ToC plus all fifteen articles translated | Final Euler graph generation/counting article translated from physical PDF pages 194--210. |
 | `sources/ioi/2019-national-training-team-collection.tex` | 231 | ToC plus all fifteen articles translated | Final Young tableau article translated after filtering watermark/header noise. |
+| `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus all twenty-five articles translated | Final minimum-ratio-cycle article translated from physical PDF pages 408--422; back/contact pages 423--424 are not article body. |
 | `sources/ioi/2025-national-training-team-collection.tex` | 168 | ToC plus all twenty-three articles translated | Final linear-congruence-inequality article translated from physical PDF pages 161--168. |
 | `sources/ioi/2020-national-training-team-collection.tex` | 196 | ToC plus all fourteen articles translated | Proofread mathematical notation and examples when polishing. |
 | `sources/ioi/2022-national-training-team-collection.tex` | 246 | ToC plus all fourteen articles translated | OCR-backed collection; proofread formulas, pseudocode, and diagram descriptions. |
