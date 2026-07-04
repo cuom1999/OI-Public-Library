@@ -228,7 +228,7 @@ do not inflate the count of full translated documents.
 | `sources/english/concrete-mathematics-graham-knuth-patashnik.tex` | 670 | Book metadata and chapter-structure note | Keep as `reference-note`; translate selected math background excerpts only when scope and rights are clear. |
 | `sources/english/a-probability-path-resnick.tex` | 459 | Book metadata and chapter-structure note | Keep as `reference-note`; translate selected probability excerpts only when scope and rights are clear. |
 | `sources/english/data-structures-network-algorithms-tarjan.tex` | 142 | ToC/preface-focused note | Keep as `reference-note`; it remains the shortest candidate if selected licensed chapters are later requested. |
-| `sources/usaco/usaco-ten-year-problem-anthology-v10.tex` | 266 | Preface and recovered index only | Keep as `reference-note`; needs OCR or replacement source text before any detailed problem translation. |
+| `sources/usaco/usaco-ten-year-problem-anthology-v10.tex` | 266 | Preface, recovered index, and first OCR-recovered problem batch | Still marked `reference-note` until the full anthology is recovered; the 2000 Spring/Open/Fall opening batch now includes twelve translated problem statements from rendered-page OCR, with the image-heavy Maze ASCII sample deferred for exact transcription. |
 | `sources/others/not-so-short-introduction-to-latex.tex` | 107 | Adapted Vietnamese guide, not a full manual translation | Keep as `reference-note`; source front matter, full index, figures, and many detailed manual passages are intentionally not reproduced. |
 
 ## Lower-Confidence Compression Suspects
