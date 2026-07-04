@@ -229,7 +229,7 @@ do not inflate the count of full translated documents.
 | `sources/english/concrete-mathematics-graham-knuth-patashnik.tex` | 670 | Book metadata and chapter-structure note | Keep as `reference-note`; translate selected math background excerpts only when scope and rights are clear. |
 | `sources/english/a-probability-path-resnick.tex` | 459 | Book metadata and chapter-structure note | Keep as `reference-note`; translate selected probability excerpts only when scope and rights are clear. |
 | `sources/english/data-structures-network-algorithms-tarjan.tex` | 142 | ToC/preface-focused note | Keep as `reference-note`; it remains the shortest candidate if selected licensed chapters are later requested. |
-| `sources/others/not-so-short-introduction-to-latex.tex` | 107 | Adapted Vietnamese guide, not a full manual translation | Keep as `reference-note`; source copyright/acknowledgment front matter, Chapter 1's WYSIWYG/pros-cons discussion, and the opening TeX-system figure are now translated/restored, but the full index, many figures, and many detailed manual passages are still intentionally not reproduced. |
+| `sources/others/not-so-short-introduction-to-latex.tex` | 107 | Adapted Vietnamese guide, not a full manual translation | Keep as `reference-note`; source copyright/acknowledgment front matter, Chapter 1's WYSIWYG/pros-cons discussion, command-line/DVI workflow, document-class options, file-extension notes, `syntonly` workflow, and the opening TeX-system figure are now translated/restored, but the full index, many figures, and many detailed manual passages are still intentionally not reproduced. |
 
 ## Lower-Confidence Compression Suspects
 
