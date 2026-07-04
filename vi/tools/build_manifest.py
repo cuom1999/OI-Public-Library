@@ -36,7 +36,6 @@ COMPANION_NOTE_SOURCES = {
     "IOI中国国家候选队论文/2001/刘汝佳(不完整).pdf",
     "USACO/USACO题解(NOCOW整理版)47P.pdf",
     "动态规划 DYNAMIC PROGRAMMING/树形DP选讲 - 顾逸宏.pdf",
-    "动态规划 DYNAMIC PROGRAMMING/初探数位dp.pdf",
     "数据结构 DATA STRUCTURE/Link Cut Trees.pdf",
     "图论 GRAPH THEORY/Making Graphs into Trees - immortalCO, WrongAnswer.pdf",
     "图论 GRAPH THEORY/经典网络流教程.pdf",
