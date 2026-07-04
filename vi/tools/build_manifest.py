@@ -34,7 +34,6 @@ REFERENCE_NOTE_SOURCES = {
 }
 COMPANION_NOTE_SOURCES = {
     "IOI中国国家候选队论文/2001/刘汝佳(不完整).pdf",
-    "其他 OTHERS/C++的pb-ds库在OI中的应用 - 于纪平.pdf",
 }
 CODE_TEMPLATE_SOURCES = {
     "模板 TEMPLATES/HEOI2018模板复习手册 - Kvar_ispw17.pdf",
