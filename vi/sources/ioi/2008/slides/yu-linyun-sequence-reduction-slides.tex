@@ -2,6 +2,7 @@
 % Source-File: IOI中国国家候选队论文/2008/Day2/6.余林韵《运用化归思想解决信息学中的数列问题》/余林韵_运用化归思想解决信息学中的数列问题.ppt
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{booktabs}
 
 \newcommand{\Oh}{\mathcal{O}}
 
@@ -12,31 +13,148 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for reduction in sequence problems}
+\origtitle{Reduction in sequence problems}
 \sourcepath{IOI China candidate team papers / 2008 / Day 2 / Yu Linyun.ppt}
 
 \section{Phạm vi bản dịch}
 
-Tệp PowerPoint đi cùng bài viết, bản giảng và phụ lục toán học đã được dịch.
-Bản ghi chú này tóm lược tư tưởng quy chuyển khi giải bài toán dãy số.
+Bản PowerPoint đi kèm bài viết và bản thuyết trình về việc dùng tư tưởng quy
+chuyển để giải các bài toán dãy số. Phần chữ trích được từ PPT lặp lại các
+mốc chính: công thức của \textit{Dispute}, modulo \(9973\), TopCoder SRM 369,
+\textit{Count} của NOI 2007, \textit{Maximum. Version 2} và Ural 1396. Bản
+ghi chú này đi theo các mốc slide đó, rút gọn những chứng minh dài trong bài
+viết chính nhưng giữ lại ý tưởng thuật toán.
 
-\section{Quy chuyển}
+Thông điệp của slide là: với dãy số, không nên chỉ sinh vài số hạng đầu rồi
+đoán quy luật. Cần xác định đối tượng quy chuyển, mục tiêu quy chuyển và con
+đường quy chuyển; các tính chất như tuần hoàn, tuyến tính theo từng đoạn,
+trạng thái hữu hạn hoặc cấu trúc Fibonacci thường là chìa khóa.
 
-Quy chuyển là biến bài toán mới thành bài toán đã biết cách giải. Với dãy số,
-các hướng thường gặp là tìm tính tuần hoàn, tìm công thức tổng quát, đưa truy
-hồi về nhân ma trận, hoặc chia quá trình thành các giai đoạn có quy luật.
+\section{Tư tưởng quy chuyển}
 
-\section{Công cụ}
+Quy chuyển là biến một bài toán mới thành một bài toán đã biết cách giải hoặc
+dễ xử lý hơn. Trong ngữ cảnh dãy số, các đích quy chuyển thường gặp là:
+\begin{itemize}
+  \item đưa truy hồi về truy hồi tuyến tính hệ số hằng để dùng nhân ma trận;
+  \item tìm chu kỳ modulo hoặc chu kỳ cuối cùng của dãy;
+  \item chia quá trình thành các giai đoạn giống thuật toán Euclid;
+  \item thay một dãy đơn bằng một vector trạng thái rồi lũy thừa ma trận
+  chuyển;
+  \item nhận ra cấu trúc Fibonacci hoặc cấp số trong các đoạn đặc biệt.
+\end{itemize}
 
-Các slide liên hệ nhiều công cụ toán học: thuật toán Euclid, lũy thừa nhanh,
-nhân ma trận, cấp số, tuần hoàn modulo và phân tích truy hồi. Khi dãy có trạng
-thái hữu hạn theo modulo, nguyên lý lặp lại trạng thái thường dẫn tới chu kỳ.
+Các slide vì vậy không trình bày dãy số như một chủ đề thuần toán học, mà xem
+mỗi dãy là một mô hình cần được đổi dạng cho phù hợp với ràng buộc dữ liệu.
+
+\section{\textit{Dispute}: từ truy hồi phi tuyến đến bước nhảy tuyến tính}
+
+Ví dụ mở đầu là dãy
+\[
+  F_0=0,\qquad F_n=g(n,F_{n-1}),
+\]
+trong đó slide nhấn mạnh công thức
+\[
+  g(x,y)=\bigl((y-1)x^5+x^3-xy+3x+7y\bigr)\bmod 9973.
+\]
+Nếu chỉ nhìn trực tiếp, \(n\) lớn làm truy hồi từng bước không thể chấp nhận.
+Một cách thô là lưu các mốc \(F_{100000k}\), rồi từ mốc gần nhất truy hồi
+thêm không quá \(100000\) bước. Ý tưởng ấy đúng hướng ở chỗ nó giảm quy mô,
+nhưng chưa dùng cấu trúc của công thức.
+
+Điểm đột phá nằm ở hai quan sát mà slide tách riêng:
+\begin{enumerate}
+  \item với \(x\) cố định, công thức tuyến tính theo \(y\);
+  \item mọi tính toán đều lấy modulo số nguyên tố \(M=9973\).
+\end{enumerate}
+Do \(g(x,y)\) chỉ phụ thuộc vào \(x\bmod M\), khi nhảy đúng \(M\) bước ta thu
+được hai hằng số \(A,B\) sao cho
+\[
+  F_{(k+1)M}\equiv AF_{kM}+B\pmod M.
+\]
+Như vậy dãy con ở các chỉ số bội của \(M\) đã trở thành truy hồi tuyến tính
+hệ số hằng. Ta tính \(A,B\) trong \(\Oh(M)\), dùng lũy thừa nhanh hoặc công
+thức tổng cấp số nhân modulo để lấy \(F_{\lfloor n/M\rfloor M}\), rồi truy
+hồi thêm phần dư. Độ phức tạp được rút còn
+\[
+  \Oh\!\left(M+\log_2\frac{n}{M}\right).
+\]
+
+\section{TopCoder SRM 369: chu kỳ và thuật toán Euclid}
+
+Mốc \textit{TopCoder SRM 369} trong slide tương ứng với ví dụ dãy trị tuyệt
+đối:
+\[
+  F_1=A,\qquad F_2=B,\qquad F_n=|F_{n-1}-F_{n-2}|.
+\]
+Miền \(n\) rất lớn nên không thể sinh dãy. Quan sát nhiều cặp ban đầu cho
+thấy cuối cùng dãy rơi vào chu kỳ ba phần tử
+\[
+  x,\ x,\ 0,\ x,\ x,\ 0,\ldots
+\]
+và \(x=\gcd(A,B)\).
+
+Chứng minh trong bài viết chính đi theo đúng tinh thần quy chuyển: mọi số hạng
+đều là bội của \(\gcd(A,B)\), giá trị cực đại của hai số liên tiếp giảm sau
+một số bước, và khi hai số liên tiếp bằng nhau thì chu kỳ cuối xuất hiện. Từ
+đó quá trình được chia thành các giai đoạn giống thuật toán Euclid. Mỗi giai
+đoạn bắt đầu bằng \(x>y\), đặt \(\Delta=x-y\), rồi nhảy qua cả một cụm số hạng
+thay vì trừ từng bước. Thời gian còn \(\Oh(\log n)\).
+
+\section{\textit{Count} của NOI 2007: một dãy thành vector trạng thái}
+
+Slide tiếp theo nêu \textit{Count} của NOI 2007. Với \(n\) đỉnh trên một đường
+thẳng, nối hai đỉnh nếu khoảng cách không quá \(k\); cần đếm số cây khung
+modulo \(65521\). Khi \(k=2\), số nghiệm là các số Fibonacci ở vị trí chẵn,
+nhưng với \(k=3,4,5\) thì dãy đơn không còn dễ nhận dạng.
+
+Quy chuyển ở đây là đổi đối tượng: thay vì chỉ giữ số cây khung của \(n\) đỉnh,
+ta giữ trạng thái liên thông của \(k\) đỉnh cuối. Hai vị trí cùng số nghĩa là
+thuộc cùng một thành phần. Ví dụ với \(k=3\), các trạng thái chuẩn là
+\[
+  111,\quad 112,\quad 121,\quad 122,\quad 123.
+\]
+Khi thêm đỉnh mới, ta thử các cạnh nối tới \(k\) đỉnh trước đó, loại những
+cạnh tạo chu trình, rồi chuẩn hóa lại trạng thái. Vì \(k\le5\), số trạng thái
+lớn nhất chỉ là \(52\). Ta xây dựng ma trận chuyển \(52\times52\), lấy lũy
+thừa \(n-k\), và đọc trạng thái mà \(k\) đỉnh cuối cùng liên thông.
+
+Độ phức tạp slide nhấn mạnh là
+\[
+  \Oh(52^3\log n)
+\]
+với bộ nhớ \(\Oh(52^2)\). Đây là ví dụ quan trọng vì nó cho thấy ``dãy số''
+trong đề bài có thể ẩn một hệ nhiều dãy liên kết với nhau.
+
+\section{\textit{Maximum}: cấu trúc Fibonacci trong từng đoạn}
+
+Mốc cuối của PPT là \textit{Maximum. Version 2} / Ural 1396. Dãy được cho bởi
+\[
+  A_1=1,\qquad A_{2i}=A_i,\qquad A_{2i+1}=A_i+A_{i+1}.
+\]
+Với \(n\), cần tìm giá trị lớn nhất trong \(A_1,\ldots,A_n\).
+
+Vì công thức gắn với phép nhân đôi chỉ số, slide chia dãy theo các đoạn giữa
+hai lũy thừa của \(2\). Các đoạn đầu là:
+\[
+\begin{array}{l}
+1\\
+1,\ 2\\
+1,\ 3,\ 2,\ 3\\
+1,\ 4,\ 3,\ 5,\ 2,\ 5,\ 3,\ 4.
+\end{array}
+\]
+Giá trị lớn nhất của mỗi đoạn lần lượt là Fibonacci. Tổng quát hơn, nếu trong
+một đoạn có hai số kề \(a,b\), thì sau khi mở rộng thêm \(t\) tầng, giá trị
+lớn nhất trong phần sinh ra là một số hạng của dãy Fibonacci tổng quát bắt
+đầu từ \(a,b\). Nhờ đó, lời giải chỉ cần đi theo biểu diễn nhị phân của \(n\)
+và cập nhật cặp biên, đạt \(\Oh(\log n)\).
 
 \section{Kết luận}
 
-Giải bài toán dãy số không nên chỉ thử đoán vài số hạng đầu. Cần tìm đại lượng
-được bảo toàn, chu kỳ, hoặc phép biến đổi đưa dãy về một cấu trúc quen thuộc
-hơn. Khi đó bài toán lớn có thể được rút về tính nhanh một số hạng hoặc một
-tổng trên chu kỳ.
+Bốn ví dụ trong slide dùng bốn con đường quy chuyển khác nhau: bước nhảy
+modulo để tuyến tính hóa, giai đoạn Euclid, vector trạng thái và cấu trúc
+Fibonacci theo tầng. Điểm chung là không cố xử lý dãy ở dạng ban đầu. Ta tìm
+một hình thức biểu diễn làm lộ ra quan hệ đã biết, rồi dùng công cụ tiêu chuẩn
+như Euclid, nhân ma trận hoặc lũy thừa nhanh để xử lý miền dữ liệu lớn.
 
 \end{document}

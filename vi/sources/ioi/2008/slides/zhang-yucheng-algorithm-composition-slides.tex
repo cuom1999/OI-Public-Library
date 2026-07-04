@@ -12,33 +12,151 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for algorithm composition}
-\sourcepath{IOI China candidate team papers / 2008 / Day 2 / Zhang Yucheng.ppt}
+\origtitle{A method for algorithm composition: slides}
+\sourcepath{IOI China 2008 / Day 2 / Zhang Yucheng / slides.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mạch trình bày}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ PDF và DOCX. Bản ghi chú này
-tóm lược phương pháp chia bài toán thành các phần mà mỗi thuật toán phụ xử lý
-tốt nhất.
+PPT gốc chứa nhiều hình và chữ trong đối tượng đồ họa; phần trích được rõ
+nhất là bài toán thao tác \texttt{B X}, \texttt{A Y}, các giới hạn
+\(N=40000\), \(R=500000\), công thức \(x\bmod Y\), các khoảng
+\([kY,(k+1)Y)\), và một số mốc độ phức tạp. Bản ghi chú này dựa trên các mốc
+ấy và bài viết đi kèm để phục dựng mạch trình bày của slide.
 
-\section{Ý tưởng}
+Chủ đề của bản trình chiếu là kết hợp thuật toán: cùng một bài toán có thể có
+nhiều thuật toán đều chưa đủ tốt trong trường hợp xấu nhất, nhưng mỗi thuật
+toán lại mạnh trên một vùng dữ liệu. Nếu chia bài toán theo đúng đặc trưng
+của các vùng ấy, ta có thể dùng từng thuật toán ở nơi nó hiệu quả nhất và thu
+được độ phức tạp tổng thể tốt hơn.
 
-Một thuật toán có thể rất tốt cho một vùng dữ liệu nhưng kém ở vùng khác. Thay
-vì cố tìm một thuật toán thống trị mọi trường hợp, ta có thể kết hợp nhiều
-thuật toán: dùng thuật toán này cho truy vấn nhỏ, thuật toán kia cho truy vấn
-lớn, hoặc chia dữ liệu theo một ngưỡng cân bằng.
+\section{Bài toán thao tác trên tập}
 
-\section{Ví dụ độ phức tạp}
+Bài toán thứ nhất duy trì một tập \(S\), ban đầu rỗng. Có hai thao tác:
+\begin{itemize}
+  \item \texttt{B X}: chèn số \(X\) vào \(S\);
+  \item \texttt{A Y}: hỏi số trong \(S\) có phần dư nhỏ nhất khi chia cho
+  \(Y\).
+\end{itemize}
+Các thao tác được biết trước, nên được phép xử lý offline. Giới hạn của slide
+là \(N\le 40000\) và \(1\le X,Y\le R=500000\).
 
-Bài viết nêu ví dụ kết hợp một thuật toán \(\Oh(N^2)\) và một thuật toán
-\(\Oh(NR)\). Khi chia tập truy vấn theo ngưỡng hợp lý, tổng độ phức tạp có thể
-trở thành \(\Oh(N\sqrt{R})\). Đây là kiểu phân rã phổ biến: phần có nhiều lựa
-chọn thì xử lý offline hoặc tiền xử lý, phần còn lại dùng cách trực tiếp.
+Thuật toán trực tiếp duyệt mọi phần tử hiện có của \(S\) khi gặp truy vấn
+\texttt{A Y}. Nó tốt nếu số lần chèn hoặc số lần hỏi rất ít, nhưng trường hợp
+xấu nhất là \(\Oh(N^2)\). Một thuật toán khác duy trì sẵn đáp án cho từng giá
+trị \(Y\) xuất hiện trong truy vấn: mỗi lần chèn \(X\), cập nhật đáp án của
+mọi \(Y\) cần quan tâm. Cách này cũng có thể là \(\Oh(N^2)\), nhưng nếu số
+giá trị \(Y\) cần duy trì nhỏ thì rất tốt.
 
-\section{Kết luận}
+\section{Thuật toán theo khoảng modulo}
 
-Kết hợp thuật toán là kỹ năng cân bằng ưu nhược điểm. Điều quan trọng là chọn
-tiêu chí chia phần sao cho mỗi phần rơi vào vùng mạnh của một thuật toán, và
-chi phí tại ngưỡng chia được cân bằng.
+Slide nhấn mạnh phép biến đổi
+\[
+  x=kY+r,\qquad 0\le r<Y.
+\]
+Muốn \(x\bmod Y\) nhỏ nhất tức là muốn \(r\) nhỏ nhất. Với một \(k\) cố định,
+ta chỉ cần tìm phần tử nhỏ nhất của \(S\) trong khoảng \([kY,(k+1)Y)\). Vì
+vậy truy vấn \texttt{A Y} có thể được trả lời bằng cách duyệt các khoảng độ
+dài \(Y\), lấy phần tử nhỏ nhất trong mỗi khoảng, rồi chọn phần dư tốt nhất.
+
+Để hỏi phần tử nhỏ nhất không nhỏ hơn một đầu mút \(a\), bài viết dùng một
+cấu trúc offline dựa trên hợp nhất--tìm kiếm. Nếu xử lý thời gian ngược, thao
+tác chèn ở chiều xuôi trở thành thao tác xóa hoặc gộp khoảng ở chiều ngược;
+các khoảng có cùng ``phần tử kế tiếp'' được duy trì bằng DSU. Chi tiết cài
+đặt không phải trọng tâm của slide, nên ở đây chỉ giữ lại ý chính: mỗi khoảng
+\([kY,(k+1)Y)\) có thể được kiểm tra gần như hằng số.
+
+Với cách này, một truy vấn \texttt{A Y} cần xét khoảng \(\Oh(R/Y)\). Khi
+\(Y\) lớn, số khoảng ít và thuật toán rất nhanh; khi \(Y\) nhỏ, nó chậm. Đây
+là nửa thứ nhất của phép kết hợp.
+
+\section{Chia truy vấn theo ngưỡng}
+
+Nửa thứ hai là thuật toán duy trì sẵn đáp án cho các \(Y\) nhỏ. Chọn một
+ngưỡng \(K\). Với mọi \(Y\le K\), ta duy trì đáp án \(p(Y)\) khi xử lý thao
+tác theo chiều xuôi. Mỗi lần chèn \(X\), cập nhật \(p(Y)\) cho mọi
+\(1\le Y\le K\), mất \(\Oh(K)\); mỗi truy vấn nhỏ trả lời \(\Oh(1)\).
+
+Với \(Y>K\), ta dùng thuật toán theo khoảng ở trên. Mỗi truy vấn lớn chỉ cần
+\(\Oh(R/Y)\le \Oh(R/K)\) lần kiểm tra khoảng. Tổng thời gian là
+\[
+  \Oh\left(NK+\frac{NR}{K}\right).
+\]
+Cân bằng hai hạng tử bằng cách chọn \(K=\sqrt{R}\), ta được
+\[
+  \Oh(N\sqrt{R}).
+\]
+Đây là ví dụ rất sạch của kết hợp thuật toán: thuật toán duy trì tốt cho
+\(Y\) nhỏ, thuật toán quét khoảng tốt cho \(Y\) lớn, và ngưỡng chia được chọn
+sao cho hai chi phí cân bằng.
+
+\section{Bài toán đếm hình chữ nhật}
+
+Bài toán thứ hai cho \(N\) điểm trên mặt phẳng, hỏi có bao nhiêu hình chữ nhật
+cạnh song song trục tọa độ mà bốn đỉnh đều thuộc tập điểm. Sau khi rời rạc
+hóa tọa độ, mỗi điểm nằm trên một nút lưới. Một hình chữ nhật được xác định
+bởi hai hàng và hai cột cùng có điểm.
+
+Thuật toán dễ nghĩ: xét từng cặp hàng. Với hai hàng \(i,j\), đếm số cột mà
+cả hai hàng đều có điểm; nếu số đó là \(s\), hai hàng tạo ra
+\[
+  \binom{s}{2}
+\]
+hình chữ nhật. Cách này là \(\Oh(N^2)\) trong trường hợp xấu nhất, nhưng rất
+tốt khi số hàng ít hoặc khi ta chỉ cần xử lý một nhóm hàng nhỏ.
+
+Để tận dụng đặc điểm ấy, đặt ngưỡng \(K\). Hàng có hơn \(K\) điểm gọi là hàng
+loại A, còn lại là loại B. Vì tổng số điểm là \(N\), số hàng loại A nhỏ hơn
+\(N/K\). Do đó các hình chữ nhật dùng hai hàng loại A, và cả phần dùng một
+hàng loại A với một hàng loại B, có thể xử lý bằng cách xét các hàng loại A
+và quét các điểm, với chi phí cỡ
+\[
+  \Oh\left(\frac{N^2}{K}\right).
+\]
+
+\section{Thuật toán riêng cho các hàng thưa}
+
+Phần còn lại là các hình chữ nhật dùng hai hàng loại B. Mỗi hàng loại B có
+không quá \(K\) điểm. Thay vì xét cặp hàng, ta xét cặp cột trên cùng một
+hàng. Mỗi cặp điểm cùng hàng tạo ra một đoạn ngang \([a,b]\) theo chỉ số cột.
+Nếu cùng đoạn \([a,b]\) xuất hiện trên \(s\) hàng khác nhau, nó đóng góp
+\(\binom{s}{2}\) hình chữ nhật.
+
+Vì mỗi hàng loại B có không quá \(K\) điểm, tổng số đoạn cần xét là
+\(\Oh(KN)\). Có thể băm các đoạn để đếm số lần xuất hiện. Bài viết còn nêu
+cách giảm bộ nhớ: cố định đầu mút phải \(b\), chỉ băm đầu mút trái của những
+đoạn có cùng \(b\), nhờ đó vẫn giữ thời gian \(\Oh(KN)\) nhưng không cần lưu
+toàn bộ \(\Oh(KN)\) đoạn cùng lúc.
+
+Kết hợp hai phần, tổng thời gian là
+\[
+  \Oh\left(\frac{N^2}{K}+KN\right).
+\]
+Chọn \(K=\sqrt{N}\) cho độ phức tạp
+\[
+  \Oh(N^{1.5}).
+\]
+Ở đây cách chia không phải theo giá trị truy vấn rõ ràng như bài thứ nhất, mà
+theo mật độ của từng hàng. Thuật toán cặp hàng mạnh ở nhóm hàng dày vì số
+hàng dày ít; thuật toán băm đoạn mạnh ở nhóm hàng thưa vì mỗi hàng sinh ít
+đoạn.
+
+\section{Tổng kết}
+
+Kết hợp thuật toán không có nghĩa là ghép tùy tiện nhiều kỹ thuật vào cùng
+một chương trình. Cần xác định rõ:
+\begin{enumerate}
+  \item mỗi thuật toán mạnh trong điều kiện nào;
+  \item bài toán có thể chia thành các phần song song theo điều kiện ấy hay
+  không;
+  \item chi phí ở ngưỡng chia có cân bằng được không;
+  \item các phần sau khi chia có phủ hết bài toán và không đếm trùng hay bỏ
+  sót hay không.
+\end{enumerate}
+
+Hai ví dụ của slide đều dùng các thuật toán riêng lẻ có trường hợp xấu nhất
+chưa đủ tốt. Sau khi chia truy vấn theo \(Y\), hoặc chia hàng theo mật độ,
+nhược điểm của thuật toán này rơi vào vùng mà thuật toán kia xử lý tốt hơn.
+Đó là giá trị chính của phương pháp: thay vì tìm một thuật toán thống trị mọi
+trường hợp, ta chọn tiêu chí phân rã làm cho các ưu điểm bổ sung cho nhau.
 
 \end{document}

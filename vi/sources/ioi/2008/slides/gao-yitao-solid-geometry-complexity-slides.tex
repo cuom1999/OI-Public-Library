@@ -2,6 +2,8 @@
 % Source-File: IOI中国国家候选队论文/2008/Day2/8.高亦陶《从立体几何问题看降低编程复杂度》/从立体几何问题看降低编程复杂度.ppt
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{calc}
 
 \newcommand{\Oh}{\mathcal{O}}
 
@@ -12,35 +14,136 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for reducing implementation complexity through solid geometry}
+\origtitle{Reducing implementation complexity through solid geometry}
 \sourcepath{IOI China candidate team papers / 2008 / Day 2 / Gao Yitao.ppt}
 
 \section{Phạm vi bản dịch}
 
-Tệp gốc chỉ có PowerPoint. Phần chữ đọc được nhắc các ví dụ
-\textit{Model Rocket Height} và \textit{Crossing Prisms}, cùng các công thức
-góc, mặt cắt và độ phức tạp hằng số. Bản ghi chú này ghi lại khung tư duy của
-slide thay vì tái tạo đầy đủ mọi hình vẽ.
+Tệp gốc là PowerPoint-only. Dòng chữ trích được từ PPT khá ít, nhưng các mốc
+ổn định gồm \(\Oh(1)\), \textit{Model Rocket Height}, \textit{Crossing Prisms},
+khoảng \([0,10]\), mặt cắt \(y=y_k\), công thức có \(\cos\), và các tên hình
+minh họa như \texttt{mrh\_angle}, \texttt{cpr\_s1}, \texttt{cpr\_w1}. Bản ghi
+chú này dịch và hệ thống hóa mạch slide theo các mốc đó; những hình vẽ trang
+trí hoặc hoạt ảnh được gộp thành mô tả toán học.
+
+Chủ đề không phải là trình bày một thư viện hình học 3D tổng quát. Ngược lại,
+slide nhấn mạnh cách chọn mô hình để bài toán không gian được rút về vài phép
+tính một chiều hoặc hai chiều, nhờ đó cài đặt ngắn hơn và ít trường hợp biên
+hơn.
 
 \section{Động cơ}
 
-Bài hình học không gian thường khó không chỉ vì toán, mà còn vì cài đặt: nhiều
-trường hợp biên, vector ba chiều, giao mặt phẳng và sai số số thực. Giảm độ
-phức tạp lập trình nghĩa là chọn mô hình và phép biến đổi sao cho phần 3D
-được đưa về công thức hoặc bài toán 2D đơn giản hơn.
+Trong hình học không gian, độ khó lập trình thường đến từ các chi tiết:
+vector ba chiều, giao đường thẳng với mặt phẳng, thứ tự điểm trên đa giác cắt,
+sai số số thực và các cấu hình suy biến. Nếu mô hình quá tổng quát, lời giải
+dễ biến thành một tập lớn các hàm hình học khó kiểm soát.
 
-\section{Ví dụ}
+Vì vậy slide đặt mục tiêu ``giảm độ phức tạp lập trình'': tìm phép chiếu, mặt
+cắt, hệ tọa độ hoặc công thức lượng giác để phần 3D biến thành bài toán đã
+quen. Khi đại lượng cần tính chỉ phụ thuộc vào một vài góc, độ dài hoặc lát
+cắt, ta có thể tránh hầu hết thao tác hình học không gian trực tiếp.
 
-Với bài \textit{Model Rocket Height}, thay vì mô phỏng toàn bộ quỹ đạo hoặc
-hình học không gian, ta tìm đại lượng cần đo qua quan hệ góc và tam giác. Với
-\textit{Crossing Prisms}, các dấu hiệu trong slide cho thấy cách xét mặt cắt
-theo một tham số như \(y=y_k\), rồi tính diện tích hoặc thể tích bằng tổng các
-phần cắt đơn giản.
+\section{\textit{Model Rocket Height}: đổi bài 3D thành lượng giác}
+
+Ví dụ đầu là \textit{Model Rocket Height}. Các slide có nhiều hình
+\texttt{mrh1b}, \texttt{mrh2b}, \texttt{mrh\_angle} và \texttt{mrh\_f}, cho
+thấy mạch lập luận xoay quanh việc dựng tam giác quan sát và đọc chiều cao
+từ các góc.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9, >=stealth]
+  \draw[thick] (-0.2,0) -- (6.2,0);
+  \coordinate (A) at (0.5,0);
+  \coordinate (B) at (4.8,0);
+  \coordinate (R) at (3.3,3.1);
+  \draw[fill=black] (A) circle (1.5pt) node[below] {trạm 1};
+  \draw[fill=black] (B) circle (1.5pt) node[below] {trạm 2};
+  \draw[fill=black] (R) circle (1.5pt) node[above] {tên lửa};
+  \draw[dashed] (R) -- ($(R)!(A)!(B)$) node[midway,right] {$h$};
+  \draw[thick] (A) -- (R) -- (B);
+  \draw (1.2,0) arc[start angle=0,end angle=37,radius=0.7];
+  \node at (1.45,0.27) {$\alpha$};
+  \draw (4.15,0) arc[start angle=180,end angle=132,radius=0.65];
+  \node at (3.9,0.35) {$\beta$};
+\end{tikzpicture}
+\end{center}
+
+Thay vì dựng đường thẳng 3D và tìm giao chính xác, ta chọn mặt phẳng chứa hai
+trạm quan sát và tên lửa. Trong mặt phẳng này, bài toán chỉ còn là tam giác:
+biết khoảng cách giữa hai trạm và các góc nâng, tính chiều cao \(h\). Nếu gọi
+khoảng cách từ chân đường cao tới trạm thứ nhất là \(x\), thì
+\[
+  h=x\tan\alpha=(d-x)\tan\beta.
+\]
+Suy ra
+\[
+  h=\frac{d\tan\alpha\tan\beta}{\tan\alpha+\tan\beta}.
+\]
+Trong các biến thể có thêm góc phương vị, bước quan trọng vẫn là chiếu về mặt
+phẳng thích hợp trước, rồi mới dùng lượng giác phẳng. Đó là ý nghĩa của mốc
+\(\Oh(1)\) trong slide: sau khi chọn đúng biểu diễn, mỗi trường hợp chỉ cần
+một số hằng phép tính.
+
+\section{\textit{Crossing Prisms}: thể tích bằng tích phân lát cắt}
+
+Ví dụ thứ hai là \textit{Crossing Prisms}. Dòng chữ trích được nhắc khoảng
+\([0,10]\), mặt cắt \(y=y_k\), các hình \texttt{cpr\_w1}, \texttt{cpr\_w2},
+\texttt{cpr\_w3c}, \texttt{cpr\_w3d}, và công thức dạng
+\[
+  2\sum \frac{\cdots}{\cos(\cdots)}.
+\]
+Mạch slide vì vậy là phương pháp lát cắt: thay vì xử lý trực tiếp giao của
+hai lăng trụ xiên, ta cắt vật thể bởi các mặt phẳng \(y=y_k\), tính diện tích
+mặt cắt, rồi cộng hoặc tích phân các lát.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85, >=stealth]
+  \draw[->] (-0.4,0) -- (6.4,0) node[right] {$x$};
+  \draw[->] (0,-0.3) -- (0,3.7) node[above] {$z$};
+  \draw[thick,blue] (0.4,0.4) -- (5.8,0.4) -- (4.6,3.0) -- (1.0,3.0) -- cycle;
+  \draw[thick,red] (0.9,0.1) -- (5.1,3.2);
+  \draw[thick,red] (1.8,0.1) -- (6.0,3.2);
+  \draw[dashed] (0.2,1.6) -- (6.1,1.6);
+  \node[left] at (0.2,1.6) {$y=y_k$};
+  \node[blue] at (5.2,2.8) {lăng trụ 1};
+  \node[red] at (5.4,1.5) {lăng trụ 2};
+\end{tikzpicture}
+\end{center}
+
+Ở mỗi lát \(y=y_k\), giao của hai lăng trụ trở thành giao của vài đoạn hoặc
+đa giác trong mặt phẳng. Các đoạn biên có thể dài hơn hình chiếu của chúng
+một hệ số \(1/\cos\theta\); vì vậy công thức tổng trong slide xuất hiện mẫu
+\(\cos\). Khi các điểm gãy theo \(y\) được sắp thứ tự, diện tích mặt cắt là
+một hàm tuyến tính hoặc bậc thấp trên từng khoảng, nên thể tích có thể tính
+bằng cộng các phần đơn giản.
+
+Điểm cần học không phải là một công thức duy nhất cho mọi lăng trụ, mà là cách
+đổi bài toán: từ giao khối 3D khó cài đặt sang một chuỗi bài toán mặt cắt 2D
+có thứ tự rõ ràng. Các ký hiệu như \(1,2+,2-,3\) và \(3,2-,2+,1\) trong text
+stream nhiều khả năng là thứ tự các biên khi quét qua các điểm gãy; đây chính
+là phần giúp tránh xét tay quá nhiều trường hợp.
+
+\section{Nguyên tắc cài đặt}
+
+Từ hai ví dụ, slide rút ra một số nguyên tắc thực dụng:
+\begin{itemize}
+  \item Luôn hỏi đại lượng cần tính có thật sự cần mô hình 3D đầy đủ hay không.
+  \item Nếu đề bài chỉ hỏi chiều cao, góc, thể tích hoặc diện tích cắt, hãy
+  ưu tiên chiếu hoặc lát cắt.
+  \item Đưa các cạnh xiên về hình chiếu và hệ số lượng giác như \(1/\cos\theta\)
+  thay vì thao tác trực tiếp với mặt phẳng tổng quát.
+  \item Chọn tham số quét để thứ tự sự kiện ít thay đổi nhất; khi thứ tự đổi,
+  tách thành một khoảng mới.
+  \item Giảm số nhánh suy biến bằng cách làm việc với công thức trên đoạn/mặt
+  cắt đã chuẩn hóa.
+\end{itemize}
 
 \section{Kết luận}
 
-Khi gặp bài 3D, hãy tìm phép chiếu, mặt cắt, hệ tọa độ mới hoặc tham số hóa
-làm giảm số chiều của tính toán. Một lời giải ít trường hợp biên thường đáng
-giá hơn một mô hình hình học tổng quát nhưng dài và dễ sai.
+Các bài hình học không gian trong thi lập trình không nhất thiết phải được
+giải bằng một bộ công cụ 3D lớn. Nếu chọn đúng phép quy đổi, \textit{Model
+Rocket Height} trở thành một bài lượng giác phẳng \(\Oh(1)\), còn
+\textit{Crossing Prisms} trở thành bài quét các mặt cắt \(y=y_k\). Giảm độ
+phức tạp lập trình ở đây là giảm số chiều của suy nghĩ trước khi viết mã.
 
 \end{document}
