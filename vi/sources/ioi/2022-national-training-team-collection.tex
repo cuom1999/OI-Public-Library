@@ -7346,13 +7346,22 @@ theo dung lượng nghẽn, rồi cập nhật mạng dư. Nếu dùng thế nă
 số không âm sau mỗi lần chạy đường ngắn, ta nhận được cách cài đặt kinh điển
 của min-cost max-flow.
 
+\paragraph{Thuật toán 1: \emph{successive shortest path}.}
 \begin{enumerate}
-  \item Khởi tạo $x=0$.
-  \item Khi còn đường tăng có chi phí làm cải thiện mục tiêu, tìm đường ngắn
-  nhất $P$ trong mạng dư.
-  \item Đẩy lượng luồng cho phép trên $P$ và đặt $x\leftarrow x\oplus P$.
-  \item Trả về luồng cuối cùng.
+  \item Khởi tạo luồng hiện tại \(x^*\leftarrow 0\).
+  \item Trong khi nghiệm tối ưu của mạng dư \(G(x^*)\) còn có chi phí âm:
+  \begin{enumerate}
+    \item dùng Bellman--Ford trên \(G(x^*)\) để tìm một đường ngắn nhất
+    \(P\) từ \(s\) tới \(t\);
+    \item dựng luồng khả thi \(x^0\) tương ứng với đường \(P\) và có dung
+    lượng \(1\);
+    \item cập nhật \(x^*\leftarrow x^*+x^0\).
+  \end{enumerate}
+  \item Trả về \(x^*\).
 \end{enumerate}
+Trong quá trình chạy, thuật toán không tạo chu trình âm hoặc đường tăng âm từ
+\(t\) về \(s\), và chi phí \(\operatorname{cost}_{G(x^*)}(x^0)\) của mỗi lần
+tăng không giảm.
 
 Bài viết nhấn mạnh rằng trong các bài OI, ta thường không chạy SSP nguyên dạng.
 Thay vào đó, ta chứng minh các đường ngắn nhất có hình dạng đặc biệt rồi duy trì
@@ -7525,13 +7534,55 @@ gãy. Khi nối thêm một vị trí, thủ tục \textsc{Extend} cập nhật 
 trị hằng của hàm. Nếu một điểm gãy vượt qua phía còn lại, nó tương ứng với một
 đường tăng vừa được thực hiện trong mạng dư.
 
+\paragraph{Thuật toán 2: \textsc{Extend}(\(Q_0,Q_1,f_0,x,y,c\)).}
+Hai heap nhỏ \(Q_0,Q_1\) lần lượt duy trì các điểm gãy còn có thể dùng ở hai
+phía, còn \(f_0\) là giá trị hằng hiện tại của hàm lồi.
+\begin{enumerate}
+  \item Nếu \(Q_1\) rỗng hoặc \(Q_1.\operatorname{top}()\ge -c-x\), đưa
+  \(c-y\) vào \(Q_0\).
+  \item Ngược lại:
+  \begin{enumerate}
+    \item đặt \(\operatorname{val}\leftarrow Q_1.\operatorname{top}()+c+x\);
+    \item cập nhật \(f_0\leftarrow f_0+\operatorname{val}\);
+    \item xóa phần tử nhỏ nhất của \(Q_1\);
+    \item đưa \(-c-x\) vào \(Q_1\);
+    \item đưa \(c-y-\operatorname{val}\) vào \(Q_0\).
+  \end{enumerate}
+\end{enumerate}
+
 \paragraph{Ví dụ 12: UER \#8 BRS.}
-Bài toán thêm dung lượng trên các đoạn của chuỗi hai chiều. Bản OCR của mã giả
-\textsc{Extend} bị nhiễu, nhưng ý chính là mỗi trạng thái lưu hai phần tử tốt
-nhất ở hai phía và một giá trị bù. Khi ghép, ta so sánh cặp tốt nhất mới với
-các cặp cũ, rồi di chuyển chúng giữa hai heap. Phân tích khấu hao cho thấy mỗi
-điểm gãy chỉ bị chuyển số lần hữu hạn, nên tổng thời gian gần tuyến tính nhân
-logarithm.
+Bài toán thêm dung lượng trên các đoạn của chuỗi hai chiều. Với một hang có
+dung lượng lớn hơn \(1\), ta gom các điểm gãy cùng giá trị thành từng cặp
+\((\text{giá trị},\text{số lượng})\). Thủ tục mở rộng trở thành:
+
+\paragraph{Thuật toán 3: \textsc{Extend}(\(Q_0,Q_1,f_0,x,y,c,\operatorname{cnt}\)).}
+\begin{enumerate}
+  \item Ghi nhớ \(\operatorname{cnt}_s\leftarrow \operatorname{cnt}\).
+  \item Trong khi \(\operatorname{cnt}>0\):
+  \begin{enumerate}
+    \item nếu \(Q_1\) rỗng hoặc
+    \(Q_1.\operatorname{top}().\mathrm{first}\ge -c-x\), đưa
+    \((c-y,\operatorname{cnt})\) vào \(Q_0\) rồi dừng vòng lặp;
+    \item ngược lại, lấy \(s\leftarrow Q_1.\operatorname{top}()\) và xóa nó
+    khỏi \(Q_1\);
+    \item đặt \(\operatorname{val}\leftarrow s.\mathrm{first}+c+x\) và
+    \(\operatorname{cnt}_0\leftarrow
+    \min(s.\mathrm{second},\operatorname{cnt})\);
+    \item cập nhật \(f_0\leftarrow f_0+\operatorname{val}\operatorname{cnt}_0\);
+    \item đưa \((c-y-\operatorname{val},\operatorname{cnt}_0)\) vào \(Q_0\);
+    \item đặt
+    \(s.\mathrm{second}\leftarrow s.\mathrm{second}-\operatorname{cnt}_0\) và
+    \(\operatorname{cnt}\leftarrow \operatorname{cnt}-\operatorname{cnt}_0\);
+    \item nếu \(s.\mathrm{second}>0\), đưa \(s\) trở lại \(Q_1\).
+  \end{enumerate}
+  \item Nếu \(\operatorname{cnt}_s-\operatorname{cnt}>0\), đưa
+  \((-c-x,\operatorname{cnt}_s-\operatorname{cnt})\) vào \(Q_1\).
+\end{enumerate}
+Khi thêm chuột, vòng lặp chỉ chạy một lần. Khi thêm hang, những vòng lặp trung
+gian đều làm giảm số phần tử trong \(Q_1\); với thế năng
+\(\Phi(D)=|Q_1|\), phần chi phí thừa được khấu hao. Do đó tổng số vòng lặp là
+\(O(n+m)\), và tổng độ phức tạp là
+\(\Theta((n+m)\log(n+m))\).
 
 \paragraph{Ví dụ 13: IOI2017 Wiring.}
 Bài \emph{Wiring} là mô hình ghép hai màu điểm trên đường thẳng với chi phí
@@ -7690,10 +7741,11 @@ nhiễu một số chỉ số trong công thức truy vấn, nên bản dịch g
 toán, các độ phức tạp, điều kiện hình học dữ liệu và ví dụ, đồng thời diễn giải
 những công thức có ký hiệu không đọc chắc được.
 Bài thứ mười bốn được OCR từ các trang vật lý 217--246 của PDF, tương ứng trang
-in 213--241. Đây là bài tổng kết mô phỏng luồng chi phí; OCR làm nhiễu nhiều
-mã giả, hình minh họa và chỉ số công thức trong các ví dụ về chuỗi một chiều,
-chuỗi hai chiều và cây, nên bản dịch giữ mô hình, điều kiện tối ưu, kỹ thuật dữ
-liệu và ý chứng minh, đồng thời diễn giải các hình bằng văn bản thay vì dựng
-lại khi nhãn không đủ chắc.
+in 213--241. Đây là bài tổng kết mô phỏng luồng chi phí; mã giả SSP và hai thủ
+tục \textsc{Extend} chính đã được đối chiếu từ ảnh render của nguồn. OCR vẫn làm
+nhiễu một số hình minh họa và chỉ số công thức trong các ví dụ về chuỗi một
+chiều, chuỗi hai chiều và cây, nên bản dịch giữ mô hình, điều kiện tối ưu, kỹ
+thuật dữ liệu và ý chứng minh, đồng thời diễn giải các hình bằng văn bản thay
+vì dựng lại khi nhãn không đủ chắc.
 
 \end{document}
