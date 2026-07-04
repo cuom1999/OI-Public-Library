@@ -285,6 +285,209 @@ Các lỗi cốt lõi là race, deadlock, livelock, starvation và không giữ 
 nhiều luồng xen kẽ. Với code hiệu năng cao, đúng về mặt thuật toán chưa đủ;
 cần đúng dưới mọi lịch chạy hợp lệ.
 
+\section{Phụ lục kỹ thuật cho lập trình thi đấu và hệ thống}
+
+Phần này bổ sung các điểm trong CS:APP thường tác động trực tiếp đến chương
+trình C/C++ khi chạy trên judge, benchmark hoặc môi trường Unix. Mục tiêu là
+dịch thành tri thức kiểm tra được: mỗi mục nêu nguyên nhân lỗi, dấu hiệu và cách
+đọc lại theo mô hình hệ thống của sách.
+
+\subsection{Bit, kiểu số và chuyển kiểu}
+
+Một dãy bit không tự mang nghĩa. Cùng \(w\) bit có thể được đọc thành số không
+dấu trong khoảng \(0,\ldots,2^w-1\), hoặc số bù hai trong khoảng
+\(-2^{w-1},\ldots,2^{w-1}-1\). Vì vậy phép so sánh và mở rộng kiểu trong C/C++
+có thể đổi kết quả khi trộn signed và unsigned.
+
+Các lỗi cần kiểm tra:
+\begin{itemize}
+  \item so sánh \texttt{int} âm với \texttt{size\_t} làm vế âm bị chuyển thành
+        số không dấu rất lớn;
+  \item lấy trị tuyệt đối của giá trị nhỏ nhất kiểu signed bị tràn vì không có
+        số dương tương ứng;
+  \item nhân hai số 32-bit rồi mới gán vào 64-bit vẫn có thể tràn trước khi gán;
+  \item dịch trái số signed âm hoặc dịch quá độ rộng kiểu là hành vi không xác
+        định theo C/C++.
+\end{itemize}
+
+Khi công thức toán cần modulo \(2^w\), dùng kiểu unsigned để biểu diễn rõ ý
+định. Khi công thức cần số nguyên toán học, ép toán hạng lên kiểu đủ rộng trước
+khi cộng/nhân, ví dụ dùng \texttt{long long} hoặc \texttt{\_\_int128} cho tích
+tạm thời trong hình học và số học modulo.
+
+\subsection{Số thực IEEE và sai số}
+
+Floating point có ba lớp đặc biệt: số chuẩn hóa, số không chuẩn hóa, và các giá
+trị ngoại lệ như \(\pm\infty\), NaN. Phép cộng/nhân làm tròn về số biểu diễn
+được gần nhất, nên các luật đại số quen thuộc không luôn đúng:
+\[
+  (a+b)+c \ne a+(b+c)
+\]
+có thể xảy ra vì sai số làm tròn và mất chữ số có nghĩa.
+
+Với bài thuật toán:
+\begin{itemize}
+  \item so sánh bằng số thực nên thay bằng ngưỡng sai số khi đề cho phép;
+  \item với hình học tọa độ nguyên, ưu tiên tích có hướng bằng số nguyên thay
+        vì lượng giác hoặc căn bậc hai;
+  \item khi cộng nhiều số có độ lớn rất khác nhau, cộng từ nhỏ đến lớn hoặc
+        dùng kỹ thuật bù sai số nếu cần độ chính xác cao;
+  \item NaN không bằng chính nó, nên một phép tính lỗi có thể làm điều kiện
+        rẽ nhánh hoạt động khác dự đoán.
+\end{itemize}
+
+\subsection{Đọc assembly để gỡ lỗi}
+
+CS:APP dùng assembly như ngôn ngữ quan sát compiler. Khi chương trình crash,
+backtrace và disassembly giúp trả lời ba câu hỏi: lệnh đang chạy là gì, register
+nào chứa địa chỉ hoặc dữ liệu lỗi, và stack frame hiện tại được dựng ra sao.
+
+Các dấu hiệu thường gặp:
+\begin{itemize}
+  \item địa chỉ gần 0 thường là dereference con trỏ null hoặc offset từ null;
+  \item địa chỉ có mẫu lạ sau khi \texttt{free} gợi ý use-after-free;
+  \item stack pointer lệch hoặc địa chỉ trả về bị ghi đè gợi ý buffer overflow;
+  \item vòng lặp bị tối ưu làm mất biến local trong debugger nếu build với tối
+        ưu cao.
+\end{itemize}
+
+Khi cần debug sâu, build bản riêng với \texttt{-g}, tắt bớt tối ưu nếu cần, và
+so sánh với bản tối ưu để tránh kết luận sai do thay đổi hành vi undefined.
+Mục tiêu không phải viết assembly, mà là hiểu phép truy cập mảng, struct, con
+trỏ và lời gọi hàm đã được hạ xuống địa chỉ thật như thế nào.
+
+\subsection{Cache, locality và layout dữ liệu}
+
+Mô hình cache trong Chương 6 giải thích vì sao hai thuật toán cùng \(O(n)\) có
+thể chênh lệch rất lớn. Nếu block size là \(B\), một cache miss thường đưa cả
+một đoạn byte liên tiếp vào cache. Duyệt mảng tuyến tính tận dụng spatial
+locality; lặp lại trên cùng dữ liệu trong thời gian ngắn tận dụng temporal
+locality.
+
+Các quy tắc thực tế:
+\begin{itemize}
+  \item duyệt mảng hai chiều theo đúng thứ tự lưu trong bộ nhớ; C/C++ lưu
+        row-major, nên vòng trong thường là cột cuối cùng;
+  \item gom dữ liệu hay truy cập cùng nhau vào cấu trúc liền kề, tránh con trỏ
+        nhảy ngẫu nhiên nếu không cần;
+  \item dùng blocking/tiling cho phép nhân ma trận, DP hai chiều lớn hoặc xử lý
+        ảnh/lưới để working set nằm trong cache;
+  \item tách dữ liệu nóng và lạnh khi một struct lớn chỉ cần vài trường trong
+        vòng lặp chính;
+  \item tránh false sharing trong code đa luồng khi nhiều luồng ghi các biến
+        khác nhau nhưng nằm cùng cache line.
+\end{itemize}
+
+Trong lập trình thi đấu, tối ưu cache không thay thế thuật toán đúng, nhưng nó
+có thể quyết định giữa AC và TLE khi giới hạn sát. Trước khi tối ưu vi mô, cần
+đo bằng input đại diện và kiểm tra bottleneck có thật nằm ở bộ nhớ hay không.
+
+\subsection{Compiler, aliasing và tối ưu}
+
+Compiler chỉ tối ưu trong phạm vi hành vi được ngôn ngữ bảo đảm. Nếu chương
+trình có undefined behavior, compiler được phép giả định trường hợp đó không
+xảy ra và sinh mã làm kết quả nhìn như ``phi lý''. Các nguồn UB phổ biến là
+tràn signed integer, truy cập ngoài mảng, dùng biến chưa khởi tạo, vi phạm
+strict aliasing và dịch bit sai.
+
+Aliasing làm compiler thận trọng: nếu hai con trỏ có thể trỏ vào cùng vùng nhớ,
+một phép ghi qua con trỏ này có thể làm hỏng giá trị đọc qua con trỏ kia. Vì
+vậy biến cục bộ tích lũy, mảng riêng biệt và giao diện rõ ownership thường giúp
+compiler tối ưu tốt hơn. Với C, \texttt{restrict} biểu thị cam kết không alias;
+với C++, cần thận trọng hơn và thường dựa vào cấu trúc dữ liệu rõ ràng.
+
+\subsection{Linking và lỗi biên dịch nhiều file}
+
+Nhiều lỗi ``biên dịch được file đơn, nhưng build toàn bộ thất bại'' đến từ
+linking. Linker cần một định nghĩa duy nhất cho mỗi symbol mạnh, giải quyết mọi
+tham chiếu chưa biết, và đặt section vào địa chỉ cuối cùng. Header chỉ nên chứa
+khai báo, inline/template hợp lệ, hoặc định nghĩa có liên kết nội bộ; biến toàn
+cục định nghĩa trong header dễ tạo duplicate symbol.
+
+Khi gặp lỗi linking:
+\begin{itemize}
+  \item \texttt{undefined reference}: có khai báo nhưng không có object/library
+        chứa định nghĩa, hoặc thứ tự thư viện sai;
+  \item \texttt{multiple definition}: cùng symbol được định nghĩa ở nhiều
+        translation unit;
+  \item ABI mismatch: object được build bằng cấu hình, chuẩn C++ hoặc compiler
+        không tương thích;
+  \item thiếu runtime/shared library khi chạy, dù link đã thành công.
+\end{itemize}
+
+Trong repo dịch thuật này, bài học tương ứng là không biến code mẫu của sách
+thành template mới nếu không kiểm thử build đầy đủ; code minh họa nên giữ vai
+trò minh họa.
+
+\subsection{Bộ nhớ ảo, allocator và lỗi heap}
+
+Bộ nhớ ảo tạo ảo giác địa chỉ liên tục, nhưng allocator phải quản lý các block
+trên heap thật. Một allocator tốt cân bằng throughput và utilization; một
+chương trình dùng allocator sai có thể leak, fragment hoặc crash.
+
+Các lỗi C/C++ cần đọc theo lifetime:
+\begin{itemize}
+  \item \term{use-after-free}: dùng con trỏ sau khi vùng nhớ đã trả lại;
+  \item \term{double free}: trả cùng block hai lần, làm hỏng metadata heap;
+  \item \term{memory leak}: mất mọi con trỏ tới block còn sống;
+  \item \term{out-of-bounds}: ghi qua cuối block, có thể làm hỏng block kế bên;
+  \item \term{dangling reference}: tham chiếu tới biến local đã rời scope.
+\end{itemize}
+
+Với C++, RAII, \texttt{vector}, \texttt{string}, \texttt{unique\_ptr} và
+\texttt{shared\_ptr} giúp biểu diễn ownership tốt hơn, nhưng không loại bỏ lỗi
+logic. Iterator/reference của container có thể bị vô hiệu sau resize, erase
+hoặc rehash; đây là cùng vấn đề lifetime dưới dạng thư viện chuẩn.
+
+\subsection{Unix I/O và buffering}
+
+Unix xem file, terminal, pipe và socket qua file descriptor. \texttt{read} và
+\texttt{write} có thể xử lý ít byte hơn yêu cầu; code chắc chắn phải lặp cho
+đến khi đủ dữ liệu, gặp EOF hoặc gặp lỗi thật. Lỗi bị ngắt bởi signal
+\texttt{EINTR} có thể cần gọi lại.
+
+Buffered I/O của \texttt{stdio} và \texttt{iostream} thêm bộ đệm ở user space.
+Trộn nhiều tầng I/O trên cùng descriptor mà không flush/sync có thể gây thứ tự
+khó đoán. Trong thi đấu, tắt đồng bộ C++ bằng
+\texttt{ios::sync\_with\_stdio(false)} chỉ an toàn khi không trộn với
+\texttt{scanf}/\texttt{printf} trên cùng luồng.
+
+\subsection{Process, signal và thứ tự thực thi}
+
+\texttt{fork} tạo tiến trình con bằng cách sao chép trạng thái logic của tiến
+trình cha; sau \texttt{fork}, cả hai tiến trình tiếp tục chạy từ điểm trả về.
+Thứ tự chạy giữa cha và con không được bảo đảm. Nếu cha không \texttt{wait},
+tiến trình con đã kết thúc có thể thành zombie cho đến khi được thu hồi.
+
+Signal là điều khiển bất đồng bộ, vì vậy handler phải rất nhỏ và chỉ gọi các
+hàm async-signal-safe. Mẫu an toàn là handler đặt cờ kiểu
+\texttt{volatile sig\_atomic\_t}, còn luồng chính kiểm tra cờ và xử lý đầy đủ.
+Không nên giữ invariant phức tạp chỉ bằng giả định signal sẽ đến ở thời điểm
+``thuận tiện''.
+
+\subsection{Concurrency}
+
+Trong chương trình đa luồng, race xảy ra khi hai luồng truy cập cùng dữ liệu,
+ít nhất một truy cập là ghi, và thiếu đồng bộ hóa tạo quan hệ happens-before.
+Kết quả có thể phụ thuộc lịch chạy, nên test nhiều lần vẫn không chứng minh
+đúng.
+
+Checklist đồng bộ:
+\begin{itemize}
+  \item xác định dữ liệu chia sẻ và lock bảo vệ từng invariant;
+  \item giữ thứ tự lấy lock nhất quán để tránh deadlock;
+  \item dùng condition variable trong vòng \texttt{while}, không dùng
+        \texttt{if}, vì có thể thức dậy giả hoặc điều kiện đã đổi;
+  \item không giữ lock khi gọi code không kiểm soát hoặc thao tác I/O chậm nếu
+        có thể tránh;
+  \item đo contention, vì thêm luồng không tự động tăng tốc nếu bottleneck là
+        lock hoặc bộ nhớ.
+\end{itemize}
+
+CS:APP chủ yếu dạy cách nhìn hệ thống: đúng đắn phải xét mọi xen kẽ hợp lệ của
+các luồng, còn hiệu năng phải xét cả CPU, cache, bộ nhớ và kernel, không chỉ số
+lệnh trong mã nguồn.
+
 \section{Bài lab và giá trị thực hành}
 
 Sách đi kèm các lab nổi tiếng:
