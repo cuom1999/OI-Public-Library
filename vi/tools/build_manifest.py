@@ -40,7 +40,6 @@ COMPANION_NOTE_SOURCES = {
     "动态规划 DYNAMIC PROGRAMMING/动态规划之状态压缩 - 周伟.pdf",
     "数据结构 DATA STRUCTURE/Link Cut Trees.pdf",
     "图论 GRAPH THEORY/Making Graphs into Trees - immortalCO, WrongAnswer.pdf",
-    "图论 GRAPH THEORY/经典算法之二分图 - 何振豪.pdf",
     "图论 GRAPH THEORY/经典网络流教程.pdf",
     "图论 GRAPH THEORY/区间图、弦图和完美图.pdf",
     "图论 GRAPH THEORY/网络流题选讲 - 李宇亮.pdf",

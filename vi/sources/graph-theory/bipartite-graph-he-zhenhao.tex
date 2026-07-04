@@ -2,6 +2,10 @@
 % Source-PDF: 图论 GRAPH THEORY/经典算法之二分图 - 何振豪.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+
+\usetikzlibrary{positioning}
+\renewcommand{\figurename}{Hình}
 
 \title{Các thuật toán kinh điển trên đồ thị hai phía}
 \author{He Zhenhao}
@@ -84,6 +88,50 @@ Trong hình đó, các cạnh màu đỏ là cạnh đã ghép, các cạnh màu
 ghép. Khi đi theo đường trên, trạng thái cạnh luân phiên giữa chưa ghép và đã
 ghép; hai đầu đường là hai đỉnh chưa ghép.
 
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  x=1cm,y=1cm,
+  vtx/.style={circle,draw,fill=white,minimum size=7mm,inner sep=0pt},
+  matched/.style={red,very thick},
+  free/.style={black,thick}
+]
+  \node[vtx] (a1) at (0,3) {1};
+  \node[vtx] (a2) at (0,2) {2};
+  \node[vtx] (a3) at (0,1) {3};
+  \node[vtx] (a4) at (0,0) {4};
+  \node[vtx] (b5) at (2,3) {5};
+  \node[vtx] (b6) at (2,2) {6};
+  \node[vtx] (b7) at (2,1) {7};
+  \node[vtx] (b8) at (2,0) {8};
+  \draw[matched] (a1) -- (b5);
+  \draw[matched] (a4) -- (b7);
+  \draw[free] (a2) -- (b5);
+  \draw[free] (a1) -- (b7);
+  \draw[free] (a4) -- (b8);
+  \draw[free] (a3) -- (b5);
+  \node[below=4mm of a4,anchor=north west] {Trước khi đảo đường tăng};
+  \begin{scope}[xshift=5cm]
+    \node[vtx] (c1) at (0,3) {1};
+    \node[vtx] (c2) at (0,2) {2};
+    \node[vtx] (c3) at (0,1) {3};
+    \node[vtx] (c4) at (0,0) {4};
+    \node[vtx] (d5) at (2,3) {5};
+    \node[vtx] (d6) at (2,2) {6};
+    \node[vtx] (d7) at (2,1) {7};
+    \node[vtx] (d8) at (2,0) {8};
+    \draw[free] (c1) -- (d5);
+    \draw[free] (c4) -- (d7);
+    \draw[matched] (c2) -- (d5);
+    \draw[matched] (c1) -- (d7);
+    \draw[matched] (c4) -- (d8);
+    \draw[free] (c3) -- (d5);
+    \node[below=4mm of c4,anchor=north west] {Sau khi đảo đường tăng};
+  \end{scope}
+\end{tikzpicture}
+\caption{Đảo trạng thái trên đường tăng \(2\to5\to1\to7\to4\to8\). Cạnh đỏ là cạnh đang ghép.}
+\end{figure}
+
 Một đường tăng có các tính chất cơ bản sau:
 \begin{enumerate}
   \item Số cạnh trên đường là số lẻ.
@@ -164,6 +212,26 @@ Một ví dụ trong slide là bài toán bắn laser trên lưới $N\times M$.
 vật thể cần loại bỏ. Laser được đặt ở biên, mỗi lần bắn chỉ đi theo một hàng
 hoặc một cột. Hỏi cần ít nhất bao nhiêu lần bắn để mọi vật thể đều bị bắn
 trúng.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.72]
+  \draw[step=1cm,gray!80] (0,0) grid (6,5);
+  \foreach \x in {0.5,1.5,...,5.5} {
+    \draw[->,thick] (\x,5.45) -- (\x,5.05);
+  }
+  \foreach \y in {0.5,1.5,...,4.5} {
+    \draw[->,thick] (-0.45,\y) -- (-0.05,\y);
+  }
+  \foreach \p in {(2.5,3.5),(1.5,2.5),(3.5,2.5),(2.5,1.5)} {
+    \node at \p {\(\ast\ast\)};
+  }
+  \draw[red,very thick] (0,2.5) -- (6,2.5);
+  \draw[red,very thick] (2.5,0) -- (2.5,5);
+  \node[below=5mm] at (3,0) {Hai tia đỏ phủ cả bốn vật thể, nên đáp án là \(2\).};
+\end{tikzpicture}
+\caption{Ví dụ phủ đỉnh nhỏ nhất dưới dạng chọn hàng hoặc cột để bắn laser.}
+\end{figure}
 
 Dựng đồ thị hai phía như sau: phía trái gồm các hàng $1,\ldots,N$, phía phải
 gồm các cột $1,\ldots,M$. Với mỗi vật thể ở ô $(i,j)$, thêm cạnh giữa hàng $i$
@@ -304,8 +372,14 @@ sang phải, đường tăng có dạng luân phiên rõ ràng, và các định
 không thể dùng nguyên các thuật toán này; thuật toán kinh điển khi đó là
 thuật toán Blossom.
 
-Các slide gốc có nhắc đến mã nguồn đính kèm cho Hungary, Hopcroft--Karp và KM,
-nhưng phần đính kèm không nằm trong nội dung văn bản trích xuất từ PDF. Vì vậy
-bản ghi chú này chỉ trình bày ý tưởng, định lý và khung cài đặt tự chứa.
+Các slide gốc có nhắc đến mã nguồn đính kèm cho Hopcroft--Karp và KM qua các
+liên kết paste:
+\begin{itemize}
+  \item Hopcroft--Karp: \url{http://paste.ubuntu.com/11980011/};
+  \item KM \(O(n^4)\): \url{http://paste.ubuntu.com/11979990/};
+  \item KM \(O(n^3)\): \url{http://paste.ubuntu.com/11979986/}.
+\end{itemize}
+Theo ngoại lệ của dự án, bản dịch không chép lại hay dịch các mẫu mã nguồn;
+phần chính ở trên trình bày ý tưởng, định lý và khung cài đặt tự chứa.
 
 \end{document}
