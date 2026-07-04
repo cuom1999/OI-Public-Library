@@ -1280,6 +1280,94 @@ trúc dữ liệu đủ mạnh để duy trì đúng thông tin cần thiết. G
 phía là ví dụ rõ ràng cho việc một trở ngại lý thuyết, blossom, phải được
 biểu diễn cẩn thận trong thuật toán.
 
+\subsection*{Ghép cặp hai phía và luồng mạng}
+
+Cho đồ thị vô hướng \(G=[V,E]\) có trọng số trên cạnh. Một ghép cặp \(M\) là
+tập cạnh đôi một không chung đỉnh. Có bốn phiên bản: tối đa hóa kích thước hoặc
+trọng số, trên đồ thị hai phía hoặc tổng quát. Trường hợp hai phía có thể quy
+về luồng. Nếu phân hoạch hai phía là \(X,Y\), thêm nguồn \(s\), đích \(t\), cạnh
+dung lượng \(1\) từ \(s\) tới mỗi \(x\in X\), từ mỗi \(y\in Y\) tới \(t\), và từ
+\(x\) tới \(y\) ứng với cạnh \(\{x,y\}\). Với bài toán trọng số, đặt chi phí
+cạnh \([x,y]\) là \(-\operatorname{weight}(x,y)\).
+
+Một luồng nguyên trong mạng này tương ứng đúng với một ghép cặp: cạnh
+\(\{x,y\}\) được chọn khi cạnh \([x,y]\) mang một đơn vị luồng. Do đó ghép cặp
+hai phía cực đại kích thước là max-flow trên mạng đơn vị, có thể giải bằng
+Dinic trong \(O(\sqrt n\,m)\) theo cận của chương trước. Với trọng số, dùng
+luồng chi phí nhỏ nhất; dừng sau lần tăng cuối cùng có chi phí âm cho ta ghép
+cặp trọng số lớn nhất. Diễn giải trong ngôn ngữ ghép cặp chính là phương pháp
+Hungarian.
+
+\subsection*{Đường luân phiên}
+
+Với một ghép cặp \(M\), cạnh trong \(M\) gọi là cạnh ghép, cạnh ngoài \(M\) là
+cạnh tự do. Đỉnh incident với cạnh ghép là đỉnh đã ghép, ngược lại là đỉnh tự
+do. Một đường hoặc chu trình luân phiên có cạnh xen kẽ giữa ghép và tự do. Đường
+luân phiên là đường tăng nếu hai đầu của nó đều là đỉnh tự do. Đảo trạng thái
+các cạnh trên đường tăng làm kích thước ghép cặp tăng thêm một.
+
+Nếu \(M^*\) là ghép cặp cực đại và \(|M^*|-|M|=k\), hiệu đối xứng
+\(M\triangle M^*\) phân rã thành các đường và chu trình luân phiên; trong đó có
+\(k\) đường tăng rời nhau, và ít nhất một đường có độ dài không quá \(n/k-1\).
+Vì vậy ghép cặp là cực đại khi và chỉ khi không còn đường tăng. Lặp tìm đường
+tăng cho ta thuật toán cơ bản, tối đa \(n/2\) lần tăng.
+
+Trong trường hợp có trọng số, định nghĩa trọng số của đường luân phiên là tổng
+trọng số cạnh tự do trừ tổng trọng số cạnh ghép. Nếu \(M\) có trọng số lớn nhất
+trong các ghép cặp cùng kích thước và \(p\) là đường tăng có trọng số lớn nhất,
+thì tăng dọc \(p\) cho ghép cặp có trọng số lớn nhất trong các ghép cặp lớn hơn
+một cạnh. Đây là đối ứng của định lý tăng theo đường chi phí nhỏ nhất trong
+luồng chi phí nhỏ nhất.
+
+\subsection*{Blossom}
+
+Trong đồ thị hai phía, tìm đường tăng bằng BFS luân phiên là đủ. Trong đồ thị
+không hai phía, chu trình lẻ phá vỡ cấu trúc phân lớp. Edmonds xử lý bằng
+\emph{blossom}: một chu trình lẻ luân phiên có đúng một đỉnh gốc đặc biệt. Có
+thể co blossom thành một siêu đỉnh mà vẫn bảo toàn sự tồn tại của đường tăng;
+nếu đường tăng trong đồ thị co đi qua blossom, ta mở blossom ra theo một trong
+hai hướng luân phiên để nhận đường tăng thật.
+
+Thuật toán tìm đường tăng duy trì một rừng luân phiên. Gốc là các đỉnh tự do và
+được đánh dấu chẵn. Từ đỉnh chẵn, xét cạnh chưa xét:
+\begin{itemize}
+  \item nếu đi tới đỉnh lẻ, bỏ qua;
+  \item nếu đi tới đỉnh chưa đạt, đánh dấu nó lẻ, rồi đánh dấu mate của nó chẵn
+        và thêm hai cạnh vào rừng;
+  \item nếu đi tới đỉnh chẵn thuộc cây khác, đã tìm được đường tăng;
+  \item nếu đi tới đỉnh chẵn trong cùng cây, chu trình lẻ tạo thành một blossom
+        và được co lại.
+\end{itemize}
+
+Để cài co blossom hiệu quả, sách dùng union-find. Mỗi đỉnh co có một
+\(\operatorname{origin}\), là đỉnh đại diện trong rừng luân phiên. Khi gặp cạnh
+nối hai đỉnh chẵn trong cùng cây, tìm tổ tiên chung gần nhất trong rừng, rồi hợp
+các đỉnh trên hai nhánh vào blossom mới. Với các đỉnh lẻ bị co, lưu thêm
+\(\operatorname{bridge}\) để sau này mở blossom và dựng đường tăng. Các thao tác
+makeset/link/find chi phối thời gian; dùng union-find của Chương 2 cho thời gian
+\(O(m\alpha(m,n))\) để phát hiện một đường tăng, hoặc tuyến tính \(O(m)\) với
+thuật toán Gabow--Tarjan trong trường hợp đặc biệt.
+
+Khi tìm được cạnh nối hai đỉnh chẵn ở hai cây khác nhau, đường tăng là đường
+từ đỉnh đó về gốc tự do của cây thứ nhất, cạnh nối, rồi đường về gốc tự do của
+cây thứ hai. Nếu đường đi qua blossom đã co, hàm dựng đường dùng
+\(\operatorname{origin}\) và \(\operatorname{bridge}\) để mở lại đúng nửa chu
+trình lẻ. Tổng thời gian dựng đường tăng tỉ lệ với độ dài đường, \(O(n)\).
+
+Lặp thuật toán này cho ghép cặp không trọng số tổng quát cho cận
+\(O(nm\alpha(m,n))\) hoặc \(O(nm)\) tùy cài union-find. Những thuật toán sau đó
+của Even--Kariv và Micali--Vazirani kết hợp blossom với ý tưởng nhiều đường
+tăng ngắn nhất kiểu Hopcroft--Karp, đạt cùng bậc tốt nhất đã biết lúc đó cho
+hai phía và không hai phía không trọng số.
+
+Với ghép cặp tổng quát có trọng số, Edmonds kết hợp tăng trọng số lớn nhất với
+co/mở blossom, nhưng blossom phải được duy trì qua nhiều lần tăng, chỉ mở hoặc
+co lại khi điều kiện đối ngẫu thay đổi. Gabow và Lawler đưa cài đặt xuống
+\(O(n^3)\); Galil--Micali--Gabow dùng mở rộng của heap meldable để đạt
+\(O(nm\log n)\). Chương kết thúc bằng việc đặt ghép cặp vào cùng dòng tư duy:
+đường tăng là nguyên lý tối ưu, còn blossom là cấu trúc dữ liệu/tổ hợp cần thiết
+để nguyên lý đó hoạt động ngoài đồ thị hai phía.
+
 \section{Ghi chú sử dụng}
 
 Cuốn sách này không phải sổ tay cài đặt từng dòng. Giá trị chính của nó là
