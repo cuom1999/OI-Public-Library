@@ -15,7 +15,7 @@ source documents.
 
 | Priority | Translation | Source pages | Current state | Extraction status | Required work |
 | ---: | --- | ---: | --- | --- | --- |
-| 1 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first twenty articles translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue from article 21 onward with OCR-backed article translations. |
+| 1 | `sources/ioi/2024-national-training-team-collection.tex` | 424 | ToC plus first twenty-one articles translated | Body text layer is noisy; OCR works but formulas need visual checks | Continue from article 22 onward with OCR-backed article translations. |
 
 ## Article-Coverage Complete Annual Collections
 
