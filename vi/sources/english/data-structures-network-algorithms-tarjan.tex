@@ -1461,6 +1461,102 @@ lần đầu cũng nhanh; nếu không, dùng quét rộng tổng quát. Cận n
 \]
 hoặc bỏ hạng \(nm\) khi chi phí ban đầu không âm hay đồ thị phi chu trình.
 
+\subsection*{Bổ sung từ chứng minh và cài đặt của Chương 8}
+
+Một chi tiết dễ mất khi tóm tắt max-flow là Tarjan định nghĩa mọi đại lượng trên
+cặp đỉnh, không chỉ trên cạnh có hướng xuất hiện trong đồ thị. Ta đặt
+\(\operatorname{cap}(v,w)=0\) nếu không có cạnh \([v,w]\), và giữ
+\(f(v,w)=-f(w,v)\). Vì vậy khi tăng luồng trên cạnh thuận, cạnh ngược trong đồ thị
+dư tự động xuất hiện nếu cần hoàn tác quyết định trước đó. Cách viết này làm cho
+mạng dư, lát cắt và chứng minh max-flow min-cut dùng cùng một ngôn ngữ đại số:
+luồng qua mọi lát cắt luôn bằng \(|f|\), còn mọi cạnh từ phần đạt được sang phần
+không đạt được trong mạng dư phải bão hòa khi không còn đường tăng.
+
+Từ đó có ba chứng nhận thực hành. Thứ nhất, nếu không tìm thấy đường tăng, chạy
+BFS/DFS trong mạng dư từ \(s\); tập đạt được \(X\) cho một lát cắt nhỏ nhất
+\((X,V-X)\). Thứ hai, với dung lượng nguyên, mỗi lần tăng theo nút cổ chai nguyên
+giữ nguyên tính nguyên của toàn bộ luồng, nên tồn tại luồng cực đại nguyên. Thứ
+ba, nếu cài đặt trả về luồng nhưng vẫn có đường \(s\)-\(t\) trong mạng dư, lỗi nằm
+ở bước cập nhật cạnh ngược hoặc kiểm tra dung lượng dư, chứ không phải ở định lý.
+
+Phần chọn đường tăng có hai mốc trước Dinic. Đường tăng có dung lượng dư lớn
+nhất giảm nút cổ chai tối đa theo từng bước; nhờ phân rã một luồng cực đại thành
+không quá \(m\) đường, sau \(O(m\log c)\) lần tăng với dung lượng nguyên lớn nhất
+\(c\) sẽ đạt cực đại. Nhưng mỗi bước cần giải bài toán đường cổ chai. Edmonds--Karp
+chọn đường tăng ngắn nhất theo số cạnh, rẻ hơn vì chỉ cần BFS; khoảng cách từ
+\(s\) tới \(t\) trong mạng dư không giảm, và sau nhiều nhất \(m\) lần tăng cùng
+một độ dài thì độ dài này tăng. Vì vậy có nhiều nhất \((n-1)m\) lần tăng và thời
+gian \(O(nm^2)\).
+
+Dinic giữ ưu điểm của đường ngắn nhất nhưng xử lý cả một lớp cùng lúc. Đồ thị
+mức chỉ chứa cạnh đi từ mức \(i\) sang mức \(i+1\), nên là DAG và chứa đúng các
+đường tăng ngắn nhất. Một luồng chặn trên đồ thị mức không nhất thiết là cực đại
+trên đồ thị mức theo nghĩa có thể định tuyến lại, nhưng nó đủ mạnh: mọi đường
+ngắn nhất bị chặn bởi ít nhất một cạnh bão hòa. Sau khi cộng luồng chặn, cạnh mới
+trong mạng dư hoặc là cạnh cũ, hoặc là cạnh ngược của đồ thị mức; do đó độ dài
+ngắn nhất tới \(t\) tăng nghiêm nếu \(t\) còn đạt được. Đây là lõi của cận
+\(n-1\) pha.
+
+Trong mạng đơn vị, phân tích sắc hơn vì phần chênh giữa luồng cực đại và luồng
+hiện tại tách thành các đường gần như rời nhau qua các đỉnh trung gian. Nếu còn
+nhiều đơn vị luồng chưa gửi, phải tồn tại một đường tăng ngắn; sau đủ nhiều pha
+để mọi đường tăng ngắn biến mất, lượng luồng còn thiếu trở nên nhỏ và có thể
+được bù bằng từng pha còn lại. Lập luận này giải thích các cận tốt hơn của Dinic
+trên các bài ghép cặp hai phía và mạng cạnh dung lượng một.
+
+Trong phần tìm luồng chặn, DFS cổ điển của Dinic có bốn trạng thái logic:
+khởi tạo đường từ \(s\), tiến theo cạnh còn dùng được, tăng khi chạm \(t\), và lùi
+khi đỉnh hiện tại không còn đường ra tới \(t\). Một cạnh bị xóa chỉ khi nó bão hòa
+hoặc khi mọi đường từ đầu mút sau của nó tới \(t\) đã bị chặn. Vì mỗi lần tăng
+hoặc lùi xóa ít nhất một cạnh, còn giữa hai lần như vậy đường DFS dài không quá
+\(n-1\), một luồng chặn tốn \(O(nm)\).
+
+Thuật toán wave của Karzanov thay đổi đơn vị công việc từ cạnh sang đỉnh. Tiền
+luồng cho phép một đỉnh trung gian có dư vào dương. Đỉnh chưa bị chặn cố đẩy dư
+ra phía \(t\); nếu không còn cạnh ra tới đỉnh chưa chặn, nó trở thành bị chặn.
+Đỉnh đã bị chặn được cân bằng bằng cách giảm luồng đi vào. Bất biến quan trọng
+là: khi một đỉnh bị chặn, mọi đường từ nó tới \(t\) chứa cạnh bão hòa. Quét xuôi
+loại hết dư ở các đỉnh chưa chặn hoặc chặn thêm đỉnh mới; quét ngược làm sạch dư
+ở các đỉnh đã chặn. Mỗi vòng trừ vòng cuối chặn thêm ít nhất một đỉnh, nên có
+không quá \(n-1\) vòng và \(O(n^2)\) thời gian trên đồ thị mức tổng quát.
+
+Phương pháp Malhotra--Kumar--Maheshwari chọn đỉnh theo thông lượng tiềm năng,
+tức là giá trị nhỏ hơn giữa tổng dung lượng dư đi vào và đi ra. Gửi đúng lượng này
+từ đỉnh được chọn về hai phía sẽ bão hòa toàn bộ phía vào hoặc phía ra của đỉnh,
+rồi xóa các phần không còn nằm trên đường \(s\)-\(t\). Cách nhìn này rất gọn về
+mặt lý thuyết, nhưng Tarjan nhấn mạnh rằng khi cài thật nó không đơn giản hơn
+wave và có xu hướng tập trung vào cổ chai hẹp.
+
+Dynamic tree của Sleator--Tarjan là cùng DFS của Dinic nhưng thay thao tác trên
+từng cạnh của đường bằng thao tác trên cả đường. Các cạnh hiện tại \([v,p(v)]\)
+tạo một rừng hướng về \(t\); chi phí của đỉnh là dung lượng dư của cạnh hiện tại.
+Khi đã nối được \(s\) tới \(t\), thao tác tìm chi phí nhỏ nhất trên đường cho đúng
+nút cổ chai, phép cộng âm trên đường cập nhật lượng dư, và các cạnh có chi phí
+bằng \(0\) bị cắt/xóa. Vì mỗi cạnh chỉ gây \(O(1)\) thao tác cây, một luồng chặn
+tốn \(O(m\log n)\), dẫn tới max-flow \(O(nm\log n)\).
+
+Với luồng chi phí nhỏ nhất, định lý ``không có chu trình âm trong mạng dư'' là
+chứng nhận tối ưu đúng nghĩa. Nếu có chu trình âm, đẩy luồng quanh chu trình làm
+giảm chi phí mà không đổi giá trị. Nếu một luồng cùng giá trị rẻ hơn tồn tại, hiệu
+của hai luồng là một luồng tuần hoàn trong mạng dư và phân rã được thành các
+chu trình; ít nhất một chu trình phải âm. Khi tăng theo đường chi phí nhỏ nhất,
+lập luận đối xứng hiệu \(p\oplus c\) cho thấy nếu luồng mới chưa tối ưu thì có thể
+ghép một chu trình âm với đường vừa chọn để tạo một đường tăng rẻ hơn, mâu thuẫn.
+
+Các thế năng sau mỗi lần tăng là cùng ý tưởng với Johnson ở Chương 7. Nếu
+\(\operatorname{dist}(v)\) là chi phí đường ngắn nhất từ \(s\) trong mạng dư hiện
+tại, đặt
+\[
+  \operatorname{cost}'(v,w)=
+  \operatorname{cost}(v,w)+\operatorname{dist}(v)-\operatorname{dist}(w).
+\]
+Mọi cạnh dư mới có chi phí không âm, còn cạnh trên đường vừa tăng và cạnh ngược
+của nó có chi phí đã biến đổi bằng \(0\). Vì mọi đường từ \(s\) tới \(t\) bị cộng
+cùng một hằng \(\operatorname{dist}(s)-\operatorname{dist}(t)\), thứ tự các đường
+tăng theo chi phí được bảo toàn. Đây là lý do có thể dùng Dijkstra liên tiếp sau
+lần khởi tạo, miễn là xử lý đúng trường hợp chi phí ban đầu âm bằng Bellman--Ford
+hoặc quét topo trên DAG.
+
 \section{Chương 9: Ghép cặp}
 
 Chương cuối xét ghép cặp. Với đồ thị hai phía, ghép cặp cực đại có thể quy về
