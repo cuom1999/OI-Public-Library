@@ -33,7 +33,10 @@ REFERENCE_NOTE_SOURCES = {
     "其他 OTHERS/一份不太简短的LATEX介绍.pdf",
 }
 COMPANION_NOTE_SOURCES = {
+    "IOI中国国家候选队论文/2000/骆骥论文.pdf",
     "IOI中国国家候选队论文/2004/鬲融.pdf",
+    "IOI中国国家候选队论文/2007/day1/9.王欣上《浅谈基于分层思想的网络流算法》.pdf",
+    "IOI中国国家候选队论文/2009/董华星/浅析字母树在信息学竞赛中的应用.pdf",
     "IOI中国国家候选队论文/2009/周而进/浅谈估价函数在信息学竞赛中的应用.pdf",
     "IOI中国国家候选队论文/2009/张昆玮/数学归纳法与解题之道.pdf",
     "USACO/USACO题解(NOCOW整理版)47P.pdf",
