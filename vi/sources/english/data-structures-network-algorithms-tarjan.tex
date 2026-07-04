@@ -688,6 +688,122 @@ dựa vào các phép xoay sau mỗi truy cập.
 Ý nghĩa trong sách là chuẩn bị cho những cấu trúc động phức tạp hơn, đặc biệt
 là biểu diễn đường bằng cây nhị phân ở chương kế tiếp.
 
+\subsection*{Tập có thứ tự và cây tìm kiếm nhị phân}
+
+Chương này xét bài toán duy trì một hoặc nhiều tập phần tử có khóa phân biệt
+trong một miền có thứ tự toàn phần. Các thao tác cơ bản là
+\(\operatorname{access}(k,s)\), trả về phần tử trong \(s\) có khóa \(k\) nếu có;
+\(\operatorname{insert}(i,s)\), chèn \(i\); và \(\operatorname{delete}(i,s)\),
+xóa \(i\). Thao tác \(\operatorname{makesortedset}\) tạo tập rỗng. Hai thao tác
+mạnh hơn là \(\operatorname{join}(s_1,i,s_2)\), ghép \(s_1\), phần tử \(i\), và
+\(s_2\) khi mọi khóa trong \(s_1\) nhỏ hơn \(\operatorname{key}(i)\) và mọi khóa
+trong \(s_2\) lớn hơn; và \(\operatorname{split}(i,s)\), tách \(s\) thành phần
+nhỏ hơn \(i\), riêng \(i\), và phần lớn hơn \(i\).
+
+Biểu diễn chuẩn là cây tìm kiếm nhị phân: mỗi nút trong chứa một phần tử; mọi
+khóa trong cây con trái của \(x\) nhỏ hơn khóa ở \(x\), mọi khóa trong cây con
+phải lớn hơn. Cây được xem là nội sinh, phần tử chính là nút; nút ngoài rỗng
+được biểu diễn bằng \(\text{null}\). Mỗi nút thường giữ con trái, con phải và
+cha. Tìm kiếm khóa \(k\) bắt đầu từ gốc, đi trái nếu khóa hiện tại lớn hơn \(k\),
+đi phải nếu nhỏ hơn \(k\), và dừng khi gặp khóa cần tìm hoặc null.
+
+Chèn tương tự tìm kiếm, nhưng giữ thêm con trỏ theo sau tới cha của vị trí rỗng
+sẽ được thay bằng nút mới. Xóa phức tạp hơn: nếu nút cần xóa có con rỗng, thay
+nó bằng con không rỗng nếu có. Nếu có đủ hai con, hoán đổi nó với tiền nhiệm
+theo thứ tự giữa, tức nút cực phải trong cây con trái; tiền nhiệm này có con
+phải rỗng, nên sau hoán đổi có thể xóa bằng trường hợp đơn giản.
+
+Join của hai cây tìm kiếm với phần tử chèn giữa rất dễ: đặt gốc của \(s_1\) làm
+con trái của \(i\), gốc của \(s_2\) làm con phải, rồi trả về \(i\). Split tại
+\(i\) đi dọc đường từ \(i\) lên gốc, cắt các cạnh trên đường đó và dùng một dãy
+join để gom các cây con chứa khóa nhỏ hơn \(i\) vào cây trái, các cây con chứa
+khóa lớn hơn vào cây phải. Nếu không kiểm soát hình dạng, cây tìm kiếm có thể
+trở thành một đường dài \(n\), nên mọi thao tác trừ join có thể tốn \(O(n)\).
+
+\subsection*{Cây nhị phân cân bằng}
+
+Cách cổ điển để bảo đảm thời gian xấu nhất \(O(\log n)\) là áp đặt điều kiện
+cân bằng khiến độ sâu của cây \(n\) nút là \(O(\log n)\), rồi tái cân bằng sau
+hoặc trong mỗi cập nhật. Tarjan dùng một dạng cây nhị phân cân bằng tương đương
+với cây đỏ-đen. Mỗi nút \(x\) có một hạng nguyên \(\operatorname{rank}(x)\).
+Các hạng thỏa:
+\begin{itemize}
+  \item nếu \(x\) có cha, thì \(\operatorname{rank}(x)\le
+        \operatorname{rank}(p(x))\le \operatorname{rank}(x)+1\);
+  \item nếu \(x\) có ông, thì \(\operatorname{rank}(x)<
+        \operatorname{rank}(p^2(x))\);
+  \item nút ngoài có hạng \(0\), và cha của nút ngoài có hạng \(1\).
+\end{itemize}
+
+Gọi nút \(x\) là đen nếu cha của nó có hạng lớn hơn hạng của nó đúng \(1\), hoặc
+nếu \(x\) không có cha; gọi là đỏ nếu cha và \(x\) cùng hạng. Khi đó mọi nút đỏ
+có cha đen, mọi nút ngoài đen, và mọi đường từ một nút tới nút ngoài có cùng số
+nút đen. Đây chính là cách nhìn đỏ-đen. Nếu co mỗi nút đỏ vào cha của nó, ta
+nhận được cây \(2,4\): mỗi nút trong có \(2\), \(3\), hoặc \(4\) con và mọi nút
+ngoài có cùng độ sâu.
+
+Một nút hạng \(k\) có chiều cao nhiều nhất \(2k\) và có ít nhất \(2^{k+1}-1\)
+hậu duệ. Vì vậy cây nhị phân cân bằng có \(n\) nút trong có độ sâu nhiều nhất
+\(2\lfloor\lg(n+1)\rfloor\), nên truy cập mất \(O(\log n)\). Sau chèn hoặc xóa,
+cây được sửa bằng các thao tác hằng thời gian: tăng hạng (\emph{promotion}),
+giảm hạng (\emph{demotion}), xoay đơn và xoay kép.
+
+Sau chèn, vi phạm duy nhất có thể là một nút đỏ có cha đỏ. Nếu ông của nút hiện
+tại có hai con đỏ, tăng hạng ông và tiếp tục kiểm tra lên trên. Nếu không, một
+xoay đơn hoặc xoay kép thích hợp kết thúc việc sửa. Do đó chèn cần một dãy
+promotion và nhiều nhất hai xoay đơn, tổng \(O(\log n)\).
+
+Sau xóa, một nút có thể có hạng nhỏ hơn cha của nó tới hai đơn vị. Nếu anh em
+của nút là đen và cả hai con của anh em đen, giảm hạng cha rồi tiếp tục lên.
+Nếu anh em đen nhưng có con đỏ phù hợp, dùng xoay đơn hoặc xoay kép để kết
+thúc. Nếu anh em đỏ, xoay một lần để chuyển về trường hợp anh em đen. Tổng cộng
+xóa cần một dãy demotion và nhiều nhất ba xoay đơn, vẫn \(O(\log n)\).
+
+Join hai cây cân bằng được thực hiện bằng cách so sánh hạng hai gốc. Nếu
+\(\operatorname{rank}(s_1)\ge \operatorname{rank}(s_2)\), đi theo con phải của
+\(s_1\) cho tới nút có hạng bằng hạng của \(s_2\), chèn phần tử \(i\) tại đó với
+cây con trái là phần vừa tách và cây con phải là \(s_2\), rồi tái cân bằng như
+sau chèn. Trường hợp đối xứng xử lý tương tự. Split dùng dãy join như cây tìm
+kiếm thường; các chi phí join tạo thành tổng lồng nhau và cộng lại \(O(\log n)\).
+
+\subsection*{Cây nhị phân tự điều chỉnh}
+
+Một hướng khác là bỏ điều kiện cân bằng tường minh và chấp nhận cận khấu hao.
+Sleator và Tarjan đề xuất thao tác \emph{splay}. Để splay tại nút \(x\), đi từ
+\(x\) lên gốc và xoay theo từng cặp:
+\begin{itemize}
+  \item nếu \(x\) có cha nhưng không có ông, xoay tại cha;
+  \item nếu \(x\) và cha của nó đều là con trái hoặc đều là con phải, xoay tại
+        ông rồi xoay tại cha;
+  \item nếu một bên trái một bên phải, xoay tại cha rồi xoay tại cha mới của
+        \(x\).
+\end{itemize}
+Kết quả là \(x\) trở thành gốc, còn các nút trên đường tìm kiếm được sắp lại.
+
+Cây tìm kiếm tự điều chỉnh thực hiện splay trong mỗi thao tác trừ join. Sau khi
+truy cập hoặc chèn \(i\), splay tại \(i\). Sau khi xóa \(i\), splay tại cha của
+nó ngay trước khi xóa. Trước khi split tại \(i\), splay tại \(i\); khi đó split
+chỉ còn trả về hai cây con trái/phải của gốc. Thời gian thao tác tỉ lệ với độ
+dài đường splay.
+
+Phân tích dùng thế năng bằng tín dụng. Gán mỗi phần tử một trọng số dương; tổng
+trọng số của nút \(x\) là tổng trọng số các hậu duệ của \(x\), và
+\(\operatorname{rank}(x)=\lfloor\lg \operatorname{tw}(x)\rfloor\). Duy trì bất
+biến rằng mỗi nút trong giữ số tín dụng bằng hạng của nó. Một lần splay tại nút
+\(x\) trong cây có gốc \(v\) cần nhiều nhất
+\[
+  3(\operatorname{rank}(v)-\operatorname{rank}(x))+1
+\]
+tín dụng để trả cho các bước xoay và khôi phục bất biến. Nếu chọn mọi trọng số
+bằng \(1\), mỗi hạng nằm trong \([0..\lfloor\lg n\rfloor]\), nên splay tốn
+\(O(\log n)\) khấu hao.
+
+Từ đó, một dãy \(m\) thao tác trên tập có thứ tự, bắt đầu từ rỗng và có \(n\)
+thao tác chèn/join tạo phần tử, tốn tổng \(O(m\log n)\) thời gian. Với trọng số
+khác nhau, cây splay còn đạt hiệu quả khấu hao so với cây tìm kiếm tĩnh tối ưu
+đến hằng số. Điểm quan trọng cho chương sau là cây tự điều chỉnh đôi khi cho
+thuật toán tiệm cận tốt hơn cách dùng cây cân bằng thông thường.
+
 \section{Chương 5: Nối và cắt cây}
 
 Bài toán \emph{link-cut tree} yêu cầu duy trì một rừng động dưới các thao tác
