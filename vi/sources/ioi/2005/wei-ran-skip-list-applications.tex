@@ -2,6 +2,8 @@
 % Source-File: IOI中国国家候选队论文/2005/魏冉/魏冉.doc
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 
 \newcommand{\Oh}{\mathcal{O}}
 \newcommand{\Prob}{\mathop{\mathrm{Pr}}}
@@ -62,6 +64,46 @@ Các phần tử xuất hiện ở tầng cao cũng xuất hiện ở mọi tầ
 những ``cột'' thẳng đứng. Khi tìm kiếm, ta có thể đi ngang trên tầng cao để bỏ
 qua nhiều phần tử, rồi đi xuống dần khi cần tinh chỉnh vị trí.
 
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  >=Latex,
+  node/.style={draw, minimum width=8mm, minimum height=6mm, inner sep=1pt, font=\small},
+  level/.style={font=\small},
+  x=1.05cm, y=0.62cm
+]
+\foreach \y/\name in {0/S_0,1/S_1,2/S_2,3/S_3} {
+  \node[level] at (-1,\y) {\(\name\)};
+}
+\foreach \x/\v in {0/{-\infty},1/10,2/20,3/35,4/40,5/53,6/70,7/{+\infty}} {
+  \node[node] (b\x) at (\x,0) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},2/20,4/40,6/70,7/{+\infty}} {
+  \node[node] (c\x) at (\x,1) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},4/40,7/{+\infty}} {
+  \node[node] (d\x) at (\x,2) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},4/40,7/{+\infty}} {
+  \node[node] (e\x) at (\x,3) {\(\v\)};
+}
+\foreach \a/\b in {b0/b1,b1/b2,b2/b3,b3/b4,b4/b5,b5/b6,b6/b7,
+                  c0/c2,c2/c4,c4/c6,c6/c7,
+                  d0/d4,d4/d7,e0/e4,e4/e7} {
+  \draw[->] (\a) -- (\b);
+}
+\foreach \x in {0,4,7} {
+  \draw[densely dotted] (b\x) -- (e\x);
+}
+\foreach \x in {2,6} {
+  \draw[densely dotted] (b\x) -- (c\x);
+}
+\node[below=6mm of b4, align=center, font=\small]
+  {Nút ở tầng cao tạo thành đường tắt, còn \(S_0\) vẫn giữ toàn bộ thứ tự.};
+\end{tikzpicture}
+\caption{Ví dụ skip list bốn tầng: các cột cao hơn xuất hiện thưa dần theo xác suất.}
+\end{figure}
+
 \section{Các thao tác cơ bản}
 
 \subsection{Tìm kiếm}
@@ -83,6 +125,49 @@ Bản gốc dùng ví dụ tìm phần tử \(53\): đường đi bắt đầu t
 ngang qua các nút nhỏ hơn \(53\), rồi hạ tầng khi nút tiếp theo đã vượt mục
 tiêu. Đây chính là cơ chế ``nhảy'' làm skip list nhanh hơn danh sách liên kết
 đơn.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  >=Latex,
+  node/.style={draw, minimum width=8mm, minimum height=6mm, inner sep=1pt, font=\small},
+  x=1.05cm, y=0.62cm
+]
+\foreach \y/\name in {0/S_0,1/S_1,2/S_2,3/S_3} {
+  \node[font=\small] at (-1,\y) {\(\name\)};
+}
+\foreach \x/\v in {0/{-\infty},1/10,2/20,3/35,4/40,5/53,6/70,7/{+\infty}} {
+  \node[node] (b\x) at (\x,0) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},2/20,4/40,6/70,7/{+\infty}} {
+  \node[node] (c\x) at (\x,1) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},4/40,7/{+\infty}} {
+  \node[node] (d\x) at (\x,2) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},4/40,7/{+\infty}} {
+  \node[node] (e\x) at (\x,3) {\(\v\)};
+}
+\foreach \a/\b in {b0/b1,b1/b2,b2/b3,b3/b4,b4/b5,b5/b6,b6/b7,
+                  c0/c2,c2/c4,c4/c6,c6/c7,
+                  d0/d4,d4/d7,e0/e4,e4/e7} {
+  \draw[->, gray!55] (\a) -- (\b);
+}
+\foreach \x in {0,4,7} {
+  \draw[densely dotted, gray!60] (b\x) -- (e\x);
+}
+\foreach \x in {2,6} {
+  \draw[densely dotted, gray!60] (b\x) -- (c\x);
+}
+\draw[->, very thick, red!70!black] (e0) -- (e4);
+\draw[->, very thick, red!70!black] (e4) -- (d4);
+\draw[->, very thick, red!70!black] (d4) -- (c4);
+\draw[->, very thick, red!70!black] (c4) -- (b4);
+\draw[->, very thick, red!70!black] (b4) -- (b5);
+\node[above=5mm of e4, font=\small, red!70!black] {đường tìm \(53\)};
+\end{tikzpicture}
+\caption{Tìm \(53\): đi ngang khi nút kế tiếp chưa vượt mục tiêu, và đi xuống khi cần tinh chỉnh.}
+\end{figure}
 
 \subsection{Chèn}
 
@@ -117,6 +202,42 @@ Bản gốc minh họa thao tác chèn \(40\): trước hết tìm phần tử l
 \(40\), rồi chèn một cột cao \(4\). Nếu chiều cao này vượt chiều cao cũ, một
 tầng mới được tạo thêm.
 
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  >=Latex,
+  node/.style={draw, minimum width=8mm, minimum height=6mm, inner sep=1pt, font=\small},
+  newnode/.style={node, fill=gray!15, very thick},
+  x=1.05cm, y=0.62cm
+]
+\foreach \y/\name in {0/S_0,1/S_1,2/S_2,3/S_3} {
+  \node[font=\small] at (-1,\y) {\(\name\)};
+}
+\foreach \x/\v in {0/{-\infty},1/10,2/20,3/35,5/53,6/70,7/{+\infty}} {
+  \node[node] (b\x) at (\x,0) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},2/20,6/70,7/{+\infty}} {
+  \node[node] (c\x) at (\x,1) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},7/{+\infty}} {
+  \node[node] (d\x) at (\x,2) {\(\v\)};
+  \node[node] (e\x) at (\x,3) {\(\v\)};
+}
+\foreach \y/\prefix in {0/b,1/c,2/d,3/e} {
+  \node[newnode] (n\y) at (4,\y) {\(40\)};
+}
+\foreach \a/\b in {b0/b1,b1/b2,b2/b3,b3/n0,n0/b5,b5/b6,b6/b7,
+                  c0/c2,c2/n1,n1/c6,c6/c7,
+                  d0/n2,n2/d7,e0/n3,n3/e7} {
+  \draw[->] (\a) -- (\b);
+}
+\draw[densely dotted, very thick] (n0) -- (n3);
+\node[below=6mm of n0, align=center, font=\small]
+  {Chiều cao ngẫu nhiên bằng \(4\), nên nút \(40\) được nối vào bốn tầng.};
+\end{tikzpicture}
+\caption{Chèn \(40\): sau khi tìm vị trí, tạo một cột có chiều cao do mô-đun ngẫu nhiên quyết định.}
+\end{figure}
+
 \subsection{Xóa}
 
 Xóa phần tử \(x\) gồm ba bước:
@@ -126,6 +247,38 @@ Xóa phần tử \(x\) gồm ba bước:
   \item Xóa các tầng trên cùng đã trở thành rỗng, tức chỉ còn hai nút biên
   \(-\infty\) và \(+\infty\).
 \end{enumerate}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  >=Latex,
+  node/.style={draw, minimum width=8mm, minimum height=6mm, inner sep=1pt, font=\small},
+  removed/.style={node, dashed, gray!70},
+  x=1.05cm, y=0.62cm
+]
+\foreach \y/\name in {0/S_0,1/S_1} {
+  \node[font=\small] at (-1,\y) {\(\name\)};
+}
+\foreach \x/\v in {0/{-\infty},1/10,2/20,3/35,4/40,5/53,6/70,7/{+\infty}} {
+  \node[node] (b\x) at (\x,0) {\(\v\)};
+}
+\foreach \x/\v in {0/{-\infty},2/20,4/40,5/53,6/70,7/{+\infty}} {
+  \node[node] (c\x) at (\x,1) {\(\v\)};
+}
+\node[removed] at (5,0) {\(53\)};
+\node[removed] at (5,1) {\(53\)};
+\foreach \a/\b in {b0/b1,b1/b2,b2/b3,b3/b4,b4/b6,b6/b7,
+                  c0/c2,c2/c4,c4/c6,c6/c7} {
+  \draw[->] (\a) -- (\b);
+}
+\draw[densely dotted, gray!60] (b5) -- (c5);
+\draw[->, very thick, red!70!black] (b4) to[bend right=18] (b6);
+\draw[->, very thick, red!70!black] (c4) to[bend left=18] (c6);
+\node[below=7mm of b5, align=center, font=\small]
+  {Xóa toàn bộ cột \(53\), rồi nối lại các tiền nhiệm với hậu nhiệm trên từng tầng.};
+\end{tikzpicture}
+\caption{Xóa một phần tử khỏi skip list là xóa cả cột của nó và vá lại các liên kết ngang.}
+\end{figure}
 
 \subsection{Tìm kiếm có nhớ}
 
@@ -360,10 +513,9 @@ cho thấy \(p=1/e\) đạt hiệu suất thời gian rất tốt.
 
 Bản gốc có bảng so sánh lấy từ bài ``Skip Lists: A Probabilistic Alternative
 to Balanced Trees'' của William Pugh, một chương trình Pascal cài đặt skip
-list, cùng các hình minh họa thao tác tìm kiếm, chèn và xóa. Trong bản chuyển
-sang LaTeX này, các hình Word không được trích xuất đáng tin cậy nên đã được
-diễn giải bằng mô tả cấu trúc và quy trình thao tác ở các phần trên. Mã Pascal
-không phải nội dung cần dịch, nên không được chép lại đầy đủ.
+list, cùng các hình minh họa thao tác tìm kiếm, chèn và xóa. Các hình thao tác
+chính đã được vẽ lại ở các phần trên. Mã Pascal không phải nội dung cần dịch,
+nên không được chép lại đầy đủ.
 
 \subsection{Hai đề bài được dùng làm ví dụ}
 
