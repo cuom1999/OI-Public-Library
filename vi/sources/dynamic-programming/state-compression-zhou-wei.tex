@@ -2,10 +2,12 @@
 % Source-PDF: 动态规划 DYNAMIC PROGRAMMING/动态规划之状态压缩 - 周伟.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
 
 \newcommand{\Oh}{\mathcal{O}}
 \newcommand{\lowbit}{\operatorname{lowbit}}
 \newcommand{\popcount}{\operatorname{popcount}}
+\newcommand{\filledcell}[3]{\fill[#3] (#1,#2) rectangle ++(1,1);}
 
 \title{Nén Trạng Thái}
 \author{Zhou Wei\\Trường Trung học 101 Trịnh Châu / Đại học Thiên Tân}
@@ -88,6 +90,40 @@ Tổng quát:
 \]
 Thuật toán có độ phức tạp \(\Oh(n2^n)\) và bộ nhớ \(\Oh(2^n)\). Nó kém hơn
 công thức \(n!\), nhưng có khả năng mở rộng tốt hơn.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[x=.42cm,y=.42cm]
+  \foreach \shift/\lab in {0/{bỏ cột 1},6/{bỏ cột 3},12/{bỏ cột 4}} {
+    \begin{scope}[xshift=\shift cm]
+      \draw[step=1,gray!70] (0,0) grid (5,5);
+      \node[font=\small] at (2.5,-.65) {\lab};
+    \end{scope}
+  }
+  \begin{scope}[xshift=0cm]
+    \filledcell{0}{2}{red!75}
+    \filledcell{2}{4}{blue!70}
+    \filledcell{3}{3}{blue!70}
+    \filledcell{3}{4}{green!70!black}
+    \filledcell{2}{3}{green!70!black}
+  \end{scope}
+  \begin{scope}[xshift=6cm]
+    \filledcell{2}{2}{red!75}
+    \filledcell{0}{4}{blue!70}
+    \filledcell{3}{3}{blue!70}
+    \filledcell{3}{4}{green!70!black}
+    \filledcell{0}{3}{green!70!black}
+  \end{scope}
+  \begin{scope}[xshift=12cm]
+    \filledcell{3}{2}{red!75}
+    \filledcell{0}{3}{blue!70}
+    \filledcell{2}{4}{blue!70}
+    \filledcell{0}{4}{green!70!black}
+    \filledcell{2}{3}{green!70!black}
+  \end{scope}
+\end{tikzpicture}
+\caption{Ba cách tạo trạng thái \(01101_2\) trong hình nguồn. Ô đỏ là quân xe của hàng hiện tại; hai màu còn lại biểu diễn hai thứ tự của hai hàng trước.}
+\end{figure}
 
 \section{Mô hình bàn cờ}
 
@@ -195,15 +231,65 @@ tìm các phần tử cùng hàng phù hợp trong \(B\), rồi cộng vào kế
 trong nhiều trường hợp thực tế tốt hơn rất nhiều so với nhân ma trận đặc
 \(\Oh(8^m)\).
 
-\subsection{Các quân phủ khác}
+\subsection{Domino và quân chữ L}
 
-Với domino \(1\times2\) và quân chữ L \(2\times2\) bỏ một ô, trạng thái và
-công thức giống domino, nhưng DFS sinh chuyển có nhiều trường hợp hơn. Với
-quân \(1\times r\), trạng thái có thể phải ghi nhớ \(r-1\) hàng. Nếu lưu trực
-tiếp nhiều mask nhị phân sẽ có nhiều trạng thái dư thừa; tốt hơn là dùng hệ
-cơ số \(r\). Mỗi chữ số mô tả số ô liên tiếp đã được phủ theo chiều dọc tại
-cột tương ứng. Đây là ví dụ cho thấy ``nén trạng thái'' không nhất thiết chỉ
-là nhị phân.
+Với bàn \(n\times m\), \(1\le n,m\le 9\), dùng cả domino \(1\times2\) và quân
+chữ L \(2\times2\) bỏ một ô để phủ kín bàn. Công thức vẫn giống domino:
+\[
+  f_{0,2^m-1}=1,\qquad
+  f_{i,s_1}=\sum f_{i-1,s_2},
+\]
+trong đó \((s_1,s_2)\) là một cách phủ hợp lệ của hai hàng liên tiếp. Khác
+biệt nằm ở DFS sinh chuyển. Cách DFS thứ hai của bài domino trở nên khó dùng
+vì quân L không đều; cách DFS thứ nhất với năm tham số
+\[
+  p,\ s_1,\ s_2,\ b_1,\ b_2
+\]
+lại tự nhiên hơn. Ở mỗi cột, \(b_1,b_2\) ghi ảnh hưởng từ cột trước lên hai
+hàng đang xét; bảng trong nguồn liệt kê bảy dạng phủ có thể xảy ra. Khi
+\(m=9\), DFS sinh \(79248\) cách phủ, nên với \(n=m=9\) độ phức tạp
+\(\Oh(9\cdot 79248)\) vẫn rất nhỏ.
+
+Có thể dùng lại lũy thừa ma trận như bài domino nếu \(n\) lớn, với độ phức
+tạp lý thuyết \(\Oh(8^m\log n)\). Tuy nhiên phép nhân ma trận thưa không còn
+hiệu quả: ban đầu ma trận chỉ có khoảng \(70\%\) phần tử bằng \(0\), và sau
+khi bình phương nhiều lần gần như toàn bộ ma trận trở thành khác \(0\).
+
+\subsection{Domino 1 x r}
+
+Bài tổng quát: cho bàn \(n\times m\), \(n,m\le10\), dùng quân \(1\times r\)
+phủ kín bàn. Với \(r=3\), một quân có thể ảnh hưởng tới hai hàng trước, nên
+nếu lưu trực tiếp hai mask nhị phân thì trạng thái có rất nhiều tổ hợp dư
+thừa. Cụ thể, với một cột, nếu hàng trên đã phủ thì hàng dưới không thể còn
+trống trong trạng thái hợp lệ; tổ hợp \((1,0)\) là vô nghĩa.
+
+Vì vậy nguồn chuyển sang biểu diễn bằng cơ số \(r\). Với \(r=3\), mỗi chữ số
+\(s_p\in\{0,1,2\}\) là số ô liên tiếp đã được phủ, tính từ hàng trên xuống, ở
+cột \(p\). Khi \(r=4\), dùng cơ số \(4\) để ghi ba hàng; nói chung dùng cơ số
+\(r\) để ghi \(r-1\) hàng. DFS có thể viết thống nhất thành hai kiểu nhánh:
+\[
+  \text{for }i=0,\ldots,r-1:\quad
+  DFS(p+1,\ s_1r+i,\ s_2r+(i+1)\bmod r),
+\]
+và nhánh đặt ngang
+\[
+  DFS(p+r,\ s_1r^r+r^r-1,\ s_2r^r+r^r-1).
+\]
+Định nghĩa chữ số theo ``số ô liên tiếp đã phủ từ trên xuống'' là lý do khiến
+dạng DFS này đúng, chứ không chỉ là một phép quy nạp hình thức từ vài chương
+trình riêng lẻ.
+
+Số phương án DFS \(h_m\) thỏa:
+\[
+  h_i=r^i\quad(0\le i<r),\qquad
+  h_j=rh_{j-1}+h_{j-r}\quad(r\le j\le m).
+\]
+Với \(r=2,3,4,5,6\) và \(m=10\), nguồn cho các giá trị lần lượt là
+\[
+  5741,\quad 77772,\quad 1077334,\quad 2609585,\quad 9784376.
+\]
+Thuật toán ma trận của bài domino vẫn dùng được cho bài tổng quát, nhưng bộ
+nhớ nhanh chóng trở thành nút thắt.
 
 \subsection{Bugs Integrated}
 
@@ -217,6 +303,63 @@ quân ngang hoặc dọc nếu không chạm ô cấm, đồng thời có thể 
 \[
   f_{i,s_1}=\max_s \{f_{i-1,s}+num(s\to s_1)\}.
 \]
+
+Nguồn giải thích chi tiết cách sinh \(s_1,s_2\). Nếu ở cột \(p\) ta đặt một
+quân \(2\times3\), có hai hướng:
+\[
+\begin{aligned}
+\text{đứng: }&DFS(p+2,\ s_1\cdot9+8,\ s_2\cdot9,\ num+1),\\
+\text{ngang: }&DFS(p+3,\ s_1\cdot27+26,\ s_2\cdot27+13,\ num+1).
+\end{aligned}
+\]
+Nếu không đặt quân thật tại cột \(p\), ta vẫn phải chuyển trạng thái của
+\(s_2\) xuống \(s_1\) bằng những ô ``ảo'' để lần đặt tiếp theo không để lại
+lỗ:
+\[
+\begin{array}{ll}
+\text{hàng hiện tại trống, hàng trên đầy:}&
+DFS(p+1,\ s_1\cdot3+1,\ s_2\cdot3+2,\ num),\\
+\text{cả hai hàng trống:}&
+DFS(p+1,\ s_1\cdot3,\ s_2\cdot3+1,\ num),\\
+\text{hàng hiện tại đầy bằng ô ảo:}&
+DFS(p+1,\ s_1\cdot3+2,\ s_2\cdot3+2,\ num).
+\end{array}
+\]
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[x=.42cm,y=.42cm,font=\small]
+  \newcommand{\smallgrid}[3]{%
+    \begin{scope}[xshift=#1cm,yshift=#2cm]
+      \draw[step=1,gray!70] (0,0) grid (3,3);
+      #3
+    \end{scope}}
+  \smallgrid{0}{2}{\fill[yellow!70] (0,1) rectangle (3,3);}
+  \node at (3.8,3.5) {\Large \(+\)};
+  \smallgrid{4.7}{2}{\fill[cyan!55] (0,0) rectangle (3,1);}
+  \node at (8.5,3.5) {\Large \(=\)};
+  \smallgrid{9.4}{2}{\fill[yellow!70] (0,1) rectangle (3,3);\fill[cyan!55] (0,0) rectangle (3,1);}
+  \node at (1.5,1.65) {\(1\ 1\ 1\)};
+  \node at (10.9,1.65) {\(2\ 2\ 2\)};
+
+  \draw[thick] (-.2,1.1) -- (12.7,1.1);
+
+  \smallgrid{0}{-2.2}{\fill[yellow!70] (0,1) rectangle (1,3);\fill[yellow!70] (1,2) rectangle (3,3);}
+  \node at (3.8,-.7) {\Large \(+\)};
+  \smallgrid{4.7}{-2.2}{\fill[red!75] (0,0) rectangle (1,1);\fill[cyan!55] (1,0) rectangle (3,3);}
+  \node at (8.5,-.7) {\Large \(=\)};
+  \smallgrid{9.4}{-2.2}{\fill[yellow!70] (0,1) rectangle (1,3);\fill[yellow!70] (1,2) rectangle (3,3);\fill[red!75] (0,0) rectangle (1,1);\fill[cyan!55] (1,0) rectangle (3,3);}
+  \node at (1.5,-2.55) {\(2\ 0\ 0\)};
+  \node at (10.9,-2.55) {\(2\ 2\ 2\)};
+\end{tikzpicture}
+\caption{Hình nguồn cho bài Bugs Integrated: màu vàng là vùng đã đầy trong \(s_2\), màu xanh là vùng điền vào \(s_1\), màu đỏ là ô ảo \(1\times1\).}
+\end{figure}
+
+Điểm cấm được xử lý bằng hai mảng boolean. \(map1_{i,j}=1\) nghĩa là đặt
+ngang tại \((i,j)\) không đè lên ô đen; \(map2_{i,j}=1\) nghĩa là đặt đứng tại
+\((i,j)\) không đè lên ô đen. Khi đọc một ô đen, ta xóa các vị trí đặt quân
+có hình chữ nhật \(2\times3\) hoặc \(3\times2\) chứa ô đó. Nhờ đó, trong DFS
+chỉ cần kiểm tra nhanh mảng \(map\) trước khi đặt quân.
 
 \section{Bản chất của nén trạng thái}
 
@@ -249,35 +392,55 @@ là số bò đã xử lý. Nếu ma trận kề là \(g\), trong đó \(g_{i,j}
 Đáp án là tổng \(f_s\) trên các trạng thái có \(\popcount(s)=n\). Có thể hiểu
 tương đương theo tập hợp: \(f_S\) là số cách gán các bò đầu tiên vào đúng các
 đồng cỏ thuộc tập \(S\); để thu nhỏ bài toán, liệt kê đồng cỏ của con bò cuối.
+Với \(S=\{1,3,4\}\), nguồn viết:
+\[
+  f_{\{1,3,4\}}=
+  f_{\{1,3\}}g_{3,4}+f_{\{1,4\}}g_{3,3}+f_{\{3,4\}}g_{3,1}.
+\]
+Tổng quát:
+\[
+  f_{\varnothing}=1,\qquad
+  f_S=\sum_{x\in S} f_{S-\{x\}}g_{|S|,x}.
+\]
+Cách nhìn tập hợp thường trực quan hơn, dù khi cài đặt vẫn mã hóa \(S\) bằng
+một số nhị phân. Độ phức tạp là \(\Oh(n2^m)\). Nguồn cũng gợi ý biến thể đếm
+số matching có đúng \(k\) cạnh trong đồ thị hai phía.
 
 \subsection{Đếm số thứ tự topo}
 
 Cho đồ thị có hướng \(n\le20\), cần đếm số thứ tự topo hợp lệ. Trạng thái
 \(S\) là tập đỉnh đã đặt vào thứ tự. \(f_S\) là số thứ tự topo của các đỉnh
-trong \(S\). Ta có thể liệt kê đỉnh cuối cùng của \(S\); đỉnh đó hợp lệ nếu
-mọi cạnh đi ra từ nó tới trong \(S\) đều đã được xử lý phù hợp, hoặc tương
-đương khi bỏ nó khỏi \(S\), các điều kiện tiền nhiệm vẫn đúng. Chi tiết phụ
-thuộc cách lưu cạnh, nhưng mô hình vẫn là DP tập con kinh điển.
+trong \(S\). Ta liệt kê đỉnh cuối cùng \(v\) của \(S\). Đỉnh \(v\) hợp lệ làm
+đỉnh cuối nếu mọi đỉnh kề sau \(v\) theo cạnh \(v\to u\) đều không thuộc
+\(S-\{v\}\); nói cách khác, sau khi bỏ \(v\), không còn ràng buộc nào buộc
+một đỉnh chưa đặt phải đứng trước một đỉnh đã đặt. Với cách lưu ngược theo
+tiền nhiệm, điều kiện tương đương là mọi tiền nhiệm của đỉnh mới thêm đã nằm
+trong trạng thái trước. Đây là DP tập con kinh điển; nguồn chỉ để chi tiết
+cài đặt cho người đọc.
 
 \subsection{Shortest Common Superstring}
 
 Cho \(n\le15\) xâu, cần tìm xâu ngắn nhất chứa mọi xâu đã cho làm xâu con;
 nếu có nhiều đáp án, chọn từ điển nhỏ nhất. Trước hết loại xâu nào là xâu con
-của xâu khác. Sau đó tiền xử lý độ chồng lớn nhất giữa mọi cặp xâu. Trạng thái
+của xâu khác. Bước này tưởng như hiển nhiên nhưng rất quan trọng: nếu \(s_1\)
+là xâu con của \(s_2\), giữ \(s_1\) trong trạng thái sẽ tạo thêm thứ tự giả
+và làm phức tạp tiêu chí từ điển.
+
+Sau đó tiền xử lý độ chồng lớn nhất giữa mọi cặp xâu. Trạng thái
 \[
   f_{S,i}
 \]
 là xâu ngắn nhất tạo từ tập \(S\) và kết thúc bằng xâu \(i\). Chuyển từ
 \(f_{S-\{i\},j}\) sang \(f_{S,i}\) bằng cách nối thêm phần chưa chồng của
-\(i\). Đây là một ví dụ khác: trạng thái là tập xâu đã dùng, nén bằng mask.
+\(i\); nếu độ dài bằng nhau thì chọn phương án có thứ tự từ điển nhỏ hơn. Đây
+là một ví dụ khác: trạng thái là tập xâu đã dùng, nén bằng mask, còn thông tin
+``kết thúc bằng xâu nào'' được giữ thành chiều thứ hai.
 
-\section{Kết luận}
+\section{Ghi chú về nguồn}
 
-Nén trạng thái không phải là một thuật toán riêng lẻ, mà là cách biểu diễn
-trạng thái. Khi số phần tử nhỏ, hoặc khi chỉ cần nhớ một ``biên'' hẹp của bài
-toán, bit mask và cơ số nhỏ giúp biến tìm kiếm thô thành truy hồi hoặc quy
-hoạch động có cấu trúc. Điểm quan trọng là chọn đúng phần thông tin cần lưu:
-đủ để chuyển trạng thái không có hậu hiệu, nhưng không dư thừa đến mức làm
-nổ số trạng thái.
+Tệp PDF hiện có dừng ở trang 16 ngay sau phần mở đầu của ví dụ 11 và trước khi
+trình bày hết phân tích cho Shortest Common Superstring. Bản dịch này đi theo
+toàn bộ phần văn bản có trong PDF, phục dựng hai hình được nhúng trong nguồn,
+và không thêm kết luận không có trong tài liệu gốc.
 
 \end{document}

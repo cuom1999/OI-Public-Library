@@ -37,7 +37,6 @@ COMPANION_NOTE_SOURCES = {
     "USACO/USACO题解(NOCOW整理版)47P.pdf",
     "动态规划 DYNAMIC PROGRAMMING/树形DP选讲 - 顾逸宏.pdf",
     "动态规划 DYNAMIC PROGRAMMING/初探数位dp.pdf",
-    "动态规划 DYNAMIC PROGRAMMING/动态规划之状态压缩 - 周伟.pdf",
     "数据结构 DATA STRUCTURE/Link Cut Trees.pdf",
     "图论 GRAPH THEORY/Making Graphs into Trees - immortalCO, WrongAnswer.pdf",
     "图论 GRAPH THEORY/经典网络流教程.pdf",
