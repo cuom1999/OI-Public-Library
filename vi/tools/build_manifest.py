@@ -37,7 +37,6 @@ COMPANION_NOTE_SOURCES = {
     "数据结构 DATA STRUCTURE/Link Cut Trees.pdf",
     "图论 GRAPH THEORY/Making Graphs into Trees - immortalCO, WrongAnswer.pdf",
     "其他 OTHERS/C++的pb-ds库在OI中的应用 - 于纪平.pdf",
-    "其他 OTHERS/CDQ分治入门经典.pdf",
 }
 CODE_TEMPLATE_SOURCES = {
     "模板 TEMPLATES/HEOI2018模板复习手册 - Kvar_ispw17.pdf",
