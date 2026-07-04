@@ -2,6 +2,8 @@
 % Source-PDF: IOI中国国家候选队论文/2001/江鹏.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 
 \title{Từ lời giải một bài toán bàn về xây dựng mô hình và thuật toán luồng mạng}
 \author{Jiang Peng}
@@ -68,8 +70,29 @@ nhất. Mỗi dòng in một chỉ số dự án, theo thứ tự tăng dần.
 \]
 
 \paragraph{Ví dụ.}
-PDF gốc cho ví dụ gồm \(6\) dự án. Một nghiệm tối ưu có lợi nhuận ròng bằng
-\(3\) và chọn các dự án \(1,2,3,4,6\).
+\noindent\begin{minipage}[t]{0.45\linewidth}
+\textbf{Dữ liệu vào mẫu}
+\begin{verbatim}
+6
+-4
+1
+2 2
+-1 1 2
+-3 3
+5 3 4
+\end{verbatim}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\linewidth}
+\textbf{Dữ liệu ra mẫu}
+\begin{verbatim}
+3
+1
+2
+3
+4
+6
+\end{verbatim}
+\end{minipage}
 
 \subsection{Trừu tượng hóa bài toán}
 
@@ -81,6 +104,43 @@ thuộc vào dự án \(v\).
 Bài toán trở thành: tìm một tập con \(V'\) của các đỉnh sao cho với mọi cung
 \(\langle u,v\rangle\in E\), nếu \(u\in V'\) thì \(v\in V'\), và tổng trọng số
 các đỉnh trong \(V'\) là lớn nhất.
+
+Với dữ liệu mẫu, sáu đỉnh có trọng số lần lượt là
+\[
+  -4,\ 1,\ 2,\ -1,\ -3,\ 5,
+\]
+và các cung phụ thuộc là
+\[
+  3\to2,\quad 4\to1,\quad 4\to2,\quad 5\to3,\quad 6\to3,\quad 6\to4.
+\]
+Hình trong bản gốc chính là đồ thị phụ thuộc này:
+
+\begin{center}
+\begin{tikzpicture}[
+  >=Latex,
+  project/.style={draw,circle,minimum size=8mm,inner sep=1pt},
+  dep/.style={->,thick}
+]
+\node[project] (p1) at (0,0) {1};
+\node[project] (p2) at (1.8,0) {2};
+\node[project] (p3) at (3.6,0) {3};
+\node[project] (p4) at (5.4,0) {4};
+\node[project] (p5) at (3.6,-1.6) {5};
+\node[project] (p6) at (5.4,-1.6) {6};
+\node[above=1mm of p1] {\(-4\)};
+\node[above=1mm of p2] {\(1\)};
+\node[above=1mm of p3] {\(2\)};
+\node[above=1mm of p4] {\(-1\)};
+\node[below=1mm of p5] {\(-3\)};
+\node[below=1mm of p6] {\(5\)};
+\draw[dep] (p3) -- (p2);
+\draw[dep] (p4) -- (p1);
+\draw[dep] (p4) -- (p2);
+\draw[dep] (p5) -- (p3);
+\draw[dep] (p6) -- (p3);
+\draw[dep] (p6) -- (p4);
+\end{tikzpicture}
+\end{center}
 
 \subsection{Tìm kiếm}
 
@@ -110,6 +170,43 @@ Với mỗi dự án \(i\):
   \(t\) có dung lượng \(-C_i\).
 \end{itemize}
 
+Với dữ liệu mẫu, mạng luồng thu được như sau. Các cung phụ thuộc dùng dung
+lượng \(+\infty\); các cung từ nguồn hoặc tới đích mang đúng giá trị lợi nhuận
+hoặc chi phí đầu tư.
+
+\begin{center}
+\begin{tikzpicture}[
+  >=Latex,
+  vertex/.style={draw,circle,minimum size=8mm,inner sep=1pt},
+  flow/.style={->,thick},
+  inf/.style={->,thick,dashed},
+  every edge quotes/.style={font=\small,auto}
+]
+\node[vertex] (s) at (0,-0.8) {\(s\)};
+\node[vertex] (p1) at (2,0.8) {1};
+\node[vertex] (p2) at (2,-0.8) {2};
+\node[vertex] (p3) at (4,-0.8) {3};
+\node[vertex] (p4) at (6,0.8) {4};
+\node[vertex] (p5) at (7.2,-2.4) {5};
+\node[vertex] (p6) at (4,-2.4) {6};
+\node[vertex] (t) at (8.8,-0.8) {\(t\)};
+\draw[flow] (s) -- node[above] {\(1\)} (p2);
+\draw[flow] (s) -- node[above] {\(2\)} (p3);
+\draw[flow] (s) -- node[left] {\(5\)} (p6);
+\draw[flow] (p1) -- node[above] {\(4\)} (t);
+\draw[flow] (p4) -- node[above] {\(1\)} (t);
+\draw[flow] (p5) -- node[below] {\(3\)} (t);
+\draw[inf] (p3) -- node[above] {\(\infty\)} (p2);
+\draw[inf] (p4) -- node[above] {\(\infty\)} (p1);
+\draw[inf] (p4) -- node[above] {\(\infty\)} (p2);
+\draw[inf] (p5) -- node[above] {\(\infty\)} (p3);
+\draw[inf] (p6) -- node[right] {\(\infty\)} (p3);
+\draw[inf] (p6) -- node[right] {\(\infty\)} (p4);
+\draw[red!65!black,thick,densely dotted] (6.65,1.35) -- (6.65,-2.9);
+\node[red!65!black,above] at (6.65,1.35) {một lát cắt};
+\end{tikzpicture}
+\end{center}
+
 Tìm lát cắt nhỏ nhất \((S,T)\) của mạng này, giả sử dung lượng là
 \[
   C(S,T)=F.
@@ -126,6 +223,8 @@ và \(C(S,T)=5\). Vì \(R=8\), lợi nhuận ròng là
 \[
   R-C(S,T)=8-5=3.
 \]
+Trong hình trên, đường chấm minh họa lát cắt tối ưu: hai cung bị cắt là
+\(1\to t\) và \(4\to t\), có tổng dung lượng \(4+1=5\).
 
 \section{Chứng minh tính đúng đắn}
 
@@ -164,6 +263,46 @@ lát cắt càng nhỏ thì lợi nhuận ròng của phương án càng lớn.
 
 Theo định lý max-flow min-cut, lát cắt nhỏ nhất của mạng có thể tìm bằng thuật
 toán luồng cực đại.
+
+Bản gốc vẽ thêm một mạng sau khi chạy luồng cực đại, trong đó nhãn trên cung
+có dạng ``dung lượng, luồng''. Một luồng cực đại giá trị \(5\) có thể biểu
+diễn như sau:
+
+\begin{center}
+\begin{tikzpicture}[
+  >=Latex,
+  vertex/.style={draw,circle,minimum size=8mm,inner sep=1pt},
+  flow/.style={->,thin,gray!70},
+  used/.style={->,very thick,blue!65!black},
+  every edge quotes/.style={font=\small,auto}
+]
+\node[vertex] (s) at (0,-0.8) {\(s\)};
+\node[vertex] (p1) at (2,0.8) {1};
+\node[vertex] (p2) at (2,-0.8) {2};
+\node[vertex] (p3) at (4,-0.8) {3};
+\node[vertex] (p4) at (6,0.8) {4};
+\node[vertex] (p5) at (7.2,-2.4) {5};
+\node[vertex] (p6) at (4,-2.4) {6};
+\node[vertex] (t) at (8.8,-0.8) {\(t\)};
+\draw[flow] (s) -- (p2);
+\draw[flow] (s) -- (p3);
+\draw[used] (s) -- node[left] {\(5,5\)} (p6);
+\draw[used] (p1) -- node[above] {\(4,4\)} (t);
+\draw[used] (p4) -- node[above] {\(1,1\)} (t);
+\draw[flow] (p5) -- (t);
+\draw[flow,dashed] (p3) -- (p2);
+\draw[used,dashed] (p4) -- node[above] {\(\infty,4\)} (p1);
+\draw[flow,dashed] (p4) -- (p2);
+\draw[flow,dashed] (p5) -- (p3);
+\draw[flow,dashed] (p6) -- (p3);
+\draw[used,dashed] (p6) -- node[right] {\(\infty,5\)} (p4);
+\end{tikzpicture}
+\end{center}
+
+Luồng này gửi \(5\) đơn vị từ \(s\) qua dự án \(6\), rồi qua \(4\); trong đó
+\(1\) đơn vị đi thẳng tới \(t\) qua cung \(4\to t\), còn \(4\) đơn vị đi tiếp
+qua \(1\to t\). Các cung mảnh màu xám có luồng bằng \(0\). Giá trị luồng bằng
+\(5\), đúng bằng dung lượng lát cắt nhỏ nhất ở trên.
 
 \section{Điểm mấu chốt của mô hình}
 
