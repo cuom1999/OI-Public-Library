@@ -13,7 +13,7 @@
 \maketitle
 
 \origtitle{Data Structures and Network Algorithms}
-\sourcepath{English Materials / Data Structures and Network Algorithms - Tarjan [1987-01-01].pdf}
+\sourcepath{English Materials / Data Structures and Network Algorithms - Tarjan}
 
 \renewcommand{\abstractname}{Tóm tắt}
 \begin{abstract}
@@ -124,6 +124,99 @@ cạo Occam. Thuật toán hiệu quả nhất thường là thuật toán chỉ
 thông tin cần thiết cho tình huống bài toán. Vì vậy, phát triển một thuật toán
 đặc biệt hiệu quả thường đem lại hiểu biết sâu hơn về chính bài toán; kết quả
 không chỉ nhanh mà còn đơn giản và đẹp.
+
+\subsection*{Giới thiệu và mô hình độ phức tạp}
+
+Sách khảo sát các thuật toán máy tính hiệu quả cho bốn bài toán tối ưu mạng
+kinh điển. Các thuật toán ấy ghép hai nguồn ý tưởng: cấu trúc dữ liệu và phân
+tích thuật toán ở một phía, tối ưu mạng ở phía kia. Tối ưu mạng lại lấy công
+cụ từ vận trù học, khoa học máy tính và lý thuyết đồ thị. Với các bài toán được
+chọn, mục tiêu không phải liệt kê mọi cách giải, mà là hiểu các thuật toán tốt
+nhất đã biết và vì sao chúng đạt được cận thời gian đó.
+
+Tarjan giả sử người đọc đã có nền tảng nhập môn về cấu trúc dữ liệu, phân tích
+thuật toán, thuật toán đồ thị và tối ưu mạng. Điểm được nhấn mạnh là các thuật
+toán tốt nhất thường không xuất hiện nếu ta tách rời hai mảng này. Nhiều phần
+trình bày thuật toán mạng chỉ nói rất sơ về cấu trúc dữ liệu, khiến người cài
+đặt còn phải tự giải một bài toán lập trình lớn. Ngược lại, khi xét kỹ độ phức
+tạp tính toán, ta thường bị buộc phải nhận ra chính xác thông tin nào thật sự
+cần được duy trì; đó là lý do các thuật toán nhanh thường đồng thời sáng sủa
+và gọn.
+
+Để nói về hiệu quả, trước hết cần chọn mô hình tính toán. Máy Turing là mô
+hình lịch sử và rất hữu ích cho lý thuyết độ phức tạp bậc cao: nó có bộ điều
+khiển hữu hạn, một băng nhớ hai chiều gồm các ô, và một đầu đọc/ghi mỗi bước
+có thể đọc, ghi, dịch trái hoặc phải, rồi đổi trạng thái. Nhưng mô hình này quá
+thô để phân tích chính xác các thuật toán thực dụng.
+
+Một mô hình gần máy tính thông thường hơn là máy truy cập ngẫu nhiên. Nó có
+một chương trình hữu hạn, một tập thanh ghi, và bộ nhớ là mảng các ô có địa chỉ
+rõ ràng. Trong một bước, máy có thể thực hiện một phép toán số học hoặc logic
+trên thanh ghi, nạp nội dung của ô nhớ có địa chỉ nằm trong thanh ghi, hoặc ghi
+nội dung thanh ghi vào một ô nhớ như vậy.
+
+Mô hình máy con trỏ yếu hơn một chút nhưng phù hợp với các thuật toán danh
+sách và cây. Bộ nhớ của nó là một tập nút có thể mở rộng, mỗi nút gồm một số
+trường đặt tên. Một trường chứa được một số hoặc một con trỏ tới nút khác. Muốn
+đọc hoặc ghi một trường của nút, máy phải đang giữ con trỏ tới nút đó trong
+thanh ghi. Mô hình này không cho phép số học địa chỉ, nên những kỹ thuật như
+băm không được biểu diễn trực tiếp; đổi lại, nó phản ánh tốt hơn các thuật toán
+xử lý cấu trúc liên kết và thuận tiện hơn khi chứng minh cận dưới.
+
+Ba mô hình trên đều tuần tự và tất định: mỗi thời điểm chỉ thực hiện một bước,
+và trạng thái hiện tại quyết định duy nhất hành vi tiếp theo. Sách không đi vào
+tính toán song song hay bất định, dù các mô hình đó quan trọng trong lý thuyết
+và trong kiến trúc máy tính.
+
+Có một cảnh báo quan trọng. Nếu máy truy cập ngẫu nhiên hoặc máy con trỏ được
+phép xử lý số nguyên có kích thước tùy ý trong thời gian hằng, ta có thể giấu
+tính toán song song bên trong một số nguyên lớn bằng cách mã hóa nhiều giá trị
+vào cùng một từ. Có hai cách tránh điều này. Một là dùng thước đo chi phí
+logarit, tính thời gian của phép toán theo số bit của toán hạng. Hai là giới
+hạn số nguyên được phép dùng chỉ có \(O(\log n)\) bit, với \(n\) đo kích thước
+đầu vào, và hạn chế các phép toán trên số thực. Tarjan chọn cách thứ hai: các
+thuật toán trong sách có thể cài trên máy truy cập ngẫu nhiên hoặc máy con trỏ
+với số nguyên kích thước đa thức nhỏ theo \(n\), không dựa vào mã hóa mẹo.
+
+Sau mô hình máy, cần chọn thước đo độ phức tạp. Độ dài chương trình là thước
+đo tĩnh, hữu ích nếu chương trình chỉ chạy rất ít lần hoặc trong một số câu hỏi
+lý thuyết. Với mục tiêu ở đây, thước đo động như thời gian chạy và bộ nhớ theo
+kích thước đầu vào phù hợp hơn. Sách chủ yếu đo thời gian chạy; hầu hết thuật
+toán được xét có bộ nhớ tuyến tính theo kích thước đầu vào.
+
+Khi phân tích thời gian, các hằng số thường được bỏ qua. Điều này vừa đơn giản
+hóa chứng minh, vừa giảm phụ thuộc vào chi tiết mô hình máy. Ký hiệu tiệm cận
+được dùng theo nghĩa chuẩn: nếu \(f\) và \(g\) là các hàm của các biến không âm,
+\(f\) là \(O(g)\) nếu tồn tại các hằng số dương \(c_1,c_2\) sao cho
+\[
+  f(n,m,\ldots) \le c_1 g(n,m,\ldots) + c_2
+\]
+với mọi giá trị của các biến. Ta viết \(f\) là \(\Omega(g)\) nếu \(g\) là
+\(O(f)\), và \(f\) là \(\Theta(g)\) nếu đồng thời \(f=O(g)\) và
+\(f=\Omega(g)\).
+
+Thời gian chạy thường được đo theo đầu vào xấu nhất. Cách này cho một bảo đảm
+chắc chắn, nhưng có thể bi quan nếu trường hợp xấu hiếm gặp. Phân tích trung
+bình trên phân phối đầu vào là một lựa chọn khác, nhưng khó hơn và phụ thuộc
+mạnh vào việc phân phối có phản ánh thực tế hay không. Một hướng bền hơn là cho
+thuật toán tự dùng lựa chọn ngẫu nhiên rồi lấy trung bình trên các lựa chọn đó,
+dù với các bài toán trong sách đây không phải con đường chính.
+
+Loại trung bình quan trọng nhất trong sách là phân tích khấu hao. Khi một cấu
+trúc dữ liệu bị thao tác lặp đi lặp lại, một thao tác riêng lẻ có thể đắt, nhưng
+tổng chi phí của cả dãy thao tác lại nhỏ hơn nhiều so với ``số thao tác nhân
+với chi phí xấu nhất của một thao tác''. Cây nén trong union-find, cây tự điều
+chỉnh và các cấu trúc cây động đều dùng kiểu lập luận này.
+
+Một thuật toán được gọi là hiệu quả nếu thời gian xấu nhất của nó bị chặn bởi
+một đa thức theo kích thước đầu vào. Một bài toán được gọi là xử lý được
+(\emph{tractable}) nếu nó có thuật toán hiệu quả; tập các bài toán như vậy được
+ký hiệu là \(P\). Lý do khái niệm này quan trọng là các thuật toán thời gian đa
+thức thường chậm đi từ từ khi kích thước tăng, còn thuật toán phi đa thức
+thường có một ngưỡng mà sau đó trở nên không dùng được, dù tăng tốc máy hay cho
+thêm thời gian một hằng số lần. Hơn nữa, thuật toán hiệu quả thường phản ánh
+một cấu trúc thật của bài toán, trong khi thuật toán không hiệu quả thường chỉ
+là vét cạn bị đánh bại bởi bùng nổ tổ hợp.
 
 \section{Chương 2: Các tập rời nhau}
 
