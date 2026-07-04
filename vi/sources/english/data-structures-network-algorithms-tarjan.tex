@@ -462,6 +462,109 @@ chúng cho thời gian gần tuyến tính, với hệ số nghịch đảo Acke
 tăng. Đây là cấu trúc nền cho cây khung nhỏ nhất và nhiều thuật toán đồ thị
 khác.
 
+\subsection*{Tập rời nhau và cây nén}
+
+Chương này bắt đầu bằng một thuật toán rất dễ cài đặt nhưng có phân tích thời
+gian đáng chú ý. Ta cần duy trì một họ tập rời nhau dưới ba thao tác:
+\begin{itemize}
+  \item \(\operatorname{makeset}(x)\): tạo tập mới chỉ chứa phần tử \(x\), trước
+        đó chưa thuộc tập nào;
+  \item \(\operatorname{find}(x)\): trả về phần tử chuẩn đại diện cho tập chứa
+        \(x\);
+  \item \(\operatorname{link}(x,y)\): hợp hai tập có phần tử chuẩn lần lượt là
+        \(x\) và \(y\), hủy hai tập cũ, rồi chọn và trả về phần tử chuẩn của tập
+        mới.
+\end{itemize}
+
+Cấu trúc của Galler--Fischer biểu diễn mỗi tập bằng một cây có gốc. Các nút là
+các phần tử của tập, phần tử chuẩn là gốc. Mỗi nút \(x\) giữ con trỏ cha
+\(p(x)\); gốc trỏ tới chính nó. Khi \(\operatorname{makeset}(x)\), đặt
+\(p(x)=x\). Khi \(\operatorname{find}(x)\), đi theo các con trỏ cha cho tới gốc
+và trả về gốc. Khi \(\operatorname{link}(x,y)\), trong phiên bản ngây thơ có thể
+đặt \(p(x)=y\) và chọn \(y\) làm chuẩn mới. Nếu chỉ làm vậy, một thao tác
+\(\operatorname{find}\) có thể tốn \(O(n)\).
+
+Hai mẹo kinh điển làm thuật toán gần tuyến tính. Mẹo thứ nhất là nén đường đi:
+khi \(\operatorname{find}(x)\) đã tìm được gốc \(r\), mọi nút trên đường từ
+\(x\) tới \(r\) được đổi cha trực tiếp thành \(r\). Một lần find có thể tốn thêm
+một hằng số, nhưng các lần find sau rẻ hơn nhiều.
+
+Mẹo thứ hai là hợp theo hạng. Mỗi nút \(x\) có một số nguyên không âm
+\(\operatorname{rank}(x)\), là cận trên cho chiều cao của \(x\). Khi tạo tập mới,
+hạng bằng \(0\). Khi hợp hai gốc, gốc hạng nhỏ hơn trỏ tới gốc hạng lớn hơn.
+Nếu hai hạng bằng nhau, chọn một gốc làm cha và tăng hạng của nó lên một. Đây
+là biến thể của hợp theo kích thước: mục tiêu là ngăn cây phát triển thành một
+dây dài.
+
+Với hai mẹo đó, thủ tục find có dạng đệ quy quen thuộc:
+\[
+  \text{nếu } x\ne p(x) \text{ thì đặt } p(x):=\operatorname{find}(p(x));
+  \quad \text{trả về } p(x).
+\]
+Thủ tục link so sánh hai hạng, có thể hoán đổi \(x,y\) để bảo đảm \(x\) có hạng
+không lớn hơn \(y\), tăng hạng \(y\) khi hai hạng bằng nhau, rồi đặt \(p(x)=y\).
+
+\subsection*{Cận khấu hao cho nén đường đi}
+
+Gọi \(m\) là số thao tác và \(n\) là số phần tử. Khi đó có \(n\) thao tác
+\(\operatorname{makeset}\), nhiều nhất \(n-1\) thao tác link, và \(m\ge n\).
+Phân tích khó vì nén đường đi thay đổi hình dạng cây theo cách không cục bộ.
+Các cận lịch sử đi từ \(O(m\log\log n)\), tới \(O(m\log^* n)\), rồi tới cận
+đúng \(O(m\alpha(m,n))\), trong đó \(\alpha\) là một nghịch đảo của hàm
+Ackermann.
+
+Ba tính chất hạng là nền của phân tích:
+\begin{itemize}
+  \item với mọi nút \(x\), \(\operatorname{rank}(x)\le
+        \operatorname{rank}(p(x))\), và bất đẳng thức là nghiêm nếu
+        \(p(x)\ne x\);
+  \item nếu gốc cây là \(x\), cây đó có ít nhất
+        \(2^{\operatorname{rank}(x)}\) nút;
+  \item số nút có hạng đúng \(k\) nhiều nhất là \(n/2^k\), nên mọi hạng đều
+        không vượt quá \(\lg n\).
+\end{itemize}
+
+Từ đó, nếu chỉ dùng hợp theo hạng, một đường find có hạng tăng nghiêm dọc theo
+đường lên gốc, nên một find đơn lẻ tốn \(O(\log n)\). Cận tốt hơn đến từ khấu
+hao: không tính riêng từng find theo độ dài hiện tại, mà phân bổ chi phí trên cả
+dãy thao tác.
+
+Tarjan trình bày phân tích bằng tín dụng và ghi nợ. Một tín dụng trả cho một
+lượng tính toán hằng. Mỗi makeset và link nhận một tín dụng. Mỗi find nhận
+\(\alpha(m,n)+2\) tín dụng. Nếu đường find dài hơn số tín dụng trực tiếp, ta tạo
+các cặp tín dụng-ghi nợ để trả trước cho thao tác hiện tại, rồi chứng minh tổng
+số ghi nợ còn lại sau cả dãy thao tác bị chặn bởi \(O(m\alpha(m,n))\).
+
+Ý tưởng kỹ thuật là chia các hạng \(0,\ldots,\lg n\) thành nhiều mức khối dựa
+trên hàm Ackermann. Mức càng cao thì phân hoạch càng thô. Mức của một nút là
+mức nhỏ nhất tại đó hạng của nút và hạng của cha nó nằm trong cùng một khối.
+Khi nén một đường find, nếu một nút không phải nút cuối cùng ở mức của nó trên
+đường, nút đó nhận một ghi nợ; nhưng mỗi ghi nợ như vậy buộc hạng của cha nó
+nhảy sang một khối thấp hơn mới. Vì số lần nhảy khối có thể đếm được theo các
+phân hoạch Ackermann, tổng ghi nợ bị chặn và thu được định lý:
+\[
+  \text{union-find với nén đường đi và hợp theo hạng chạy trong }
+  O(m\alpha(m,n)) \text{ thời gian.}
+\]
+Trong mọi kích thước thực tế, \(\alpha(m,n)\) không vượt quá một hằng số rất
+nhỏ; vì vậy cấu trúc này thường được xem là gần tuyến tính.
+
+\subsection*{Biến thể và ghi chú}
+
+Nén đường đi đầy đủ có nhược điểm thực dụng là thường cần hai lượt trên đường
+find: một lượt tìm gốc và một lượt đổi cha. Có các biến thể một lượt vẫn đạt
+cận \(O(m\alpha(m,n))\) khi kết hợp với hợp theo hạng. Biến thể đáng chú ý là
+\emph{path halving}: khi đi lên đường find, cứ mỗi nút khác lại cho nó trỏ tới
+ông của nó. Cách này đơn giản, dùng ít thao tác hơn trong cài đặt, và vẫn giữ
+tinh thần làm phẳng cây dần dần.
+
+Tarjan cũng chứng minh cận dưới \(\Omega(m\alpha(m,n))\) cho một lớp rộng các
+phương pháp thao tác con trỏ duy trì tập rời nhau, nên cận trên ở trên là chặt
+trong mô hình đó. Tuy vậy, nếu biết trước mẫu các thao tác link, Gabow và Tarjan
+có thuật toán tuyến tính cho một trường hợp đặc biệt bằng cách kết hợp nén đường
+đi trên tập lớn và tra bảng trên tập nhỏ. Nén đường đi còn xuất hiện ngoài
+union-find, trong các bài toán duy trì hàm trên đường đi của cây.
+
 \section{Chương 3: Heap}
 
 Heap là cấu trúc dữ liệu cho hàng đợi ưu tiên. Sách bàn về cây có thứ tự heap,
