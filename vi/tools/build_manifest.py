@@ -29,7 +29,6 @@ REFERENCE_NOTE_SOURCES = {
     "英文资料 ENGLISH MATERIALS/Concrete Mathematics - 2nd Edition.pdf",
     "英文资料 ENGLISH MATERIALS/A Probability Path - Resnick.pdf",
     "英文资料 ENGLISH MATERIALS/Data Structures and Network Algorithms - Tarjan [1987-01-01].pdf",
-    "USACO/【由 BirDOR 整理】USACO 2001-2007 月赛测试数据+题目+题解/USACO月赛十年题典v10.pdf",
     "其他 OTHERS/一份不太简短的LATEX介绍.pdf",
 }
 COMPANION_NOTE_SOURCES = set()
