@@ -44,7 +44,6 @@ COMPANION_NOTE_SOURCES = {
     "数据结构 DATA STRUCTURE/后缀自动机 - 陈立杰.pdf",
     "其他 OTHERS/C++的pb-ds库在OI中的应用 - 于纪平.pdf",
     "其他 OTHERS/CDQ分治入门经典.pdf",
-    "其他 OTHERS/NOI2016-旷野大计算-题解.pdf",
     "其他 OTHERS/博弈论相关 - 李晓潇.pdf",
 }
 CODE_TEMPLATE_SOURCES = {

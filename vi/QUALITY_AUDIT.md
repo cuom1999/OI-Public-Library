@@ -53,6 +53,7 @@ or reclassified.
 | `sources/mathematics/linear-programming-simplex-wu-yifan.tex` | 40 | Repaired from companion-note status: checked the Beamer deck visually because extracted Chinese text is mojibake, confirmed the pivot-code screenshot is transcribed as searchable code, documented the repeated direct-practice overlay slides, and kept the standard/slack forms, pivot example, Bland rule, network-flow/duality discussion, BZOJ3876 example, and final problem list aligned with the source. |
 | `sources/dynamic-programming/state-compression-zhou-wei.tex` | 16 | Repaired from companion-note status: checked the text-extractable Word/PDF article, restored the rook predecessor-state and Bugs Integrated ternary-state figures in TikZ, expanded the missing tail covering domino plus L trominoes, \(1\times r\) tiling, Bugs Integrated transition/blocked-cell handling, bipartite matching count, topological-order count, and Shortest Common Superstring, and replaced the unsourced conclusion with an explicit note that the available PDF ends mid-example 11. |
 | `sources/dynamic-programming/intro-digit-dp.tex` | 26 | Repaired from companion-note status: OCR-checked the image-only slide deck, confirmed the Vietnamese follows all source sections from interval notation and digit-DP method through HDU2089, HDU3652, URAL1057, the xor pair-sum example, SPOJ SORTBIT, conclusion, and references, and fixed the source-title/reference metadata. |
+| `sources/others/noi2016-wilderness-computation-solution.tex` | 42 | Repaired from companion-note status: checked the extractable Beamer deck and sampled visual-only slides, confirmed the translation preserves the operation table, scoring overlays, all ten test-point solutions with formulas/code snippets/operation counts, the modularity/discrete-continuous/neural-network lesson slides, and the closing acknowledgments, with illustrative-only images folded into prose. |
 
 ## Low-Density Files Reviewed And Kept As Translated
 
@@ -228,7 +229,6 @@ inflate the full translated-document count.
 | `sources/data-structure/suffix-automaton-chen-lijie.tex` | 57 | Reviewed as slide deck with diagram/code-image pages. Companion note reconstructs the SAM construction and applications in lecture order. |
 | `sources/others/pb-ds-in-oi-yu-jiping.tex` | 186 | Reviewed as slide deck with damaged text extraction. Companion note is self-contained and keeps the interfaces, code snippets and performance tables. |
 | `sources/others/cdq-divide-and-conquer-introduction.tex` | 74 | Repaired after OCR of pages 51--74; companion note now includes submatrix k-th, ZJOI2013 K-th Query, HNOI2010 City, and FJOI2012 Point. |
-| `sources/others/noi2016-wilderness-computation-solution.tex` | 42 | Reviewed as Beamer solution deck. Companion note keeps the operation table, scoring table, ten tests, and explicit notes for visual-only slides. |
 | `sources/others/game-theory-li-xiaoxiao.tex` | 60 | Reviewed as slide deck. Companion note keeps the impartial-game definitions, Sprague--Grundy examples, and airplane-game DP discussion. |
 
 ## Explicitly Acceptable Short Files
