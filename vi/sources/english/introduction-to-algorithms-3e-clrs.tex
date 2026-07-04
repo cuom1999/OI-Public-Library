@@ -582,6 +582,150 @@ Chương 35 cung cấp ngôn ngữ về tỷ lệ xấp xỉ. Ví dụ vertex co
 2-approx bằng cách lấy cả hai đầu của một matching tham lam; set cover có phân
 tích harmonic bằng cách tính chi phí trên từng phần tử được phủ.
 
+\section{Phụ lục kiểm chứng lời giải theo tinh thần CLRS}
+
+CLRS không chỉ là danh sách thuật toán; điểm mạnh của sách là cách biến một ý
+tưởng thành mệnh đề đúng, có mô hình, có chứng minh và có cận thời gian. Phần
+này gom các mẫu kiểm chứng thường cần khi viết lời giải OI hoặc editorial. Nó
+không chuyển mã giả thành template, mà giúp người đọc biết cần chứng minh điều
+gì trước khi tin một thuật toán.
+
+\subsection{Từ bài toán sang mô hình}
+
+Trước khi chọn thuật toán, cần xác định đúng đối tượng toán học:
+\begin{itemize}
+  \item phần tử cần sắp, chọn, ghép hoặc phủ là gì;
+  \item quan hệ giữa chúng là thứ tự, đồ thị, luồng, ràng buộc tuyến tính,
+        recurrence hay xác suất;
+  \item kích thước \(n,m,U,W\) nào thực sự chi phối độ phức tạp;
+  \item đầu vào có tính chất đặc biệt không: DAG, trọng số không âm, bipartite,
+        khóa nguyên nhỏ, ma trận thưa, hay modulo nguyên tố.
+\end{itemize}
+
+Sai mô hình thường dẫn đến thuật toán nhìn đúng nhưng hỏng ở biên. Ví dụ dùng
+BFS cho đồ thị có trọng số là nhầm mô hình khoảng cách; dùng Dijkstra khi có
+cạnh âm là vi phạm điều kiện bất biến; dùng comparison sort rồi kỳ vọng tuyến
+tính là bỏ qua cận dưới decision tree. Một lời giải tốt nên nêu rõ giả thiết nào
+của CLRS đang được dùng.
+
+\subsection{Chứng minh đúng theo bốn mẫu}
+
+Nhiều chứng minh trong CLRS có thể quy về bốn mẫu sau:
+\begin{itemize}
+  \item \term{Bất biến}: sau mỗi bước, cấu trúc trung gian vẫn mang ý nghĩa xác
+        định, như heap property, tập đỉnh đã chốt của Dijkstra, hay bảng DP đã
+        tính xong một miền trạng thái.
+  \item \term{Quy nạp}: nghiệm kích thước nhỏ đúng, bước chuyển tạo nghiệm kích
+        thước lớn đúng; thường dùng cho DP, chia để trị và cấu trúc cây.
+  \item \term{Trao đổi}: biến một nghiệm tối ưu bất kỳ thành nghiệm chứa lựa
+        chọn của thuật toán mà không làm xấu đáp án; đây là lõi của greedy và
+        MST.
+  \item \term{Đối ngẫu/chứng nhận}: đưa ra một vật chứng chặn trên/dưới khớp với
+        nghiệm, như min cut cho max flow, cây cha cho shortest path, hoặc
+        reduction cho NP-hardness.
+\end{itemize}
+
+Khi trình bày, tránh câu ``dễ thấy đúng''. Hãy nói rõ mệnh đề đang giữ, vì sao
+mỗi thao tác không phá mệnh đề đó, và vì sao điều kiện dừng biến mệnh đề thành
+kết quả cần chứng minh.
+
+\subsection{Phân tích độ phức tạp}
+
+CLRS tách phân tích khỏi cài đặt. Với mỗi thuật toán, cần nêu:
+\begin{itemize}
+  \item số lần mỗi vòng lặp hoặc thao tác chính được gọi;
+  \item chi phí của cấu trúc dữ liệu dùng trong thao tác đó;
+  \item bộ nhớ phụ và kích thước bảng/trạng thái;
+  \item worst case, average case hay expected case đang được khẳng định.
+\end{itemize}
+
+Một lỗi phổ biến là nhân nhầm các tầng lặp. Trong DFS, tổng số cạnh quét là
+\(O(m)\), không phải \(O(nm)\), vì mỗi cạnh chỉ được duyệt theo danh sách kề.
+Trong Dijkstra, cận phụ thuộc số lần \textsc{Extract-Min} và
+\textsc{Decrease-Key}, nên binary heap, \(d\)-heap và Fibonacci heap cho cận
+khác nhau. Trong DP trên đoạn, số trạng thái \(O(n^2)\) và số điểm chia
+\(O(n)\) tạo \(O(n^3)\) nếu không có tối ưu bổ sung.
+
+\subsection{Kiểm tra điều kiện áp dụng thuật toán}
+
+Nhiều thuật toán CLRS đúng chỉ dưới điều kiện cụ thể:
+\begin{center}
+\begin{tabular}{p{0.28\linewidth}p{0.58\linewidth}}
+\textbf{Thuật toán/kỹ thuật} & \textbf{Điều kiện phải kiểm tra} \\
+\hline
+Counting/radix sort & khóa nguyên, miền hoặc số chữ số được kiểm soát \\
+Dijkstra & mọi trọng số cạnh không âm sau khi reweight nếu có \\
+Bellman--Ford & cần phát hiện và xử lý chu trình âm đạt được \\
+Topological DP & đồ thị phải là DAG theo hướng chuyển trạng thái \\
+Greedy interval & tiêu chí chọn phải có chứng minh trao đổi \\
+Kruskal/Prim & trọng số cạnh xác định, đồ thị vô hướng; xử lý rời rạc nếu cần \\
+Max flow & bảo toàn luồng, dung lượng, mạng dư và cạnh ngược đúng \\
+FFT/NTT & độ dài đệm đủ, modulo/căn đơn vị hợp lệ hoặc sai số được kiểm soát \\
+Hash randomized & xác suất collision hoặc adversarial input được xét \\
+\end{tabular}
+\end{center}
+
+Bảng này không thay thế chứng minh, nhưng là bộ lọc nhanh. Nếu một điều kiện
+không đúng, hoặc phải đổi mô hình, hoặc phải thêm bước biến đổi như Johnson
+reweighting, tách đỉnh cho capacity, thêm nguồn giả, hay xử lý thành phần liên
+thông riêng.
+
+\subsection{Từ mã giả CLRS sang cài đặt thi đấu}
+
+Mã giả CLRS ưu tiên rõ ý tưởng hơn chi tiết môi trường. Khi cài đặt lại, cần
+quyết định các điểm sau:
+\begin{itemize}
+  \item chỉ số bắt đầu từ \(0\) hay \(1\), đoạn đóng hay nửa mở;
+  \item giá trị vô cực có đủ lớn và không tràn khi cộng không;
+  \item so sánh ổn định với số thực, modulo hoặc khóa bằng nhau;
+  \item cấu trúc dữ liệu có hỗ trợ đúng thao tác mà phân tích giả định không;
+  \item recursion depth có vượt stack không, có cần chuyển sang iterative không;
+  \item input lớn có cần đọc nhanh, nén tọa độ hoặc tiết kiệm bộ nhớ không.
+\end{itemize}
+
+Ví dụ, pseudocode Dijkstra có thể dùng \textsc{Decrease-Key}; trong C++ thường
+dùng priority queue không xóa khóa cũ mà bỏ qua entry lỗi thời khi pop. Phân
+tích và bất biến vẫn đúng nếu ta chứng minh rằng entry được xử lý chỉ khi nó
+khớp với khoảng cách hiện tại. Đây là chuyển đổi cài đặt, không phải thay đổi
+thuật toán.
+
+\subsection{Stress test và phản ví dụ}
+
+CLRS dạy chứng minh, nhưng khi viết code vẫn cần kiểm thử có hệ thống. Một vòng
+stress test tốt gồm:
+\begin{itemize}
+  \item sinh input nhỏ ngẫu nhiên và so với brute force;
+  \item sinh biên: rỗng, một phần tử, toàn bằng nhau, đã sắp, ngược thứ tự,
+        đồ thị rời rạc, trọng số \(0\), trọng số âm nếu được phép;
+  \item sinh adversarial case: hash collision giả lập, pivot xấu, heap nhiều
+        khóa trùng, flow có nhiều cạnh ngược;
+  \item kiểm tra invariant trong debug build, ví dụ heap property, tổng luồng
+        vào/ra, thứ tự topo, hay bảng DP không dùng trạng thái chưa tính.
+\end{itemize}
+
+Phản ví dụ nhỏ có giá trị hơn test lớn khó hiểu. Nếu greedy sai, thường có input
+3--6 phần tử chứng minh lựa chọn cục bộ bị kẹt. Nếu DP sai, thường có trạng thái
+nhỏ cho thấy thiếu thông tin trong định nghĩa \(dp\). Nếu thuật toán đồ thị sai,
+hãy thử đồ thị có nhiều thành phần, cạnh song song, self-loop, trọng số bằng
+nhau và đường đi thay thế.
+
+\subsection{Viết editorial theo chuẩn kỹ thuật}
+
+Một editorial chịu ảnh hưởng CLRS nên có cấu trúc:
+\begin{enumerate}
+  \item mô hình hóa bài toán và ký hiệu;
+  \item nhận xét then chốt hoặc định lý nhỏ;
+  \item thuật toán ở mức ý tưởng, không lệ thuộc ngôn ngữ;
+  \item chứng minh đúng bằng bất biến/quy nạp/trao đổi/chứng nhận;
+  \item phân tích thời gian và bộ nhớ;
+  \item chi tiết cài đặt rủi ro: indexing, overflow, data structure, biên.
+\end{enumerate}
+
+Nếu lời giải dùng kết quả nổi tiếng như max-flow min-cut, cut property của MST,
+master theorem, hoặc cận dưới comparison sort, nên gọi tên kết quả và nêu vì
+sao điều kiện của nó đúng trong bài. Đây là cách biến kiến thức từ CLRS thành
+lời giải có thể kiểm tra, thay vì chỉ nêu tên thuật toán.
+
 \section{Bản đồ ưu tiên cho OI}
 
 \begin{itemize}
