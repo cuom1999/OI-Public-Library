@@ -2,8 +2,12 @@
 % Source-File: IOI中国国家候选队论文/2008/Day1/4.顾研《浅谈随机化思想在几何问题中的应用》/浅谈随机化思想在几何问题中的应用.doc
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,patterns}
 
 \newcommand{\Oh}{\mathcal{O}}
+\newcommand{\eps}{\varepsilon}
+\renewcommand{\figurename}{Hình}
 
 \title{Cảm nhận vẻ đẹp của ngẫu nhiên}
 \author{Gu Yan\\Trường Trung học số 1 Trung Sơn, Quảng Đông}
@@ -17,11 +21,14 @@
 
 \renewcommand{\abstractname}{Tóm tắt}
 \begin{abstract}
-Trong vài năm gần đây, ngày càng nhiều bài hình học có thể giải bằng tư tưởng
-ngẫu nhiên hóa. Bài viết giới thiệu hai nhóm thuật toán ngẫu nhiên thường gặp
-trong thi tin học: thuật toán gia tăng ngẫu nhiên và mô phỏng tôi luyện. Qua
-so sánh với các phương pháp truyền thống, bài viết nhấn mạnh ưu điểm đơn giản,
-nhanh, linh hoạt và dễ song song hóa của ngẫu nhiên hóa.
+Trong vài năm gần đây, các bài hình học trong thi tin học không còn chỉ là
+cuộc thi viết lại những cấu trúc kinh điển. Nhiều bài có thể được giải gọn hơn
+nếu đưa ngẫu nhiên vào thứ tự xử lý, hoặc dùng một quá trình tìm kiếm ngẫu
+nhiên có kiểm soát. Bài viết giới thiệu hai nhóm kỹ thuật chính: thuật toán gia
+tăng ngẫu nhiên và mô phỏng tôi luyện. Qua các ví dụ đường tròn bao nhỏ nhất,
+quy hoạch tuyến tính ba chiều, \textit{Run Away}, \textit{Empire Strikes Back}
+và \textit{Laser Tank}, tác giả nhấn mạnh ưu điểm đơn giản, nhanh, linh hoạt và
+dễ song song hóa của tư tưởng ngẫu nhiên hóa.
 \end{abstract}
 
 \noindent\textbf{Từ khóa:} ngẫu nhiên hóa; thuật toán gia tăng ngẫu nhiên;
@@ -29,214 +36,523 @@ mô phỏng tôi luyện; điều chỉnh.
 
 \section{Khái quát về thuật toán ngẫu nhiên}
 
-Thuật toán ngẫu nhiên là thuật toán đưa yếu tố ngẫu nhiên vào quá trình lựa
-chọn bước tiếp theo. Với cùng một đầu vào, các lần chạy khác nhau có thể có
-thời gian hoặc kết quả trung gian khác nhau. Bù lại, thuật toán thường đơn
-giản, nhanh, linh hoạt, và có thể cân bằng giữa thời gian, bộ nhớ và độ chính
-xác.
+Thuật toán ngẫu nhiên là loại thuật toán chấp nhận dữ liệu đầu vào đồng thời
+đưa yếu tố ngẫu nhiên vào quá trình chọn bước tiếp theo. Vì vậy với cùng một
+đầu vào, hai lần chạy có thể đi qua các trạng thái khác nhau, có thời gian
+khác nhau, hoặc trong một số mô hình còn cho đáp án xấp xỉ hơi khác nhau.
 
-Bản gốc chia thuật toán ngẫu nhiên thành bốn nhóm quen thuộc.
+Ưu điểm thường gặp của loại thuật toán này là đơn giản, nhanh, linh hoạt và dễ
+song song hóa. Có thể xem ngẫu nhiên hóa như một cách cân bằng giữa thời gian,
+bộ nhớ và độ chính xác. Bản gốc chia các thuật toán ngẫu nhiên thường dùng
+thành bốn nhóm sau.
 
-\paragraph{Thuật toán xác suất số trị.}
-Loại này dùng cho bài toán số, thường cho nghiệm xấp xỉ. Khi thời gian tính
-tăng, độ chính xác cũng tăng. Ví dụ kinh điển là ước lượng \(\pi\) bằng cách
-lấy ngẫu nhiên điểm trong hình vuông ngoại tiếp đường tròn đơn vị.
+\subsection{Thuật toán xác suất số trị}
 
-\paragraph{Las Vegas.}
-Thuật toán Las Vegas không trả lời sai: nếu tìm được đáp án thì đáp án đúng.
-Tuy nhiên thời gian chạy có thể ngẫu nhiên; chạy lâu hơn thì xác suất tìm được
-đáp án tăng.
+Thuật toán xác suất số trị thường dùng để giải các bài toán số. Kết quả thu
+được thường là nghiệm xấp xỉ, và khi thời gian tính tăng thì độ chính xác cũng
+tăng. Trong nhiều tình huống, nghiệm chính xác là không thể tính hoặc không
+cần thiết; một nghiệm xấp xỉ đủ tốt đã đáp ứng yêu cầu.
 
-\paragraph{Monte Carlo.}
-Thuật toán Monte Carlo luôn trả lời trong thời gian kiểm soát được, nhưng có
-thể sai với xác suất nhỏ. Nhiều phép kiểm định có lỗi một phía thuộc nhóm này,
-chẳng hạn Miller--Rabin. Một nhánh khác là lấy mẫu Monte Carlo: xây một mô
-hình xác suất, mô phỏng nhiều lần, rồi dùng kỳ vọng mẫu làm đáp án xấp xỉ.
+Ví dụ kinh điển là ước lượng \(\pi\). Lấy ngẫu nhiên \(n\) điểm trong hình
+vuông ngoại tiếp đường tròn đơn vị. Nếu \(k\) điểm rơi vào trong đường tròn,
+ta có xấp xỉ
+\[
+  \pi \approx \frac{4k}{n}.
+\]
 
-\paragraph{Sherwood.}
-Thuật toán Sherwood luôn cho đáp án đúng, nhưng dùng ngẫu nhiên để phá liên hệ
-giữa dữ liệu xấu và hành vi xấu của thuật toán xác định. QuickSort ngẫu nhiên
-là ví dụ điển hình. Thuật toán gia tăng ngẫu nhiên trong phần sau thuộc tinh
-thần này.
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.0, every node/.style={font=\small}]
+  \draw[thick] (-1.2,-1.2) rectangle (1.2,1.2);
+  \draw[thick,blue!70] (0,0) circle (1.2);
+  \foreach \x/\y/\c in {
+    -0.82/0.45/blue, 0.18/0.82/blue, 0.72/-0.22/blue,
+    -0.28/-0.68/blue, 0.96/0.72/red, -1.05/-0.96/red,
+    0.38/-1.08/red, -0.65/1.05/red, 0.02/0.11/blue,
+    -0.98/0.02/blue, 1.07/-0.42/red, 0.64/0.64/blue}
+    \fill[\c!75] (\x,\y) circle (1.4pt);
+  \node[align=center] at (0,-1.65) {hình vuông: diện tích \(4\)\\đường tròn: diện tích \(\pi\)};
+\end{tikzpicture}
+\caption{Lấy mẫu Monte Carlo để ước lượng \(\pi\): tỉ lệ điểm nằm trong đường tròn xấp xỉ tỉ lệ diện tích.}
+\end{figure}
 
-Ngoài các nhóm trên, nhiều thuật toán điều chỉnh có yếu tố ngẫu nhiên cũng hữu
-ích trong hình học: khởi tạo một phương án, rồi liên tục điều chỉnh tới khi đạt
-điều kiện mong muốn.
+\subsection{Las Vegas}
+
+Thuật toán Las Vegas không trả lời sai. Một khi thuật toán tìm được nghiệm,
+nghiệm đó chắc chắn đúng. Điểm ngẫu nhiên nằm ở thời gian chạy: đôi khi thuật
+toán chưa tìm được nghiệm trong thời gian ngắn, nhưng nếu cho chạy lâu hơn thì
+xác suất thành công tăng lên.
+
+\subsection{Monte Carlo}
+
+Monte Carlo cũng được đặt theo tên một thành phố cờ bạc. Theo cách dùng phổ
+biến, có hai dạng.
+
+Dạng thứ nhất là kiểm định Monte Carlo. Thuật toán luôn đưa ra câu trả lời
+trong thời gian kiểm soát được, nhưng có thể sai với xác suất nhỏ. Lỗi thường
+được thiết kế một phía: chẳng hạn nếu đáp án thật là \textsc{No} thì thuật toán
+luôn trả lời \textsc{No}, còn nếu đáp án thật là \textsc{Yes} thì đôi khi nó
+trả lời \textsc{No}. Khi tăng số lần thử, xác suất trả lời đúng tăng lên.
+Kiểm định nguyên tố Miller--Rabin và Rabin--Karp cho so khớp chuỗi là các ví
+dụ quen thuộc.
+
+Dạng thứ hai là lấy mẫu Monte Carlo. Ta xây dựng một mô hình xác suất cho bài
+toán, mô phỏng nhiều lần theo mô hình đó, rồi dùng kỳ vọng mẫu làm nghiệm xấp
+xỉ. Phụ lục~\ref{app:monte-carlo} tóm tắt ba bước cơ bản của cách làm này.
+Mô phỏng tôi luyện ở phần sau cũng dùng tinh thần lấy mẫu Monte Carlo.
+
+\subsection{Sherwood}
+
+Thuật toán Sherwood luôn cho đáp án đúng, nhưng dùng ngẫu nhiên để phá mối
+liên hệ giữa dữ liệu xấu và hành vi xấu của thuật toán xác định. Khi một thuật
+toán có độ phức tạp trường hợp xấu chênh lệch nhiều so với trung bình, ta có
+thể đưa ngẫu nhiên vào để làm cho trường hợp xấu không còn gắn chặt với một
+kiểu dữ liệu cụ thể. QuickSort ngẫu nhiên là ví dụ điển hình.
+
+Thuật toán gia tăng ngẫu nhiên trong phần kế tiếp chính là một ứng dụng của
+tinh thần Sherwood. Ngoài ra, nhiều bài hình học cũng dùng được các tư tưởng
+điều chỉnh có ngẫu nhiên, như trong luận văn đội tuyển quốc gia 2006 của Tang
+Wenbin. Ví dụ bài Ural 1578 \textit{Mammoth Hunt}: cho \(n\) điểm trên mặt
+phẳng, cần tìm một đường gấp khúc gồm \(n-1\) đoạn nối các điểm sao cho hai
+đoạn liên tiếp tạo góc nhọn. Một cách làm tự nhiên là sinh một đường gấp khúc
+bất kỳ, rồi điều chỉnh theo quy tắc cho tới khi thỏa điều kiện.
 
 \section{Thuật toán gia tăng ngẫu nhiên}
 
 \subsection{Từ gia tăng tới gia tăng ngẫu nhiên}
 
-Thuật toán gia tăng xử lý bài toán bằng cách giải bài con nhỏ hơn rồi thêm đối
-tượng mới vào. Nếu \(S_i\) là tập gồm \(i\) đối tượng đầu tiên, ta duy trì đáp
-án của \(S_i\), sau đó thêm đối tượng thứ \(i+1\) để thu được đáp án của
-\(S_{i+1}\).
+Tư tưởng của thuật toán gia tăng giống quy nạp toán học: biến bài toán kích
+thước \(n\) thành bài toán kích thước nhỏ hơn đúng một đơn vị. Sau khi giải
+bài con, ta thêm đối tượng hiện tại và cập nhật đáp án.
 
-Cách này thường dễ cài đặt nhưng có thể chậm trong trường hợp xấu, vì thứ tự
-đầu vào có thể ép thuật toán sửa đáp án quá nhiều lần. Ý tưởng Sherwood là xáo
-trộn ngẫu nhiên thứ tự đầu vào trước khi chạy. Khi đó thời gian kỳ vọng được
-tính theo thứ tự ngẫu nhiên, không phụ thuộc vào việc dữ liệu gốc được sắp xếp
-xấu ra sao.
+Ký hiệu \(S_i\) là tập gồm \(i\) đối tượng đầu tiên. Nếu đã có đáp án của
+\(S_i\), ta thêm đối tượng thứ \(i+1\) để thu được đáp án của \(S_{i+1}\).
+Cách viết này rất gọn và áp dụng được cho nhiều bài hình học.
 
-Một phép xáo trộn tuyến tính tiêu chuẩn là Fisher--Yates:
+Nhược điểm là thứ tự đầu vào có thể làm thuật toán phải sửa đáp án quá nhiều
+lần. Vì vậy ta thường xáo trộn ngẫu nhiên thứ tự xử lý trước khi chạy. Một
+thuật toán xáo trộn tuyến tính là Fisher--Yates:
 \begin{verbatim}
 for i = 2..n:
-    swap(a[i], a[random(1..i)])
+    swap(O[i], O[random(1..i)])
 \end{verbatim}
+Sau bước này, \(n!\) thứ tự đều có xác suất như nhau. Phần khó còn lại là phân
+tích kỳ vọng thời gian trên thứ tự ngẫu nhiên đó.
 
-\subsection{Ví dụ: đường tròn bao nhỏ nhất}
+\subsection{Ví dụ dẫn nhập: đường tròn bao nhỏ nhất}
 
 Cho \(n\) điểm trên mặt phẳng, cần tìm đường tròn nhỏ nhất chứa tất cả điểm.
-Một thuật toán xác định dựa trên việc xét các cặp hoặc bộ ba điểm có thể dẫn
-tới độ phức tạp cao. Thuật toán gia tăng ngẫu nhiên dựa trên tính chất sau:
-nếu \(D(P)\) là đường tròn bao nhỏ nhất của tập \(P\), và thêm một điểm \(p\):
+Bài viết dùng ví dụ này để phân tích tính chất của thuật toán gia tăng ngẫu
+nhiên, bắt đầu từ phương pháp góc chắn.
+
+\subsubsection{Phương pháp góc chắn}
+
+Trừ trường hợp chỉ có một điểm, đường tròn bao nhỏ nhất luôn có ít nhất hai
+điểm nằm trên biên. Ta có thể thử chọn hai điểm \(A,B\). Với một điểm \(C\)
+nằm cùng phía với cung, góc \(\angle ACB\) phản ánh kích thước đường tròn qua
+dây \(AB\): với cùng dây \(AB\), góc chắn càng nhỏ thì bán kính càng lớn.
+
+Vì vậy với mỗi cặp \(A,B\), ta xét các điểm ở hai phía của đường thẳng
+\(AB\), tìm góc nhỏ nhất ở mỗi phía. Khi hai góc cực trị phù hợp, đường tròn
+ngoại tiếp ba điểm tương ứng có thể bao phủ toàn bộ tập điểm; trường hợp bốn
+điểm đồng viên xuất hiện khi hai góc cân bằng. Cách làm xác định này phải xét
+nhiều cặp và nhiều điểm, nên có độ phức tạp cao.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95, every node/.style={font=\small}]
+  \coordinate (A) at (-2.1,0);
+  \coordinate (B) at (2.1,0);
+  \coordinate (C) at (-0.45,1.75);
+  \coordinate (D) at (0.65,-1.35);
+  \draw[thick] (0,0.15) circle (2.15);
+  \draw[thick] (A) -- (B);
+  \draw[blue!70,thick] (A) -- (C) -- (B);
+  \draw[red!70,thick] (A) -- (D) -- (B);
+  \foreach \p/\lab/\pos in {A/A/below left,B/B/below right,C/C/above,D/D/below}
+    \fill (\p) circle (2pt) node[\pos] {\lab};
+  \node[align=center] at (0,-2.55) {cùng dây \(AB\), góc chắn quyết định\\đường tròn ứng viên qua \(A,B\)};
+\end{tikzpicture}
+\caption{Sơ đồ phương pháp góc chắn: chọn dây \(AB\), rồi xét các điểm khống chế ở hai phía.}
+\end{figure}
+
+\subsubsection{Cải tiến bằng gia tăng ngẫu nhiên}
+
+Gọi \(P_i=\{p_1,p_2,\ldots,p_i\}\), và \(D(P_i)\) là đường tròn bao nhỏ nhất
+của \(P_i\). Khi thêm điểm \(p_{i+1}\), có hai trường hợp:
 \begin{itemize}
-  \item nếu \(p\in D(P)\), đáp án không đổi;
-  \item nếu \(p\notin D(P)\), thì \(p\) nằm trên biên của đường tròn bao mới.
+  \item nếu \(p_{i+1}\in D(P_i)\), đáp án không đổi;
+  \item nếu \(p_{i+1}\notin D(P_i)\), thì \(p_{i+1}\) chắc chắn nằm trên biên
+  của \(D(P_{i+1})\).
 \end{itemize}
+Mệnh đề thứ hai nhìn rất tự nhiên nhưng chứng minh không hoàn toàn hiển nhiên;
+phụ lục~\ref{app:mec-proof} ghi lại lập luận của bản gốc.
 
-Vì vậy sau khi xáo trộn các điểm, ta lần lượt thêm từng điểm. Nếu điểm mới còn
-nằm trong đường tròn hiện tại thì bỏ qua. Nếu không, ta dựng lại đường tròn
-với điểm mới buộc nằm trên biên, bằng cách xét các điểm trước đó. Có thể tiếp
-tục dùng cùng ý tưởng: khi thêm điểm thứ hai làm vi phạm, hai điểm ấy cùng nằm
-trên biên; khi thêm điểm thứ ba làm vi phạm, ba điểm xác định đường tròn.
+Từ định lý trên, khi thêm một điểm mới nằm ngoài đường tròn hiện tại, ta dựng
+lại đường tròn với điểm mới bị buộc nằm trên biên. Trong phiên bản dùng phương
+pháp góc chắn, ta chỉ cần xét các điểm đã xuất hiện trước đó cùng với điểm mới
+để tìm đường tròn bao mới.
 
-Phân tích kỳ vọng dựa trên tuyến tính của kỳ vọng. Ở bước \(i\), xác suất điểm
-thứ \(i\) nằm trên biên đường tròn bao của \(i\) điểm chỉ cỡ \(\Oh(1/i)\), vì
-đường tròn được xác định bởi nhiều nhất ba điểm biên. Do đó số lần phải dựng
-lại ở các bước lớn là nhỏ theo kỳ vọng. Thuật toán đạt thời gian tuyến tính kỳ
-vọng nếu cài đặt đầy đủ; ngay cả phiên bản đơn giản hơn cũng đã tốt hơn nhiều
-so với cách xét mọi bộ điểm.
+Nếu không xáo trộn, độ phức tạp vẫn có thể xấu. Sau khi xáo trộn, ta xét biến
+ngẫu nhiên \(X_i\), trong đó \(X_i=1\) nếu điểm thứ \(i\) làm thay đổi đường
+tròn hiện tại, và \(X_i=0\) nếu không. Chi phí ở bước \(i\) chỉ lớn khi
+\(X_i=1\). Nhờ tuyến tính của kỳ vọng, kỳ vọng tổng thời gian bằng tổng kỳ
+vọng của các chi phí từng bước, không cần các biến \(X_i\) độc lập.
 
-Điểm quan trọng là chữ ``kỳ vọng'' ở đây xét theo thứ tự xáo trộn ngẫu nhiên,
-không phải theo phân bố đầu vào.
+Xét ngược lại: trong đường tròn bao của \(i\) điểm, số điểm biên quyết định
+đường tròn nhiều nhất là ba. Do thứ tự xử lý ngẫu nhiên, xác suất điểm thứ
+\(i\) rơi vào nhóm quyết định chỉ cỡ \(\Oh(1/i)\). Vì thế số lần cập nhật đắt
+giá giảm mạnh theo kỳ vọng. Với cách dựng lại dựa trên góc chắn trong bài
+viết, độ phức tạp giảm từ \(\Oh(n^3)\) xuống \(\Oh(n^2)\) kỳ vọng; nếu tiếp
+tục dùng cùng định lý ở phần dựng lại, có thể đạt thuật toán tuyến tính kỳ
+vọng kinh điển.
 
-\subsection{Ví dụ: Expensive Drink}
+Điểm quan trọng là chữ ``kỳ vọng'' ở đây xét theo thứ tự xáo trộn, hoàn toàn
+không giả định đầu vào được sinh ngẫu nhiên.
 
-Bài \textit{Expensive Drink} có thể chuyển thành quy hoạch tuyến tính ba chiều.
-Gọi \(x,y,z\) lần lượt là giá của nước, cà phê và rượu. Mỗi đồ uống đã biết
-tạo ra hai ràng buộc tuyến tính từ khoảng giá phần đường, kèm các ràng buộc
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.9, every node/.style={font=\small}]
+  \coordinate (A) at (-1.6,-0.4);
+  \coordinate (B) at (1.4,-0.3);
+  \coordinate (C) at (-0.15,1.35);
+  \coordinate (P) at (2.15,1.15);
+  \draw[thick,blue!70] (0,0.28) circle (1.75);
+  \foreach \p in {A,B,C}
+    \fill[blue!75] (\p) circle (2pt);
+  \fill[red!75] (P) circle (2.2pt) node[right] {\(p_{i+1}\)};
+  \draw[red!70,dashed] (0.25,0.28) circle (2.15);
+  \node[blue!70] at (-1.25,2.25) {\(D(P_i)\)};
+  \node[red!70] at (2.15,2.35) {\(D(P_{i+1})\)};
+  \node[align=center] at (0,-2.1) {nếu điểm mới nằm ngoài đường tròn cũ,\\nó phải nằm trên biên đường tròn mới};
+\end{tikzpicture}
+\caption{Gia tăng ngẫu nhiên cho đường tròn bao nhỏ nhất.}
+\end{figure}
+
+\subsection{\textit{Expensive Drink}: quy hoạch tuyến tính ba chiều}
+
+\textit{Expensive Drink} có nội dung như sau. Em gái trộn nước, cà phê, rượu
+và đường thành các đồ uống. Giá đơn vị của bốn nguyên liệu là
+\(c_1,c_2,c_3,c_4\), trong đó nước rẻ nhất và rượu đắt nhất:
 \[
-  0\le x\le y\le z.
+  0\le c_1\le c_2\le c_3.
 \]
-Cần cực đại hóa một hàm tuyến tính của \(x,y,z\).
+Nếu một đồ uống dùng lượng \(a_1,a_2,a_3,a_4\), giá của nó là
+\[
+  a_1c_1+a_2c_2+a_3c_3+a_4c_4.
+\]
+Ta biết \(n\) đồ uống cũ: mỗi đồ uống cho \(a_1,a_2,a_3\) và tổng giá \(p\);
+đồng thời biết phần giá do đường tạo ra, tức \(a_4c_4\), luôn nằm trong đoạn
+\([L,R]\). Với một đồ uống đặc biệt chỉ cho \(a_1,a_2,a_3\), cần tìm giá lớn
+nhất có thể. Dữ liệu có \(n\le 100\), khoảng 2000 bộ test và giới hạn thời
+gian 2 giây.
 
-Cách thô là lấy giao của mọi bộ ba mặt phẳng, kiểm tra tất cả ràng buộc, rồi
-cập nhật đáp án. Nếu có \(m\) mặt phẳng, chi phí có thể tới \(\Oh(m^4)\).
+Đặt \(x,y,z\) lần lượt thay cho \(c_1,c_2,c_3\). Phần đường không cần xuất
+hiện tường minh nữa, vì với mỗi đồ uống cũ ta có
+\[
+  L \le p_i-a_{i1}x-a_{i2}y-a_{i3}z \le R.
+\]
+Cùng với các ràng buộc thứ tự \(0\le x\le y\le z\), bài toán trở thành một
+quy hoạch tuyến tính trong không gian ba chiều:
+\[
+  \text{maximize } a_1x+a_2y+a_3z
+\]
+dưới \(2n+6\) ràng buộc tuyến tính. Trong thi lập trình, gặp bài như vậy không
+nhất thiết phải viết simplex hay nội điểm.
 
-Cải tiến đầu tiên là xét giao của hai mặt phẳng, tức một đường thẳng. Các ràng
-buộc còn lại cắt đường thẳng này thành một đoạn hợp lệ. Vì hàm mục tiêu tuyến
-tính trên một đoạn đạt cực trị ở một đầu mút, chỉ cần kiểm tra hai đầu đoạn.
-Cách này giảm chi phí nhưng vẫn chưa đủ đẹp.
+\subsubsection{Thuật toán thô}
 
-Thuật toán gia tăng xử lý từng nửa không gian. Giả sử sau \(i\) ràng buộc ta
-đã có nghiệm tối ưu \(v_i\) của phần giao hiện tại. Khi thêm ràng buộc
-\(h_{i+1}\):
+Trước hết xét vị trí của nghiệm tối ưu. Có vài khả năng: hệ vô nghiệm; nghiệm
+nằm ở giao của ba mặt phẳng; nghiệm nằm trên cạnh chung của hai mặt phẳng;
+nghiệm nằm trên cả một mặt; hoặc giá trị mục tiêu không bị chặn. Trường hợp
+không bị chặn có thể phát hiện bằng cách thêm một hộp rất lớn và xem nghiệm
+có rơi lên biên hộp hay không.
+
+Do đó nếu bài toán có nghiệm hữu hạn, ta có thể tìm được một ứng viên từ giao
+của ba mặt phẳng ràng buộc. Thuật toán thô liệt kê mọi bộ ba mặt phẳng, tính
+giao điểm, rồi kiểm tra toàn bộ ràng buộc còn lại. Chi phí có thể tới
+\(\Oh(m^4)\), với \(m\) là số ràng buộc.
+
+\subsubsection{Cắt đoạn thẳng}
+
+Vùng khả thi của quy hoạch tuyến tính là một tập lồi; trong bài này nó là một
+đa diện lồi. Thay vì liệt kê ba mặt phẳng, ta liệt kê hai mặt phẳng để lấy một
+đường thẳng. Mỗi ràng buộc còn lại cắt đường thẳng này thành một nửa đường
+thẳng; giao của tất cả chúng là một đoạn, một điểm, hoặc rỗng.
+
+Trên một đoạn thẳng, hàm mục tiêu tuyến tính đạt cực trị ở một trong hai đầu
+mút. Nếu tham số hóa đoạn bằng
+\[
+  P(t)=P_0+t(P_1-P_0),\qquad 0\le t\le 1,
+\]
+thì giá trị mục tiêu là một hàm bậc nhất theo \(t\). Hệ số dương chọn \(P_1\),
+hệ số âm chọn \(P_0\), còn hệ số bằng không thì mọi điểm trên đoạn cho cùng
+giá trị.
+
+Thuật toán này không bỏ sót giao của ba mặt phẳng: nếu giao điểm đó là đầu
+mút của đoạn thì đã được xét; nếu nằm bên trong đoạn thì theo tính tuyến tính
+nó không thể tốt hơn đầu mút tốt nhất; nếu không nằm trong đoạn thì nó không
+thỏa một ràng buộc nào đó. Khi cài đặt, ta dùng phương trình tham số của đường
+thẳng để biến mỗi phép cắt thành cập nhật khoảng giá trị của tham số. Chi phí
+tổng thể là \(\Oh(m^3)\).
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.92, every node/.style={font=\small}]
+  \fill[blue!8] (-1.9,-0.9) -- (-0.3,1.4) -- (1.9,0.65) -- (1.2,-1.25) -- cycle;
+  \draw[thick,blue!70] (-1.9,-0.9) -- (-0.3,1.4) -- (1.9,0.65) -- (1.2,-1.25) -- cycle;
+  \draw[red!75,thick] (-2.4,0.7) -- (2.4,-0.75);
+  \coordinate (L) at (-1.05,0.29);
+  \coordinate (R) at (1.55,-0.49);
+  \draw[very thick,red!75] (L) -- (R);
+  \fill (L) circle (2pt) node[above left] {\(P_0\)};
+  \fill (R) circle (2pt) node[below right] {\(P_1\)};
+  \draw[-{Latex[length=2mm]},thick] (2.25,1.15) -- (2.25,0.25) node[midway,right] {mục tiêu};
+  \node[align=center] at (0,-1.8) {các nửa không gian cắt đường thẳng\\thành đoạn khả thi};
+\end{tikzpicture}
+\caption{Hình phẳng hóa ý tưởng cắt đoạn: trên đoạn khả thi, chỉ hai đầu mút có thể tối ưu.}
+\end{figure}
+
+\subsubsection{Gia tăng ngẫu nhiên}
+
+Thuật toán cắt đoạn vẫn chưa dùng mối liên hệ giữa nghiệm sau \(i\) ràng buộc
+và nghiệm sau \(i+1\) ràng buộc. Gọi \(C_i\) là giao của \(i\) nửa không gian
+đầu tiên và \(v_i\) là nghiệm tối ưu trên \(C_i\). Khi thêm nửa không gian
+\(h_{i+1}\), có hai trường hợp:
 \begin{itemize}
-  \item nếu \(v_i\) vẫn thỏa \(h_{i+1}\), đáp án không đổi;
-  \item nếu không, nghiệm tối ưu mới nếu tồn tại phải nằm trên mặt phẳng biên
-  của \(h_{i+1}\).
+  \item nếu \(v_i\in h_{i+1}\), nghiệm tối ưu không đổi;
+  \item nếu \(v_i\notin h_{i+1}\), thì nghiệm tối ưu mới, nếu tồn tại, phải
+  nằm trên mặt phẳng biên của \(h_{i+1}\).
 \end{itemize}
-Khi đó bài toán giảm xuống bài trên mặt phẳng, có thể giải bằng phiên bản cắt
-đoạn. Nếu trước khi xử lý ta xáo trộn thứ tự ràng buộc, xác suất một ràng buộc
-mới thật sự xác định nghiệm tối ưu ở bước \(i\) chỉ cỡ \(\Oh(1/i)\). Tổng thời
-gian kỳ vọng vì vậy giảm mạnh so với các cách liệt kê trực tiếp.
+Hai mệnh đề đều chứng minh được bằng phản chứng. Trường hợp thứ hai làm giảm
+bài toán xuống mặt phẳng biên mới, rồi giải bằng cắt đoạn.
 
-Bản gốc nhấn mạnh rằng, mặc dù tồn tại các thuật toán tuyến tính lý thuyết cho
-quy hoạch tuyến tính số chiều cố định, hằng số và độ phức tạp cài đặt của
-chúng không phù hợp với nhiều cuộc thi. Thuật toán gia tăng ngẫu nhiên đạt cân
-bằng tốt hơn giữa ý tưởng, mã nguồn và hiệu năng.
+Nếu xử lý theo thứ tự dữ liệu gốc, độ phức tạp vẫn có thể là \(\Oh(m^3)\).
+Nhưng sau khi xáo trộn ngẫu nhiên các nửa không gian, một ràng buộc mới chỉ
+có xác suất cỡ \(\Oh(1/i)\) để trở thành ràng buộc quyết định nghiệm tối ưu
+của \(i\) ràng buộc đầu. Tổng chi phí kỳ vọng giảm còn \(\Oh(m^2)\) cho cách
+cài đặt ba chiều này.
+
+Tác giả nhận xét rằng trên dữ liệu của bài, thuật toán này còn chạy nhanh hơn
+simplex. Về lý thuyết, quy hoạch tuyến tính số chiều cố định có thể tiếp tục
+giảm chiều để đạt tuyến tính theo số ràng buộc: mỗi lần nghiệm cũ bị loại, ta
+chiếu vector mục tiêu lên mặt phẳng mới và biến các nửa không gian còn lại
+thành nửa mặt phẳng để giải bài toán hai chiều. Tuy nhiên các phép chuyển hệ
+tọa độ, xoay mặt phẳng và hằng số ẩn làm cách đó không đáng dùng trong bối
+cảnh thi. Mục tiêu của ngẫu nhiên hóa ở đây là làm ít mà được nhiều, biến một
+cách viết tự nhiên thành một thuật toán đủ nhanh.
 
 \section{Mô phỏng tôi luyện}
 
-\subsection{Mô hình chung}
+\subsection{Nguyên lý và mô hình}
 
-Mô phỏng tôi luyện là một meta-heuristic lấy cảm hứng từ quá trình làm nguội
-vật rắn. Thuật toán có trạng thái hiện tại \(S\), nhiệt độ \(T\), và hàm đánh
-giá \(C(S)\). Ở mỗi bước sinh trạng thái mới \(S'\), tính
+Trong mắt nhiều thí sinh, bài hình học thường đồng nghĩa với mã nguồn dài.
+Ngay cả với những cấu trúc kinh điển, lượng mã lớn cũng khiến người viết dễ
+ngại. Mô phỏng tôi luyện là một meta-heuristic đơn giản và linh hoạt, có thể
+phát huy tác dụng trong một lớp bài tìm điểm xa nhất, gần nhất, gần thứ \(k\),
+hoặc tối ưu tổng khoảng cách.
+
+Ý tưởng xuất phát từ quá trình tôi luyện vật rắn: nung tới nhiệt độ cao, rồi
+làm nguội từ từ để hệ tiến tới trạng thái năng lượng thấp. Theo tiêu chuẩn
+Metropolis, khi nhiệt độ là \(T\), một biến đổi làm năng lượng tăng \(\Delta E\)
+vẫn có thể được chấp nhận với xác suất tỉ lệ
 \[
-  \Delta=C(S')-C(S).
+  \exp\!\left(-\frac{\Delta E}{kT}\right),
 \]
-Nếu \(S'\) tốt hơn, nhận nó. Nếu xấu hơn, vẫn có thể nhận với xác suất xấp xỉ
-\[
-  \exp\!\left(-\frac{\Delta}{T}\right).
-\]
-Khi \(T\) giảm dần, thuật toán chuyển từ khám phá rộng sang tinh chỉnh cục bộ.
+trong đó \(k\) là hằng số Boltzmann. Trong thuật toán, ta thường hấp thụ hằng
+số vào tham số nhiệt độ và dùng dạng \(\exp(-\Delta/T)\).
 
-Trong hình học, mô phỏng tôi luyện đặc biệt hợp với các bài tối ưu vị trí mà
-hàm mục tiêu biến đổi liên tục, ví dụ cực đại hóa khoảng cách tới điểm gần
-nhất, cực tiểu hóa tổng khoảng cách, hoặc tìm vị trí tốt theo một tiêu chuẩn
-khó rời rạc hóa.
+Mô hình tổng quát:
+\begin{enumerate}
+  \item Chọn nhiệt độ ban đầu \(T\) đủ lớn, trạng thái ban đầu \(S\), và số
+  lần lặp \(L\) tại mỗi mức nhiệt.
+  \item Lặp \(L\) lần: sinh trạng thái mới \(S'\).
+  \item Tính \(\Delta=C(S')-C(S)\), với \(C\) là hàm đánh giá.
+  \item Nếu \(S'\) tốt hơn thì nhận; nếu xấu hơn thì nhận với xác suất
+  \(\exp(-\Delta/T)\).
+  \item Nếu thỏa điều kiện dừng thì xuất nghiệm hiện tại hoặc nghiệm tốt nhất.
+  \item Giảm \(T\), rồi lặp lại.
+\end{enumerate}
 
-\subsection{Run Away}
+\subsection{\textit{Run Away}}
 
-Bài \textit{Run Away} cho một hình chữ nhật và nhiều lỗ nguy hiểm. Cần tìm
-điểm trong hình chữ nhật sao cho khoảng cách tới lỗ gần nhất là lớn nhất.
+\textit{Run Away} cho một hình chữ nhật kích thước \(X\times Y\) và tối đa
+1000 lỗ bẫy. Cần tìm điểm trong phòng sao cho khoảng cách tới lỗ gần nhất là
+lớn nhất; tọa độ xuất ra làm tròn đến một chữ số thập phân.
 
-Lời giải hình học chính xác liên quan tới Voronoi diagram: ứng viên tối ưu
-nằm ở đỉnh Voronoi hoặc giao của cạnh Voronoi với biên hình chữ nhật. Nhưng
-cài đặt Fortune, Delaunay hoặc chia để trị nửa mặt phẳng có thể rất dài.
+Lời giải hình học chính xác liên quan tới Voronoi diagram. Ứng viên tối ưu
+có thể là tâm đường tròn qua ba lỗ, giao của đường trung trực hai lỗ với biên
+hình chữ nhật, hoặc một trong bốn góc hình chữ nhật. Nói cách khác, nghiệm nằm
+ở đỉnh Voronoi, giao của cạnh Voronoi với biên, hoặc góc. Tuy nhiên xây dựng
+Voronoi bằng Fortune, Delaunay hoặc chia để trị nửa mặt phẳng đều khá dài.
 
-Mô phỏng tôi luyện dùng một cách nhìn khác:
+Vì yêu cầu độ chính xác không quá khắt khe, ta có thể nhìn bài toán theo hướng
+mô phỏng tôi luyện:
 \begin{itemize}
-  \item trạng thái là một điểm trong hình chữ nhật;
-  \item hàm đánh giá là khoảng cách tới lỗ gần nhất;
-  \item ở mỗi nhiệt độ, sinh điểm mới bằng cách đi một đoạn ngẫu nhiên độ dài
-  xấp xỉ \(\Delta\);
-  \item nếu điểm mới tốt hơn, giữ nó; nếu không, có thể bỏ qua hoặc nhận theo
-  xác suất;
-  \item giảm \(\Delta\) cho tới khi đủ nhỏ.
+  \item trạng thái \(S\) là một điểm trong hình chữ nhật;
+  \item hàm đánh giá là khoảng cách từ \(S\) tới lỗ gần nhất;
+  \item tham số nhiệt độ được hiểu là độ dài bước \(\Delta\);
+  \item trạng thái mới được sinh bằng cách chọn ngẫu nhiên một điểm trên vòng
+  tròn tâm \(S\), bán kính xấp xỉ \(\Delta\);
+  \item sau mỗi vòng, giảm \(\Delta\) cho tới khi đủ nhỏ.
 \end{itemize}
 
-Để tránh phụ thuộc vào một điểm khởi đầu, có thể duy trì nhiều ứng viên cùng
-lúc rồi lấy điểm tốt nhất. Thuật toán ngắn, dễ điều chỉnh thời gian chạy, và
-thường đủ tốt khi yêu cầu độ chính xác không quá khắc nghiệt.
+Để tránh phụ thuộc vào một điểm khởi đầu, ta dùng một tập ứng viên ban đầu đặt
+theo lưới trong hình chữ nhật, sau đó điều chỉnh song song tất cả ứng viên và
+lấy nghiệm tốt nhất cuối cùng. Bản gốc dùng \(p=10\) điểm theo mỗi chiều và
+\(L=30\) lần thử tại mỗi mức bước, đủ vượt qua toàn bộ dữ liệu kiểm thử.
 
-\subsection{Empire Strikes Back}
+Phân tích trực giác như sau: nghiệm tối ưu có khoảng trống lớn quanh nó, nên
+trong vùng Delaunay tương ứng, xác suất có ứng viên tiến gần tới nghiệm là
+không nhỏ. Khi bước điều chỉnh đã nhỏ, nếu điểm hiện tại nằm gần một cạnh
+Voronoi, các hướng làm tăng khoảng cách tới lỗ gần nhất chiếm một cung đáng
+kể. Với nhiều lần thử ở cùng một mức \(\Delta\), xác suất có ít nhất một lần
+đi đúng hướng tăng nhanh. Bản gốc còn chỉ ra rằng nếu cần độ chính xác cao
+hơn, có thể bổ sung các hướng song song với cạnh Voronoi; trong ba ví dụ của
+bài, điều chỉnh ngẫu nhiên thông thường đã đủ.
 
-Bài này yêu cầu bán kính bom nhỏ nhất sao cho các bom đặt tại các nhà máy phủ
-được toàn bộ đĩa quốc gia. Đây cũng là bài tối ưu khoảng cách: cần cực tiểu
-hóa giá trị lớn nhất của khoảng cách từ một điểm chưa phủ tới nhà máy gần
-nhất, theo cách diễn đạt tương đương của vùng cần bao phủ.
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.86, every node/.style={font=\small}]
+  \draw[thick] (0,0) rectangle (5.4,3.4);
+  \foreach \p/\lab in {(0.8,0.7)/{},(1.25,2.75)/{},(2.6,1.65)/{},(4.6,0.95)/{},(4.8,2.85)/{}}
+    \fill[red!75] \p circle (2.1pt) node[above right] {\lab};
+  \draw[blue!60,dashed] (1.9,0) -- (1.9,3.4);
+  \draw[blue!60,dashed] (0,1.75) -- (5.4,1.75);
+  \draw[blue!60,dashed] (3.45,0) -- (2.35,3.4);
+  \draw[blue!60,dashed] (3.35,1.75) -- (5.4,2.15);
+  \fill[green!55!black] (3.1,2.05) circle (2.5pt) node[above] {ứng viên};
+  \draw[green!55!black,thick] (3.1,2.05) circle (0.62);
+  \node[align=center] at (2.7,-0.55) {đỉnh/cạnh Voronoi và biên hình chữ nhật\\là nơi nghiệm chính xác có thể xuất hiện};
+\end{tikzpicture}
+\caption{Sơ đồ ý tưởng \textit{Run Away}: mô phỏng tôi luyện thay cho việc dựng Voronoi đầy đủ.}
+\end{figure}
 
-Bản gốc dùng cùng tư tưởng mô phỏng tôi luyện: chọn các điểm ứng viên, đánh
-giá mức ``xấu nhất'', rồi dần dịch chuyển để cải thiện hàm mục tiêu. So với
-việc xây dựng cấu trúc hình học chính xác, cách này có ưu thế ở mã ngắn và dễ
-thay đổi tham số.
+\subsection{\textit{Empire Strikes Back}}
 
-\subsection{Laser Tank}
+\textit{Empire Strikes Back} cho một quốc gia hình tròn bán kính \(R\), tâm
+\((0,0)\). Có \(N\le 300\) nhà máy vũ khí hóa học tại các điểm
+\((X_i,Y_i)\). Mỗi quả bom rơi đúng vào một nhà máy và có cùng bán kính sát
+thương. Cần chọn bán kính nhỏ nhất sao cho hợp các hình tròn tâm tại nhà máy
+phủ kín toàn bộ quốc gia. Đáp án cần in ít nhất năm chữ số sau dấu thập phân.
 
-\textit{Laser Tank} là bài nộp đáp án. Cần chọn vị trí đặt bộ phát laser sao
-cho bắn tới các mục tiêu với số lần phản xạ bị giới hạn, tối ưu theo hàm điểm
-của đề. Với \(k=0\), ta chỉ kiểm tra đường thẳng không bị gương cản. Với
-\(k=1\), có thể xét thêm đường phản xạ qua từng gương. Với \(k=2\) trở lên,
-số trường hợp tăng nhanh và cài đặt trở nên phức tạp.
+Bài này tương tự \textit{Run Away}: ta cần tìm điểm trong đĩa quốc gia có
+khoảng cách tới nhà máy gần nhất lớn nhất. Khác biệt chính là biên hình tròn.
+Nếu chỉ dùng mô phỏng tôi luyện thô, khi ứng viên đã ở rất gần biên, một bước
+ngẫu nhiên thường rơi ra ngoài miền hợp lệ; xác suất cải thiện rất thấp. Hơn
+nữa trong bài này sai số theo phương biên có thể cộng trực tiếp vào đáp án,
+khác với trường hợp biên chữ nhật ở ví dụ trước.
 
-Mô phỏng tôi luyện hữu ích vì ta có thể kiểm soát thời gian: trước hết tìm một
-vùng tốt bằng ít vòng lặp, sau đó tinh chỉnh quanh vùng ấy. Khi cần thêm trường
-hợp phản xạ, ta thay hàm đánh giá mà vẫn giữ khung tìm kiếm. Trong bài nộp đáp
-án, một lời giải ngắn cho điểm khá thường có giá trị thực tế hơn một lời giải
-chính xác nhưng quá dài để viết trong thời gian thi.
+May mắn là các trường hợp tối ưu trên biên không khó xử lý riêng. Nếu nghiệm
+nằm trên đường tròn biên, nó thuộc một trong hai loại:
+\begin{itemize}
+  \item giao của đường kính đi qua một nhà máy với đường tròn quốc gia;
+  \item giao của một cạnh Voronoi, tức đường trung trực của hai nhà máy, với
+  đường tròn quốc gia.
+\end{itemize}
+Số ứng viên tương ứng là tuyến tính và bình phương. Kiểm tra chúng có chi phí
+\(\Oh(n^3)\) với hằng số nhỏ, không chiếm quá nhiều thời gian so với phần tìm
+kiếm chính. Sau khi bổ sung đặc biệt hóa biên này, mô phỏng tôi luyện vượt qua
+toàn bộ dữ liệu chính thức; với dữ liệu biên tự tạo có độ chính xác cao, các
+ứng viên biên cũng giúp thuật toán ổn định hơn.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.9, every node/.style={font=\small}]
+  \draw[thick] (0,0) circle (2.1);
+  \foreach \p in {(-0.9,0.2),(0.45,0.75),(0.85,-0.65),(-0.25,-1.05)}
+    \fill[red!75] \p circle (2.2pt);
+  \draw[blue!65,dashed] (-1.55,-1.55) -- (1.55,1.55);
+  \draw[blue!65,dashed] (-1.8,0.85) -- (1.8,-0.85);
+  \draw[green!55!black,thick] (0.45,0.75) -- ($(0,0)!2.1cm!(0.45,0.75)$);
+  \fill[green!55!black] ($(0,0)!2.1cm!(0.45,0.75)$) circle (2.2pt);
+  \fill[purple!70] (1.72,-1.2) circle (2.2pt) node[right] {biên};
+  \node[align=center] at (0,-2.65) {cần xét riêng giao của đường trung trực\\và đường kính nhà máy với biên tròn};
+\end{tikzpicture}
+\caption{Ứng viên biên trong \textit{Empire Strikes Back}.}
+\end{figure}
+
+Tác giả cũng nhấn mạnh rủi ro khi dùng mô phỏng tôi luyện trong ACM: chỉ cần
+phân tích thiếu một loại dữ liệu, cả bài có thể sai. Tham số cũng quan trọng.
+Một lời giải ngẫu nhiên tốt trong thực tế vẫn cần hiểu rõ cấu trúc hình học để
+thêm các trường hợp đặc biệt cần thiết.
+
+\subsection{\textit{Laser Tank}}
+
+\textit{Laser Tank} là bài nộp đáp án ở CTSC. Cần chọn vị trí đặt bộ phát
+laser để bắn tới các mục tiêu trong môi trường có gương, với số lần phản xạ
+bị giới hạn. Điểm số được tính theo số bộ dữ liệu giải được.
+
+Với \(k=0\), tia không phản xạ. Ta chỉ cần kiểm tra đoạn thẳng từ vị trí đặt
+laser tới mục tiêu có bị cản hay không. Với \(k=1\), có thể phản xạ một lần:
+ta phản xạ mục tiêu qua gương, biến đường gãy thành một đường thẳng, rồi kiểm
+tra giao điểm với gương và thứ tự cắt. Một tính chất hữu ích trong bản gốc là
+trường hợp có thể bắn được bằng một lần phản xạ thường bao hàm nhiều trường
+hợp không phản xạ, nên hàm đếm mục tiêu có thể dùng cho tìm kiếm ngẫu nhiên.
+
+Từ thống kê điểm, chương trình cho \(k=0\) có tỉ lệ công sức/điểm rất tốt.
+Chương trình cho \(k=1\) dài hơn nhưng vẫn đáng viết nếu còn thời gian. Khi
+\(k=2\), bài toán phức tạp rõ rệt: phải tính hai lần phản xạ, kiểm tra thứ tự
+các giao điểm, đồng thời so sánh nhiều đường đi vì một lần phản xạ không nhất
+thiết tốt hơn hai lần phản xạ. Bản gốc đã viết thử và giải thêm được một bộ
+dữ liệu, nhưng cho rằng trong thi thật không đáng sửa lớn chương trình chỉ để
+lấy ít điểm bổ sung.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95, every node/.style={font=\small}]
+  \draw[thick] (0,0) rectangle (5.2,3.1);
+  \draw[very thick,blue!70] (2.65,0.35) -- (2.65,2.75) node[midway,right] {gương};
+  \fill[green!55!black] (0.75,0.75) circle (2.3pt) node[left] {laser};
+  \fill[red!75] (4.45,2.35) circle (2.3pt) node[right] {mục tiêu};
+  \coordinate (M) at (2.65,1.55);
+  \draw[thick,orange!85!black,-{Latex[length=2mm]}] (0.75,0.75) -- (M);
+  \draw[thick,orange!85!black,-{Latex[length=2mm]}] (M) -- (4.45,2.35);
+  \draw[dashed,gray] (4.45,2.35) -- (0.85,1.0);
+  \node[align=center] at (2.6,-0.55) {phản xạ mục tiêu qua gương\\để kiểm tra đường đi một lần phản xạ};
+\end{tikzpicture}
+\caption{Sơ đồ hóa kiểm tra một lần phản xạ trong \textit{Laser Tank}.}
+\end{figure}
+
+Kết luận của ví dụ này không phải là mô phỏng tôi luyện luôn cho nghiệm tối
+ưu, mà là trong bài nộp đáp án, một khung tìm kiếm ngắn, dễ thay đổi tham số
+và có thể chạy nhiều lần lấy kết quả tốt nhất thường rất có giá trị thực tế.
+
+\subsection{Tiểu kết}
+
+Mô phỏng tôi luyện có thể mở rộng cho nhiều bài cực đại, cực tiểu, gần thứ
+\(k\), hoặc tối ưu tổng khoảng cách, đặc biệt khi giá trị hàm thay đổi liên tục
+theo vị trí. Không phải thí sinh nào cũng viết được farthest-point Voronoi hay
+\(k\)-order Voronoi trong thời gian thi, nhưng một lời giải tôi luyện được phân
+tích kỹ vẫn có thể cho kết quả đủ tốt. Nó kế thừa các ưu điểm chung của thuật
+toán ngẫu nhiên: thủ tục chính ngắn, cài đặt đơn giản, chạy nhanh, linh hoạt
+và dễ song song hóa.
+
+Dù vậy, dữ liệu của các hệ thống như Ural khá chặt chẽ. Việc một thuật toán
+ngẫu nhiên vượt qua kiểm thử phản ánh chất lượng nghiệm khá tốt, nhưng không
+thay thế được phân tích. Với những chỗ bản thân mô phỏng dễ kẹt, như biên tròn
+của \textit{Empire Strikes Back}, cần thêm lập luận hình học và xử lý riêng.
 
 \section{Kết luận}
 
-Ngẫu nhiên hóa không thay thế nền tảng hình học cổ điển. Ngược lại, muốn dùng
-ngẫu nhiên hóa hiệu quả vẫn phải hiểu rõ cấu trúc bài toán: điểm nào xác định
-đường tròn, mặt phẳng nào quyết định nghiệm tối ưu, hay hàm mục tiêu hình học
-thay đổi ra sao. Nhưng khi đã hiểu cấu trúc ấy, ngẫu nhiên hóa thường đem lại
-một đường đi nhẹ hơn: mã ngắn hơn, phân tích trung bình tốt hơn, và dễ cân đối
-giữa thời gian với chất lượng nghiệm.
+Trong những năm gần đây, hình học trong thi tin học ngày càng linh hoạt. Các
+bài không còn chỉ yêu cầu chép lại những cấu trúc cổ điển; nhiều bài đòi hỏi
+kết hợp mô hình, tối ưu và xử lý sai số. Thuật toán ngẫu nhiên, với ưu điểm
+đơn giản, nhanh, linh hoạt và dễ song song hóa, giúp cân bằng giữa thời gian,
+bộ nhớ và độ chính xác.
 
-Thuật toán gia tăng ngẫu nhiên cho thấy cách biến một thuật toán dễ viết nhưng
-nhạy với thứ tự đầu vào thành thuật toán có kỳ vọng tốt. Mô phỏng tôi luyện
-cho thấy cách tìm nghiệm gần tối ưu trong các bài hình học liên tục mà cấu
-trúc chính xác quá nặng. Đó chính là vẻ đẹp của ngẫu nhiên trong thi tin học.
+Tuy nhiên ngẫu nhiên hóa không thay thế nền tảng hình học. Muốn dùng nó tốt,
+ta vẫn phải hiểu rõ cấu trúc bài toán: điểm nào quyết định đường tròn bao nhỏ
+nhất, mặt phẳng nào quyết định nghiệm quy hoạch tuyến tính, biên nào làm mô
+phỏng tôi luyện dễ kẹt. Sự sáng tạo luôn xây trên nền tảng chắc. Hy vọng các
+tư tưởng trong bài viết mở thêm một hướng suy nghĩ khi gặp bài hình học.
 
 \section*{Lời cảm ơn}
 
-Tác giả cảm ơn huấn luyện viên Liu Rujia, bạn Yu Huacheng, nhóm tin học của
-Trường Trung học số 1 Trung Sơn, và các tài nguyên trên Internet đã hỗ trợ quá
-trình nghiên cứu.
+Tác giả cảm ơn huấn luyện viên Liu Rujia đã hướng dẫn; cảm ơn bạn Yu Huacheng
+vì các cuộc thảo luận qua nhiều bài; cảm ơn nhóm tin học của Trường Trung học
+số 1 Trung Sơn vì nhiều năm huấn luyện và trao đổi; và cảm ơn các tài nguyên
+trên Internet.
 
 \begin{thebibliography}{9}
 \bibitem{manber}
@@ -249,8 +565,7 @@ M. H. Alsuwaiyel, \textit{Algorithms: Design Techniques and Analysis}.
 Liu Rujia và Huang Liang, \textit{Nghệ thuật thuật toán và thi tin học}.
 
 \bibitem{cg}
-M. de Berg và cộng sự, \textit{Computational Geometry: Algorithms and
-Applications}.
+M. de Berg và cộng sự, \textit{Computational Geometry: Algorithms and Applications}.
 
 \bibitem{tang}
 Tang Wenbin, \textit{Bàn về tư tưởng điều chỉnh trong thi tin học}, luận văn
@@ -259,13 +574,86 @@ Tang Wenbin, \textit{Bàn về tư tưởng điều chỉnh trong thi tin học}
 \bibitem{wang}
 Wang Dong, \textit{Bàn về xây dựng và ứng dụng Voronoi diagram phẳng}, luận
 văn đội tuyển quốc gia 2007.
+
+\bibitem{gao}
+Gao Yihan, \textit{Các phương pháp rời rạc hóa liên quan tới đường tròn}, luận
+văn đội tuyển quốc gia 2007.
+
+\bibitem{li}
+Li Yuqian, \textit{Quy hoạch tuyến tính trong thi tin học: cài đặt simplex gọn
+và hiệu quả}, luận văn đội tuyển quốc gia 2007.
 \end{thebibliography}
 
-\section*{Ghi chú về phụ lục}
+\appendix
 
-Bản gốc kèm nhiều hình minh họa, chứng minh bổ sung, phát biểu đề và các đoạn
-giả mã/chương trình. Các hình được diễn giải bằng lời; các chương trình dài và
-phát biểu đầy đủ của đề không được chép lại. Những giả mã ngắn có vai trò
-trực tiếp trong lập luận đã được mô tả trong phần nội dung chính.
+\section{Ba bước lấy mẫu Monte Carlo}
+\label{app:monte-carlo}
+
+Bản gốc tóm tắt lấy mẫu Monte Carlo thành ba bước chính.
+
+\paragraph{Mô tả hoặc xây dựng quá trình xác suất.}
+Nếu bản thân bài toán đã có tính ngẫu nhiên, ta cần mô tả và mô phỏng đúng quá
+trình đó. Nếu bài toán là xác định, như tính tích phân xác định, ta phải tự
+xây dựng một quá trình xác suất sao cho một tham số của quá trình chính là
+nghiệm cần tìm.
+
+\paragraph{Lấy mẫu từ phân bố đã biết.}
+Sau khi có mô hình xác suất, ta cần sinh biến ngẫu nhiên theo các phân bố của
+mô hình. Trong máy tính, số ngẫu nhiên thường được tạo bằng công thức truy hồi,
+nên thực chất là giả ngẫu nhiên. Dù không phải ngẫu nhiên thật, các dãy này
+vượt qua nhiều kiểm định thống kê và đủ dùng như nguồn mẫu trong mô phỏng.
+
+\paragraph{Xây dựng đại lượng ước lượng.}
+Sau khi mô phỏng, ta chọn một biến ngẫu nhiên hoặc một thống kê mẫu làm ước
+lượng không chệch hoặc xấp xỉ tốt cho đại lượng cần tính. Nói cách khác, ta
+ghi nhận kết quả thí nghiệm mô phỏng và từ đó rút ra lời giải.
+
+\section{Chứng minh định lý đường tròn bao}
+\label{app:mec-proof}
+
+Gọi \(P\) là một tập điểm trên mặt phẳng, \(R\) là một tập điểm khác, có thể
+rỗng, và \(R\subseteq P\). Xét các đường tròn phủ \(P\) và đi qua mọi điểm của
+\(R\). Nếu tồn tại ít nhất một đường tròn như vậy, thì trong số chúng có một
+đường tròn nhỏ nhất duy nhất; ký hiệu là \(D(P,R)\).
+
+Tính duy nhất được chứng minh bằng phản chứng. Giả sử có hai đường tròn nhỏ
+nhất khác nhau \(D_0,D_1\) cùng bán kính, tâm lần lượt \(x_0,x_1\). Lấy một
+điểm giao \(z\) của hai biên và xét họ đường tròn có tâm chạy liên tục trên
+đoạn \(x_0x_1\), vẫn đi qua \(z\). Vì mọi điểm của \(P\) nằm trong giao
+\(D_0\cap D_1\), đường tròn ở giữa họ này vẫn phủ \(P\) và vẫn đi qua các điểm
+của \(R\), nhưng bán kính nhỏ hơn. Mâu thuẫn với tính nhỏ nhất.
+
+Từ đó suy ra hai mệnh đề dùng trong thuật toán:
+\begin{itemize}
+  \item nếu \(p\in D(P,R)\), thì \(D(P\cup\{p\},R)=D(P,R)\);
+  \item nếu \(p\notin D(P,R)\), thì \(p\) nằm trên biên của
+  \(D(P\cup\{p\},R)\), hay tương đương
+  \[
+    D(P\cup\{p\},R)=D(P\cup\{p\},R\cup\{p\}).
+  \]
+\end{itemize}
+Mệnh đề thứ hai cũng dùng tính liên tục của họ đường tròn đi từ nghiệm cũ tới
+nghiệm mới: nếu nghiệm mới không đi qua \(p\), trong quá trình biến đổi sẽ có
+một đường tròn nhỏ hơn vừa phủ \(P\), vừa đi qua \(R\), vừa đưa \(p\) lên biên,
+mâu thuẫn với định nghĩa nghiệm mới.
+
+\section{Các phát biểu bài trong phụ lục gốc}
+
+Bản gốc kèm các phát biểu tiếng Anh của \textit{Expensive Drink},
+\textit{Run Away} và \textit{Empire Strikes Back}, cùng các gói nhúng cho
+\textit{Laser Tank}. Nội dung thiết yếu đã được dịch và lồng vào các phần ví
+dụ tương ứng ở trên. Các chương trình tham khảo dài không được chép lại theo
+quy tắc không dịch code templates; bản gốc cũng ghi rằng \textit{Empire
+Strikes Back} gần với \textit{Run Away} nên người đọc có thể tự viết, còn
+\textit{Laser Tank} là bài nộp đáp án nên tham số và chương trình cần chỉnh
+theo từng bộ dữ liệu.
+
+\section*{Ghi chú biên tập}
+
+Tệp nguồn là tài liệu Word cũ, trong đó nhiều công thức và hình được nhúng dưới
+dạng đối tượng OLE. Bản dịch này khôi phục các công thức rõ nghĩa từ văn cảnh,
+vẽ lại các sơ đồ chính bằng TikZ theo nội dung nguồn, và chuyển các đoạn phụ
+lục/problem statement quan trọng thành tiếng Việt. Những công thức bị mất hoàn
+toàn trong luồng văn bản được diễn giải bằng lời thay vì đoán ký hiệu chi tiết.
 
 \end{document}
