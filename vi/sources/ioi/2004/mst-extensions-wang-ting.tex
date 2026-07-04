@@ -2,6 +2,9 @@
 % Source-PDF: IOI中国国家候选队论文/2004/汪汀.pdf
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\renewcommand{\figurename}{Hình}
 
 \title{Các mở rộng của bài toán cây khung nhỏ nhất}
 \author{Wang Ting}
@@ -22,6 +25,12 @@ phân tích một số ứng dụng trong bài toán thực tế.
 
 \paragraph{Từ khóa.}
 Cây khung; mở rộng; ràng buộc bậc.
+
+Các bài toán cây khung nhỏ nhất là mô hình kinh điển trong tin học thi đấu.
+Tuy nhiên, đề thi những năm gần đây không còn dừng ở mô hình nguyên bản; để
+giải được chúng, ta thường phải mở rộng mô hình cổ điển theo ràng buộc hoặc
+mục tiêu mới. Bài viết này tập trung vào hai mở rộng: cây khung nhỏ nhất có
+ràng buộc bậc và cây khung nhỏ thứ hai.
 
 \section{Cây khung nhỏ nhất}
 
@@ -155,6 +164,34 @@ $T$ của $G$ đều có
 \]
 Khi $k<m$, bài toán vô nghiệm.
 
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95,every node/.style={font=\small}]
+  \tikzset{
+    v/.style={circle,draw,fill=white,inner sep=1.7pt},
+    root/.style={circle,draw,fill=black!75,inner sep=2.1pt},
+    comp/.style={circle,draw,fill=blue!70,inner sep=1.8pt}
+  }
+  \node[root,label=left:$v_0$] (r) at (0,0) {};
+  \foreach \name/\x/\y in {a/1.2/1.0,b/1.2/0.2,c/1.0/-0.8,d/2.1/1.25,e/2.5/0.65,f/2.3/-0.35,g/2.8/-1.0,h/1.9/-1.55}
+    \node[v] (\name) at (\x,\y) {};
+  \foreach \u/\v in {r/a,r/b,r/c,a/d,a/b,d/e,b/e,b/f,f/g,c/h}
+    \draw (\u)--(\v);
+  \draw[-{Latex[length=3mm]},very thick,blue!65] (3.45,-0.15) -- (4.35,-0.15);
+  \node[root,label=left:$v_0$] (rr) at (5.1,0) {};
+  \foreach \name/\x/\y in {aa/6.2/1.0,bb/6.2/0.2,cc/6.0/-0.8,dd/7.1/1.25,ee/7.5/0.65,ff/7.3/-0.35,gg/7.8/-1.0,hh/6.9/-1.55}
+    \node[comp] (\name) at (\x,\y) {};
+  \foreach \u/\v in {aa/dd,aa/bb,dd/ee,bb/ee,bb/ff,ff/gg,cc/hh}
+    \draw (\u)--(\v);
+  \foreach \u/\v in {rr/aa,rr/bb,rr/cc}
+    \draw[gray!45] (\u)--(\v);
+  \node[align=center] at (6.9,-2.1) {còn lại $m$ thành phần;\\mỗi thành phần phải nối qua $v_0$};
+\end{tikzpicture}
+\caption{Sau khi xóa $v_0$ và các cạnh kề, đồ thị còn lại tách thành các
+thành phần liên thông. Vì mỗi thành phần phải nối qua $v_0$, mọi cây khung
+đều có $d_T(v_0)\ge m$.}
+\end{figure}
+
 Khung thuật toán là:
 \begin{enumerate}
   \item tìm cây khung $m$-bậc nhỏ nhất;
@@ -181,6 +218,36 @@ quá cao. Ta dùng quan sát sau: khi thêm một cạnh kề với $v_0$ vào c
 tại, một chu trình được tạo ra; để tăng bậc của $v_0$ thêm một, cần xóa một
 cạnh trên chu trình nhưng không kề với $v_0$. Xóa cạnh có trọng số lớn nhất
 trên đoạn đó sẽ cho trao đổi tốt nhất ứng với cạnh vừa thêm.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.8,every node/.style={font=\small}]
+  \tikzset{
+    v/.style={circle,draw,fill=white,inner sep=1.5pt},
+    root/.style={circle,draw,fill=black!80,inner sep=2pt}
+  }
+  \foreach \shift in {0,2.35,4.7,7.05} {
+    \begin{scope}[xshift=\shift cm]
+      \node[root] (r) at (0,0) {};
+      \node[v] (a) at (0.6,0.8) {};
+      \node[v] (b) at (1.2,1.25) {};
+      \node[v] (c) at (1.0,-0.1) {};
+      \node[v] (d) at (1.7,-0.55) {};
+      \node[v] (e) at (2.0,0.55) {};
+      \draw[thick] (r)--(a)--(b);
+      \draw[thick] (r)--(c)--(d);
+      \draw[thick] (c)--(e);
+      \draw[dashed,gray!65] (r) to[bend left=28] (e);
+    \end{scope}
+  }
+  \draw[red,very thick] (7.05+1.0,-0.1)--(7.05+2.0,0.55);
+  \node[align=center] at (4.65,-1.45) {Khi thử nhiều cạnh mới kề $v_0$, nhiều đoạn đường trong cây
+  được xét lặp lại.\\Lưu trước cạnh nặng nhất trên đường từ $v_0$ đến mỗi đỉnh
+  tránh việc duyệt lại chu trình.};
+\end{tikzpicture}
+\caption{Động lực của quy hoạch động cho $\operatorname{Best}(v)$: các đường
+từ $v_0$ đến các đầu mút mới có nhiều đoạn chung.}
+\end{figure}
 
 Xem cây hiện tại là cây có gốc $v_0$. Gọi $\operatorname{Best}(v)$ là cạnh có
 trọng số lớn nhất trên đường từ $v_0$ đến $v$, nhưng không kề với $v_0$. Với
@@ -292,12 +359,60 @@ nhất. Với $k$ thiết bị, có thể thêm một đỉnh ảo $v_0$, nối 
 bằng cạnh trọng số $0$, rồi đặt ràng buộc bậc $d_T(v_0)=k$. Áp dụng thuật toán
 cây khung có ràng buộc bậc cho đồ thị mới.
 
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9,every node/.style={font=\small}]
+  \draw[->] (-0.2,0) -- (3.2,0);
+  \draw[->] (0,-0.4) -- (0,2.3);
+  \fill (1,1.8) circle (2pt) node[above right] {$A(10,60)$};
+  \fill (1,0) circle (2pt) node[below] {$B(10,0)$};
+  \fill (3,0) circle (2pt) node[below] {$C(90,0)$};
+  \node at (4.25,0.85) {$\Longrightarrow$};
+  \node[circle,draw,inner sep=1.5pt,label=left:$v_0$] (v0) at (5.2,0.8) {};
+  \node[circle,draw,inner sep=1.5pt,label=above:$A$] (A) at (6.5,1.55) {};
+  \node[circle,draw,inner sep=1.5pt,label=below:$B$] (B) at (6.55,0.15) {};
+  \node[circle,draw,inner sep=1.5pt,label=right:$C$] (C) at (8.0,0.85) {};
+  \foreach \p in {A,B,C} {
+    \draw (v0)--(\p) node[midway,fill=white,inner sep=1pt] {$0$};
+  }
+  \draw (A)--(B) node[midway,right,fill=white,inner sep=1pt] {$60$};
+  \draw (A)--(C) node[midway,above,fill=white,inner sep=1pt] {$100$};
+  \draw (B)--(C) node[midway,below,fill=white,inner sep=1pt] {$80$};
+\end{tikzpicture}
+\caption{Ví dụ chuyển bài toán vệ tinh thành cây khung có ràng buộc bậc:
+thêm đỉnh ảo $v_0$, nối nó với mọi làng bằng cạnh trọng số $0$, rồi yêu cầu
+$d_T(v_0)=k$.}
+\end{figure}
+
 \subsection{Secret Milking Machine}
 
 Farmer John cần vận chuyển sữa đến các điểm bán. Sữa có thể được chuyển trước
 đến một vài điểm, rồi từ các điểm đó chuyển tiếp đến các điểm khác. Tổng
 quãng đường càng nhỏ thì chi phí càng thấp, nhưng Farmer John không muốn đối
 thủ biết phương án rẻ nhất, nên muốn dùng phương án có chi phí nhỏ thứ hai.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9,>=Latex,every node/.style={font=\small}]
+  \tikzset{p/.style={ellipse,draw,minimum width=0.48cm,minimum height=0.24cm}}
+  \node[p] (s) at (0,0) {};
+  \node[p] (a) at (1.6,0.45) {};
+  \node[p] (b) at (1.45,-0.45) {};
+  \node[p] (c) at (2.6,1.05) {};
+  \node[p] (d) at (2.85,0.35) {};
+  \node[p] (e) at (2.9,-0.9) {};
+  \node[p] (f) at (0.9,-1.35) {};
+  \draw[->,thick] (s)--(a);
+  \draw[->,thick] (s)--(b);
+  \draw[->,thick] (s)--(f);
+  \draw[->,thick] (a)--(c);
+  \draw[->,thick] (a)--(d);
+  \draw[->,thick] (b)--(e);
+\end{tikzpicture}
+\caption{Một phương án vận chuyển có dạng cây: sữa có thể đi qua một số điểm
+bán trước khi đến các điểm còn lại. Bài toán yêu cầu phương án cây có chi phí
+nhỏ thứ hai.}
+\end{figure}
 
 Bài toán này là mô hình cây khung nhỏ thứ hai điển hình. Xem các điểm bán là
 đỉnh của đồ thị, mỗi cặp điểm có một cạnh vô hướng có trọng số là khoảng cách
