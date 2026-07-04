@@ -3,40 +3,169 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
-\title{Bản trình chiếu: Ghi chú về quy hoạch động chuỗi}
+\title{Bản trình chiếu: DNA của virus}
 \author{Rao Xiangrong}
 \date{2003}
 
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for string dynamic programming}
+\origtitle{Virus DNA: analyzing the solution process of a string matching problem}
 \sourcepath{IOI China candidate team papers / 2003 / Rao Xiangrong / Rao Xiangrong.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mô tả bài toán}
 
-Tệp gốc chỉ có bản PowerPoint. Phần chữ khôi phục được chứa các mảng \(R[i]\),
-\(Q[i]\), bảng \(f[i,j]\), ví dụ chuỗi \texttt{abbcabcabb} và
-\texttt{bcabcab}, cùng độ phức tạp \(O(MN)\).
+Bài trình bày xét một bài khớp chuỗi. Virus có chuỗi DNA dạng vòng, trong khi
+DNA của sinh vật là chuỗi thẳng. Khả năng sinh vật bị virus xâm nhiễm phụ
+thuộc vào độ dài phần chung dài nhất giữa DNA sinh vật và DNA virus. Vì DNA
+virus là vòng, nó có thể khớp lặp tuần hoàn.
 
-\section{Bài toán nhận diện được}
+Nếu phần chung dài nhất ngắn hơn độ dài DNA virus, xác suất xâm nhiễm được
+xem là \(0\). Ngược lại, slide cho công thức:
+\[
+  \text{xác suất xâm nhiễm}
+  =
+  \frac{\text{độ dài phần chung dài nhất}}{\text{độ dài DNA sinh vật}}.
+\]
 
-Các slide nhiều khả năng trình bày một bài quy hoạch động giữa hai chuỗi
-\(A\) và \(B\). Điều kiện \(B[i]=A[j]\) xuất hiện trong chuyển trạng thái, và
-bảng \(f[i,j]\) lưu kết quả tốt nhất khi xét hai tiền tố hoặc hai vị trí trong
-hai chuỗi.
+Gọi \(A\) là chuỗi vòng của virus, độ dài \(N\), và \(B\) là chuỗi thẳng của
+sinh vật, độ dài \(M\). Bài toán cần tìm độ dài chuỗi con chung dài nhất giữa
+chuỗi vòng \(A\), cho phép lặp tuần hoàn, và chuỗi thẳng \(B\). Ràng buộc
+trong slide là
+\[
+  N\le 1000,\qquad M\le 10^5.
+\]
+Ví dụ: nếu \(A=\texttt{abc}\) và \(B=\texttt{abbcabcabb}\), phần chung dài
+nhất có độ dài \(7\), là \(\texttt{bcabcab}\).
 
-\section{Cấu trúc lời giải}
+\section{Quy hoạch động trực tiếp}
 
-Với hai chuỗi độ dài \(M\) và \(N\), cách DP trực tiếp có \(O(MN)\) trạng thái.
-Các mảng phụ \(R[i]\) và \(Q[i]\) có thể được dùng để lưu vị trí kế tiếp, số
-lần xuất hiện, hoặc thông tin rút gọn nhằm tránh quét lại chuỗi.
+Cách nghĩ đầu tiên là dùng quy hoạch động cho chuỗi con chung dài nhất. Gọi
+\[
+  f[i,j]
+\]
+là độ dài chuỗi con chung dài nhất kết thúc tại vị trí \(i\) của \(B\) và vị
+trí \(j\) của \(A\). Khi \(B[i]=A[j]\), trạng thái kéo dài từ cặp trước đó;
+khi hai ký tự khác nhau, giá trị tương ứng bằng \(0\). Vì \(A\) là chuỗi
+vòng, chỉ số trên \(A\) được hiểu theo modulo \(N\).
 
-\section{Ghi chú}
+Không cần tính mọi \(f[i,j]\): chỉ khi \(B[i]=A[j]\) mới có khả năng có giá
+trị khác \(0\). Vì bảng chữ cái trong slide là các chữ cái
+\(\texttt{a}\ldots\texttt{z}\) và \(\texttt{A}\ldots\texttt{Z}\), có thể lưu
+danh sách vị trí xuất hiện của từng ký tự trong \(A\) để chỉ duyệt các \(j\)
+phù hợp. Không gian có thể giảm còn \(O(N)\).
 
-Do phần chữ Hán của slide không đọc được bằng công cụ hiện có, bản dịch này
-chỉ ghi lại mô hình DP và các ký hiệu chắc chắn xuất hiện trong tệp. Khi có
-bản chuyển đổi hình ảnh tốt hơn, nội dung có thể được mở rộng thành lời giải
-đầy đủ.
+Nhược điểm là thời gian vẫn là \(O(MN)\) trong trường hợp xấu nhất. Với
+\(N\le1000\) và \(M\le10^5\), slide đánh giá độ phức tạp này là quá cao.
+
+\section{Điều kiện then chốt}
+
+Điều kiện chưa được DP trực tiếp khai thác là chỉ khi độ dài phần chung đạt
+ít nhất \(N\) thì mới cần tính xác suất khác \(0\). Nếu độ dài tối đa nhỏ hơn
+\(N\), có thể trả lời \(0\) ngay.
+
+Do vị trí bắt đầu trên chuỗi vòng không cố định, slide cắt vòng \(A\) tại một
+vị trí bất kỳ thành chuỗi thẳng \(C\). Nếu phần chung có độ dài ít nhất
+\(N\), phần chung đó phải chứa đủ một vòng của \(C\). Vì vậy bài toán được
+đưa về các phép khớp từ \(B\) với \(C\), nhưng cho phép sau khi khớp hết
+\(C\) thì tiếp tục lặp lại \(C\).
+
+Định nghĩa:
+\begin{itemize}
+  \item \(R[i]\): độ dài lớn nhất khi bắt đầu ở \(B[i]\) và \(C[1]\), khớp
+  về phía sau theo chu kỳ của \(C\);
+  \item \(L[i-1]\): độ dài lớn nhất khi bắt đầu ở \(B[i-1]\) và \(C[N]\),
+  khớp ngược về phía trước.
+\end{itemize}
+Các mảng này cho phép ghép phần khớp qua điểm cắt của chuỗi vòng.
+
+\section{Từ \texorpdfstring{\(R[i]\)}{R[i]} đến \texorpdfstring{\(Q[i]\)}{Q[i]}}
+
+Cách tính thô \(R[i]\) là thử từng vị trí \(i\) trong \(B\), rồi so sánh
+từng ký tự với \(C\) cho đến khi không khớp. Độ dài khớp có thể đến \(M\),
+nên cách này có thể thành \(O(M^2)\).
+
+Slide quan sát rằng nếu từ vị trí \(i\) đã khớp được ít nhất \(N\) ký tự, thì
+không cần tiếp tục khớp một cách mù quáng:
+\[
+  R[i]=R[i+N]+N.
+\]
+Do đó chỉ cần biết độ dài khớp không tuần hoàn giữa hậu tố của \(B\) và
+chuỗi \(C\). Định nghĩa
+\[
+  Q[i]
+\]
+là độ dài lớn nhất khi bắt đầu ở \(B[i]\) và \(C[1]\), nhưng chỉ khớp
+\(C\) như một chuỗi thẳng không lặp. Tính được \(Q[i]\) thì có thể suy ra
+\(R[i]\) bằng công thức lặp theo chu kỳ.
+
+Kế hoạch dùng trực tiếp KMP để lấy mọi \(Q[i]\) không thuận tiện, vì quá
+trình KMP nhảy vị trí và không cho ngay độ dài khớp bắt đầu tại mọi \(i\).
+Tuy vậy, ý tưởng chính của KMP vẫn hữu ích: tận dụng kết quả so sánh trước
+đó để không so sánh lại các ký tự của \(B\) đã biết.
+
+\section{Tính \texorpdfstring{\(Q[i]\)}{Q[i]} bằng vùng đã khớp}
+
+Giả sử trong quá trình tính \(Q[1],Q[2],\ldots,Q[i-1]\), vị trí xa nhất của
+\(B\) đã được khớp tới là \(k\), và lần khớp đạt tới \(k\) bắt đầu tại vị trí
+\(j\). Khi xét \(Q[i]\), ta muốn bắt đầu so sánh mới từ \(k+1\) nếu chắc chắn
+phần từ \(i\) đến \(k\) đã khớp.
+
+Đoạn \(B[j..k]\) giống với đoạn \(C[1..k-j+1]\). Vì vị trí \(i\) trong
+\(B\) tương ứng với vị trí \(i-j+1\) trong \(C\), ta cần biết từ
+\(C[i-j+1]\) và \(C[1]\) có thể khớp được bao lâu. Gọi độ dài đó là \(L\).
+Khi đó:
+\[
+  L<k-i+1 \Rightarrow Q[i]=L,
+\]
+còn nếu
+\[
+  L\ge k-i+1,
+\]
+thì \(Q[i]+i\ge k\), và ta chỉ cần tiếp tục so sánh từ \(k+1\) để tính
+\(Q[i]\).
+
+Như vậy điểm then chốt là tính nhanh các giá trị \(L\) chỉ phụ thuộc vào
+chuỗi \(C\).
+
+\section{Mảng \texorpdfstring{\(T\)}{T} và độ phức tạp}
+
+Đặt
+\[
+  T[x]\qquad (1\le x\le N)
+\]
+là độ dài lớn nhất khi bắt đầu ở \(C[x]\) và \(C[1]\). Trong bước tính
+\(Q[i]\), giá trị cần dùng chính là
+\[
+  T[i-j+1].
+\]
+
+Việc tính \(T\) có bản chất giống tính \(Q\): đều cần biết từ mỗi vị trí của
+một chuỗi có thể khớp với \(C\) được bao lâu. Vì vậy \(T[x]\) có thể được
+tính dựa trên các giá trị \(T[1],\ldots,T[x-1]\) và một lượng so sánh bổ sung
+thích hợp. Slide ghi tổng thời gian của toàn bộ thuật toán là
+\[
+  O(M+N),
+\]
+gồm thời gian khớp trên \(B\) và thời gian tính \(T\).
+
+\section{Tổng kết}
+
+Quá trình giải được slide tóm tắt như sau:
+\begin{enumerate}
+  \item thử quy hoạch động trực tiếp, nhưng thời gian không đạt;
+  \item phân tích đề và nhận ra điều kiện quan trọng là độ dài cần xét phải
+  không nhỏ hơn \(N\);
+  \item cắt chuỗi vòng thành chuỗi thẳng \(C\), rồi tách lời giải qua các
+  mảng \(L[i]\) và \(R[i]\);
+  \item rút gọn việc tính \(R[i]\) về \(Q[i]\);
+  \item mượn tư tưởng của KMP để thiết kế mảng \(T\), giảm thời gian khớp
+  xuống tuyến tính.
+\end{enumerate}
+
+Slide nhấn mạnh rằng lời giải này giống KMP về tư tưởng tránh so sánh lặp,
+nhưng không phải là áp dụng máy móc thuật toán KMP. Bài học chính là cần phân
+tích đầy đủ điều kiện của đề, nắm chắc kiến thức nền về khớp chuỗi, và linh
+hoạt biến đổi mô hình trước khi cố tối ưu một DP trực tiếp.
 
 \end{document}

@@ -5,6 +5,7 @@
 
 \newcommand{\Oh}{\mathcal{O}}
 \newcommand{\Hash}{\operatorname{Hash}}
+\newcommand{\xor}{\mathbin{\mathrm{xor}}}
 
 \title{Bản trình chiếu: Một lớp ứng dụng của hàm băm trong thi tin học}
 \author{Yang Yi}
@@ -13,41 +14,167 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for applications of hashing in informatics contests}
+\origtitle{Hash trong một lớp ứng dụng của thi tin học}
 \sourcepath{IOI China candidate team papers / 2007 / day 2 / Yang Yi.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Dẫn nhập}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ PDF. Bản ghi chú này giữ lại
-mạch chính của slide: dùng hàm băm để phát hiện trùng lặp, so sánh cấu trúc và
-rút gọn kiểm tra tương đương trong các bài thi.
+Slide mở đầu phân biệt hai cách dùng hàm băm. Cách quen thuộc là dùng hàm
+băm để đặt phần tử vào bảng băm; nếu hàm băm phân tán tốt và bảng đủ rộng,
+truy vấn có thể xem như \(\Oh(1)\). Cách thứ hai, là trọng tâm của bài nói,
+là dùng giá trị băm như một chữ ký ngắn của đối tượng: ta trực tiếp so sánh
+hai chữ ký để phán đoán hai xâu, hai mảng hoặc hai cấu trúc có giống nhau
+hay không.
 
-\section{Ý tưởng hàm băm}
+Ý tưởng này cũng xuất hiện trong MD5, CRC32 hoặc SHA-1: bản thân hàm băm có
+thể dùng độc lập với bảng băm. Trong thi lập trình, ta thường chấp nhận một
+xác suất va chạm rất nhỏ để đổi lấy tốc độ kiểm tra tương đương rất cao.
 
-Hàm băm tốt biến một đối tượng lớn thành một giá trị ngắn sao cho xác suất hai
-đối tượng khác nhau có cùng giá trị là rất nhỏ. Khi mục tiêu là phán định hai
-đoạn, hai ma trận hoặc hai trạng thái có giống nhau hay không, so sánh giá trị
-băm thường rẻ hơn nhiều so với so sánh toàn bộ dữ liệu gốc.
+\section{Ví dụ 1: Ghép mẫu nhiều chiều}
 
-Với xâu một chiều, công thức Rabin--Karp điển hình là
+Bài toán một chiều là tìm vị trí xuất hiện đầu tiên của xâu mẫu trong xâu văn
+bản; KMP giải được rất gọn. Khi mở rộng lên \(k\) chiều, văn bản \(X\) có
+kích thước \(N_1,N_2,\ldots,N_k\), mẫu \(Y\) có kích thước
+\(M_1,M_2,\ldots,M_k\), với
 \[
-  \Hash(S)=\sum_{i=1}^{|S|} S[i]p^{|S|-i}\pmod q.
+  N=N_1N_2\cdots N_k,\qquad M=M_1M_2\cdots M_k.
 \]
-Khi cửa sổ trượt sang phải một vị trí, giá trị băm được cập nhật trong thời
-gian hằng số bằng cách bỏ ký tự đầu và thêm ký tự cuối.
+Điều kiện trong slide là \(k\le 10\), \(N_i\ge M_i\), và cả \(N,M\) không
+vượt quá \(500000\).
 
-\section{Mở rộng nhiều chiều}
+KMP nhiều chiều đạt \(\Oh(k(N+M))\), nhưng khó nhớ và khó cài đúng trong thời
+gian thi. Vét cạn thì liệt kê mọi điểm bắt đầu rồi so sánh toàn bộ mảng con,
+tốn \(\Oh(NM)\) trong trường hợp xấu. Cách dùng băm giữ khung vét cạn ở mức
+điểm bắt đầu, nhưng thay phép so sánh mảng con bằng phép so sánh giá trị băm.
+Chỉ khi giá trị băm bằng nhau ta mới cần kiểm tra kỹ hơn.
 
-Trong ghép mẫu nhiều chiều, ta tính băm theo từng chiều. Với ma trận, trước
-hết tính băm cho các dải dọc, sau đó xem các giá trị ấy như ký tự để tính băm
-theo chiều ngang. Mỗi chiều nên dùng một cơ số khác nhau để tránh các va chạm
-có cấu trúc rõ ràng.
+Với xâu một chiều, dùng băm Rabin--Karp:
+\[
+  f(S)=\sum_{i=1}^{|S|} S[i]p^{|S|-i}\pmod q.
+\]
+Nếu \(S_i=X[i..i+M-1]\), thì khi cửa sổ trượt sang phải một ký tự:
+\[
+  f(S_{i+1})=\bigl[p f(S_i)+X[i+M]-p^M X[i]\bigr]\pmod q.
+\]
+Nếu bỏ phép lấy dư, công thức này chỉ là phép dịch trái trong hệ cơ số \(p\),
+bỏ chữ số đầu và thêm chữ số cuối. Vì vậy mọi băm của các xâu con độ dài
+\(M\) được tính trong thời gian tuyến tính.
 
-\section{Ứng dụng}
+\section{Băm hai chiều và nhiều chiều}
 
-Các slide nhấn mạnh kiểu dùng hàm băm độc lập với bảng băm: ta không chỉ cần
-tra cứu nhanh, mà còn cần một chữ ký ngắn cho đối tượng. Cách này xuất hiện
-trong so khớp nhiều chiều, kiểm tra đồng cấu cấu trúc, phát hiện chu kỳ, và
-những bài cần so sánh nhiều đoạn con trong thời gian gần tuyến tính.
+Một ma trận con \(M_1\times M_2\) có thể xem như một xâu gồm \(M_2\) dải dọc.
+Trước hết tính băm cho mọi dải dọc độ dài \(M_1\), sau đó coi các giá trị ấy
+là ký tự để tính băm theo chiều ngang. Hai chiều phải dùng hai cơ số khác
+nhau; nếu dùng cùng một cơ số, những cấu hình như
+\[
+\begin{bmatrix}
+a & b\\
+a & a
+\end{bmatrix}
+\qquad\text{và}\qquad
+\begin{bmatrix}
+a & a\\
+b & a
+\end{bmatrix}
+\]
+có thể cho cùng kết quả băm dù ma trận không giống nhau.
+
+Một dạng viết cho băm hai chiều là
+\[
+  f_2(S)=
+  \sum_{i_1=1}^{\operatorname{len}_1(S)}
+  \sum_{i_2=1}^{\operatorname{len}_2(S)}
+  p_1^{\operatorname{len}_1(S)-i_1}
+  p_2^{\operatorname{len}_2(S)-i_2}
+  S[i_1,i_2]\pmod q.
+\]
+Khi trượt theo chiều ngang, phần thêm vào và phần bỏ ra chính là hai dải dọc
+đã có băm một chiều; vì vậy một bước cập nhật vẫn là hằng số nếu các lũy thừa
+đã được chuẩn bị trước.
+
+Lên \(k\) chiều, ta lặp cùng tư tưởng: tính băm cho các mảng con
+\(M_1\times\cdots\times M_{k-1}\), rồi dùng chúng như ký tự khi trượt theo
+chiều thứ \(k\). Cần \(k\) lượt tính, nên độ phức tạp là \(\Oh(kN+M)\).
+
+\section{Xác suất va chạm và chọn tham số}
+
+Nếu hàm băm lý tưởng sinh được \(S\) giá trị khác nhau, xác suất hai đối tượng
+khác nhau có cùng băm vào khoảng \(1/S\). Hàm băm trong bài không bảo đảm lý
+tưởng, nhưng quy tắc thực dụng vẫn đúng: tăng không gian giá trị và dùng tham
+số độc lập làm giảm rủi ro va chạm. Nếu một băm chưa đủ tin cậy, có thể tính
+thêm một băm khác; đổi lại hằng số thời gian tăng rõ rệt.
+
+Slide khuyến nghị không chọn \(p\) quá nhỏ. Với \(q\), thường chọn số nguyên
+tố lớn; \(p\) nên tránh các chu kỳ ngắn modulo \(q\), ví dụ tránh để
+\(p^i\equiv 1\pmod q\) với nhiều \(i\) nhỏ. Ngoài cửa sổ trượt, cùng kiểu băm
+có thể được duy trì bằng chia khối, phân đoạn hoặc cây đoạn.
+
+\section{Ví dụ 2: Equal squares}
+
+Ural 1486 yêu cầu tìm hai hình vuông con giống nhau trong ma trận ký tự
+\(N\times M\), sao cho cạnh hình vuông là lớn nhất. Cách tự nhiên là nhị phân
+độ dài cạnh, rồi dùng băm hai chiều để kiểm tra xem có hai hình vuông con
+cùng nội dung hay không. Nếu lưu mọi băm trong bảng băm, một lần kiểm tra
+tốn \(\Oh(NM)\), tổng cộng \(\Oh(NM\log(NM))\).
+
+Điểm đáng chú ý của slide là bài này có giới hạn thời gian chặt. Tác giả đã
+chấp nhận coi hai hình vuông có cùng giá trị băm là giống nhau, không so sánh
+lại toàn bộ nội dung. Để giảm nhầm lẫn do đụng vị trí trong bảng băm, có thể
+tính hai giá trị: một giá trị quyết định ô trong bảng, một giá trị dùng để so
+sánh với phần tử đã lưu ở ô đó.
+
+\section{Ví dụ 3: So khớp không ổn định}
+
+Bài toán có hai xâu \(A\) và \(B\). Xâu \(A\) bị cập nhật bởi các thao tác
+chèn, xóa và đảo đoạn; truy vấn hỏi LCP của hậu tố \(A[i..]\) và \(B[j..]\).
+Nếu hai xâu tĩnh, hậu tố mảng đủ để trả lời LCP, nhưng ở đây mỗi cập nhật có
+thể làm thay đổi mạnh toàn bộ cấu trúc hậu tố.
+
+Với một độ dài \(k\), ta kiểm tra hai tiền tố độ dài \(k\) bằng cách so sánh
+băm. Sau đó dùng nhị phân trên \(k\) để tìm LCP. Vấn đề còn lại là duy trì
+băm của đoạn con trong xâu động.
+
+Nếu biết băm của \(S_1\) và \(S_2\), băm của phép nối là
+\[
+  f(S_1+S_2)=\bigl[p^{|S_2|}f(S_1)+f(S_2)\bigr]\pmod q.
+\]
+Vì vậy có thể dùng danh sách chia khối hoặc splay để duy trì xâu. Với chia
+khối, mỗi khối lưu cả băm xuôi và băm ngược để đảo một khối trong \(\Oh(1)\);
+các thao tác chèn, xóa, đảo tốn khoảng \(\Oh(\sqrt n)\), còn truy vấn LCP tốn
+\(\Oh(\sqrt n\log n)\). Với splay có lazy reverse, cập nhật là \(\Oh(\log n)\)
+khấu hao và truy vấn LCP là \(\Oh(\log^2 n)\).
+
+\section{Ví dụ 4: Phán định đẳng cấu}
+
+Để so sánh hai cây có gốc, ta tính băm từ dưới lên. Với đỉnh \(v\), lấy băm
+của các con, sắp xếp tăng dần để bỏ phụ thuộc vào thứ tự con, rồi trộn chúng
+bằng một hàm đủ mạnh. Việc sắp xếp là bắt buộc: cùng một cây có thể được lưu
+với thứ tự con khác nhau.
+
+Slide nhấn mạnh sự khác nhau giữa sai số ngẫu nhiên và sai số hệ thống. Một
+va chạm ngẫu nhiên có thể giảm bằng cách đổi \(p,q\) hoặc dùng thêm băm thứ
+hai; còn một công thức băm không phù hợp có thể tạo phản ví dụ có cấu trúc,
+và đổi hằng số chưa chắc cứu được.
+
+Với cây vô căn, ta có thể tính giá trị \(F(a,b)\) cho mỗi cạnh có hướng:
+\(F(a,b)\) biểu diễn băm của cây con gốc \(b\) khi coi \(a\) là cha. Một DFS
+tính mọi hướng đi xuống; một DFS đổi gốc tính các hướng đi lên bằng tiền tố
+và hậu tố trên danh sách băm đã sắp xếp của các láng giềng. Sau khi mọi
+\(F(a,b)\) đã biết, băm khi chọn từng đỉnh làm gốc được tính nhanh, rồi so
+sánh hai cây bằng cách so khớp tập các băm đỉnh.
+
+\section{Ví dụ 5 và 6}
+
+Với bài biểu thức tương đương NOIP 2005, cách chuẩn là khai triển đa thức và
+gộp hạng tử đồng dạng. Nhưng những biểu thức như lũy thừa lồng rất cao không
+thể khai triển thực tế. Cách băm là gán vài giá trị cho biến \(a\), tính giá
+trị biểu thức modulo một số lớn, rồi so sánh các kết quả. Đây cũng là một
+hàm băm đặc biệt cho biểu thức.
+
+Trong bài đoán số \(N^N=S\) với \(S\) rất dài và có thể sai vài chữ số, phần
+quan trọng vẫn là tránh dựng số khổng lồ theo cách trực tiếp. Ta dùng độ dài,
+ước lượng ứng viên \(N\), rồi kiểm chứng bằng các phép tính băm hoặc modulo
+khác nhau. Tư tưởng chung của toàn bộ deck là: khi đối tượng gốc quá lớn để
+so sánh trực tiếp, hãy chọn một chữ ký rẻ, đủ phân biệt và dễ cập nhật.
 
 \end{document}

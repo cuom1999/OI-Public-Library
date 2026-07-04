@@ -10,40 +10,150 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for algorithm choice}
+\origtitle{Bàn về lựa chọn thuật toán cho bài toán}
 \sourcepath{IOI China candidate team papers / 2003 / Zhang Yunliang / Zhang Yunliang.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Chủ đề chính}
 
-Bản trình chiếu đi kèm bài viết về lựa chọn thuật toán thực dụng. Các slide
-khôi phục được có các dãy \(A_1,A_2,A_3\), \(B_1,B_2,B_3\), các giới hạn
-\(10^6\), và ví dụ dùng mảng tần suất cùng mảng khối.
+Bài trình bày bàn về một vấn đề rất thực tế trong thi lập trình: thuật toán
+tối ưu nhất về mặt lý thuyết không phải lúc nào cũng là lựa chọn tốt nhất
+trong phòng thi. Khi giới hạn dữ liệu cho phép, một lời giải đơn giản hơn,
+dễ kiểm thử hơn và ít lỗi hơn có thể đáng chọn hơn một cấu trúc dữ liệu phức
+tạp.
 
-\section{Ví dụ mảng khối}
+Vì vậy độ phức tạp được xét theo ba mặt:
+\begin{itemize}
+  \item thời gian chạy;
+  \item bộ nhớ;
+  \item độ phức tạp lập trình, bao gồm khả năng viết đúng, kiểm thử và sửa
+        lỗi trong thời gian ngắn.
+\end{itemize}
+Các ví dụ trong slide đều có dạng ``thuật toán chuẩn tồn tại, nhưng ta thử
+một thuật toán quá độ dễ cài đặt hơn''.
 
-Giả sử cần xử lý nhiều truy vấn trên các giá trị \(A_i\) và \(B_i\), với miền
-giá trị đến \(10^6\). Một cách làm trực tiếp là dùng mảng
+\section{Ví dụ 1: đếm số phần tử không vượt quá ngưỡng}
+
+Dữ liệu gồm dãy
+\[
+  A_1,A_2,A_3,\ldots,A_n
+\]
+và các truy vấn
+\[
+  B_1,B_2,B_3,\ldots,B_m.
+\]
+Giới hạn trong slide là
+\[
+  1\le n\le10^6,\quad 1\le A_i\le10^6,\quad
+  1\le m\le1000,\quad 1\le B_i\le10^6.
+\]
+Với mỗi \(B_i\), cần in số phần tử của dãy \(A\) không lớn hơn \(B_i\).
+
+Thuật toán chuẩn có thể dùng cây đoạn hoặc cây Fenwick sau khi nén giá trị.
+Slide chọn một cách làm đơn giản hơn, khai thác miền giá trị cố định
+\([1,10^6]\) và số truy vấn nhỏ. Ta dùng:
 \[
   L[1..1000000]
 \]
-để đếm tần suất. Để tăng tốc truy vấn theo đoạn, chia miền giá trị thành các
-khối độ dài \(1000\) và lưu thêm
+để đếm số lần mỗi giá trị xuất hiện, và
 \[
-  V[k] = \sum_{x=(k-1)1000+1}^{k1000} L[x].
+  V[1..1000]
+\]
+để đếm theo khối độ dài \(1000\). Nếu
+\[
+  (k-1)1000+1\le A_i\le k1000,
+\]
+thì cập nhật
+\[
+  L[A_i]++,\qquad V[k]++.
 \]
 
-\section{Thông điệp}
+Với một truy vấn \(B_i\) thuộc khối \(k\), đáp án là
+\[
+  S=\sum_{j=1}^{k-1}V[j]
+    +\sum_{j=(k-1)1000+1}^{B_i}L[j].
+\]
+Mỗi truy vấn cần nhiều nhất \(1000+1000=2000\) phép cộng. Tổng chi phí được so
+sánh trong slide như sau:
+\[
+\begin{array}{c|c|c}
+  \text{cây đoạn} & \text{chia khối} & \text{miền giá trị}\\ \hline
+  (n+m)\log_2 G & 2n+2000m & G=10^6
+\end{array}
+\]
+Với \(m\le1000\), thuật toán chia khối rất dễ cài đặt và đủ nhanh. Đồng thời
+nó gợi ý tự nhiên tới các cấu trúc phân cấp hơn như chia \(100\cdot100\cdot
+100\), rồi sau đó tới cây đoạn.
 
-Không phải lúc nào lời giải lý tưởng nhất về mặt lý thuyết cũng là lựa chọn
-tốt nhất trong thi đấu. Một thuật toán đơn giản hơn, dễ cài đặt hơn, nhưng
-đủ nhanh với ràng buộc cụ thể có thể đem lại kết quả tốt hơn. Các slide so
-sánh các biểu thức như \((n+m)\log_2 G\) với chi phí tuyến tính theo số khối
-để minh họa việc chọn mô hình phù hợp.
+\section{Ví dụ 2: thống kê doanh thu}
 
-\section{Liên hệ với bài viết}
+Ví dụ thứ hai là bài ``thống kê doanh thu''. Với doanh thu ngày \(i\) là
+\(a_i\), định nghĩa
+\[
+  d_i =
+  \begin{cases}
+    a_1, & i=1,\\
+    \min\limits_{1\le j<i}|a_i-a_j|, & i>1.
+  \end{cases}
+\]
+Cần tính
+\[
+  S=\sum_i d_i.
+\]
+Thuật toán chuẩn là cây cân bằng: khi đọc \(a_i\), tìm phần tử đã xuất hiện
+gần nhất ở hai phía.
 
-Bản bài viết đã dịch phân tích nhiều ví dụ hơn về thuật toán không tối ưu
-nhưng hữu dụng. Bản trình chiếu tập trung vào các bảng số và tính toán chi
-phí để hỗ trợ quyết định khi làm bài.
+Slide đưa ra cách làm dễ viết hơn. Trước hết đọc toàn bộ dữ liệu, sắp xếp để
+được dãy
+\[
+  B_1,B_2,\ldots,B_n.
+\]
+Mỗi giá trị \(P\) trong dữ liệu gốc được đổi thành vị trí \(q\) sao cho
+\(B_q=P\). Sau đó bài toán trở thành: trong tập các vị trí đã xuất hiện, tìm
+vị trí gần \(q\) nhất ở bên trái và bên phải.
+
+Ta lại dùng mảng đếm và mảng khối, lần này với kích thước được slide ghi là
+\[
+  L[1..32767],\qquad V[1..327],
+\]
+tức mỗi khối dài \(100\). Nếu \(q\) thuộc khối \(k\), trước hết tìm trong
+khối đó hai vị trí
+\[
+  g_a\ge q,\quad g_b\le q,\qquad L[g_a]>0,\ L[g_b]>0.
+\]
+Nếu một phía không tồn tại, lần lượt nhìn sang các khối lân cận có
+\(V[t]>0\), rồi quét trong khối ấy để lấy phần tử gần nhất. Cuối cùng so sánh
+\(|P-B_{g_a}|\) và \(|P-B_{g_b}|\) nếu các vị trí này tồn tại, cộng giá trị
+nhỏ hơn vào \(S\), rồi đánh dấu \(q\) đã xuất hiện.
+
+Các chương trình \texttt{MYTURN.PAS} và \texttt{TURNOVER.PAS} trong nguồn gốc
+là các bản cài đặt của ý tưởng này và lời giải chuẩn. Theo ngoại lệ về mẫu mã,
+bản dịch không chép lại toàn bộ mã Pascal; điều quan trọng của slide là cách
+thay cây cân bằng bằng tiền xử lý sắp xếp cộng chia khối.
+
+\section{So sánh và chọn lựa}
+
+Ở cả hai ví dụ, thuật toán thay thế không phải ``đẹp'' nhất về lý thuyết. Nó
+phụ thuộc vào giới hạn cụ thể: miền giá trị không quá lớn, số truy vấn nhỏ,
+hoặc có thể đọc trước toàn bộ dữ liệu. Nhưng chính các giả thiết ấy làm cho
+lời giải đơn giản trở nên đáng dùng.
+
+Điểm cần cân nhắc khi chọn thuật toán:
+\begin{itemize}
+  \item Nếu cả hai thuật toán đều chắc chắn đạt thời gian, chọn thuật toán dễ
+        viết và dễ kiểm thử hơn.
+  \item Nếu thuật toán đơn giản nằm sát giới hạn thời gian, cần đánh giá
+        trường hợp xấu nhất bằng số phép toán cụ thể, không chỉ bằng ký hiệu
+        \(O(\cdot)\).
+  \item Nếu thuật toán đơn giản là ``thuật toán quá độ'', nó vẫn có giá trị
+        huấn luyện vì giúp ta nhìn ra thuật toán chuẩn ở mức trừu tượng hơn.
+\end{itemize}
+
+\section{Tổng kết}
+
+Thông điệp của bộ slide không phải là bỏ qua thuật toán tốt. Ngược lại, khi
+hiểu nhiều mức lời giải cho cùng một bài, ta biết lúc nào cần cây đoạn, cây
+cân bằng hoặc cấu trúc dữ liệu mạnh hơn, và lúc nào một mảng đếm kèm chia
+khối đã đủ. Trong phòng thi, lựa chọn đúng là lời giải đạt điểm trong giới
+hạn thời gian với rủi ro cài đặt thấp nhất.
 
 \end{document}

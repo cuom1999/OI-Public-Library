@@ -4,53 +4,229 @@
 \usepackage{oipl-vn}
 
 \newcommand{\Oh}{\mathcal{O}}
+\newcommand{\Cost}{\operatorname{Cost}}
 
-\title{Bản trình chiếu: Quy hoạch tuyến tính và thuật toán đơn hình}
+\title{Quy hoạch tuyến tính và thuật toán đơn hình trong thi tin học}
 \author{Li Yuqian}
 \date{2007}
 
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for linear programming and simplex}
+\origtitle{Linear programming in informatics contests: concise and efficient simplex implementation and applications}
 \sourcepath{IOI China candidate team papers / 2007 / day 1 / Li Yuqian.ppt}
 
-\section{Phạm vi bản dịch}
+\section*{Tóm tắt}
 
-Tệp PowerPoint là bản trình bày của bài viết đã được dịch từ PDF về quy hoạch
-tuyến tính trong thi tin học. Bản ghi chú này tập trung vào định nghĩa, cách
-đưa về dạng chuẩn và các bước chính của thuật toán đơn hình.
+Bản trình chiếu giới thiệu quy hoạch tuyến tính từ góc nhìn thi lập trình:
+khi một bài toán có mục tiêu tuyến tính và các ràng buộc tuyến tính, ta có
+thể mô hình hóa nó thành một hệ tối ưu liên tục. Trọng tâm của bài là cách
+dùng thuật toán đơn hình để giải những mô hình ấy bằng một chương trình tương
+đối ngắn, đồng thời nhấn mạnh rằng trong thực nghiệm đơn hình thường nhanh
+hơn nỗi lo ban đầu của thí sinh.
+
+Các slide đi theo ba mạch: định nghĩa và dạng chuẩn của quy hoạch tuyến tính;
+một vài mô hình ứng dụng, đặc biệt là luồng đa hàng hóa; và các bước cài đặt
+simplex gồm dạng lỏng, pivot, khởi tạo và xử lý các trường hợp đặc biệt.
+
+\paragraph{Từ khóa.}
+Quy hoạch tuyến tính; thuật toán đơn hình; luồng đa hàng hóa.
 
 \section{Mô hình quy hoạch tuyến tính}
 
-Một bài toán quy hoạch tuyến tính tối ưu hóa một hàm mục tiêu tuyến tính dưới
-các ràng buộc tuyến tính. Các biến thường được yêu cầu không âm, còn ràng buộc
-có thể là dạng \(\le\), \(\ge\) hoặc \(=\). Khi chuyển về dạng chuẩn, ta thêm
-biến phụ để biến bất đẳng thức thành đẳng thức và tạo một nghiệm cơ sở ban
-đầu nếu có thể.
+Một bài toán quy hoạch tuyến tính tối ưu hóa một hàm tuyến tính dưới các
+ràng buộc cũng tuyến tính. Với các biến \(x_1,\ldots,x_n\), hàm mục tiêu có
+dạng
+\[
+  f(x_1,\ldots,x_n)=\sum_{i=1}^{n} c_ix_i.
+\]
+Mỗi ràng buộc là một đẳng thức hoặc bất đẳng thức tuyến tính, chẳng hạn
+\[
+  \sum_{i=1}^{n} a_ix_i\le b,\qquad
+  \sum_{i=1}^{n} a_ix_i=b,\qquad
+  \sum_{i=1}^{n} a_ix_i\ge b.
+\]
+Một nghiệm khả thi chỉ cần thỏa các ràng buộc; nghiệm tối ưu là nghiệm khả
+thi cho giá trị mục tiêu tốt nhất.
 
-\section{Thuật toán đơn hình}
+Ví dụ mở đầu của slide là bài tranh cử thị trưởng. Người tranh cử cần đủ
+phiếu ở ba khu vực: thành thị, ngoại ô và nông thôn. Bốn chính sách có tác
+động khác nhau lên ba nhóm cử tri; một chính sách có thể tăng phiếu ở nhóm
+này nhưng giảm ở nhóm khác. Nếu \(x_1,\ldots,x_4\) là số tiền chi cho bốn
+chính sách, mục tiêu là cực tiểu hóa
+\[
+  x_1+x_2+x_3+x_4
+\]
+với các ràng buộc
+\[
+\begin{aligned}
+-2x_1+8x_2+10x_4 &\ge 50,\\
+ 5x_1+2x_2      &\ge 100,\\
+ 3x_1-5x_2+10x_3-2x_4 &\ge 25,\\
+ x_1,x_2,x_3,x_4 &\ge 0.
+\end{aligned}
+\]
+Điểm quan trọng của ví dụ là các hệ số không nhất thiết dương: một lựa chọn
+có thể mang lợi ở ràng buộc này và gây thiệt ở ràng buộc khác, miễn là mọi
+quan hệ vẫn tuyến tính.
 
-Thuật toán đơn hình đi từ một đỉnh của đa diện khả thi sang đỉnh kề tốt hơn.
-Ở dạng bảng, mỗi bước chọn một biến vào cơ sở, chọn biến ra cơ sở bằng phép
-so tỷ lệ để giữ tính khả thi, rồi pivot để cập nhật hệ. Khi không còn biến
-nào cải thiện hàm mục tiêu, nghiệm hiện tại là tối ưu.
+Hệ số của quy hoạch tuyến tính có thể là số thực bất kỳ, và nghiệm tối ưu
+cũng không bắt buộc là số nguyên. Nếu thêm yêu cầu nghiệm nguyên, bài toán
+trở thành quy hoạch nguyên, khó hơn nhiều và không còn thuộc phạm vi của
+simplex liên tục trong bài này.
 
-Các slide cũng nhắc tới những phương pháp tổng quát khác như ellipsoid và
-interior-point, nhưng trọng tâm thi lập trình là simplex vì mã ngắn và chạy
-nhanh trên nhiều dữ liệu thực tế.
+\section{Hai mô hình cơ bản}
 
-\section{Ứng dụng}
+\subsection{Phân bổ tài nguyên}
 
-Quy hoạch tuyến tính có thể mô hình hóa bài toán phân phối tài nguyên, luồng
-đa hàng hóa, hoặc các bài tối ưu có điều kiện tuyến tính. Trong thi tin học,
-khó nhất thường không phải là viết công thức mục tiêu, mà là nhận ra khi nào
-các lựa chọn và ràng buộc thật sự tuyến tính.
+Có \(m\) loại tài nguyên với giới hạn \(b_j\), và \(n\) dự án. Nếu làm lượng
+\(x_i\) của dự án \(i\), ta thu lợi \(c_ix_i\) và tiêu tốn \(a_{ij}x_i\) đơn
+vị tài nguyên \(j\). Mô hình là
+\[
+\begin{array}{ll}
+\text{cực đại} & \displaystyle\sum_{i=1}^{n} c_ix_i\\
+\text{thỏa} & \displaystyle\sum_{i=1}^{n} a_{ij}x_i\le b_j
+              \quad (1\le j\le m),\\
+& x_i\ge 0\quad (1\le i\le n).
+\end{array}
+\]
+Đây là khuôn mẫu cho các bài chọn sản lượng, chọn mức đầu tư hoặc phân phối
+nguồn lực khi mọi tiêu hao tỷ lệ tuyến tính với lượng được chọn.
 
-\section{Ghi chú triển khai}
+\subsection{Cung ứng vật tư}
 
-Cần xử lý sai số số thực, kiểm tra trường hợp vô nghiệm hoặc không bị chặn,
-và chọn quy tắc pivot đủ ổn định. Với dữ liệu thi, một cài đặt simplex gọn có
-thể là công cụ hữu ích khi bài toán không yêu cầu nghiệm nguyên.
+Ngược lại, có \(m\) loại nhu cầu cần đạt ít nhất \(b_j\). Vật tư loại \(i\)
+cung cấp \(a_{ij}\) đơn vị cho nhu cầu \(j\), với chi phí đơn vị \(c_i\). Khi
+đó ta cực tiểu hóa
+\[
+  \sum_{i=1}^{n} c_ix_i
+\]
+với các điều kiện
+\[
+  \sum_{i=1}^{n} a_{ij}x_i\ge b_j \quad (1\le j\le m),\qquad
+  x_i\ge 0.
+\]
+Slide dùng ví dụ khẩu phần dinh dưỡng: cơm, rau, thịt cung cấp đường, chất
+béo, protein và vitamin với tỷ lệ khác nhau; mục tiêu là đủ dinh dưỡng với
+chi phí nhỏ nhất.
+
+\section{Luồng đa hàng hóa}
+
+Ứng dụng quan trọng hơn trong bài là luồng đa hàng hóa. Khác với luồng mạng
+thông thường chỉ có một nguồn và một đích, ở đây có \(k\) cặp
+\((s_i,t_i)\), mỗi cặp cần chuyển \(d_i\) đơn vị hàng hóa. Với cạnh
+\(e=(u_e,v_e)\) có dung lượng \(c_e\), đặt \(f_i(u_e,v_e)\) là lượng hàng hóa
+\(i\) đi qua cạnh đó. Mô hình khả thi là
+\[
+\begin{array}{ll}
+\text{cực tiểu} & 0\\
+\text{thỏa} &
+\displaystyle\sum_{i=1}^{k} f_i(u_e,v_e)\le c_e
+  \quad (1\le e\le E),\\
+&
+\displaystyle
+\sum_{p:v_p=v} f_i(u_p,v_p)
+=
+\sum_{q:u_q=v} f_i(u_q,v_q)\\
+&\hfill (1\le i\le k,\ v\ne s_i,t_i),\\
+&
+\displaystyle\sum_{e:u_e=s_i} f_i(u_e,v_e)=d_i
+  \quad (1\le i\le k),\\
+&
+f_i(u_e,v_e)\ge 0.
+\end{array}
+\]
+Hàm mục tiêu bằng \(0\) nghĩa là chỉ cần tìm một nghiệm khả thi. Nếu mỗi cạnh
+có chi phí đơn vị \(\Cost_e\), ta thay mục tiêu bằng
+\[
+  \text{cực tiểu }
+  \sum_{e=1}^{E}\Cost_e\sum_{i=1}^{k} f_i(u_e,v_e).
+\]
+
+Slide nhấn mạnh sự khác biệt với luồng mạng cổ điển: mô hình này cho phép
+nhiều loại hàng cùng dùng chung dung lượng cạnh. Chính vì vậy nó biểu đạt
+được nhiều bài vận tải và thiết kế mạng, nhưng nghiệm tổng quát là nghiệm
+thực, không tự động nguyên như luồng một hàng hóa.
+
+\section{Đưa về dạng chuẩn}
+
+Dạng chuẩn được dùng trong phần cài đặt là:
+\[
+\begin{array}{ll}
+\text{cực đại} & \displaystyle\sum_{j=1}^{n} c_jx_j\\
+\text{thỏa} & \displaystyle\sum_{j=1}^{n} a_{ij}x_j\le b_i
+              \quad (1\le i\le m),\\
+& x_j\ge 0\quad (1\le j\le n).
+\end{array}
+\]
+Các dạng khác được biến đổi bằng những quy tắc quen thuộc:
+\begin{itemize}
+  \item cực tiểu hóa \(f\) tương đương cực đại hóa \(-f\);
+  \item ràng buộc \(q(x)=b\) được thay bằng \(q(x)\le b\) và \(q(x)\ge b\);
+  \item ràng buộc \(\sum a_ix_i\ge b\) được nhân \(-1\);
+  \item biến tự do \(x\) được thay bằng hiệu \(x^+-x^-\), với
+  \(x^+,x^-\ge 0\).
+\end{itemize}
+
+Để chạy đơn hình, ta thêm biến dư:
+\[
+  x_{n+i}=b_i-\sum_{j=1}^{n} a_{ij}x_j \quad (1\le i\le m).
+\]
+Các biến \(x_{n+i}\) ban đầu là biến cơ sở, còn \(x_1,\ldots,x_n\) là biến
+phi cơ sở. Khi mọi \(b_i\ge 0\), đặt biến phi cơ sở bằng \(0\) đã cho một
+nghiệm khả thi.
+
+\section{Pivot và chương trình chính}
+
+Một trạng thái simplex được xem như dạng lỏng: mỗi biến cơ sở được biểu diễn
+theo các biến phi cơ sở, còn hàm mục tiêu cũng được viết theo các biến phi cơ
+sở. Nếu tồn tại một biến phi cơ sở \(x_e\) có hệ số dương trong hàm mục tiêu,
+ta muốn tăng \(x_e\). Để giữ các biến cơ sở không âm, chọn biến ra \(x_l\)
+theo phép so tỷ lệ:
+\[
+  \frac{b_l}{A_{le}}=
+  \min_{i\in B,\ A_{ie}>0}\frac{b_i}{A_{ie}}.
+\]
+Sau đó pivot đổi vai trò \(x_e\) và \(x_l\), đồng thời thay phương trình của
+\(x_e\) vào mọi phương trình còn lại và vào hàm mục tiêu.
+
+Nếu không có hàng nào thỏa \(A_{ie}>0\), có thể tăng \(x_e\) vô hạn mà vẫn
+giữ khả thi; bài toán không bị chặn. Nếu mọi hệ số mục tiêu của biến phi cơ
+sở đều không dương, nghiệm hiện tại là tối ưu, vì tăng bất kỳ biến phi cơ sở
+nào cũng không làm mục tiêu lớn hơn.
+
+Slide có mã giả cho \texttt{pivot}, \texttt{opt} và \texttt{init}; ở đây chỉ
+tóm tắt theo ngoại lệ dành cho mẫu mã dài. Phần cốt lõi của \texttt{opt} là
+lặp: chọn biến vào có hệ số mục tiêu dương, chọn biến ra bằng phép so tỷ lệ,
+rồi pivot. Để tránh vòng lặp do suy biến, có thể dùng quy tắc Bland: khi có
+nhiều lựa chọn, ưu tiên chỉ số nhỏ hơn.
+
+\section{Khởi tạo và chi tiết cài đặt}
+
+Nếu ban đầu có \(b_i<0\), dạng lỏng chưa cho nghiệm khả thi trực tiếp. Cách
+khởi tạo trong bài là dựng một bài toán phụ bằng cách thêm biến \(x_0\):
+\[
+  x_i=b_i-\sum_{j\in N} A_{ij}x_j+x_0,
+\]
+và cực đại hóa \(-x_0\). Sau một pivot đặc biệt với hàng có \(b_i\) nhỏ nhất,
+ta tối ưu bài phụ. Nếu giá trị tối ưu của bài phụ nhỏ hơn \(0\), bài gốc vô
+nghiệm; nếu bằng \(0\), bỏ \(x_0\) và tiếp tục tối ưu bài gốc.
+
+Khi cài bằng số thực, cần đặt ngưỡng \(\varepsilon\) cho so sánh với \(0\),
+nhất là khi kiểm tra \(c_e>0\), \(A_{ie}>0\) và các tỷ lệ gần bằng nhau.
+Simplex không có cận đa thức tổng quát cho mọi dữ liệu, nhưng kinh nghiệm của
+tác giả là với dữ liệu thi lập trình, một cài đặt khoảng vài trăm dòng thường
+đủ nhanh. Các thử nghiệm trong bài gốc so sánh chương trình với MATLAB và
+LINDO để minh họa rằng tốc độ thực tế của simplex rất đáng tin cậy.
+
+\section{Kết luận}
+
+Quy hoạch tuyến tính không thay thế các mô hình rời rạc kinh điển như luồng
+mạng hay ghép cặp, nhưng là một công cụ mạnh khi bài toán thật sự tuyến tính
+và nghiệm liên tục được chấp nhận. Khi gặp mục tiêu tuyến tính, ràng buộc
+tuyến tính và các biến không âm, việc thử dựng mô hình LP có thể mở ra một
+hướng giải hoàn toàn khác. Với simplex, rào cản cài đặt thấp hơn vẻ ngoài
+của nó: phần khó nhất thường là nhận ra mô hình và chuẩn hóa dữ liệu đầu vào
+đúng cách.
 
 \end{document}

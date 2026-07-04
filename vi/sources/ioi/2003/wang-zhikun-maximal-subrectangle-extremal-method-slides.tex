@@ -10,39 +10,109 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for maximum subrectangle problems}
+\origtitle{Using extremal thinking for maximum subrectangle problems}
 \sourcepath{IOI China candidate team papers / 2003 / Wang Zhikun / Wang Zhikun.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Bối cảnh}
 
-Bản trình chiếu đi kèm bài viết về tư tưởng cực đại hóa trong bài toán hình
-chữ nhật con. Các slide khôi phục được chứa tên John, các giới hạn \(5000\),
-\(30000\), và các mảng \(H[i,j]\), \(L[i,j]\), \(R[i,j]\).
+Bộ slide tóm tắt bài viết về tư tưởng cực đại hóa trong bài toán hình chữ
+nhật con lớn nhất. Ví dụ mở đầu là bài ``bãi tắm cho bò'' của John: trong một
+nông trại hình chữ nhật, có không quá \(5000\) điểm chướng ngại và kích thước
+có thể tới \(30000\times30000\). Cần chọn một hình chữ nhật con có cạnh song
+song với trục tọa độ, không chứa điểm chướng ngại trong phần trong, sao cho
+diện tích lớn nhất.
 
-\section{Mô hình}
+Thông điệp của slide là không nên liệt kê mọi hình chữ nhật. Nghiệm tối ưu
+phải là một hình chữ nhật \term{cực đại}: nếu còn có thể nới một cạnh mà vẫn
+hợp lệ, diện tích chưa thể là lớn nhất. Vì vậy ta chỉ cần sinh đủ các hình
+chữ nhật cực đại hoặc một tập ứng viên chắc chắn chứa chúng.
 
-Với mỗi ô \((i,j)\), đặt \(H[i,j]\) là chiều cao liên tiếp có thể kéo lên từ
-ô đó. Hai mảng \(L[i,j]\) và \(R[i,j]\) lưu biên trái, biên phải xa nhất mà
-hình chữ nhật có chiều cao \(H[i,j]\) còn hợp lệ. Các công thức trong slide
-có dạng:
+\section{Từ liệt kê thô đến liệt kê cực đại}
+
+Nếu cố định bốn cạnh bằng các điểm chướng ngại hoặc biên ngoài, cách liệt kê
+trực tiếp có thể lên tới \(O(S^5)\), trong đó \(S\) là số điểm chướng ngại.
+Giảm bớt một chiều liệt kê và kiểm tra các khoảng trống theo tung độ đưa độ
+phức tạp xuống \(O(S^3)\), nhưng vẫn sinh nhiều hình chữ nhật không cần xét.
+
+Ý tưởng cải tiến trong bài viết là cố định một điểm chặn biên trái, rồi quét
+các điểm bên phải theo hoành độ tăng dần. Trong khi quét, ta duy trì biên
+trên và biên dưới hiện tại. Mỗi khi gặp một điểm nằm trong dải đang xét, điểm
+đó có thể trở thành chặn biên phải của một hình chữ nhật ứng viên; sau đó nó
+thu hẹp dải cho các hình chữ nhật tiếp theo. Làm đối xứng cho biên phải và
+xử lý riêng các trường hợp trùng biên ngoài, ta thu được thuật toán
 \[
-  H[i,j]=H[i-1,j]+1,
+  O(S^2)\ \text{thời gian},\qquad O(S)\ \text{bộ nhớ}.
+\]
+Đây là hướng phù hợp khi số chướng ngại thưa so với kích thước tọa độ.
+
+\section{Dây treo và công thức động}
+
+Phần công thức được khôi phục rõ nhất trong slide là thuật toán thứ hai. Nó
+phụ thuộc vào kích thước lưới \(N\times M\), không phụ thuộc trực tiếp vào số
+chướng ngại. Với mỗi vị trí \((i,j)\), ta xét một đoạn dọc hợp lệ có đáy ở
+\((i,j)\). Slide gọi các đại lượng:
+\[
+  H[i,j],\qquad L[i,j],\qquad R[i,j].
+\]
+Ở đây \(H[i,j]\) là chiều cao liên tiếp có thể kéo lên từ \((i,j)\);
+\(L[i,j]\) là biên trái xa nhất mà hình chữ nhật tương ứng còn hợp lệ; và
+\(R[i,j]\) là biên phải xa nhất.
+
+Nếu ô phía trên \((i-1,j)\) là chướng ngại hoặc nằm ngoài đoạn hợp lệ cũ, dây
+treo bắt đầu lại tại hàng \(i\). Khi đó slide ghi dạng khởi tạo:
+\[
+  H[i,j]=1,\qquad L[i,j]=0,\qquad R[i,j]=m,
+\]
+với \(0\) và \(m\) là hai biên ngoài theo cách đánh số trong slide. Trong
+cài đặt đầy đủ, hai giá trị này còn được thay bởi chướng ngại gần nhất bên
+trái và bên phải trên hàng \(i\).
+
+Nếu \((i-1,j)\) vẫn hợp lệ, dây treo được kéo dài:
+\[
+  H[i,j]=H[i-1,j]+1.
+\]
+Biên trái và phải phải thỏa cả ràng buộc của dây cũ lẫn của hàng mới, nên:
+\[
+  L[i,j]=\max\{L[i,j],L[i-1,j]\},
 \]
 \[
-  L[i,j]=\max(L[i,j],L[i-1,j]),\qquad
-  R[i,j]=\min(R[i,j],R[i-1,j]).
+  R[i,j]=\min\{R[i,j],R[i-1,j]\}.
 \]
+Diện tích ứng viên tại \((i,j)\) là
+\[
+  H[i,j]\bigl(R[i,j]-L[i,j]\bigr).
+\]
+Lấy giá trị lớn nhất trên mọi ô cho ta đáp án.
 
-\section{Độ phức tạp}
+\section{Độ phức tạp và cách chọn thuật toán}
 
-Các slide so sánh các cách làm \(O(S^5)\), \(O(S^3)\), \(O(S^2)\) và
-\(O(S)\) cho từng bước phụ. Bằng cách duy trì chiều cao và biên hợp lệ theo
-từng hàng, bài toán trên lưới \(N\times M\) có thể xử lý trong \(O(NM)\).
+Thuật toán dây treo tính mỗi trạng thái trong \(O(1)\), nên toàn bộ thời gian
+là
+\[
+  O(NM).
+\]
+Nếu lưu đầy đủ ba bảng thì bộ nhớ cũng là \(O(NM)\); nếu chỉ cần hàng trước
+và thông tin chướng ngại gần nhất của hàng hiện tại, bộ nhớ có thể giảm tùy
+cách cài đặt. Trong slide, dòng so sánh cuối ghi hai cặp kết quả:
+\[
+  O(S^2),O(S) \qquad\text{và}\qquad O(NM),O(S),
+\]
+tương ứng với cách liệt kê theo chướng ngại và cách quy hoạch theo lưới sau
+khi biểu diễn chướng ngại thích hợp.
+
+Hai hướng này không loại trừ nhau. Khi tọa độ rất lớn nhưng \(S\) nhỏ, liệt
+kê theo chướng ngại thường tự nhiên hơn. Khi lưới không quá lớn hoặc chướng
+ngại dày, công thức \(H,L,R\) đơn giản và ổn định hơn. Với các biến thể như
+hình chữ nhật có trọng số hoặc hình vuông lớn nhất, tư tưởng cực đại hóa vẫn
+giữ vai trò trung tâm: trước hết xác định tập ứng viên cực đại, sau đó thay
+công thức diện tích bằng đại lượng cần tối ưu.
 
 \section{Liên hệ với bài viết}
 
-Bài viết đã dịch trình bày nhiều biến thể hơn. Bản trình chiếu tập trung vào
-cách chuyển từ quét hình chữ nhật trực tiếp sang quy hoạch theo histogram và
-các biên cực đại.
+Bài viết cùng thư mục trình bày đầy đủ chứng minh của các định lý: nghiệm lớn
+nhất là nghiệm cực đại, điều kiện bốn cạnh bị chặn, và quan hệ giữa dây treo
+với hình chữ nhật cực đại. Bản trình chiếu cô đọng phần đó thành ba bước:
+nhận ra tính cực đại, giảm liệt kê từ \(O(S^5)\) xuống \(O(S^2)\), rồi dùng
+công thức \(H,L,R\) để đạt \(O(NM)\) trên lưới.
 
 \end{document}

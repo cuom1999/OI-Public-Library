@@ -4,52 +4,208 @@
 \usepackage{oipl-vn}
 
 \newcommand{\Oh}{\mathcal{O}}
+\newcommand{\dist}{\operatorname{dist}}
 
-\title{Bản trình chiếu: Suy nghĩ từ nhiều góc độ, tư duy sáng tạo}
+\title{Bản ghi chú trình chiếu: Suy nghĩ từ nhiều góc độ, tư duy sáng tạo}
 \author{Chen Yuxi}
 \date{2007}
 
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for creative thinking in tree dynamic programming}
+\origtitle{Suy nghĩ từ nhiều góc độ, tư duy sáng tạo}
 \sourcepath{IOI China candidate team papers / 2007 / day 2 / Chen Yuxi.ppt}
 
-\section{Phạm vi bản dịch}
+\begin{abstract}
+Các slide dùng một số bài quy hoạch động trên cây để minh họa cách đổi góc
+nhìn khi trạng thái tự nhiên chưa đủ. Mục tiêu không chỉ là trình bày công
+thức, mà còn cho thấy vì sao phải chọn điểm phân nhánh, nhà máy tổ tiên, dãy
+nhãn tổ tiên hoặc trọng tâm cây làm đối tượng trung tâm.
+\end{abstract}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ PDF. Nội dung xoay quanh quy
-hoạch động trên cây và cách đặt trạng thái sáng tạo khi bài toán không khớp
-với khuôn mẫu tuyến tính quen thuộc.
+\paragraph{Từ khóa.}
+Cấu trúc cây; quy hoạch động; truyền thông tin; đổi gốc; tư duy sáng tạo.
 
-\section{Ba bước DP trên cây}
+\section{Khung chung của DP trên cây}
 
-Khi giải bài toán tối ưu trên cây, ta thường đi qua ba bước:
+Khi bài toán yêu cầu tối ưu trên cây, cách làm thường gồm ba bước:
+\begin{enumerate}
+  \item xác lập trạng thái: cần lưu thông tin nào của cây con, có phải thêm
+  chiều hay không;
+  \item chuyển trạng thái: gộp các con, truyền thông tin từ cha xuống con,
+  hoặc phối hợp cả hai hướng;
+  \item cài đặt: DFS có nhớ, BFS theo độ sâu, hoặc hai lần duyệt.
+\end{enumerate}
+
+Khác với DP tuyến tính chỉ có chiều tiến hoặc lùi, DP trên cây có hai hướng
+tự nhiên: từ lá lên gốc và từ gốc xuống lá. Nhiều bài cần cả hai. Điểm khó
+thường không nằm ở việc viết DFS, mà ở việc nhìn đúng vai trò của một đỉnh
+trong lời giải.
+
+\section{Ví dụ 1: Tìm Chris}
+
+\subsection{Mô hình}
+
+Thành phố là một cây có trọng số. Cần chọn ba đỉnh \(X,Y,Z\) sao cho
+\[
+  \dist(X,Y)\le \dist(X,Z)
+\]
+và
+\[
+  \dist(X,Y)+\dist(Y,Z)
+\]
+lớn nhất. Ở đây \(X\) là nhà Chris, \(Y\) là nơi bố mẹ đi tìm trước, còn
+\(Z\) là nơi đi tìm sau trong trường hợp xấu nhất.
+
+Nếu cố định \(Y\), ta cần tìm hai đỉnh xa nhất liên quan tới \(Y\). Làm vậy
+cho mọi \(Y\) mất \(\Oh(n^2)\), không chạy được với \(n\) lớn. Slide đổi góc
+nhìn: thay vì liệt kê nơi đến trước, liệt kê \term{điểm phân nhánh} của hai
+đường đi.
+
+\subsection{Điểm phân nhánh}
+
+Giả sử \(a\) là điểm mà hai đường \(Y\to X\) và \(Y\to Z\) tách nhau. Gốc hóa
+cây tại \(a\). Ba đỉnh \(X,Y,Z\) nằm ở ba nhánh khác nhau đi ra từ \(a\);
+trường hợp \(Y=a\) có thể xem như một nhánh rỗng độ dài \(0\). Khi đó
+\[
+\begin{aligned}
+  \dist(X,Y)+\dist(Y,Z)
+  &=\dist(X,a)+2\dist(Y,a)+\dist(Z,a).
+\end{aligned}
+\]
+Điều kiện \(\dist(X,Y)\le\dist(X,Z)\) tương đương
+\(\dist(Y,a)\le\dist(Z,a)\). Vì vậy, nếu ba khoảng cách lớn nhất từ \(a\) tới
+ba nhánh khác nhau là \(d_1\ge d_2\ge d_3\), giá trị tốt nhất tại \(a\) là
+\[
+  d_1+2d_2+d_3.
+\]
+
+\subsection{Hai lần duyệt}
+
+Gốc hóa cây tại một đỉnh tùy ý. Lần duyệt thứ nhất đi từ lá lên gốc để tính
+các khoảng cách tốt nhất nằm trong cây con. Lần duyệt thứ hai đi từ gốc xuống
+lá để truyền phần tốt nhất nằm ngoài cây con. Ở mỗi đỉnh, lưu vài giá trị lớn
+nhất và lưu mỗi giá trị đến từ cạnh kề nào.
+
+Khi truyền từ \(u\) sang con \(v\), nếu giá trị lớn nhất của \(u\) đến từ
+\(v\) thì dùng giá trị lớn thứ hai; nếu không, dùng giá trị lớn nhất. Cộng
+thêm độ dài cạnh \(uv\) để được ứng viên nhìn từ \(v\). Sau hai lần duyệt,
+mỗi đỉnh có đủ các ứng viên thuộc các nhánh khác nhau, và ta cập nhật đáp án
+bằng công thức \(d_1+2d_2+d_3\). Cả thời gian và bộ nhớ là \(\Oh(n)\).
+
+Ý tưởng đáng học là: một đại lượng khó khi nhìn từ đầu mút lại trở nên đơn
+giản khi nhìn từ điểm phân nhánh.
+
+\section{Ví dụ 2: Nhà máy gỗ ở Byteland}
+
+\subsection{Mô hình}
+
+Các làng nằm trên hệ thống sông không phân nhánh theo chiều xuôi dòng; gốc là
+Bytetown. Cần xây thêm \(k\) nhà máy gỗ ở các làng để mỗi làng đưa gỗ tới nhà
+máy đầu tiên gặp trên đường về gốc, sao cho tổng chi phí vận chuyển nhỏ nhất.
+
+Trạng thái chỉ gồm đỉnh hiện tại và số nhà máy trong cây con là chưa đủ, vì
+chi phí của một làng còn phụ thuộc vào nhà máy tổ tiên gần nhất ở phía trên.
+Vì vậy slide thêm một chiều trạng thái cho ``nhà máy tổ tiên đang được truyền
+xuống''.
+
+\subsection{Trạng thái và chuyển}
+
+Đặt
+\[
+  f(u,t,q)
+\]
+là chi phí nhỏ nhất trong cây con gốc \(u\), khi đặt \(q\) nhà máy trong cây
+con này, và \(t\) là một tổ tiên đã có nhà máy. Có hai trường hợp.
+
+Nếu đặt nhà máy tại \(u\), gỗ của \(u\) không tốn chi phí, còn các con dùng
+\(u\) làm nhà máy tổ tiên. Một nhà máy đã dùng ở \(u\); số nhà máy còn lại
+được phân phối giữa các con, giống ba lô.
+
+Nếu không đặt nhà máy tại \(u\), gỗ của \(u\) phải đi tới \(t\), sinh chi phí
+\(w_u\dist(u,t)\), và các con tiếp tục dùng \(t\). Nếu \(u\) có các con
+\(\operatorname{son}_i\), quá trình gộp con dùng các mảng tạm:
+\[
+  h(i,s)=\min_{0\le r\le s}
+  \{h(i-1,s-r)+f(\operatorname{son}_i,\text{tổ tiên mới},r)\}.
+\]
+Sau khi gộp đủ con, lấy nhỏ nhất giữa hai trường hợp đặt và không đặt nhà máy
+tại \(u\).
+
+Bài học ở đây là một chiều trạng thái tưởng như ``bên ngoài cây con'' lại là
+thứ làm cây con trở nên độc lập, từ đó chuyển trạng thái rõ ràng hơn.
+
+\section{Ví dụ 3: Tính phí mạng theo cặp}
+
+\subsection{Biến đổi chi phí}
+
+Mạng người dùng là cây nhị phân đầy đủ, lá là người dùng. Mỗi người chọn
+phương thức \(A\) hoặc \(B\). Với mỗi cặp người dùng, hệ số tính phí phụ thuộc
+vào lựa chọn của hai đầu mút và vào so sánh số người chọn \(A\), \(B\) trong
+miền của LCA của cặp đó.
+
+Bảng hệ số có dạng đặc biệt. Khi trong miền LCA có \(n_A<n_B\), mỗi đầu mút
+chọn \(A\) đóng một lần lưu lượng; khi \(n_A\ge n_B\), mỗi đầu mút chọn \(B\)
+đóng một lần lưu lượng. Nhờ vậy, phí theo cặp có thể được chuyển thành phí
+gán cho từng người dùng theo từng tổ tiên. Đây là bước sáng tạo chính trước
+khi đặt DP.
+
+\subsection{Mã hóa trạng thái}
+
+Với một đỉnh \(i\) của cây nhị phân, trạng thái cần biết:
 \begin{itemize}
-  \item xác lập trạng thái cho cây con hoặc đường đi liên quan tới một đỉnh;
-  \item thiết kế chuyển trạng thái khi gộp các con;
-  \item chọn cách duyệt và cài đặt, thường là DFS có nhớ.
+  \item trong miền của \(i\) có bao nhiêu lá chọn \(A\);
+  \item với từng tổ tiên của \(i\), điều kiện \(n_A<n_B\) hay \(n_A\ge n_B\)
+  đang đúng.
 \end{itemize}
-Khó nhất là bước đầu: thiếu hoặc thừa một chiều trạng thái đều có thể làm lời
-giải sai hoặc quá chậm.
+Gọi dãy nhãn tổ tiên này là một số nhị phân \(k\). Đặt
+\[
+  f(i,j,k)
+\]
+là chi phí nhỏ nhất trong miền của \(i\), khi có đúng \(j\) người chọn \(A\)
+và dãy nhãn tổ tiên là \(k\).
 
-\section{Hai hướng truyền thông tin}
+Khi gộp hai con \(L,R\), phân phối \(j\) người chọn \(A\): nếu con trái có
+\(u\) người chọn \(A\) thì con phải có \(j-u\). Từ \(j\) và kích thước miền
+của \(i\), ta biết nhãn mới của \(i\), rồi đẩy nhãn này vào mã \(k\) khi đi
+xuống hai con:
+\[
+  f(i,j,k)=
+  \min_u\{f(L,u,\operatorname{push}(k,s))
+        +f(R,j-u,\operatorname{push}(k,s))+\text{phí qua }i\}.
+\]
+Ở lá, mã \(k\) cho biết lá phải đóng phí qua các tổ tiên theo phương thức
+nào, rồi cộng thêm chi phí đổi phương thức nếu khác đăng ký ban đầu.
 
-Trên cây, thông tin có thể đi từ lá lên gốc, từ gốc xuống lá, hoặc cả hai.
-Nhiều bài cần kết quả liên quan tới mọi vị trí đặt gốc; khi đó ta thường dùng
-rerooting DP, tính trước thông tin từ con lên cha rồi truyền phần còn lại từ
-cha xuống con.
+Số trạng thái nhìn thô rất lớn, nhưng theo tầng, mỗi đỉnh chỉ có
+\(\Oh(2^{N-i})\) giá trị của \(j\) và \(\Oh(2^i)\) mã tổ tiên. Tổng hợp lại,
+không gian có thể giữ ở \(\Oh(m^2)\) và thời gian ở \(\Oh(m^2N)\) với
+\(m=2^N\).
 
-\section{Tư duy nhiều góc độ}
+\section{Ví dụ 4: Hang động và đoán kho báu}
 
-Bài viết nhấn mạnh việc nhìn một bài toán qua các vai trò khác nhau của đỉnh:
-đỉnh làm gốc cây con, đỉnh nằm trên đường đi, hoặc đỉnh là điểm giao của nhiều
-nhánh. Mỗi góc nhìn gợi ra một trạng thái khác nhau. Chọn đúng góc nhìn giúp
-chuyển trạng thái trở nên tự nhiên.
+Trong một cây, A giấu kho báu ở một phòng. Mỗi lần B đoán một phòng; nếu sai,
+A chỉ cho biết hành lang đầu tiên trên đường từ phòng vừa đoán tới kho báu.
+Cần số lần đoán ít nhất trong trường hợp xấu nhất.
+
+Nếu đoán một đỉnh \(u\), phản hồi của A chia cây thành các thành phần sau khi
+xóa \(u\): kho báu nằm trong một thành phần cụ thể, hoặc chính là \(u\). Vì
+vậy một chiến lược tốt cố gắng chọn đỉnh làm cân bằng kích thước trường hợp
+xấu nhất. Góc nhìn tự nhiên là trọng tâm cây: chọn đỉnh sao cho thành phần
+lớn nhất sau khi xóa nó nhỏ nhất. Sau mỗi phản hồi, bài toán thu hẹp vào một
+cây con, và tiếp tục dùng cùng ý tưởng.
+
+Slide dùng ví dụ này để nhấn mạnh rằng không phải mọi bài cây đều nên đặt
+trạng thái theo ``cây con gốc tại \(u\)''. Có lúc đối tượng cần nhìn là đỉnh
+chia tách thông tin tốt nhất trong quá trình hỏi đáp.
 
 \section{Kết luận}
 
-Quy hoạch động trên cây không phải chỉ là thay chỉ số \(i\) bằng đỉnh \(u\).
-Điểm quyết định là hiểu thông tin nào được cây con cung cấp cho phần còn lại,
-và thông tin nào từ bên ngoài cần được đưa ngược vào cây con.
+Quy hoạch động trên cây không chỉ là thay chỉ số tuyến tính bằng chỉ số đỉnh.
+Trong bốn ví dụ, lời giải xuất hiện khi ta đổi góc nhìn: điểm phân nhánh thay
+cho đầu mút, nhà máy tổ tiên thay cho cây con độc lập, dãy nhãn tổ tiên thay
+cho một biến cục bộ, và trọng tâm cây thay cho gốc cố định. Khi trạng thái tự
+nhiên quá thiếu hoặc quá lớn, cần hỏi lại: thông tin thật sự được truyền qua
+cạnh nào, và vai trò nào của đỉnh làm bài toán đơn giản nhất?
 
 \end{document}

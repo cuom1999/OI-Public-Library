@@ -10,33 +10,164 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for number-guessing problems}
+\origtitle{Nghiên cứu bài toán đoán số}
 \sourcepath{IOI China candidate team papers / 2003 / Zhang Ning / Zhang Ning.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mục tiêu của slide}
 
-Bản trình chiếu đi kèm bài viết về bài toán đoán số và suy luận lồng nhau.
-Phần chữ khôi phục được từ PowerPoint rất nghèo do nhiều công thức là đối
-tượng nhúng, nên bản dịch này dựa chủ yếu trên bài viết đã dịch cùng thư mục.
+Bộ slide trình bày lại bài toán đoán số, một ví dụ điển hình của suy luận
+``lồng tư duy''. Nhiều công thức trong PowerPoint là đối tượng nhúng nên phần
+chữ trích được khá ít; bản ghi chú này dựa trên bài viết cùng tác giả để
+khôi phục mạch trình bày, đồng thời chỉ giữ những kết luận phù hợp với cấu
+trúc slide.
 
-\section{Mô hình suy luận}
+Bài toán gốc có ba học sinh \(A,B,C\). Mỗi người mang một số nguyên dương
+trên trán, nhìn thấy hai số còn lại, và biết rằng trong ba số có một số bằng
+tổng hai số kia. Giáo sư hỏi lần lượt từng người xem có đoán được số của
+mình hay không. Sau một số câu trả lời ``không'', một người có thể dựa vào
+chính các câu trả lời ấy để đoán ra.
 
-Bài toán xét các tình huống trong đó nhiều người cùng biết một số thông tin
-chung, nhưng mỗi người còn phải suy luận xem người khác đang biết gì. Đây là
-kiểu suy luận nhiều tầng: một phát biểu không chỉ cung cấp dữ kiện trực tiếp,
-mà còn loại trừ những trạng thái mà người phát biểu không thể đang ở trong đó.
+\section{Vì sao cách nghĩ trực tiếp rườm rà}
 
-\section{Các tình huống kết thúc}
+Ví dụ kinh điển là ba số \(1,2,3\). Người \(A\) nhìn thấy \(2,3\), nên số của
+mình có thể là \(1\) hoặc \(5\); \(A\) trả lời không. Người \(B\) nhìn thấy
+\(1,3\), nên số của mình có thể là \(2\) hoặc \(4\); câu trả lời của \(A\)
+chưa loại được trường hợp nào, nên \(B\) cũng trả lời không.
 
-Bài viết gốc chia quá trình thành các tình huống kết thúc, tình huống loại
-một và tình huống loại hai. Khi một người có thể xác định duy nhất đáp án,
-quá trình kết thúc; nếu không, câu trả lời phủ định của người đó vẫn làm nhỏ
-không gian khả năng cho các người còn lại.
+Đến \(C\), hai khả năng là \(1\) và \(3\). Nếu \(C\) giả sử số của mình là
+\(1\), thì \(B\) đã nhìn thấy \(1,1\) và phải biết ngay số của mình là \(2\),
+vì hiệu \(0\) không phải số nguyên dương. Nhưng thực tế \(B\) đã trả lời
+không. Mâu thuẫn này loại bỏ khả năng \(1\), nên \(C\) đoán được số của mình
+là \(3\).
 
-\section{Ý nghĩa thuật toán}
+Cách phân tích trên rất dễ hiểu, nhưng khi số lượt hỏi tăng, mỗi người phải
+nghĩ xem người trước đang nghĩ gì về suy nghĩ của người trước nữa. Slide dùng
+bài toán này để dẫn tới cách nhìn toàn cục: thay vì mô phỏng từng tầng suy
+nghĩ, ta mô tả trạng thái và chuyển trạng thái.
 
-Cách xử lý là mô phỏng không gian trạng thái và lặp lại bước loại trừ theo
-thông tin công khai. Bản trình chiếu dùng nhiều sơ đồ để minh họa các tầng
-suy luận; bản LaTeX này ghi lại logic của các sơ đồ bằng văn bản.
+\section{Trạng thái và ba loại tình huống}
+
+Dùng bộ bốn
+\[
+  (a_1,a_2,a_3,k),\qquad k\in\{1,2,3\},
+\]
+để mô tả tình huống ba số là \(a_1,a_2,a_3\), quá trình hỏi bắt đầu từ học
+sinh thứ nhất, và người đang được hỏi là học sinh thứ \(k\). Tập mọi bộ hợp
+lệ được ký hiệu là \(M\).
+
+Slide và bài viết phân biệt ba loại tình huống:
+\begin{itemize}
+  \item \term{tình huống kết thúc} \(W\): người đang được hỏi có thể trực tiếp
+        xác định số của mình;
+  \item \term{tình huống loại một} \(S_1\): số của người đang được hỏi bằng
+        tổng hai số còn lại;
+  \item \term{tình huống loại hai} \(S_2\): một trong hai người còn lại mang
+        số bằng tổng.
+\end{itemize}
+Trong dạng gốc, nếu người \(k\) nhìn thấy hai số bằng nhau, khả năng hiệu
+bằng \(0\) bị loại trực tiếp; đó là tình huống kết thúc.
+
+Ký hiệu \(F(a_1,a_2,a_3,k)\) là số lượt hỏi sớm nhất để người đầu tiên đoán
+ra trong tình huống tương ứng. Nếu chưa thể đoán, xem giá trị là vô hạn; trong
+các tình huống của bài toán gốc, quá trình sẽ quy về kết thúc sau hữu hạn
+bước.
+
+\section{Truy hồi cho trường hợp ba người}
+
+Giả sử đang ở tình huống loại một, tức là số của người \(k\) thật sự bằng
+tổng hai số còn lại. Người đó muốn đoán đúng thì phải loại bỏ khả năng hiệu.
+Việc loại bỏ khả năng hiệu tương đương với việc xét một tình huống mới, trong
+đó số lớn nhất được thay bằng hiệu của hai số còn lại và lượt hỏi được chuyển
+sang người đáng lẽ đã phát hiện mâu thuẫn.
+
+Với \(k=1\), các công thức trong bài viết là:
+\[
+\begin{aligned}
+F(a_1,a_2,a_3,1)&=1 &&(a_2=a_3),\\
+F(a_1,a_2,a_3,1)&=2+F(a_2-a_3,a_2,a_3,2) &&(a_2>a_3),\\
+F(a_1,a_2,a_3,1)&=1+F(a_3-a_2,a_2,a_3,3) &&(a_3>a_2).
+\end{aligned}
+\]
+Hai người còn lại có công thức đối xứng:
+\[
+\begin{aligned}
+F(a_1,a_2,a_3,2)&=2 &&(a_1=a_3),\\
+F(a_1,a_2,a_3,2)&=1+F(a_1,a_1-a_3,a_3,1) &&(a_1>a_3),\\
+F(a_1,a_2,a_3,2)&=2+F(a_1,a_3-a_1,a_3,3) &&(a_3>a_1),
+\end{aligned}
+\]
+\[
+\begin{aligned}
+F(a_1,a_2,a_3,3)&=3 &&(a_1=a_2),\\
+F(a_1,a_2,a_3,3)&=2+F(a_1,a_2,a_1-a_2,1) &&(a_1>a_2),\\
+F(a_1,a_2,a_3,3)&=1+F(a_1,a_2,a_2-a_1,2) &&(a_2>a_1).
+\end{aligned}
+\]
+Mỗi bước thay một số lớn bằng hiệu của hai số còn lại. Vì các số là nguyên
+dương và giảm theo kiểu giống thuật toán Euclid, quá trình không thể kéo dài
+vô hạn.
+
+Kết luận trung tâm của slide là: trong dạng gốc, bất kể ba số cụ thể là gì,
+người mang số lớn nhất sẽ là người đầu tiên đoán ra. Quan trọng hơn, ta đã
+biến suy luận lồng nhau thành một truy hồi tuyến tính.
+
+\section{Mở rộng nhiều người}
+
+Slide tiếp tục mở rộng sang \(n\ge3\) học sinh. Khi một trong \(n\) số bằng
+tổng \(n-1\) số còn lại, trạng thái có dạng
+\[
+  (a_1,a_2,\ldots,a_n,k).
+\]
+Với học sinh thứ \(k\), đặt
+\[
+  S_k=\sum_{i\ne k}a_i.
+\]
+Nếu \(v\ne k\) là chỉ số của số lớn nhất trong những số \(k\) nhìn thấy, hai
+khả năng đáng xét cho số của \(k\) là
+\[
+  S_k \quad\text{và}\quad 2a_v-S_k.
+\]
+Nếu \(2a_v\le S_k\), khả năng thứ hai không dương và người đó rơi vào tình
+huống kết thúc. Nếu \(2a_v>S_k\), ta chuyển sang trạng thái thay
+\[
+  a_k\leftarrow 2a_v-S_k
+\]
+và xét tiếp từ người \(v\). Độ lệch số lượt hỏi từ \(v\) tới \(k\) được tính
+theo vòng tròn hỏi đáp. Truy hồi tổng quát vì vậy vẫn giữ tinh thần của
+trường hợp ba người: loại bỏ khả năng sai bằng cách quy về một tình huống
+nhỏ hơn.
+
+\section{Mở rộng chia nhóm}
+
+Mở rộng cuối trong bài viết, và cũng là phần mà slide có nhiều công thức
+nhúng, là trường hợp giáo sư chia \(n\) học sinh thành hai nhóm có tổng bằng
+nhau. Học sinh không biết cách chia nhóm, nên với người \(k\), mỗi cách chia
+khả dĩ có thể sinh ra một giá trị khác nhau cho số trên trán mình.
+
+Nếu nhóm đối diện \(k\) gồm các chỉ số \(u_1,\ldots,u_m\), một giá trị khả dĩ
+có dạng
+\[
+  V_k=\sum_{r=1}^m a_{u_r}
+      -\sum_{i\notin\{k,u_1,\ldots,u_m\}}a_i.
+\]
+Các giá trị không dương bị loại trực tiếp. Nếu còn đúng một giá trị dương,
+đó là tình huống kết thúc; nếu còn nhiều giá trị dương, người \(k\) phải
+chứng minh mọi giá trị sai đều dẫn tới mâu thuẫn với những câu trả lời trước
+đó.
+
+Khác với mở rộng ``một số bằng tổng các số còn lại'', ở đây các khả năng có
+thể phân nhánh theo nhiều cách chia nhóm. Vì vậy quá trình suy luận không còn
+là một đường duy nhất mà là một cây trạng thái. Tuy vậy, phương pháp vẫn
+không đổi: mô tả tập khả năng, loại giá trị không dương, đệ quy trên từng
+giá trị sai, và dùng ghi nhớ trạng thái khi lập trình.
+
+\section{Thông điệp thuật toán}
+
+Giá trị của bài trình bày không nằm ở một công thức riêng lẻ, mà ở cách bỏ
+qua hình thức ``người này nghĩ người kia nghĩ gì'' để tìm cấu trúc bất biến.
+Khi trạng thái được định nghĩa đúng, câu trả lời ``không'' của một người chỉ
+là một phép loại trừ trong không gian trạng thái. Nhờ đó bài toán suy luận
+tưởng như tăng theo cấp số mũ có thể được xử lý bằng truy hồi và quy hoạch
+trạng thái.
 
 \end{document}

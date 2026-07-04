@@ -7,6 +7,7 @@
 \newcommand{\RMQ}{\operatorname{RMQ}}
 \newcommand{\LCA}{\operatorname{LCA}}
 \newcommand{\pos}{\operatorname{pos}}
+\newcommand{\ST}{\operatorname{ST}}
 
 \title{Bản trình chiếu: RMQ và bài toán LCA}
 \author{Guo Huayang}
@@ -15,48 +16,142 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for RMQ and LCA}
+\origtitle{RMQ và LCA}
 \sourcepath{IOI China candidate team papers / 2007 / day 2 / Guo Huayang.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Bố cục}
 
-Tệp gốc chỉ có PowerPoint. Phần chữ đọc được cho thấy bài trình bày gồm ba
-phần: RMQ, quan hệ giữa RMQ và LCA, rồi một số ứng dụng với Kruskal, Tarjan,
+Tệp gốc là PowerPoint, không có PDF đi kèm trong thư mục nguồn. Phần chữ
+trích được cho thấy deck có ba tuyến chính: bài toán RMQ, quan hệ hai chiều
+giữa RMQ và LCA, rồi các ứng dụng và cách cài đặt như Kruskal, Tarjan,
 sparse table và block RMQ.
 
 \section{RMQ}
 
-RMQ hỏi vị trí hoặc giá trị nhỏ nhất trên một đoạn của mảng tĩnh. Cấu trúc
-quen thuộc là sparse table: tiền xử lý
+Với một mảng tĩnh \(A[1..n]\), bài toán \term{range minimum query} hỏi vị trí
+hoặc giá trị nhỏ nhất trên đoạn \([i,j]\). Cấu trúc dữ liệu được đo bằng hai
+tham số: thời gian tiền xử lý \(f(n)\) và thời gian trả lời truy vấn \(g(n)\).
+Trong nhiều bài thi, dữ liệu không đổi nhưng số truy vấn lớn, nên bỏ thêm
+tiền xử lý để đạt truy vấn hằng số là rất đáng giá.
+
+Cách cơ sở là sparse table. Đặt
 \[
-  st[k][i]=\min(A_i,A_{i+1},\ldots,A_{i+2^k-1})
+  st[k][i]=\arg\min_{i\le t<i+2^k} A[t],
 \]
-trong \(\Oh(n\log n)\), sau đó trả lời mỗi truy vấn trong \(\Oh(1)\) bằng hai
-đoạn chồng phủ độ dài \(2^k\). Với block RMQ, có thể đẩy tiền xử lý về
-\(\Oh(n)\) và vẫn giữ truy vấn \(\Oh(1)\) trong mô hình tĩnh.
+hoặc lưu trực tiếp giá trị nhỏ nhất trên đoạn độ dài \(2^k\). Công thức dựng:
+\[
+  st[k+1][i]=\min(st[k][i],st[k][i+2^k])
+\]
+theo nghĩa so sánh giá trị trong \(A\). Tiền xử lý tốn \(\Oh(n\log n)\). Với
+truy vấn \([l,r]\), lấy \(k=\lfloor\log_2(r-l+1)\rfloor\), so sánh hai đoạn
+\([l,l+2^k-1]\) và \([r-2^k+1,r]\), vì chúng phủ toàn bộ đoạn hỏi. Truy vấn
+tốn \(\Oh(1)\).
 
 \section{LCA quy về RMQ}
 
-Với một cây, thực hiện Euler tour và ghi lại độ sâu của các đỉnh xuất hiện
-trong dãy. Gọi \(\pos(u)\) là vị trí xuất hiện đầu tiên của \(u\). Khi đó
+Với cây có gốc, \(\LCA(u,v)\) là tổ tiên chung sâu nhất của \(u\) và \(v\).
+Làm một Euler tour từ gốc: mỗi khi đi vào một đỉnh hoặc quay về từ con, ghi
+đỉnh đó vào dãy \(E\), đồng thời ghi độ sâu tương ứng vào dãy \(B\). Gọi
+\(\pos(u)\) là vị trí xuất hiện đầu tiên của \(u\) trong \(E\). Khi đó
 \[
-  \LCA(u,v)=
-  \RMQ(B,\pos(u),\pos(v)),
+  \LCA(u,v)=E\bigl[\RMQ(B,\pos(u),\pos(v))\bigr],
 \]
-trong đó \(B\) là dãy độ sâu gắn với Euler tour, và RMQ chọn đỉnh có độ sâu
-nhỏ nhất trên đoạn tương ứng.
+trong đó RMQ chọn vị trí có độ sâu nhỏ nhất trên đoạn. Trực giác là đoạn
+Euler từ lần đầu gặp \(u\) đến lần đầu gặp \(v\) đi lên đúng tới tổ tiên chung
+gần nhất rồi đi xuống; độ sâu nhỏ nhất trên đoạn chính là đỉnh ấy.
 
-\section{Tarjan và Kruskal}
+Vì Euler tour có độ dài \(2n-1\), ta có thể xử lý LCA bằng sparse table trong
+\(\Oh(n\log n)\) tiền xử lý và \(\Oh(1)\) mỗi truy vấn. Nếu dùng RMQ tuyến
+tính, LCA cũng đạt \(\Oh(n)\) tiền xử lý và \(\Oh(1)\) truy vấn.
 
-Các slide cũng nhắc thuật toán Tarjan trả lời LCA offline bằng DFS và DSU với
-độ phức tạp gần tuyến tính, thường viết \(\Oh((n+q)\alpha(n))\). Trong các
-bài xử lý nhiều truy vấn trên cây sinh bởi Kruskal, có thể dựng cây Kruskal
-hoặc kết hợp DSU với LCA để trả lời truy vấn về ngưỡng cạnh.
+\section{RMQ quy về LCA}
+
+Chiều ngược lại cũng được slide nhắc tới. Từ mảng \(A\), dựng cây Cartesian:
+phần tử nhỏ nhất của đoạn làm gốc, đoạn bên trái tạo cây con trái, đoạn bên
+phải tạo cây con phải. Khi đó vị trí nhỏ nhất trên đoạn \([i,j]\) chính là
+\(\LCA(i,j)\) trong cây Cartesian. Cây này có thể dựng bằng ngăn xếp đơn điệu
+trong \(\Oh(n)\). Vì vậy một cấu trúc LCA tốt cũng cho lời giải RMQ tốt.
+
+Quan hệ hai chiều này giải thích vì sao hai bài toán thường được học cùng
+nhau: RMQ là mô hình mảng tĩnh, còn LCA là mô hình cây; Euler tour và cây
+Cartesian là hai phép chuyển đổi giữa chúng.
+
+\section{Tarjan LCA offline}
+
+Nếu toàn bộ truy vấn LCA đã biết trước, thuật toán Tarjan dùng DFS và DSU để
+trả lời trong thời gian gần tuyến tính. Tại đỉnh \(u\), ta tạo tập DSU cho
+\(u\), duyệt từng con \(v\), xử lý xong cây con \(v\) thì hợp nhất \(v\) vào
+\(u\) và đặt đại diện tổ tiên của tập mới là \(u\). Khi một truy vấn
+\((u,v)\) được xét và đầu kia đã được thăm xong, đáp án là tổ tiên được gắn
+với đại diện DSU của đầu kia.
+
+Giả mã trên slide có dạng:
+\[
+\begin{array}{l}
+\texttt{Tarjan\_DFS(u)}\\
+\quad F(u)\leftarrow u\\
+\quad \text{với mỗi truy vấn }(u,v)\text{ đã sẵn sàng, trả lời bằng }F(v)\\
+\quad \text{với mỗi con }v\text{ của }u:\\
+\quad\quad \texttt{Tarjan\_DFS(v)}\\
+\quad\quad F(v)\leftarrow u.
+\end{array}
+\]
+Trong cài đặt đầy đủ cần thêm màu thăm và thao tác \(\operatorname{find}\) của
+DSU; độ phức tạp là \(\Oh((n+q)\alpha(n))\).
+
+\section{Ứng dụng với Kruskal}
+
+Deck nhắc một bài năm 2006 với các tham số \(N\le 1000\),
+\(M,Q\le 100000\), \(D\le 5000\). Phần chữ trích được cho thấy lời giải dùng
+Kruskal và truy vấn trên cây: các cạnh được xét theo thứ tự trọng số, DSU tạo
+các lần hợp nhất, rồi những truy vấn \((u,v)\) được trả lời qua một cấu trúc
+cây sinh bởi quá trình Kruskal.
+
+Mô hình thường gặp là \term{cây Kruskal}. Khi hai thành phần được hợp nhất
+bởi một cạnh trọng số \(w\), tạo một nút mới có trọng số \(w\) và nối nó với
+gốc của hai thành phần. Trong cây này, LCA của hai đỉnh gốc ban đầu cho biết
+thời điểm hoặc ngưỡng trọng số mà hai đỉnh lần đầu nằm trong cùng thành phần.
+Vì vậy sau khi sắp cạnh tốn \(\Oh(M\log M)\), các truy vấn có thể được đưa về
+LCA offline bằng Tarjan hoặc online bằng RMQ/sparse table.
+
+Các công thức độ phức tạp trên slide có dạng
+\(\Oh(M\log M + D N\alpha(N)+Q)\) hoặc \(\Oh(M\log M + Q + ND)\), tùy cách
+tổ chức dữ liệu theo các lớp/trạng thái \(D\). Thông điệp chính là phần đồ
+thị động theo ngưỡng được nén thành một cây, rồi LCA đảm nhiệm phần truy vấn.
+
+\section{Block RMQ}
+
+Sparse table đạt truy vấn \(\Oh(1)\) nhưng tiền xử lý \(\Oh(n\log n)\). Deck
+còn nhắc cách đạt \(\Oh(n)\)-\(\Oh(1)\) bằng chia khối. Chia mảng thành các
+khối độ dài \(L\) xấp xỉ \(\frac12\log_2 n\). Với mỗi khối, tiền xử lý mọi
+truy vấn nội khối; số mẫu hình nội khối của dãy độ sâu Euler bị ràng buộc
+bởi bước \(\pm1\), nên số kiểu là \(2^{L-1}\), và tổng bảng kiểu vẫn nhỏ hơn
+tuyến tính khi chọn \(L\) như trên.
+
+Giữa các khối, ta lấy giá trị nhỏ nhất của từng khối rồi xây sparse table
+trên dãy khối. Một truy vấn bất kỳ tách thành đuôi khối trái, các khối trọn
+ở giữa và đầu khối phải. Hai phần biên dùng bảng nội khối, phần giữa dùng
+sparse table cấp khối. Với dãy Euler của LCA, ràng buộc \(\pm1\) giúp tiền xử
+lý toàn bộ đạt \(\Oh(n)\) và truy vấn vẫn \(\Oh(1)\).
+
+\section{Ghi chú cài đặt}
+
+Cần thống nhất RMQ trả về vị trí hay giá trị; với LCA phải trả về vị trí trong
+Euler rồi ánh xạ ngược sang đỉnh. Khi có nhiều vị trí cùng độ sâu nhỏ nhất,
+chọn vị trí nào cũng cho cùng LCA nếu đoạn Euler được lấy giữa hai lần xuất
+hiện đầu tiên. Với sparse table, nên chuẩn bị bảng log để tránh tính
+\(\log\) nhiều lần.
+
+Khi dùng Tarjan offline, mọi truy vấn phải được gắn vào danh sách của cả hai
+đầu mút. Chỉ trả lời khi đầu kia đã được tô đen, tức cây con của nó đã xử lý
+xong; nếu không, truy vấn sẽ được trả lời ở thời điểm đầu kia được duyệt.
 
 \section{Kết luận}
 
-RMQ và LCA là hai bài toán cơ sở thường chuyển hóa qua lại. Khi cây cố định và
-có nhiều truy vấn, Euler tour cộng RMQ là khuôn mẫu mạnh; khi truy vấn offline,
-Tarjan LCA là một lựa chọn ngắn và hiệu quả.
+RMQ và LCA là hai bài toán nền có thể chuyển hóa qua lại. Sparse table là lựa
+chọn ngắn, dễ cài, rất đáng dùng khi \(\Oh(n\log n)\) bộ nhớ và thời gian chấp
+nhận được. Tarjan phù hợp với truy vấn offline. Block RMQ cho lời giải tuyến
+tính hơn nhưng cài đặt phức tạp hơn. Trong các bài đồ thị như Kruskal theo
+ngưỡng, việc nhận ra cấu trúc cây ẩn thường là bước quyết định.
 
 \end{document}

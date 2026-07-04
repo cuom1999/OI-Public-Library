@@ -10,39 +10,188 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for interval dynamic programming}
+\origtitle{Dynamic programming optimizations: presentation notes}
 \sourcepath{IOI China candidate team papers / 2003 / Xiang Rongjing / Xiang Rongjing.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Phạm vi khôi phục}
 
-Tệp gốc chỉ có bản PowerPoint. Phần chữ khôi phục được chứa tên \textit{CERC
-1998}, \textit{IOI 2002}, một ví dụ chia dãy \(100,200,\ldots,900\), và các
-công thức \(f(i,j)\), \(g(i,k)\), \(s_{i,k}\). Điều này cho thấy trọng tâm là
-quy hoạch động trên đoạn hoặc phân hoạch dãy.
+Tệp gốc chỉ có bản PowerPoint. Phần chữ đọc được cho thấy deck gồm nhiều ví
+dụ quy hoạch động một chiều theo đoạn hoặc theo hậu tố, trong đó có nhãn
+\textit{CERC 1998}, \textit{IOI 2002}, các công thức \(f(i,j)\), \(g(i,k)\),
+\(D(i)\), \(C(i,k)\), và một vài đoạn Pascal. Nhiều phát biểu bài toán không
+trích được đầy đủ, nên bản ghi chú này chỉ trình bày các mô hình thuật toán
+có thể xác định từ công thức.
 
-\section{Mô hình}
+Theo ngoại lệ của dự án, các đoạn mã nguồn dài trong slide không được chép lại
+hay dịch đầy đủ. Chúng được tóm tắt bằng vai trò thuật toán: vòng lặp theo
+\(k\), con trỏ quyết định \(j\), hàng đợi ứng viên, hoặc cấu trúc danh sách
+đơn điệu.
 
-Ta xét một dãy cần chia thành các đoạn liên tiếp. Chi phí của một đoạn có thể
-phụ thuộc vào tổng \(T_i+\cdots+T_j\), thời gian chuẩn bị \(s\), hoặc các giá
-trị \(F_i\). Ví dụ trong slide có phân hoạch
+\section{Ví dụ phân hoạch dãy}
+
+Slide đầu có nhãn \textit{CERC 1998} và ví dụ:
+\[
+  n=9,\qquad m=3,
+\]
+\[
+  100,200,300,400,500\ /\ 600,700\ /\ 800,900.
+\]
+Đây là dạng bài chia một dãy thành \(m\) đoạn liên tiếp. Chi phí của mỗi đoạn
+có thể phụ thuộc vào tổng, độ dài hoặc một hàm chuẩn bị; mục tiêu là tối ưu
+giá trị lớn nhất hoặc tổng chi phí của các đoạn.
+
+Một ví dụ khác trong slide có:
+\[
+  n=5,\qquad s=1,
+\]
+\[
+  (T_1,T_2,\ldots,T_5)=(1,3,4,2,1),
+\]
+\[
+  (F_1,F_2,\ldots,F_5)=(3,2,3,3,4),
+\]
+và phân hoạch
 \[
   \{1,2\},\{3\},\{4,5\}.
 \]
+Dòng kết quả \((5,5,10,14,14)\) cho thấy sau mỗi nhóm có một đại lượng tích
+lũy, chẳng hạn thời gian hoàn thành hoặc chi phí cộng dồn. Không đủ dữ kiện
+để khôi phục đề gốc, nhưng cấu trúc chuyển trạng thái là rõ: chọn điểm cắt,
+tính chi phí đoạn mới, rồi ghép với lời giải của phần còn lại.
 
-\section{Chuyển trạng thái}
+\section{DP hai bảng f và g}
 
-Các ký hiệu khôi phục được cho thấy hai bảng chính:
+Phần công thức chính dùng hai bảng:
 \[
   f(i,j),\qquad g(i,k).
 \]
-Một dạng chuyển thường gặp là tách đoạn \([i,n]\) tại vị trí \(j\), rồi kết
-hợp lời giải của \([i,j]\) với \([j+1,n]\). Các chỉ số \(s_{i,k}\) gợi ý tối
-ưu hóa điểm chia khi tính \(g(i,k)\).
+Các đoạn đọc được gồm:
+\[
+  [i,n],\quad [i+1,n],\quad [i,j],\quad [j+1,n],
+\]
+và hai khả năng so sánh
+\[
+  f(i,j)\quad\text{với}\quad g(j+1,k-1).
+\]
+Điều này tương ứng với mô hình chia hậu tố \([i,n]\) thành \(k\) đoạn: chọn
+đoạn đầu \([i,j]\), phần còn lại là \([j+1,n]\) với \(k-1\) đoạn. Nếu mục
+tiêu là tối thiểu hóa chi phí lớn nhất, công thức điển hình là
+\[
+  g(i,k)=\min_{j}\max\{f(i,j),g(j+1,k-1)\}.
+\]
 
-\section{Thông điệp}
+Slide còn có ký hiệu \(s_{i,k}\), là điểm chia tối ưu hoặc ngưỡng đổi quyết
+định. Khi \(j\) tăng, \(f(i,j)\) thường tăng, còn \(g(j+1,k-1)\) thường giảm;
+do đó hàm \(\max\{f(i,j),g(j+1,k-1)\}\) đạt cực tiểu quanh điểm hai vế đổi
+thứ tự. Nếu các ngưỡng \(s_{i,k}\) có tính đơn điệu theo \(i\), ta có thể
+dùng con trỏ trượt thay vì thử mọi \(j\), giảm từ \(O(n^3)\) xuống \(O(n^2)\)
+cho toàn bộ bảng.
 
-Bản trình chiếu minh họa cách biến một bài phân hoạch thành công thức DP và
-sau đó giảm độ phức tạp từ \(O(n^3)\) xuống \(O(n^2)\) bằng cách khai thác
-tính đơn điệu của điểm chia.
+Đoạn Pascal khôi phục được có dạng:
+\[
+\begin{gathered}
+\texttt{for i:=n downto 1 do g(i,1):=f(i,n);}\\
+\texttt{for k:=2 to m do ...}\\
+\texttt{while f(i,j-1)>=g(j,k-1) do j:=j-1;}
+\end{gathered}
+\]
+Vai trò của đoạn mã là duy trì con trỏ \(j\) ứng với \(s_{i,k}\) khi \(i\)
+giảm dần. Vì \(j\) chỉ di chuyển một chiều trong mỗi lớp \(k\), tổng thời
+gian của lớp là \(O(n)\), thay cho \(O(n^2)\).
+
+\section{Dạng tối ưu hóa với D và C}
+
+Phần sau của slide dùng các ký hiệu:
+\[
+  t_{i,j}=T_i+T_{i+1}+\cdots+T_j,\qquad
+  f_i=F_i+F_{i+1}+\cdots+F_n,
+\]
+\[
+  D(i),\qquad C(i,k).
+\]
+Một công thức đọc được là
+\[
+  C(i,k)=D(k)+(S+t_{i,k-1})\cdot f_i,
+\]
+hoặc cùng dạng tuyến tính theo \(f_i\). Với hai ứng viên \(k<l\), slide định
+nghĩa giao điểm
+\[
+  g(k,l)=\frac{D(k)-D(l)}{t_{k,l-1}}.
+\]
+Các bất đẳng thức kiểu
+\[
+  f_i<g(k,l)
+\]
+quyết định ứng viên nào tốt hơn cho trạng thái \(i\).
+
+Đây là khuôn mẫu của tối ưu hóa bao lồi hoặc hàng đợi đơn điệu cho DP một
+chiều. Mỗi ứng viên \(k\) tạo ra một hàm tuyến tính theo biến truy vấn
+\(f_i\). Khi các truy vấn \(f_i\) đi theo một chiều và giao điểm giữa các
+ứng viên cũng có thứ tự, ta giữ một danh sách ứng viên:
+\[
+  i_1,i_2,\ldots,i_r,
+\]
+sao cho các ngưỡng
+\[
+  g(i_2,i_1)<g(i_3,i_2)<\cdots<g(i_r,i_{r-1})
+\]
+tăng dần. Truy vấn chỉ cần dịch con trỏ đầu danh sách cho tới khi ứng viên
+đầu còn tốt nhất.
+
+Đoạn mã trong slide dùng các biến \texttt{head}, \texttt{tail},
+\texttt{lst[]} và hai vòng \texttt{while}. Vòng đầu bỏ các ứng viên đầu không
+còn tối ưu cho \(f_i\); vòng sau xóa các ứng viên cuối bị ứng viên mới làm
+vô dụng. Đây chính là cài đặt hàng đợi đơn điệu của bao lồi, chạy trong
+\(O(n)\) nếu các điều kiện đơn điệu thỏa.
+
+\section{Ví dụ có ràng buộc trọng lượng}
+
+Phần cuối có các ký hiệu:
+\[
+  w(i,j)=w_i+w_{i+1}+\cdots+w_j,\qquad F(i),
+\]
+và điều kiện
+\[
+  w(i+1,j)>W.
+\]
+Các dòng về \(R(i,k)\), \(F(j),F(j+1),\ldots,F(k)\), cùng cấu trúc
+\texttt{Hlst} cho thấy đây là một DP trên hậu tố với ràng buộc sức chứa hoặc
+giới hạn tổng trọng lượng \(W\). Với mỗi \(i\), ta chỉ được nối tới những
+\(j\) sao cho tổng \(w(i+1,j)\) nằm trong giới hạn; khi giới hạn bị vượt, đầu
+mút hợp lệ dịch theo một chiều.
+
+Slide mô tả một cấu trúc danh sách nhiều đoạn:
+\[
+  \texttt{Hlst[k].bot},\quad \texttt{Hlst[k].top},\quad
+  \texttt{Hlst[k].value}.
+\]
+Mỗi đoạn lưu một khoảng chỉ số trong đó cùng một thành phần phụ \(h\) hoặc
+cùng một giá trị bù đang chi phối. Các đoạn được nối sao cho giá trị tối ưu ở
+đầu mỗi đoạn tăng dần:
+\[
+  F(\texttt{lst[bot]})<F(\texttt{lst[bot+1]})<\cdots.
+\]
+Khi \(i\) giảm, ta xóa các đoạn không còn hợp lệ, cập nhật giá trị của đoạn
+đầu, rồi chèn trạng thái mới vào đúng vị trí đơn điệu. Mục tiêu vẫn là biến
+một phép lấy min trên nhiều \(j\) thành vài thao tác hàng đợi.
+
+\section{Thông điệp chung}
+
+Các ví dụ trong deck có hình thức khác nhau, nhưng cùng một đường dây:
+\begin{itemize}
+  \item viết DP theo đoạn hoặc hậu tố;
+  \item nhận ra điểm quyết định tối ưu di chuyển đơn điệu, hoặc mỗi quyết
+        định là một hàm tuyến tính;
+  \item dùng con trỏ, hàng đợi đơn điệu hoặc danh sách ứng viên để tránh thử
+        lại mọi điểm cắt;
+  \item giảm các công thức \(O(n^3)\) hoặc \(O(n^2)\) xuống \(O(n^2)\) hoặc
+        \(O(n)\) cho từng lớp chuyển trạng thái.
+\end{itemize}
+
+Vì phát biểu bài toán trong PowerPoint không khôi phục đủ, bản ghi chú không
+gán tên cụ thể cho từng công thức. Tuy vậy, các ký hiệu và đoạn mã còn đọc
+được đủ để thấy mục tiêu của bài trình bày: dạy cách nhìn vào tính đơn điệu
+của quyết định trong quy hoạch động, rồi biến tính chất đó thành cấu trúc dữ
+liệu tuyến tính.
 
 \end{document}

@@ -10,37 +10,150 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for minimal representation of cyclic strings}
+\origtitle{Ứng dụng tư tưởng biểu diễn nhỏ nhất trong bài toán đẳng cấu vòng của chuỗi}
 \sourcepath{IOI China candidate team papers / 2003 / Zhou Yuan / Zhou Yuan.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Bài toán chuỗi vòng}
 
-Bản trình chiếu này đi kèm bài viết về biểu diễn nhỏ nhất trong bài toán đẳng
-cấu vòng của chuỗi. Các slide khôi phục được chứa định nghĩa phép quay
-\(s^{(k)}\), ví dụ \texttt{babba}, \texttt{bbaba}, và các so sánh độ phức
-tạp \(O(N^2)\), \(O(N)\).
-
-\section{Định nghĩa}
-
-Với chuỗi \(s\), ký hiệu \(|s|\) là độ dài. Phép quay một bước đưa ký tự đầu
+Bài trình bày xét bài toán đẳng cấu vòng của chuỗi. Với chuỗi \(s\), ký hiệu
+\(|s|\) là độ dài, \(s_i\) là ký tự thứ \(i\), và
+\[
+  s[i..j]
+\]
+là chuỗi con từ vị trí \(i\) đến vị trí \(j\). Một lần quay vòng đưa ký tự đầu
 về cuối:
 \[
-  s^{(1)} = s[2..|s|] + s[1],
+  s^{(1)}=s[2..|s|]+s[1],
 \]
-và \(s^{(k)}\) là phép quay lặp lại \(k\) lần. Hai chuỗi có cùng độ dài là
-đẳng cấu vòng nếu một chuỗi là một phép quay của chuỗi kia.
+và với \(k>1\),
+\[
+  s^{(k)}=\bigl(s^{(k-1)}\bigr)^{(1)},\qquad s^{(0)}=s.
+\]
+Hai chuỗi \(s_1,s_2\) có cùng độ dài là đẳng cấu vòng nếu tồn tại \(k\) sao
+cho
+\[
+  s_2=s_1^{(k)}.
+\]
 
-\section{Biểu diễn nhỏ nhất}
+Cách liệt kê trực tiếp xét
+\[
+  s_1,s_1^{(1)},s_1^{(2)},\ldots,s_1^{(|s_1|-1)}
+\]
+rồi so sánh với \(s_2\). Độ phức tạp là \(O(N^2)\). Cách quen thuộc hơn là
+ghép
+\[
+  S=s_1+s_1
+\]
+và kiểm tra \(s_2\) có xuất hiện trong \(S\) bằng KMP, đạt \(O(N)\).
 
-Cách đơn giản là xét toàn bộ \(s,s^{(1)},\ldots,s^{(|s|-1)}\), mất
-\(O(N^2)\). Cách tốt hơn là nối \(S=s+s\) và tìm vị trí bắt đầu của biểu diễn
-từ điển nhỏ nhất trong thời gian \(O(N)\). Khi đó hai chuỗi vòng tương đương
-khi và chỉ khi biểu diễn nhỏ nhất của chúng giống nhau.
+\section{Tư tưởng biểu diễn nhỏ nhất}
 
-\section{Ứng dụng}
+Slide dùng ví dụ dãy số để dẫn nhập: nếu hai dãy được xem là giống nhau khi
+chỉ khác thứ tự, ta không liệt kê mọi hoán vị mà sắp xếp chúng rồi so sánh.
+Sắp xếp chính là chọn một đại diện chuẩn của lớp tương đương.
 
-Tư tưởng chọn đại diện chuẩn cũng áp dụng cho trạng thái tìm kiếm và kiểm tra
-đẳng cấu: các đối tượng tương đương được gom về cùng một biểu diễn để tránh
-xử lý lặp.
+Tổng quát, giả sử \(T=\{t_1,t_2,\ldots\}\) là tập đối tượng, \(F\) là tập các
+phép biến đổi trên \(T\). Nếu các phép biến đổi cho phép đi qua lại trong
+cùng một lớp tương đương, ta có thể chọn phần tử nhỏ nhất theo một thứ tự cố
+định làm đại diện của lớp đó. Khi ấy hai đối tượng cùng bản chất khi và chỉ
+khi đại diện nhỏ nhất của chúng bằng nhau.
+
+Trong bài toán chuỗi vòng, phép biến đổi là quay chuỗi, còn thứ tự là thứ tự
+từ điển. Biểu diễn nhỏ nhất của \(s\), ký hiệu \(M(s)\), là chuỗi nhỏ nhất
+trong
+\[
+  s,s^{(1)},\ldots,s^{(|s|-1)}.
+\]
+Nếu \(s_1\) và \(s_2\) đẳng cấu vòng thì \(M(s_1)=M(s_2)\); nếu hai biểu diễn
+nhỏ nhất bằng nhau thì hai chuỗi chắc chắn là hai phép quay của nhau.
+
+\section{Thuật toán hai con trỏ}
+
+Thay vì dựng riêng \(M(s_1)\) và \(M(s_2)\), slide xây một thủ tục so sánh
+trực tiếp. Đặt
+\[
+  u=s_1+s_1,\qquad w=s_2+s_2,\qquad N=|s_1|=|s_2|.
+\]
+Hai con trỏ \(i,j\) lần lượt là vị trí bắt đầu của một phép quay đang xét
+trong \(u\) và \(w\). Ban đầu \(i=j=1\).
+
+Ở mỗi bước, so sánh hai đoạn bắt đầu tại \(i\) và \(j\). Nếu trong \(N\) ký
+tự liên tiếp không có khác biệt, tức
+\[
+  u[i..i+N-1]=w[j..j+N-1],
+\]
+thì hai chuỗi đẳng cấu vòng.
+
+Ngược lại, gọi \(k\) là vị trí đầu tiên có khác biệt:
+\[
+  u[i]=w[j],\ u[i+1]=w[j+1],\ldots,\ u[i+k-1]=w[j+k-1],
+\]
+nhưng
+\[
+  u[i+k]\ne w[j+k].
+\]
+Nếu
+\[
+  u[i+k]>w[j+k],
+\]
+thì mọi phép quay của \(s_1\) bắt đầu tại
+\[
+  i,i+1,\ldots,i+k
+\]
+đều không thể là biểu diễn nhỏ nhất, nên đặt
+\[
+  i\leftarrow i+k+1.
+\]
+Nếu \(u[i+k]<w[j+k]\), làm đối xứng:
+\[
+  j\leftarrow j+k+1.
+\]
+Nếu một trong hai con trỏ vượt quá \(N\), không còn phép quay khả dĩ ở chuỗi
+đó và hai chuỗi không đẳng cấu vòng.
+
+\section{Vì sao có thể nhảy qua cả đoạn}
+
+Giả sử \(u[i+k]>w[j+k]\). Với mọi vị trí \(x\) trong đoạn
+\[
+  i\le x\le i+k,
+\]
+phép quay bắt đầu tại \(x\) chia sẻ với đoạn bắt đầu tại \(i\) một hậu tố của
+phần đã khớp. Nếu nó có thể là biểu diễn nhỏ nhất của \(s_1\), thì khi so
+với đoạn tương ứng của \(w\), nó không được lớn hơn tại ký tự khác đầu tiên.
+Nhưng chuỗi các đẳng thức trước vị trí \(k\) và bất đẳng thức
+\(u[i+k]>w[j+k]\) cho thấy toàn bộ các điểm bắt đầu từ \(i\) đến \(i+k\) đều
+bị một phép quay khác đánh bại. Vì vậy bỏ qua chúng là an toàn.
+
+Lập luận cho trường hợp \(u[i+k]<w[j+k]\) hoàn toàn tương tự đối với chuỗi
+\(w\). Mỗi lần thất bại, ít nhất một con trỏ tăng thêm \(k+1\), và các vị trí
+đã bỏ qua không bao giờ được xét lại như điểm bắt đầu. Do đó tổng số ký tự
+được so sánh là tuyến tính, thuật toán chạy trong \(O(N)\).
+
+\section{Mô phỏng trên ví dụ}
+
+Các slide dùng các chuỗi như \texttt{babba}, \texttt{bbaba} và một ví dụ dài
+hơn:
+\[
+  \texttt{babbababb a},\qquad
+  \texttt{bbababbaba}
+\]
+để minh họa các lần nhảy. Khi gặp khác biệt đầu tiên, bên có ký tự lớn hơn
+bị bỏ qua một đoạn. Sau vài lần, nếu hai chuỗi thật sự đẳng cấu vòng, hai con
+trỏ sẽ cùng trỏ tới các phép quay có cùng biểu diễn nhỏ nhất và thuật toán
+dừng với kết quả đúng.
+
+Điểm quan trọng là ta dùng khái niệm \(M(s)\) để chứng minh các bước nhảy,
+nhưng không cần tạo chuỗi \(M(s)\) như một đối tượng riêng. Nếu không muốn
+ghép \(s+s\), có thể truy cập ký tự theo chỉ số modulo \(N\), khi đó bộ nhớ
+phụ chỉ còn \(O(1)\).
+
+\section{Tổng kết}
+
+Bài trình bày cho thấy biểu diễn nhỏ nhất là một cách nhìn thay thế cho khớp
+mẫu. Khi một đối tượng có nhiều dạng biểu diễn tương đương, ta chọn một dạng
+chuẩn theo thứ tự cố định rồi so sánh các dạng chuẩn. Trong bài toán chuỗi
+vòng, cách nhìn này dẫn tới thuật toán hai con trỏ tuyến tính; trong các bài
+khác, nó còn xuất hiện khi loại bỏ trạng thái trùng trong tìm kiếm hoặc kiểm
+tra đẳng cấu của cấu trúc rời rạc.
 
 \end{document}

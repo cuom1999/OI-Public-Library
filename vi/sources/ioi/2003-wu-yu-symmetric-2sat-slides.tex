@@ -10,43 +10,93 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for symmetric 2-SAT}
+\origtitle{Solving 2-SAT with symmetry}
 \sourcepath{IOI China candidate team papers / 2003 / Wu Yu / Wu Yu.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Bài toán xuất phát}
 
-Tệp gốc là bản PowerPoint cũ đi kèm bài viết về 2-SAT. Phần chữ khôi phục
-được từ tệp trình chiếu chủ yếu gồm tên bài toán, công thức và ký hiệu; bản
-dịch này chuyển nội dung đó thành ghi chú LaTeX gọn, nhất quán với bản dịch
-bài viết cùng chủ đề.
+Bản trình chiếu mở đầu bằng bài \textit{Peaceful Commission}. Có \(n\)
+đảng, mỗi đảng có đúng hai đại biểu, đánh số \(2a-1\) và \(2a\) cho đảng
+thứ \(a\). Ta phải chọn đúng một đại biểu của mỗi đảng để lập ủy ban hòa
+bình. Một số cặp đại biểu không thân thiện với nhau; hai người trong cùng
+một cặp như vậy không được cùng xuất hiện trong ủy ban. Với
+\(1\le n\le 8000\) và \(m\le 20000\), cách thử từng tổ hợp là hoàn toàn
+không khả thi.
 
-\section{Mạch trình bày}
+Nội dung chính của slide là biến bài toán này thành một bài 2-SAT có cấu
+trúc rất đều. Mỗi lựa chọn \(A_i\) luôn có lựa chọn đối ứng \(A_i'\) trong
+cùng một nhóm, và mỗi nghiệm phải chọn đúng một trong hai lựa chọn đó.
 
-Ví dụ mở đầu là bài \textit{Peaceful Commission} của POI. Mỗi đảng có hai
-đại biểu, đánh số \(2a-1\) và \(2a\), và cần chọn đúng một đại biểu từ mỗi
-đảng. Mỗi cặp không thân thiện tạo ra hai mệnh đề kéo theo trong đồ thị 2-SAT.
+\section{Cung kéo theo và tính đối xứng}
 
-Các slide nhấn mạnh mô hình hai lựa chọn \(A_i,A_i'\). Nếu \(A_i\) không thể
-đi cùng \(A_j\), ta thêm hai cung
+Nếu hai lựa chọn \(A_i\) và \(A_j\) không tương thích, chọn một lựa chọn sẽ
+buộc phải chọn lựa chọn đối ứng của lựa chọn kia:
 \[
   A_i \to A_j', \qquad A_j \to A_i'.
 \]
-Tính đối xứng của hai cung này là điểm chính của toàn bộ phương pháp.
+Đây là đồ thị kéo theo của công thức 2-SAT. Điểm quan trọng được các slide
+nhấn mạnh là mọi cung đều có cung đối xứng: nếu có \(A_i\to A_j\), thì có
+\(A_j'\to A_i'\). Tính chất này vẫn đúng cho cả đường đi, không chỉ cho
+một cung đơn lẻ; từ \(A_i\to^* A_k\) suy ra \(A_k'\to^* A_i'\).
 
-\section{Thuật toán}
+Vì vậy, khi ta chọn một đỉnh trong đồ thị kéo theo, tất cả các đỉnh đi được
+từ nó cũng bị buộc chọn. Đồng thời các đỉnh đối ứng với chúng bị loại. Nếu
+một lựa chọn và lựa chọn đối ứng của nó cùng bị buộc, bài toán vô nghiệm.
 
-Ta tìm các thành phần liên thông mạnh của đồ thị kéo theo. Nếu \(A_i\) và
-\(A_i'\) rơi vào cùng một thành phần, hệ vô nghiệm. Ngược lại, co các thành
-phần thành DAG và xử lý theo thứ tự topo từ đáy lên: khi một thành phần chưa
-được quyết định được chọn, thành phần đối ứng của nó bị loại.
+\section{Thành phần liên thông mạnh}
 
-Cách nhìn này thay thế phép thử trực tiếp \(O(nm)\) bằng một thuật toán tuyến
-tính theo kích thước đồ thị sau khi đã dựng các cung kéo theo.
+Bản trình chiếu tiếp tục gom các đỉnh nằm trong cùng một chu trình có hướng.
+Nếu một đỉnh trong chu trình được chọn, mọi đỉnh còn lại trong chu trình
+cũng bị buộc chọn, nên chúng có thể được co thành một thành phần liên thông
+mạnh. Sau khi co tất cả các thành phần, ta thu được một DAG.
 
-\section{Ghi chú}
+Điều kiện vô nghiệm trở nên rất rõ:
+\[
+  A_i \text{ và } A_i' \text{ thuộc cùng một thành phần liên thông mạnh}
+  \quad\Longrightarrow\quad \text{vô nghiệm}.
+\]
+Ngược lại, nếu không có cặp đối ứng nào rơi vào cùng một thành phần, tính
+đối xứng của đồ thị co bảo đảm có thể chọn nhất quán một phía trong từng
+cặp thành phần đối ứng.
 
-Bản trình chiếu dùng nhiều hình mũi tên để minh họa tính đối xứng của đồ thị.
-Trong bản LaTeX này, các hình đó được diễn đạt lại bằng ký hiệu cung và mô tả
-thuật toán.
+\section{Cách xây dựng nghiệm}
+
+Một cách trực tiếp là chọn một thành phần chưa quyết định, lấy nó cùng mọi
+hậu duệ trong DAG, rồi loại thành phần đối ứng cùng mọi tiền bối của thành
+phần đối ứng. Nhờ tính đối xứng, hai tập này khớp nhau đúng theo quan hệ
+đối ứng, nên thao tác không tạo mâu thuẫn mới nếu bài toán đã qua kiểm tra
+thành phần liên thông mạnh.
+
+Để thực hiện gọn hơn, các slide dùng thứ tự topo từ đáy lên. Khi duyệt DAG
+theo thứ tự này, nếu gặp một thành phần chưa được quyết định thì chọn nó và
+đánh dấu thành phần đối ứng là không chọn. Các hậu duệ đã được xử lý trước
+đó, nên không cần lan truyền lại toàn bộ mỗi lần.
+
+\section{Thuật toán tổng quát}
+
+Quy trình hoàn chỉnh gồm các bước:
+\begin{enumerate}
+  \item Dựng đồ thị kéo theo từ các cặp không tương thích.
+  \item Tìm các thành phần liên thông mạnh.
+  \item Nếu một lựa chọn và lựa chọn đối ứng của nó cùng thuộc một thành
+  phần, kết luận vô nghiệm.
+  \item Co đồ thị thành DAG và lấy thứ tự topo từ đáy lên.
+  \item Duyệt các thành phần theo thứ tự đó; thành phần nào chưa quyết định
+  thì chọn nó và loại thành phần đối ứng.
+  \item Từ các thành phần được chọn, xuất một đại biểu cho mỗi đảng.
+\end{enumerate}
+
+Nếu dùng Tarjan hoặc Kosaraju để tìm thành phần liên thông mạnh, mọi bước
+sau khi dựng đồ thị đều tuyến tính theo số đỉnh và số cung. Với bài
+\textit{Peaceful Commission}, số cung tỉ lệ với số cặp không thân thiện, nên
+độ phức tạp là \(O(n+m)\).
+
+\section{Thông điệp của bài trình bày}
+
+Mục đích của bộ slide không chỉ là nhắc lại thuật toán 2-SAT chuẩn, mà còn
+giải thích vì sao tính đối xứng của đồ thị kéo theo làm thuật toán đúng. Khi
+nhận ra mỗi cung, mỗi đường đi và mỗi thành phần đều có đối ứng, ta không
+cần thử từng lựa chọn một cách mù quáng nữa; việc co SCC và duyệt topo cho
+ta một cách chọn nghiệm hiệu quả và có chứng minh rõ ràng.
 
 \end{document}

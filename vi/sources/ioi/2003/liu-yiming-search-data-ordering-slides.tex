@@ -10,37 +10,101 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for ordering data in search problems}
+\origtitle{Optimization ideas for a class of search problems: ordering data}
 \sourcepath{IOI China candidate team papers / 2003 / Liu Yiming / Liu Yiming.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Tư tưởng mở đầu}
 
-Bản trình chiếu đi kèm bài viết về cách tối ưu một lớp bài toán tìm kiếm bằng
-việc sắp lại dữ liệu. Phần chữ khôi phục được cho thấy nhiều ví dụ về dãy
-\(a_1,a_2,\ldots,a_n\), phép đảo thứ tự, phép bù \(6-a_i\), và các tập giao
-nhau trong không gian tìm kiếm.
+Bài trình bày nói về một kiểu tối ưu hóa rất thực dụng cho tìm kiếm: biến dữ
+liệu lộn xộn thành dữ liệu có trật tự trước khi hoặc trong khi tìm kiếm. Khi
+dữ liệu có cấu trúc, ta thường gặp nghiệm tốt sớm hơn, cắt tỉa mạnh hơn, và
+tránh xét nhiều trạng thái đẳng cấu.
 
-\section{Tư tưởng chính}
+Ví dụ nhập môn là bài xếp hàng vào container. Nếu mục tiêu là lấp đầy đúng
+thể tích, thứ tự xét hàng hóa ảnh hưởng trực tiếp đến nghiệm đầu tiên mà DFS
+tìm được. Sắp xếp hàng hóa trước khi tìm giúp các cận tối ưu phát huy sớm
+hơn, dù bản thân bước sắp xếp chỉ là một thay đổi nhỏ trong chương trình.
 
-Khi dữ liệu ban đầu không có trật tự, tìm kiếm trực tiếp thường phải duyệt rất
-nhiều nhánh tương đương. Nếu ta phân loại, chuẩn hóa hoặc sắp xếp dữ liệu
-trước, nhiều trạng thái có thể được hợp nhất. Các slide minh họa bằng các dãy
-năm phần tử, trong đó việc đảo dãy hoặc thay \(a_i\) bằng \(6-a_i\) tạo ra
-những trạng thái đối xứng.
+\section{Hai kiểu sắp thứ tự dữ liệu}
 
-\section{Ứng dụng}
+Slide chia phương pháp thành hai nhóm:
+\begin{itemize}
+  \item sắp thứ tự trong tiền xử lý, tức là chuẩn hóa dữ liệu ngay sau khi đọc
+  vào rồi mới chạy thuật toán chính;
+  \item sắp thứ tự trong thời gian thực, tức là mỗi trạng thái sinh ra trong
+  quá trình tìm kiếm được chuẩn hóa trước khi kiểm tra hoặc lưu trữ.
+\end{itemize}
 
-Trong các bài tìm kiếm tổ hợp, việc chọn một đại diện chuẩn cho mỗi lớp đối
-xứng giúp tránh xét lặp. Với các tập ứng viên, thay vì xét từng phần tử rời
-rạc, ta có thể duy trì giao của các tập ràng buộc, ví dụ
+\section{Tiền xử lý: Blocks}
+
+Ví dụ chính cho tiền xử lý là bài \textit{Blocks} của IOI 2000. Bài toán hình
+học ba chiều ban đầu được đổi thành bài toán tập hợp một chiều. Ta sắp xếp
+các khối lập phương nhỏ trong cấu hình, đánh số chúng từ \(1\) đến \(v\), rồi
+dùng tập chỉ số để biểu diễn cấu hình.
+
+Mỗi khối có thể đặt vào cũng được biểu diễn bằng tập các chỉ số ô mà nó phủ.
+Khi lấy đi một khối
+\[
+  \{3,6,7,9\}
+\]
+khỏi cấu hình \([1,10]\), phần còn lại là
+\[
+  \{1,2,4,5,8,10\}.
+\]
+Muốn kiểm tra một khối khác, chẳng hạn
+\[
+  \{4,5,7,8\},
+\]
+ta chỉ cần kiểm tra quan hệ tập con; vì \(7\) đã bị lấy đi, khối này không
+thể đặt tiếp. Tương tự, hai khối xung đột khi giao của hai tập biểu diễn khác
+rỗng:
 \[
   \{3,6,7,9\}\cap\{4,5,7,8\}=\{7\}.
 \]
 
-\section{Liên hệ với bài viết}
+Sau bước chuẩn hóa này, phần tìm kiếm chính không còn phải xử lý nhiều chi
+tiết hình học ba chiều. Đây là lợi ích lớn nhất của sắp thứ tự trong tiền xử
+lý: làm mô hình bài toán gọn hơn trước khi DFS bắt đầu.
 
-Bài viết đã dịch trình bày chi tiết hơn về cách chuyển dữ liệu hỗn loạn thành
-dữ liệu có trật tự. Bản trình chiếu là lớp minh họa, dùng bảng số và đồ thị
-hiệu năng để cho thấy lợi ích thực tế của bước chuẩn hóa.
+\section{Thời gian thực: biểu diễn nhỏ nhất}
+
+Nhóm kỹ thuật thứ hai xử lý trạng thái ngay khi nó được sinh ra. Công cụ tiêu
+biểu là \term{biểu diễn nhỏ nhất}: trong một lớp trạng thái đẳng cấu, chỉ giữ
+một đại diện chuẩn, thường là đại diện nhỏ nhất theo thứ tự từ điển.
+
+Nếu dùng cách truyền thống, khi sinh được một trạng thái hợp lệ ta phải sinh
+mọi trạng thái đối xứng của nó để xem đã lưu trạng thái nào tương đương chưa.
+Với biểu diễn nhỏ nhất, ta chuyển trạng thái hiện tại về đại diện chuẩn rồi
+chỉ kiểm tra đại diện đó. Tính chất quan trọng là tính duy nhất: mỗi lớp đẳng
+cấu có đúng một biểu diễn nhỏ nhất.
+
+\section{Ví dụ N quân hậu}
+
+Với bài N quân hậu, một bàn cờ được biểu diễn bằng dãy
+\[
+  a_1,a_2,\ldots,a_n,
+\]
+trong đó \(a_i\) là cột của quân hậu ở hàng \(i\). Các phép đối xứng của bàn
+cờ như lật ngang, lật dọc, lật qua đường chéo và quay \(90^\circ\),
+\(180^\circ\), \(270^\circ\) đều biến dãy này thành một dãy khác. Với
+\(n=5\), các công thức kiểu đảo thứ tự hoặc thay \(a_i\) bằng \(6-a_i\) chính
+là cách biểu diễn những phép đối xứng đó trên dãy.
+
+Trong quá trình quay lui, nếu tiền tố hiện tại chắc chắn không thể phát triển
+thành biểu diễn nhỏ nhất của lớp đối xứng, ta có thể cắt nhánh ngay. Nhờ vậy,
+không cần lưu toàn bộ nghiệm đã gặp để so sánh đẳng cấu; ta chỉ liệt kê các
+đại diện chuẩn. Cách này vừa giảm thời gian kiểm tra, vừa giảm bộ nhớ.
+
+\section{So sánh và kết luận}
+
+Sắp thứ tự trong tiền xử lý thường đơn giản và nhanh, nhưng có thể dùng nhiều
+bộ nhớ vì phải chuẩn bị cấu trúc dữ liệu trước. Sắp thứ tự trong thời gian
+thực linh hoạt hơn và tiết kiệm bộ nhớ hơn, nhưng có thể tốn chi phí lặp lại
+ở nhiều nút của cây tìm kiếm. Hai phương pháp bổ sung cho nhau.
+
+Thông điệp cuối của slide là không nên xem sắp thứ tự dữ liệu như một mẹo
+nhỏ. Với nhiều bài tìm kiếm, chỉ vài dòng chuẩn hóa dữ liệu có thể biến không
+gian tìm kiếm rối thành một mô hình gọn, giúp các cắt tỉa khác hoạt động tốt
+hơn và tránh xét lại các trạng thái đối xứng.
 
 \end{document}

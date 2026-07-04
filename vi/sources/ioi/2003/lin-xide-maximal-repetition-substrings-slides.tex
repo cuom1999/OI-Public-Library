@@ -10,33 +10,209 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for maximal repetition substrings}
+\origtitle{Tìm chuỗi con lặp lớn nhất}
 \sourcepath{IOI China candidate team papers / 2003 / Lin Xide / Lin Xide.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mục tiêu của bài trình bày}
 
-Bản trình chiếu đi kèm bài viết về xử lý chuỗi. Nhiều slide là hình ảnh hoặc
-đối tượng nhúng, nên phần chữ khôi phục được chỉ còn một số ví dụ như chuỗi
-\texttt{BBAABABAABABB}. Bản dịch này dựa trên bài viết đã dịch để ghi lại
-mạch nội dung.
+Bộ slide trình bày bài toán tìm chuỗi con lặp lớn nhất trong một chuỗi chữ
+cái in hoa. Nhiều trang gốc chứa hình ảnh hoặc đối tượng nhúng, nên bản ghi
+chú này tập trung vào nội dung thuật toán đã được bài viết đi kèm giải thích:
+định nghĩa chu kỳ, cây hậu tố, mở rộng KMP và cách kết hợp hai công cụ này để
+đạt thuật toán tuyến tính.
 
-\section{Bài toán}
+Các đoạn mã dài hoặc đối tượng nhúng trong nguồn gốc không được chép lại
+nguyên văn. Theo ngoại lệ về mẫu mã, bản dịch chỉ tóm tắt vai trò của chúng:
+cây hậu tố dùng để phân rã chuỗi, còn mở rộng KMP dùng để tính nhanh các độ
+dài khớp cần thiết.
 
-Ta cần tìm chuỗi con lặp có tính tối ưu theo chu kỳ hoặc độ dài. Bài toán liên
-quan đến các công cụ kinh điển của xử lý chuỗi như cây hậu tố, KMP mở rộng và
-so sánh tiền tố chung dài nhất.
+\section{Định nghĩa bài toán}
 
-\section{Ý tưởng}
+Với chuỗi \(S\), một số nguyên dương \(p\) là chu kỳ của \(S\) nếu
+\[
+  1\le x\le |S|-p \quad\Longrightarrow\quad S_x=S_{x+p}.
+\]
+Khi đó
+\[
+  e=\frac{|S|}{p}
+\]
+là số mũ của \(S\). Nếu \(e\ge2\), ta gọi \(S\) là một chuỗi lặp kích thước
+\(p\). Bài toán đặt ra: với chuỗi \(W\) độ dài
+\[
+  1\le n\le10^5,
+\]
+tìm trong mọi chuỗi con của \(W\) một chuỗi lặp có chu kỳ lớn nhất.
 
-Thay vì xét mọi đoạn con, ta khai thác cấu trúc lặp: nếu một đoạn có chu kỳ
-nhỏ, các vị trí bắt đầu tương ứng có quan hệ mạnh trong cây hậu tố hoặc trong
-mảng thông tin khớp tiền tố. Các slide dùng ví dụ ký tự \(A,B\) để minh họa
-cách các đoạn lặp chồng lên nhau.
+Ký hiệu
+\[
+  W(u,v)
+\]
+là chuỗi con bắt đầu tại vị trí \(u\) và kết thúc tại vị trí \(v\). Cách trực
+tiếp là duyệt chu kỳ \(p\) từ lớn xuống nhỏ rồi kiểm tra có hai khối liên tiếp
+độ dài \(p\) giống nhau hay không. Cách này dễ hiểu nhưng tốn \(O(n^2)\).
 
-\section{Kết luận}
+\section{Cây hậu tố trong slide}
 
-Bản trình chiếu nhấn mạnh rằng xử lý chuỗi không chỉ là so khớp mẫu đơn giản.
-Khi kết hợp cấu trúc dữ liệu chuỗi với phân tích chu kỳ, có thể đạt thuật
-toán tuyến tính cho bài toán tưởng như phải xét rất nhiều đoạn.
+Để xử lý mọi hậu tố trong thời gian tuyến tính, ta thêm ký tự kết thúc đặc
+biệt:
+\[
+  W\leftarrow W\$,
+\]
+với \(\$\) không xuất hiện trong chuỗi ban đầu. Cây hậu tố là trie nén của
+tất cả hậu tố \(W(i,n)\). Mỗi cạnh \(E(u,v)\) được ghi bằng cặp chỉ số
+\[
+  E(u,v)=(\ell,r),
+\]
+biểu diễn nhãn cạnh là chuỗi con \(W(\ell,r)\).
+
+Nếu nối các nhãn trên đường từ gốc tới nút \(x\), ta được chuỗi \(S_x\). Mỗi
+hậu tố \(W(i,n)\) ứng với một lá \(\mathit{Leaf}_i\). Khi chèn hậu tố thứ
+\(i\), đặt \(\mathit{Head}_i\) là tiền tố chung dài nhất giữa \(W(i,n)\) và
+một hậu tố đã chèn trước đó; phần còn lại là \(\mathit{Tail}_i\). Cây hậu tố
+được cập nhật bằng cách tìm vị trí của \(\mathit{Head}_i\), tách cạnh nếu cần,
+rồi thêm lá cho \(\mathit{Tail}_i\).
+
+Slide nhắc ý tưởng liên kết hậu tố của McCreight. Nếu
+\[
+  \mathit{Head}_{i-1}=az,
+\]
+thì khi chuyển sang hậu tố kế tiếp, chuỗi \(z\) đã biết là một tiền tố xuất
+hiện trước đó. Liên kết hậu tố từ nút \(az\) sang nút \(z\) cho phép tìm
+\(\mathit{Head}_i\) mà không quay lại gốc. Đại lượng
+\[
+  i+|\mathit{Head}_i|
+\]
+không giảm, nên tổng số ký tự được duyệt là \(O(n)\).
+
+\section{KMP và mở rộng KMP}
+
+KMP cổ điển dùng hàm tiền tố để tránh so sánh lại những ký tự đã biết. Trong
+bài toán này, ta cần nhiều giá trị độ dài khớp chứ không chỉ cần biết mẫu có
+xuất hiện hay không. Vì vậy slide dùng dạng mở rộng KMP, tương đương với
+việc tính các giá trị LCP kiểu Z-function.
+
+Với mẫu \(T\) và chuỗi \(S\), định nghĩa
+\[
+  B_i=\operatorname{lcp}\bigl(T,S(i,n)\bigr).
+\]
+Trước hết tính
+\[
+  A_i=\operatorname{lcp}\bigl(T,T(i,m)\bigr),
+\]
+rồi dùng đoạn khớp xa nhất đã biết để suy ra hoặc mở rộng từng \(B_i\). Vì
+biên phải của đoạn khớp chỉ tăng, tổng số lần so sánh ký tự là tuyến tính.
+
+Trong thuật toán chính, mở rộng KMP cung cấp nhanh hai loại thông tin:
+khớp tiền tố khi mở một chuỗi sinh sang phải, và khớp hậu tố khi mở sang trái
+trên chuỗi đảo.
+
+\section{Chuỗi con tối ưu}
+
+Với chuỗi con \(S=W(u,v)\) và chu kỳ \(L\), ta gọi \(S\) là chuỗi con tối ưu
+có chu kỳ \(L\) nếu:
+\begin{itemize}
+  \item \(S\) có chu kỳ \(L\);
+  \item không thể mở rộng \(S\) sang trái mà vẫn giữ chu kỳ \(L\);
+  \item không thể mở rộng \(S\) sang phải mà vẫn giữ chu kỳ \(L\).
+\end{itemize}
+Nếu liệt kê được các chuỗi con tối ưu và chu kỳ của chúng, đáp án là chuỗi
+có chu kỳ lớn nhất. Cách kiểm tra một chu kỳ \(L\) là chọn một chuỗi sinh độ
+dài \(L\), mở rộng sang hai phía đến khi không còn khớp, rồi xem độ dài sau
+mở rộng có đạt ít nhất \(2L\) hay không.
+
+\section{Phân rã chuỗi}
+
+Slide phân rã
+\[
+  W=U_1+U_2+\cdots+U_m
+\]
+theo quy tắc: nếu phần đã xử lý là
+\[
+  P=U_1+\cdots+U_{i-1},\qquad W=P+Q,
+\]
+thì nếu ký tự đầu \(Q_1\) chưa xuất hiện trong \(P\), đặt \(U_i=Q_1\); ngược
+lại, \(U_i\) là tiền tố dài nhất của \(Q\) đã xuất hiện trong \(P\).
+
+Ví dụ trong bài viết:
+\[
+  W=\texttt{ABAABABAABAAB}
+\]
+có phân rã
+\[
+  \texttt{|A|B|A|AB|ABAAB|AAB|}.
+\]
+Phân rã này được tính bằng cây hậu tố, vì mỗi \(U_i\) chính là một ký tự mới
+hoặc \(\mathit{Head}_{|P|+1}\).
+
+\section{Giới hạn nơi có thể có nghiệm}
+
+Vai trò của phân rã là giới hạn vị trí của chuỗi con tối ưu. Xét một chuỗi
+con tối ưu \(S\) có điểm kết thúc nằm trong mảnh \(U_i\). Nếu \(S\) bắt đầu
+trong chính \(U_i\), nó đã xuất hiện trong phần trước theo định nghĩa của
+\(U_i\), nên sẽ được xét ở bước trước đó. Trường hợp cần xét là \(S\) bắt đầu
+trước \(U_i\) và kết thúc trong \(U_i\).
+
+Đặt \(U=U_i\), và đặt \(V\) là hậu tố của phần trước đó
+\[
+  P=U_1+\cdots+U_{i-1}
+\]
+có độ dài
+\[
+  |U|+2|U_{i-1}|.
+\]
+Khi ấy mọi chuỗi con tối ưu kết thúc trong \(U\) đều có điểm bắt đầu nằm
+trong \(V\). Nhờ vậy, thay vì xét toàn bộ chuỗi, ta chỉ cần xét các bài toán
+cục bộ trên \(V+U\).
+
+\section{Tìm chuỗi sinh trong từng cục bộ}
+
+Với một cặp \(V,U\), xét chu kỳ \(L\). Nếu chuỗi con tối ưu bắt đầu trong
+\(V\), kết thúc trong \(U\), và có độ dài ít nhất \(2L\), thì ít nhất một
+trong hai phần của nó nằm trong \(V\) hoặc \(U\) có độ dài không nhỏ hơn
+\(L\). Hai trường hợp đối xứng; xét trường hợp phần nằm trong \(U\) đủ dài.
+Khi đó
+\[
+  U(1,L)
+\]
+có thể được dùng làm chuỗi sinh, rồi mở rộng sang trái và sang phải.
+
+Các đại lượng phụ trợ được slide dùng là
+\[
+  \mathit{Lp}_L=\operatorname{lcp}\bigl(U,U(L+1,|U|)\bigr)
+\]
+và
+\[
+  \mathit{Ls}_L=\operatorname{lcs}\bigl(V,V+U(1,L)\bigr).
+\]
+Ở đây \(\operatorname{lcs}\) là độ dài hậu tố chung dài nhất. Toàn bộ các
+giá trị \(\mathit{Lp}_L\) và \(\mathit{Ls}_L\) được tính bằng mở rộng KMP, nên
+chi phí bình quân cho mỗi \(L\) là \(O(1)\).
+
+\section{Thuật toán tổng quát}
+
+Quy trình của bài trình bày có thể tóm tắt như sau:
+\begin{enumerate}
+  \item Dựng cây hậu tố và phân rã \(W\) thành \(U_1,\ldots,U_m\).
+  \item Với mỗi \(i\ge2\), đặt \(U=U_i\), chọn \(V\) là hậu tố của phần đã xử
+        lý có độ dài \(|U|+2|U_{i-1}|\).
+  \item Tính các mảng mở rộng cho cặp \(V,U\).
+  \item Với mọi \(1\le L\le |U|\), dùng \(U(1,L)\) làm chuỗi sinh, mở rộng
+        bằng \(\mathit{Lp}_L\) và \(\mathit{Ls}_L\), rồi kiểm tra độ dài sau
+        mở rộng có ít nhất \(2L\) hay không.
+  \item Làm tương tự cho trường hợp đối xứng khi phần dài nằm trong \(V\).
+  \item Cập nhật đáp án bằng chu kỳ lớn nhất tìm được.
+\end{enumerate}
+
+Tổng độ dài các mảnh \(U_i\) là \(O(n)\), còn cách chọn \(V\) bảo đảm tổng
+chi phí của mọi bài toán cục bộ cũng tuyến tính. Vì vậy toàn bộ thuật toán
+chạy trong \(O(n)\) thời gian và dùng \(O(n)\) bộ nhớ.
+
+\section{Tổng kết}
+
+Bài trình bày không chỉ giới thiệu cây hậu tố hoặc KMP riêng lẻ. Điểm chính
+là cách phối hợp chúng: cây hậu tố tạo ra một phân rã làm hẹp vùng có thể chứa
+nghiệm, còn mở rộng KMP cho phép kiểm tra tất cả chu kỳ trong từng vùng với
+tổng chi phí tuyến tính. Nhờ đó một bài toán nhìn ban đầu giống tìm kiếm
+mọi chuỗi con \(O(n^2)\) được đưa về thuật toán \(O(n)\).
 
 \end{document}

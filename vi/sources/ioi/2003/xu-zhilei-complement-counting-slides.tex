@@ -10,44 +10,95 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for complement transformation in counting}
+\origtitle{Complement transformation in counting problems}
 \sourcepath{IOI China candidate team papers / 2003 / Xu Zhilei / Xu Zhilei.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Tư tưởng của bài trình bày}
 
-Bản trình chiếu đi kèm bài viết về cách đếm bằng phần bù. Phần chữ khôi phục
-được nhắc tới \textit{POI 9714 TRO}, \textit{Ural 1212 Sea Battle}, cùng các
-giới hạn \(n\le 1000\), \(m\le 250000\), \(N,M\le 30000\).
+Bài trình bày xem bài toán thống kê là bài toán đếm các đối tượng thỏa một
+số ràng buộc. Khi đếm trực tiếp quá khó, ta thử đếm toàn bộ \(S\), đếm phần
+vi phạm \(T\), rồi lấy đáp án \(R=S-T\). Điểm quan trọng không chỉ là công
+thức phần bù, mà là chọn được phía dễ liệt kê hơn.
 
-\section{Đếm tam giác bằng phần bù}
+\section{Ví dụ 1: TRO của POI}
 
-Với bài \textit{TRO}, số bộ ba điểm là
+Bài \textit{TRO} cho \(n\) điểm, giữa mọi cặp điểm có một cạnh đỏ hoặc đen,
+không có ba điểm thẳng hàng. Dữ liệu cho danh sách cạnh đỏ và yêu cầu đếm số
+tam giác đơn sắc. Ràng buộc \(n\le 1000\), \(m\le 250000\) làm cách liệt kê
+mọi bộ ba \(O(n^3)\) trở nên quá nặng.
+
+Thử đếm trực tiếp từ một đỉnh thất bại vì hai cạnh cùng màu \(AB,AC\) chưa
+đủ quyết định tam giác \(ABC\) đơn sắc; màu của \(BC\) vẫn chưa biết. Phần
+bù lại có cấu trúc rõ hơn: một tam giác không đơn sắc luôn có đúng hai cạnh
+cùng màu và một cạnh khác màu, nên nó tương ứng với hai cặp cạnh khác màu có
+chung đỉnh.
+
+Tổng số tam giác là
 \[
   S=\binom n3=\frac{n(n-1)(n-2)}6.
 \]
-Nếu \(E[i]\) là số cạnh kề một phía của điểm \(i\), các slide dùng tổng
+Nếu \(E[i]\) là số cạnh đỏ kề với đỉnh \(i\), thì số cạnh đen kề với \(i\) là
+\(n-1-E[i]\). Số cặp cạnh khác màu có chung đỉnh \(i\) là
+\[
+  E[i](n-1-E[i]).
+\]
+Do mỗi tam giác không đơn sắc được đếm hai lần theo cách này, đặt
 \[
   Q=\sum_i E[i]\,(n-1-E[i])
 \]
-để trừ đi các bộ ba không thỏa điều kiện. Kết quả có dạng
+thì số tam giác đơn sắc là
 \[
-  T=\frac{n(n-1)(n-2)}6-\frac Q2.
+  R=\frac{n(n-1)(n-2)}6-\frac Q2.
 \]
+Thuật toán chỉ cần duyệt các cạnh đỏ để tính bậc đỏ của từng đỉnh, rồi cộng
+công thức trên, nên đạt \(O(n+m)\) thời gian và \(O(n)\) bộ nhớ.
 
-\section{Đếm vị trí trên lưới}
+\section{Ví dụ 2: Sea Battle}
 
-Trong \textit{Sea Battle}, với hình chữ nhật khả dụng kích thước \(X\times Y\)
-và tàu kích thước \(P\times Q\), số vị trí đặt là
+\textit{Sea Battle} cho một bàn \(N\times M\) với \(L\) chiến hạm hình chữ
+nhật đã đặt. Cần đếm số cách đặt thêm một hình chữ nhật \(P\times Q\) sao cho
+không trùng và không kề tám hướng với các chiến hạm cũ. Dữ liệu có
+\(N,M\le 30000\), \(L\le 30\), \(P,Q\le 5\). Liệt kê mọi vị trí trên bàn là
+quá lớn, còn rời rạc hóa tuy làm được nhưng phức tạp.
+
+Nếu chưa xét chiến hạm cũ, số vị trí đặt trong một hình chữ nhật
+\(X\times Y\) là
 \[
   (X-P+1)(Y-Q+1)
 \]
-khi \(X\ge P\) và \(Y\ge Q\). Các slide tiếp tục xử lý sự chồng lấn của các
-vùng bằng cách gom các hình chữ nhật.
+khi \(X\ge P\) và \(Y\ge Q\), ngược lại bằng \(0\). Hai hình chữ nhật được
+xem là giao hoặc kề nếu các khoảng hàng và khoảng cột của chúng chồng nhau
+sau khi mở rộng hình đã đặt thêm một ô về bốn phía:
+\[
+\begin{aligned}
+  &(BX1\le AX2+1)\land(BX2\ge AX1-1)\\
+  &\land(BY1\le AY2+1)\land(BY2\ge AY1-1).
+\end{aligned}
+\]
+
+Chuyển sang phần bù, ta đếm số cách đặt mới giao/kề với ít nhất một chiến
+hạm cũ. Với một chiến hạm đã đặt \(A\), mọi vị trí của hình mới \(B\) có thể
+giao với \(A\) nằm trong một khung nhỏ quanh \(A\), kích thước không quá
+\((2P+X)\times(2Q+Y)\). Vì \(P,Q\) nhỏ và \(L\) nhỏ, lượng liệt kê ở phần bù
+rất thấp.
+
+Vấn đề còn lại là đếm lặp: một vị trí của \(B\) có thể giao với nhiều chiến
+hạm cũ. Slide xử lý bằng quy tắc thứ tự. Khi xét chiến hạm thứ \(i\), chỉ
+cộng một vị trí \(B\) nếu \(B\) giao với chiến hạm \(i\) và không giao với
+bất kỳ chiến hạm nào có số thứ tự nhỏ hơn. Như vậy mỗi vị trí vi phạm được
+tính đúng một lần, tại chiến hạm đầu tiên mà nó giao.
+
+Độ phức tạp trở thành \(O(P^2Q^2L^2)\): với mỗi chiến hạm, chỉ liệt kê các vị
+trí trong khung nhỏ quanh nó, và với mỗi vị trí chỉ kiểm tra giao với tối đa
+\(L\) chiến hạm trước đó.
 
 \section{Thông điệp}
 
-Khi điều kiện cần đếm phức tạp, đếm toàn bộ rồi trừ phần vi phạm thường đơn
-giản hơn. Điều quan trọng là chọn phần bù có cấu trúc dễ tính trong thời gian
-tuyến tính hoặc gần tuyến tính.
+Trong \textit{TRO}, chuyển sang phần bù tạo ra một công thức tổ hợp mà phía
+thuận không có. Trong \textit{Sea Battle}, phần bù không thay đổi bản chất
+đếm, nhưng làm lượng liệt kê giảm từ toàn bàn xuống các vùng rất nhỏ quanh
+chiến hạm đã đặt. Hai ví dụ nhấn mạnh cùng một nguyên tắc: nếu đối tượng cần
+đếm trực tiếp quá khó, hãy thử tìm phần đối lập có cấu trúc rõ hơn, rồi dùng
+thứ tự hoặc công thức tổ hợp để tránh đếm lặp.
 
 \end{document}

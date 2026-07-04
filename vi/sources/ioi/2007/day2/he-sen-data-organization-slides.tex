@@ -4,43 +4,197 @@
 \usepackage{oipl-vn}
 
 \newcommand{\Oh}{\mathcal{O}}
+\newcommand{\Max}{\operatorname{Max}}
+\newcommand{\LCA}{\operatorname{LCA}}
+\newcommand{\Depth}{\operatorname{Depth}}
+\newcommand{\Dis}{\operatorname{Dis}}
 
-\title{Bản trình chiếu: Cách tổ chức dữ liệu hợp lý}
+\title{Bản ghi chú trình chiếu: Cách tổ chức dữ liệu hợp lý}
 \author{He Sen}
 \date{2007}
 
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for reasonable organization of data}
+\origtitle{Bàn sơ về cách tổ chức dữ liệu hợp lý}
 \sourcepath{IOI China candidate team papers / 2007 / day 2 / He Sen.ppt}
 
-\section{Phạm vi bản dịch}
+\begin{abstract}
+Các slide nhấn mạnh rằng tổ chức dữ liệu không chỉ là chọn một cấu trúc dữ
+liệu quen thuộc. Khi quan hệ trong đề bài trở nên phức tạp, ta thường phải
+đổi cả hình thức biểu diễn lẫn thứ tự xử lý dữ liệu để làm rõ mô hình, giảm
+số chiều trạng thái, hoặc biến thao tác trên cây và đồ thị thành thao tác trên
+dãy.
+\end{abstract}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ PDF. Bản ghi chú này giữ lại
-hai góc nhìn chính: tổ chức lại cấu trúc dữ liệu và tổ chức lại thứ tự dữ
-liệu để làm rõ mô hình hoặc tăng hiệu quả thuật toán.
+\paragraph{Từ khóa.}
+Tổ chức dữ liệu; cấu trúc dữ liệu; thứ tự xử lý; quy hoạch động; cây; dãy.
 
-\section{Hai hướng tổ chức}
+\section{Hai góc nhìn chính}
 
-Với cùng một tập dữ liệu, cách lưu trữ khác nhau có thể tạo ra thuật toán rất
-khác nhau. Bảng băm và trie thay đổi hình thức biểu diễn; sắp xếp trước rồi
-tìm kiếm nhị phân thay đổi thứ tự xử lý. Trong bài phức tạp, hai hướng này
-thường được phối hợp.
+Một ví dụ nhỏ là bài trả lời truy vấn ``một số có nằm trong \(N\) số đã cho
+hay không''. Bảng băm và trie tổ chức lại \emph{hình thức} dữ liệu; sắp xếp
+trước rồi tìm kiếm nhị phân tổ chức lại \emph{thứ tự} dữ liệu. Hai góc nhìn
+này là mạch chính của bài: cùng một tập dữ liệu, nếu đổi cách lưu hoặc đổi
+thứ tự xét, thuật toán có thể thay đổi hoàn toàn.
 
-\section{Ví dụ quy hoạch động}
+Các cấu trúc dữ liệu kinh điển đều là biểu hiện của tổ chức dữ liệu hợp lý.
+Tuy nhiên, trong nhiều bài khó, điểm quan trọng hơn là dùng việc tổ chức lại
+dữ liệu để phát hiện mô hình mới. Khi nhìn cây thành dãy tiền thứ tự, nhìn
+đồ thị động theo chiều thời gian đảo, hoặc gom nhiều vật thành một nhóm lựa
+chọn, ta không chỉ tối ưu cài đặt mà còn đổi bản chất chuyển trạng thái.
 
-Trong bài mua sắm có món chính và phụ kiện, nếu nhìn dữ liệu như một cây tổng
-quát, ta có thể viết DP trên cây nhưng độ phức tạp cao. Quan sát thêm rằng
-mỗi món chính có nhiều nhất hai phụ kiện và phụ kiện không có con, ta gom mỗi
-món chính cùng phụ kiện thành một nhóm lựa chọn nhỏ. Khi đó bài toán trở lại
-gần với ba lô \(0\)-\(1\), đơn giản và nhanh hơn.
+\section{Kế hoạch mua sắm của Jinming}
 
-\section{Vai trò trong mô hình hóa}
+\subsection{Bản cơ bản}
 
-Tổ chức dữ liệu không chỉ là chi tiết cài đặt. Khi đặt lại quan hệ cha con,
-thứ tự duyệt, nhóm đối tượng hoặc lớp tương đương, ta có thể phát hiện chuyển
-trạng thái ngắn hơn, giảm số chiều DP, hoặc biến đồ thị khó xử lý thành một
-cấu trúc quen thuộc như cây, dãy hoặc các nhóm độc lập.
+Có \(N\) món đồ, mỗi món có giá và lợi ích. Món chính có thể mua trực tiếp;
+phụ kiện chỉ được mua nếu món chính của nó đã được mua. Trong bản cơ bản,
+mỗi món chính có nhiều nhất hai phụ kiện và phụ kiện không có cấp dưới. Cần
+tối đa hóa tổng lợi ích dưới giới hạn ngân sách \(M\).
+
+Cách nhìn đầu tiên là cây: thêm một ``siêu món chính'' làm gốc giả, rồi làm
+DP trên cây. Nếu \(c_1,\ldots,c_k\) là các con của \(a\), đặt
+\[
+  f[a][b]=\text{lợi ích lớn nhất trong cây con gốc }a
+  \text{ với chi phí không quá }b.
+\]
+Chuyển trạng thái thô phải phân phối ngân sách cho mọi con:
+\[
+  f[a][b]=
+  \Max_{\sum b_i=b-\mathit{cost}[a]}
+  \{f[c_1][b_1]+\cdots+f[c_k][b_k]\}+\mathit{score}[a].
+\]
+Nếu đổi cây tổng quát sang biểu diễn con trái, anh em phải, ta vẫn phải liệt
+kê số tiền dành cho con trái, nên độ phức tạp là \(\Oh(NM^2)\).
+
+Tận dụng điều kiện đặc biệt tốt hơn nhiều. Mỗi nhóm gồm một món chính và tối
+đa hai phụ kiện có nhiều nhất năm phương án: không mua gì, chỉ mua món chính,
+mua món chính với từng phụ kiện, hoặc mua cả ba món. Khi đó mỗi nhóm trở
+thành một đối tượng của ba lô \(0\)-\(1\):
+\[
+  F[i][j]=
+  \max_k\{F[i-1][j-\mathit{cost}[i][k]]
+       +\mathit{weight}[i][k]\},
+\]
+với \(1\le k\le 5\). Số trạng thái \(\Oh(NM)\), chi phí chuyển hằng số, nên
+thuật toán đạt \(\Oh(NM)\).
+
+\subsection{Bản nhiều phụ kiện}
+
+Khi một món chính có thể có tùy ý nhiều phụ kiện nhưng phụ kiện vẫn không có
+phụ kiện cấp dưới, cách gom thành năm phương án không còn dùng được. Thuật
+toán cây \(\Oh(NM^2)\) vẫn đúng, nhưng slide đưa ra cách tổ chức lại dữ liệu:
+sắp các món thành một dãy sao cho mỗi phụ kiện đứng ngay sau món chính của
+nó, và món chính gần nhất phía bên trái chính là món mà nó phụ thuộc.
+
+Sau khi sắp thứ tự như vậy, điều kiện mua một phụ kiện chỉ còn phụ thuộc vào
+việc món chính gần nhất trước nó đã được mua chưa. Đặt
+\[
+  F[i][j][k]
+\]
+là lợi ích lớn nhất khi xét từ món \(i\) đến cuối dãy, dùng không quá \(j\)
+tiền, trong đó \(k=1\) nghĩa là món chính gần nhất phía trước đã được mua.
+Nếu món \(i\) là món chính:
+\[
+  F[i][j][k]=
+  \Max\{F[i+1][j-\mathit{cost}[i]][1]+\mathit{weight}[i],
+        F[i+1][j][0]\}.
+\]
+Nếu món \(i\) là phụ kiện, khi \(k=1\) ta có thể mua hoặc bỏ, còn khi \(k=0\)
+thì buộc phải bỏ. Bài toán cây đã được biến thành bài toán trên dãy với thời
+gian \(\Oh(NM)\).
+
+\subsection{Bản nhiều cấp phụ kiện}
+
+Khi phụ kiện có thể có nhiều cấp, quan hệ vừa rộng vừa sâu. Điểm gợi ý từ
+bản trước là không nhất thiết giữ nguyên hình thái cây. Lấy thứ tự tiền thứ
+tự của cây, đồng thời tính \(\mathit{count}[u]\), số đỉnh trong cây con gốc
+\(u\). Trong dãy tiền thứ tự, toàn bộ cây con của một đỉnh là một đoạn liên
+tiếp.
+
+Kết luận then chốt là: nếu không mua gốc của một cây con thì mọi đỉnh trong
+cây con đó đều không cần xét. Vì vậy đặt
+\[
+  F[i][j]=\text{lợi ích lớn nhất từ vị trí }i\text{ đến cuối dãy,
+  với ngân sách }j.
+\]
+Với đỉnh \(u=\mathit{list}[i]\), có hai lựa chọn:
+\[
+  F[i][j]=
+  \Max\{
+    F[i+1][j-\mathit{cost}[u]]+\mathit{weight}[u],
+    F[i+\mathit{count}[u]][j]
+  \}.
+\]
+Nếu mua \(u\), ta xét vị trí kế tiếp; nếu không mua \(u\), ta nhảy qua toàn
+bộ cây con của nó. Đây là ví dụ điển hình cho việc dùng thứ tự tiền thứ tự để
+thay một DP cây nhiều phép phân phối bằng DP dãy gọn hơn, vẫn \(\Oh(NM)\).
+
+\section{Quả trên cây}
+
+Cho cây có gốc, mỗi đỉnh có trọng số. Với mỗi đỉnh cần đếm:
+\begin{enumerate}
+  \item số đỉnh trong cây con có trọng số lớn hơn;
+  \item số đỉnh ngoài phần hậu duệ có trọng số lớn hơn;
+  \item số đỉnh trên đường từ gốc tới nó có trọng số lớn hơn.
+\end{enumerate}
+
+Hai đại lượng sau có cách làm tương đối trực tiếp: đại lượng ngoài cây con có
+thể lấy tổng số đỉnh lớn hơn rồi trừ phần trong cây con; đại lượng trên đường
+gốc--đỉnh có thể dùng Fenwick hoặc cây đoạn trong DFS, thêm đỉnh khi đi xuống
+và xóa khi quay lui.
+
+Khó khăn chính là thống kê trong cây con. Dùng thứ tự tiền thứ tự, cây con
+của mỗi đỉnh trở thành một đoạn liên tiếp trên dãy. Khi đó có hai cách tổ
+chức:
+\begin{itemize}
+  \item Dùng cây đoạn, mỗi nút lưu danh sách trọng số đã sắp. Một truy vấn
+  đoạn phân rã thành \(\Oh(\log N)\) nút, rồi tìm kiếm nhị phân trong từng
+  danh sách. Tổng thời gian \(\Oh(N\log^2 N)\), bộ nhớ \(\Oh(N\log N)\).
+  \item Sắp các đỉnh theo trọng số giảm dần. Trước khi chèn đỉnh hiện tại vào
+  Fenwick trên thứ tự tiền thứ tự, truy vấn đoạn cây con của nó. Các đỉnh đã
+  chèn đều có trọng số lớn hơn, nên kết quả chính là đáp án cần tìm. Tổng
+  thời gian \(\Oh(N\log N)\).
+\end{itemize}
+Điểm thứ hai cho thấy tổ chức lại \emph{thứ tự thao tác} có thể giảm một
+nhân tử logarit.
+
+\section{Quy hoạch đường bay}
+
+Bài toán cho một đồ thị vô hướng liên thông chịu các thao tác xóa cạnh và
+truy vấn: giữa \(A\) và \(B\) có bao nhiêu cạnh then chốt, tức cạnh mà nếu
+xóa đi thì \(A\) và \(B\) không còn liên thông. Cạnh then chốt chính là cầu.
+
+Trước hết co mỗi thành phần hai cạnh liên thông thành một đỉnh. Đồ thị co là
+một cây; nếu \(A,B\) nằm trong hai thành phần khác nhau, đáp án là khoảng
+cách giữa hai đỉnh tương ứng trên cây:
+\[
+  \Dis(A,B)=\Depth[A]+\Depth[B]-2\Depth[\LCA(A,B)].
+\]
+
+Khó ở chỗ đồ thị thay đổi do thao tác xóa cạnh. Nếu đảo chiều thời gian, xóa
+cạnh biến thành thêm cạnh. Trên cây co, thêm một cạnh tạo thành chu trình;
+mọi cầu trên chu trình ấy không còn là cầu nữa, nên các đỉnh trên chu trình
+được hợp nhất thành một thành phần hai cạnh liên thông mới. Với cạnh thêm
+\(AB\), đặt \(T=\LCA(A,B)\), ta chỉ cần xử lý hai đường \(A\to T\) và
+\(B\to T\).
+
+Các slide vì vậy kết hợp ba lần tổ chức dữ liệu: co đồ thị thành cây, đảo
+thứ tự thời gian để biến xóa thành thêm, rồi dùng thứ tự Euler hoặc tiền thứ
+tự để biến thao tác trên cây con thành thao tác trên đoạn.
+
+\section{Tổng kết}
+
+Mô hình đầu tiên nghĩ ra không nhất thiết là mô hình tốt nhất. Trong ví dụ
+Jinming, DP cây phải liệt kê cách phân bổ ngân sách cho các nhánh; khi chuyển
+sang dãy tiền thứ tự, ngân sách chưa dùng tự nhiên được dành cho phần sau của
+dãy. Trong ví dụ quả trên cây, một truy vấn cây con trở thành truy vấn đoạn.
+Trong ví dụ đường bay, đồ thị động khó xử lý được đổi thành quá trình thêm
+cạnh theo thời gian đảo.
+
+Bài học của slide là: khi gặp quan hệ dữ liệu phức tạp, hãy hỏi dữ liệu nên
+được đặt theo hình thức nào, thứ tự nào, và có thể đổi chiều thời gian hoặc
+đổi đơn vị xử lý hay không.
 
 \end{document}

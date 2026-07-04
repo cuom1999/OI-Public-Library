@@ -4,6 +4,7 @@
 \usepackage{oipl-vn}
 
 \newcommand{\Oh}{\mathcal{O}}
+\newcommand{\cost}{\operatorname{cost}}
 
 \title{Bản trình chiếu: Biến đổi và bất biến trong bài toán}
 \author{Chen Xue}
@@ -12,41 +13,188 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for change and invariance in problems}
+\origtitle{Biến đổi và bất biến trong bài toán}
 \sourcepath{IOI China candidate team papers / 2007 / day 2 / Chen Xue.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Dẫn nhập}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ PDF. Bản ghi chú này tập
-trung vào kỹ thuật tìm đại lượng bất biến để thay thế việc mô phỏng nhiều
-biến thay đổi.
+Trong thi tin học, nhiều bài toán thực chất là quá trình tìm, cập nhật hoặc
+duy trì các biến. Biến có thể là biến vòng lặp, biến tích lũy, biến quyết
+định, hoặc những thông tin được lưu trong cấu trúc dữ liệu như cây cân bằng,
+ngăn xếp và hàng đợi.
 
-\section{Từ biến đến bất biến}
+Khi quy mô lớn, chỉ riêng việc duy trì mọi biến thay đổi trực tiếp đã có thể
+vượt giới hạn thời gian và bộ nhớ. Tư tưởng của slide là tìm phần ``không
+đổi'' ẩn trong các biến: gom nhiều biến thành tập, tổng, tích, quan hệ thứ
+tự, hoặc một biểu thức ít thay đổi hơn. Khi tìm đúng đại lượng bất biến, bài
+toán mô phỏng có thể chuyển thành bài toán tính trực tiếp.
 
-Nhiều bài toán có vẻ yêu cầu duy trì rất nhiều trạng thái thay đổi theo thời
-gian. Nếu mô phỏng trực tiếp, số thao tác hoặc số trạng thái có thể quá lớn.
-Ta cần tìm một đại lượng hoặc một tập đại lượng không đổi dưới các phép biến
-đổi của bài toán.
+\section{Ví dụ 1: Ants}
 
-\section{Ví dụ kiến}
+Có nhiều con kiến bò trên đoạn thẳng dài \(l\) cm với vận tốc \(1\) cm/s. Khi
+đến đầu mút thì kiến rơi xuống. Khi hai con kiến gặp nhau, chúng lập tức quay
+đầu. Biết \(l\) và vị trí ban đầu của từng con kiến, nhưng không biết hướng
+đi ban đầu. Hỏi thời điểm sớm nhất và muộn nhất mà tất cả kiến đều rơi xuống.
+Số kiến có thể tới \(1\,000\,000\).
 
-Trong bài kiến bò trên đoạn thẳng, mỗi lần hai con kiến gặp nhau rồi quay đầu
-có thể được nhìn như hai con kiến đi xuyên qua nhau và trao đổi danh tính.
-Với tập các vị trí và hướng chuyển động, va chạm không làm thay đổi tập kết
-quả. Vì vậy thời điểm rơi sớm nhất và muộn nhất được suy ra trực tiếp từ
-khoảng cách tới hai đầu mút, không cần mô phỏng \(O(n^2)\) lần gặp.
+Nếu liệt kê hướng ban đầu, có \(2^n\) trường hợp. Nếu đã biết hướng rồi mà
+vẫn mô phỏng va chạm, số lần gặp nhau có thể đạt \(\Oh(n^2)\). Biến khó duy
+trì nhất là hướng của từng con kiến sau mỗi lần gặp.
 
-\section{Kỹ thuật nhận diện}
+Xét hai con kiến \(A,B\) gặp nhau tại vị trí \(X\). Ngay trước va chạm, tập
+thông tin vận tốc-vị trí của chúng là
+\[
+  U=\{(1,X),(-1,X)\}.
+\]
+Ngay sau va chạm,
+\[
+  U'=\{(-1,X),(1,X)\}.
+\]
+Hai tập bằng nhau. Nếu không gắn danh tính cho kiến, sự kiện ``quay đầu''
+tương đương với việc hai con kiến đi xuyên qua nhau và đổi tên. Vì vậy mọi
+va chạm trong tập kiến không làm thay đổi tập các cặp vận tốc-vị trí.
 
-Các slide nhấn mạnh việc gom biến thành tập, tổng, tích, parity hoặc một quan
-hệ thứ tự. Nếu phép biến đổi chỉ hoán đổi nhãn, bảo toàn tổng, bảo toàn tính
-chẵn lẻ hoặc giữ một thứ tự ẩn, ta có thể chuyển bài toán từ duy trì quá trình
-sang tính kết quả sau cùng.
+Do đó tập thời điểm rơi xuống chính là
+\[
+  T=\{\text{thời gian để kiến }i\text{ đi theo hướng ban đầu tới một đầu mút}\}.
+\]
+Để thời điểm tất cả rơi là sớm nhất, cho mỗi kiến đi về đầu mút gần hơn, rồi
+lấy giá trị lớn nhất. Để thời điểm muộn nhất, cho mỗi kiến đi về đầu mút xa
+hơn. Thuật toán chỉ cần duyệt các vị trí một lần, đạt \(\Oh(n)\), cũng là
+cận dưới vì phải đọc đầu vào.
+
+\section{Bài học từ ví dụ kiến}
+
+Điểm mấu chốt là bỏ danh tính cá thể. Hướng của từng con kiến thay đổi liên
+tục, nhưng tập các chuyển động không đổi dưới phép va chạm. Đây là một mẫu
+rất thường gặp: nếu phép biến đổi chỉ hoán đổi nhãn, ta nên mô tả hệ bằng
+tập hoặc đa tập thay vì mô tả từng phần tử có tên.
+
+Các đại lượng bất biến có thể là parity, tổng, tích, đa tập, thứ tự tương
+đối, hoặc giá trị của một hàm trên trạng thái. Câu hỏi thực dụng khi đọc đề
+là: sau mỗi thao tác, điều gì thật sự thay đổi, và điều gì chỉ đổi cách biểu
+diễn?
+
+\section{Ví dụ 2: Navigation Game}
+
+Bài toán cho một lưới \(N\times M\). Từ một bến xuất phát ở hàng cuối, con
+thuyền cần đi tới một bến ở hàng đầu. Thuyền chỉ đi trái, phải hoặc lên; không
+được đi vào đất liền trừ khi cập bến; đã rời một ô thì không quay lại. Đi lên
+tốn một đơn vị thời gian. Nếu trước đó đã đi ngang liên tiếp \(x\) lần, bước
+ngang tiếp theo tốn \(x+1\). Trên biển còn có chướng ngại \(O\), ô số phận
+\(F\) phải đi qua lẻ lần, đá chúc phúc \(B\) đi vào không tốn thời gian, và
+bùa bão \(S\) làm chi phí bình thường bị nhân đôi. Giới hạn là
+\(N,M\le 1000\).
+
+Trạng thái DP cơ bản là \(f_{t,i,j}\): chi phí nhỏ nhất để đến ô \((i,j)\)
+với parity số ô \(F\) đã đi qua là \(t\). Khi chuyển từ hàng \(i+1\) lên hàng
+\(i\), chọn một cột \(k\) rồi đi ngang trong hàng \(i\):
+\[
+  f_{t,i,j}=
+  \min_k\{f_{t',i+1,k}+C_{i,k}+\cost(i,k,j)\}.
+\]
+Nếu không có \(B,S\), chi phí ngang từ \(k\) tới \(j\) là
+\[
+  \cost(i,k,j)=\frac{|j-k|(|j-k|+1)}2,
+\]
+và chuyển trạng thái trở thành dạng tối ưu hóa độ dốc quen thuộc. Khi chỉ xét
+từ trái sang phải, đặt \(U_j=f_{t,i,j}\), \(V_k=f_{t',i+1,k}+C_{i,k}\), ta có
+\[
+  U_j=\min_k\left\{V_k+\frac{(j-k)(j-k+1)}2\right\}.
+\]
+So sánh hai quyết định \(k,l\) đưa tới một điều kiện về hệ số góc của các
+điểm
+\[
+  X_k=2V_k+k(k-1),\qquad Y_k=2k.
+\]
+Vì vậy có thể duy trì bao lồi dưới bằng hàng đợi và trả lời các quyết định
+tối ưu trong thời gian khấu hao hằng số.
+
+\section{Giữ bất biến trong Navigation Game}
+
+Khó khăn là các ô \(B\) và \(S\). Chi phí \(\cost(i,k,j)\) không còn chỉ là
+tam giác đơn giản, vì mỗi bước ngang có thể bị xóa chi phí hoặc nhân đôi. Tuy
+nhiên với \(k\) cố định và \(j\) tăng, nó vẫn có dạng
+\[
+  \cost(i,k,j)=\frac{(j-k+1)(j-k)}2+a(j-k)+b.
+\]
+Khi ô mới không đặc biệt, \(a,b\) cập nhật theo một cách; khi là \(B\), hệ số
+\(a\) giảm; khi là \(S\), hệ số \(a\) tăng. Ý nghĩa của \(a\) là tổng ảnh
+hưởng của các ô \(S\) trừ các ô \(B\) trên đoạn đang xét.
+
+Thay vì cố duy trì riêng mọi \(\cost(i,k,j)\), slide điều chỉnh biến
+\(g_{t',i,k}\) để hấp thụ phần \(b\). Khi đó với một trạng thái \(f_{t,i,j}\),
+các hệ số \(a,b\) được xem như cố định, và bất đẳng thức so sánh hai quyết
+định vẫn có dạng độ dốc:
+\[
+ \frac{(2g_k+k(k-1))-(2g_l+l(l-1))}{2(k-l)}
+ < j-\frac a2.
+\]
+Mỗi lần \(j\) tăng, vế phải vẫn không giảm, vì \(a\) chỉ thay đổi một đơn vị
+theo ô \(B/S\). Do đó hàng đợi bao lồi vẫn hợp lệ. Làm tương tự cho hướng
+phải sang trái, tổng độ phức tạp trở thành \(\Oh(NM)\).
+
+Thông điệp của ví dụ này là không phải lúc nào đại lượng bất biến cũng hiện
+ra dưới dạng ``không đổi tuyệt đối''. Đôi khi ta cần chuyển một phần biến
+đổi sang biến khác để giữ nguyên hình dạng toán học của chuyển trạng thái.
+
+\section{Ví dụ 3: Circular Railway}
+
+Trên đường ray tròn dài \(L\) có \(n\) điểm loại \(A\) và \(n\) điểm loại
+\(B\). Cần ghép mỗi điểm \(A\) với một điểm \(B\) sao cho tổng khoảng cách
+ngắn nhất trên vòng tròn là nhỏ nhất. Giới hạn \(n\le 50000\), nên không thể
+dùng ghép cặp trọng số tổng quát.
+
+Sắp \(A_1,\ldots,A_n\) và \(B_1,\ldots,B_n\) theo chiều kim đồng hồ, đồng
+thời nhân đôi dãy \(B\) để xử lý vòng tròn. Tính chất quan trọng là trong
+ghép tối ưu, hai cạnh ghép không cắt nhau. Nếu có hai cạnh \(A_i-B_v\) và
+\(A_j-B_u\) cắt nhau, đổi thành \(A_i-B_u\) và \(A_j-B_v\) không làm tổng
+chi phí tăng. Vì vậy nếu \(A_1\) ghép với \(B_k\), thì \(A_i\) sẽ ghép với
+\(B_{k+i-1}\).
+
+Thuật toán \(\Oh(n^2)\) là thử mọi \(k\) và tính tổng
+\[
+  \sum_i C_i,\qquad C_i=\operatorname{dist}(A_i,B_{k+i-1}).
+\]
+Nhưng trực tiếp tính mọi \(C_i\) vẫn quá đắt. Cần tìm đại lượng ít thay đổi
+khi \(k\) tăng.
+
+\section{Các ``hằng lượng'' trong Circular Railway}
+
+Khoảng cách ngắn nhất giữa \(A_i\) và \(B_j\) thuộc một trong bốn dạng:
+\[
+  A_i-B_j,\qquad B_j-A_i,\qquad L+A_i-B_j,\qquad L+B_j-A_i,
+\]
+tùy vị trí tương đối và việc đi theo cung ngắn hơn. Mỗi dạng có thể viết
+thành
+\[
+  C_i=f(A_i)+g(B_j).
+\]
+Khi \(k\) tăng từ \(1\) đến \(n\), với mỗi \(A_i\), giá trị \(f(A_i)\) chỉ
+đổi ở vài ngưỡng nơi \(B_j\) đi qua \(A_i\) hoặc đi qua điểm cách nửa vòng.
+Tương tự \(g(B_j)\) cũng chỉ đổi vài lần. Vì vậy từng hạng tử không còn được
+xem là biến phức tạp; nó được mô tả bằng một số hữu hạn sự kiện.
+
+Tiền xử lý các thời điểm sự kiện bằng hai con trỏ trên hai dãy đã sắp. Khi
+duyệt \(k=1..n\), ta cập nhật tổng hiện tại bằng các sự kiện xảy ra ở thời
+điểm \(k\), rồi lấy giá trị nhỏ nhất. Tổng số sự kiện không quá hằng số nhân
+\(n\), nên độ phức tạp là
+\[
+  \Oh(n\log n+n),
+\]
+trong đó phần \(\Oh(n\log n)\) đến từ sắp xếp.
 
 \section{Kết luận}
 
-Tư duy bất biến đặc biệt hữu ích trong các bài mô phỏng, trò chơi, cấu trúc
-di chuyển và biến đổi dãy. Câu hỏi thực dụng là: sau mỗi thao tác, điều gì
-thật sự thay đổi, và điều gì chỉ đổi cách biểu diễn?
+Ba ví dụ minh họa ba kiểu tìm bất biến:
+\begin{itemize}
+  \item Ants: bỏ danh tính cá thể để thấy va chạm chỉ hoán đổi nhãn;
+  \item Navigation Game: đổi biến để giữ nguyên dạng chuyển trạng thái tối ưu
+  hóa độ dốc;
+  \item Circular Railway: tách chi phí thành các phần chỉ đổi tại một số ít
+  sự kiện.
+\end{itemize}
+Kỹ thuật chung là quan sát kỹ thao tác biến đổi, mạnh dạn đoán đại lượng thật
+sự cần duy trì, rồi chứng minh đại lượng ấy đủ để suy ra đáp án.
 
 \end{document}

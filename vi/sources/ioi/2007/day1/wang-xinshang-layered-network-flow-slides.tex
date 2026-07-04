@@ -5,59 +5,176 @@
 
 \newcommand{\Oh}{\mathcal{O}}
 \newcommand{\level}{\operatorname{level}}
+\newcommand{\throughput}{\operatorname{throughput}}
+\newcommand{\inftycap}{\mathrm{INF}}
 
-\title{Bản trình chiếu: Thuật toán luồng mạng dựa trên phân tầng}
+\title{Các thuật toán luồng mạng dựa trên tư tưởng phân tầng}
 \author{Wang Xinshang}
 \date{2007}
 
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for layered network-flow algorithms}
+\origtitle{Layered network-flow algorithms}
 \sourcepath{IOI China candidate team papers / 2007 / day 1 / Wang Xinshang.ppt}
 
-\section{Phạm vi bản dịch}
+\section*{Tóm tắt}
 
-Tệp PowerPoint đi kèm bài viết đã được dịch từ PDF về các thuật toán luồng
-mạng dựa trên đồ thị phân tầng. Bản ghi chú này giữ lại các khái niệm và mạch
-thuật toán chính của slide.
+Bản trình chiếu giới thiệu ba thuật toán luồng cực đại dựa trên đồ thị phân
+tầng: MPLA, Dinic và MPM. Tư tưởng chung là dùng BFS trên đồ thị dư để lấy
+các mức, chỉ xét các cạnh đi từ mức \(i\) sang mức \(i+1\), rồi trong đồ thị
+phân tầng ấy tìm một luồng chặn. Sau mỗi pha, đường tăng luồng ngắn nhất trở
+nên dài hơn, nên số pha bị chặn bởi số đỉnh.
 
-\section{Đồ thị dư và mức}
+\paragraph{Từ khóa.}
+Đồ thị phân tầng; đồ thị dư; luồng chặn; MPLA; Dinic; MPM.
 
-Với một luồng hiện tại, đồ thị dư biểu diễn lượng luồng còn có thể đẩy thêm
-theo cạnh thuận và lượng luồng có thể hoàn lại theo cạnh ngược. Chạy BFS từ
-nguồn trên đồ thị dư cho ta mức của mỗi đỉnh:
+\section{Đồ thị dư}
+
+Cho mạng luồng \(G=(V,E)\), nguồn \(s\), đích \(t\), sức chứa \(c\) và luồng
+hiện tại \(f\). Với mỗi cạnh \((u,v)\), đồ thị dư có:
+\begin{itemize}
+  \item cạnh thuận \((u,v)\) có dung lượng dư \(c(u,v)-f(u,v)\), nếu giá trị
+  này dương;
+  \item cạnh ngược \((v,u)\) có dung lượng dư \(f(u,v)\), nếu giá trị này
+  dương.
+\end{itemize}
+Mỗi đường từ \(s\) tới \(t\) trong đồ thị dư là một đường tăng luồng. Lượng
+có thể tăng trên đường ấy là dung lượng dư nhỏ nhất của các cạnh trên đường.
+
+\section{Mức và đồ thị phân tầng}
+
+Trong đồ thị dư, mức của một đỉnh là khoảng cách ngắn nhất từ nguồn:
 \[
-  \level(u)=\text{độ dài đường ngắn nhất từ nguồn tới }u.
+  \level(u)=\operatorname{dist}_{G_f}(s,u).
 \]
-Đồ thị phân tầng chỉ giữ các cạnh dư \((u,v)\) thỏa
+Nguồn có mức \(0\). Đồ thị phân tầng chỉ giữ các cạnh dư \((u,v)\) thỏa
 \[
   \level(v)=\level(u)+1.
 \]
+Vì vậy mọi đường từ nguồn trong đồ thị phân tầng đều là một đường ngắn nhất
+trong đồ thị dư tới đỉnh cuối của nó.
 
-\section{Luồng chặn}
+\term{Luồng chặn} của một đồ thị phân tầng là một luồng làm cho trong đồ thị
+phân tầng không còn đường tăng luồng từ \(s\) tới \(t\). Luồng chặn chưa chắc
+là luồng cực đại của toàn mạng; nó chỉ chặn hết các đường tăng luồng ngắn
+nhất của pha hiện tại.
 
-Trong một pha, thuật toán tìm luồng chặn trên đồ thị phân tầng, tức đẩy luồng
-cho tới khi không còn đường từ nguồn tới đích chỉ đi qua các cạnh tăng mức.
-Sau pha đó, độ dài đường tăng luồng ngắn nhất trong đồ thị dư tăng lên, nên
-số pha bị chặn bởi số đỉnh.
+\section{MPLA}
 
-\section{Các thuật toán}
+Thuật toán tăng theo đường ngắn nhất, được slide gọi là MPLA, lặp các bước:
+\begin{enumerate}
+  \item khởi tạo hoặc cập nhật đồ thị dư;
+  \item chạy BFS để tính mức và đồ thị phân tầng; nếu không tới được đích,
+  thuật toán kết thúc;
+  \item trong đồ thị phân tầng, liên tục dùng BFS tìm đường tăng luồng và
+  tăng luồng cho tới khi không còn đường;
+  \item quay lại bước 2.
+\end{enumerate}
+Một lần thực hiện bước 2 và 3 là một pha.
 
-Slide nhắc ba tên chính: MPLA, Dinic và MPM. Dinic là thuật toán quen thuộc
-nhất trong thi lập trình: mỗi pha dựng mức bằng BFS, sau đó DFS nhiều lần
-trên đồ thị phân tầng để tìm luồng chặn. Con trỏ hiện tại giúp bỏ qua cạnh đã
-hết khả năng, làm cài đặt nhanh hơn.
+Sau khi tìm được luồng chặn trong một pha, mọi đường tăng luồng có độ dài
+bằng độ dài ngắn nhất cũ đã bị chặn. Các cạnh ngược mới sinh ra đi từ lớp sâu
+về lớp nông hơn, nên nếu còn đường tăng luồng thì đường ngắn nhất mới phải
+dài hơn. Vì độ dài đường đơn không vượt quá \(n-1\), số pha không vượt quá
+\(n\).
 
-MPM và các biến thể khác cũng dựa trên cùng quan điểm phân tầng, nhưng chọn
-cách tính luồng chặn khác. Khi cần một cài đặt ổn định trong thi, Dinic
-thường là lựa chọn đầu tiên.
+Trong một pha của MPLA, mỗi lần tăng luồng làm bão hòa ít nhất một cạnh tầng,
+nên số lần tăng không vượt quá \(m\). Nhưng mỗi lần lại tìm đường bằng BFS,
+vì thế tổng độ phức tạp thô là \(\Oh(nm^2)\). Đây là lý do MPLA thường chỉ
+phù hợp với dữ liệu nhỏ hoặc dùng làm bước dẫn nhập.
 
-\section{Ứng dụng}
+\section{Dinic}
 
-Tư tưởng phân tầng đặc biệt hữu ích khi mô hình mạng có nhiều cạnh nhưng các
-đường tăng luồng ngắn mang nhiều thông tin. Các bài ghép cặp, phủ, chọn đối
-tượng dưới ràng buộc và nhiều mô hình cắt cực tiểu có thể dùng Dinic như một
-thành phần trung tâm sau bước dựng mạng.
+Dinic giữ cùng khung phân tầng, nhưng thay bước tìm đường lặp lại bằng DFS để
+tìm luồng chặn trong một pha. Các bước là:
+\begin{enumerate}
+  \item BFS trên đồ thị dư để tính \(\level\);
+  \item nếu không tới được \(t\), kết thúc;
+  \item DFS chỉ đi qua cạnh thỏa \(\level(v)=\level(u)+1\), đẩy luồng cho
+  tới khi đồ thị tầng không còn đường từ \(s\) tới \(t\);
+  \item bắt đầu pha mới.
+\end{enumerate}
+
+Khi DFS đi tới một đỉnh không còn cạnh hợp lệ ra ngoài, đỉnh ấy bị xem là
+cụt trong pha hiện tại và có thể bỏ qua về sau. Cài đặt thường dùng mảng
+``cạnh hiện tại'' để mỗi cạnh tầng chỉ bị duyệt một số lần nhỏ. Khi tìm được
+một đường tới \(t\), ta tăng luồng bằng giá trị nhỏ nhất trên đường và xóa
+hiệu quả những cạnh đã bão hòa khỏi pha.
+
+Số pha của Dinic vẫn không vượt quá \(n\). Trong một pha, chi phí tìm luồng
+chặn được chặn bởi \(\Oh(mn)\) theo phân tích tổng quát trong slide: có nhiều
+nhất \(m\) lần bão hòa cạnh, mỗi đường dài không quá \(n\), và các bước lùi
+do đỉnh cụt cũng bị chặn. Vì vậy độ phức tạp tổng quát là
+\[
+  \Oh(mn^2).
+\]
+Trên mạng hai phía hoặc mạng dung lượng nguyên nhỏ, Dinic thường nhanh hơn
+đáng kể so với cận xấu nhất này.
+
+\section{Ứng dụng: lợi nhuận lớn nhất}
+
+Slide dùng bài NOI 2006 \textit{profit} để minh họa mô hình cắt tối thiểu.
+Có \(N\) trạm, xây trạm \(i\) tốn \(P_i\). Có \(M\) nhóm người dùng; nhóm
+\(j\) cần hai trạm \(A_j,B_j\) và đem lại lợi nhuận \(C_j\). Cần chọn trạm
+và nhóm phục vụ để lợi nhuận ròng lớn nhất.
+
+Dựng mạng:
+\begin{itemize}
+  \item nguồn nối tới đỉnh nhóm \(X_j\) bằng cạnh sức chứa \(C_j\);
+  \item đỉnh trạm \(Y_i\) nối tới đích bằng cạnh sức chứa \(P_i\);
+  \item nếu nhóm \(j\) cần trạm \(A_j\) và \(B_j\), nối
+  \(X_j\to Y_{A_j}\), \(X_j\to Y_{B_j}\) với sức chứa \(\inftycap\).
+\end{itemize}
+Một lát cắt hữu hạn không thể cắt cạnh \(\inftycap\), nên nếu chọn lợi nhuận
+của một nhóm thì bắt buộc phải chọn cả hai trạm. Đáp án là
+\[
+  \sum_{j=1}^{M} C_j-\operatorname{maxflow}.
+\]
+Các số liệu trong bài gốc cho thấy MPLA dễ quá chậm trên test lớn, còn Dinic
+vượt qua nhanh và cài đặt ngắn hơn nhiều biến thể đẩy luồng trước.
+
+\section{Ứng dụng: trò chơi ma trận}
+
+Bài ví dụ thứ hai hỏi có tồn tại ma trận \(0\)-\(1\) với tổng hàng
+\(R_i\), tổng cột \(C_j\), và một số ô bị cấm. Mô hình luồng trực tiếp là:
+\begin{itemize}
+  \item nguồn nối tới mỗi hàng \(X_i\) với sức chứa \(R_i\);
+  \item mỗi cột \(Y_j\) nối tới đích với sức chứa \(C_j\);
+  \item nếu ô \((i,j)\) không bị cấm, nối \(X_i\to Y_j\) với sức chứa \(1\).
+\end{itemize}
+Có lời giải khi và chỉ khi luồng cực đại bằng \(\sum_i R_i=\sum_j C_j\).
+Mạng có thể có \(\Oh(nm)\) cạnh, nên thuật toán luồng phải đủ mạnh. Slide
+nhấn mạnh rằng Dinic kết hợp một số kiểm tra tham lam đơn giản có thể xử lý
+tốt hơn nhiều so với thuật toán tăng đường ngắn nhất thô.
+
+\section{MPM}
+
+MPM cũng làm việc theo pha trên đồ thị phân tầng, nhưng chọn cách tìm luồng
+chặn khác Dinic. Với một đỉnh \(u\ne s,t\), định nghĩa thông lượng:
+\[
+  \throughput(u)=
+  \min\left(
+    \sum_{(v,u)} g(v,u),
+    \sum_{(u,w)} g(u,w)
+  \right).
+\]
+Đây là lượng luồng tối đa có thể đi xuyên qua \(u\) nếu chỉ xét tổng dung
+lượng vào và ra trong đồ thị tầng.
+
+Trong một pha, MPM chọn đỉnh có thông lượng nhỏ nhất, đẩy lượng luồng tương
+ứng từ đỉnh đó ngược về nguồn và xuôi tới đích, rồi xóa đỉnh hoặc cạnh đã
+nghẽn khỏi đồ thị tầng. Lặp quá trình này cho tới khi không còn đường từ
+\(s\) tới \(t\), ta thu được luồng chặn. Cách cài đặt chi tiết phức tạp hơn
+Dinic, nhưng cùng dựa trên nhận xét rằng một pha chỉ cần xử lý đồ thị các
+đường ngắn nhất hiện tại.
+
+\section{Kết luận}
+
+Tư tưởng phân tầng giúp tách thuật toán luồng thành các pha rõ ràng. MPLA dễ
+hiểu nhưng chậm; Dinic là lựa chọn thực dụng trong thi lập trình vì ngắn,
+ổn định và nhanh trên nhiều mô hình; MPM cho một hướng khác để tìm luồng chặn
+nhưng thường khó cài hơn. Khi một bài toán có thể dựng thành cắt tối thiểu
+hoặc ghép hai phía có dung lượng, Dinic là công cụ nên nghĩ tới đầu tiên.
 
 \end{document}
