@@ -39,7 +39,6 @@ COMPANION_NOTE_SOURCES = {
     "数据结构 DATA STRUCTURE/Link Cut Trees.pdf",
     "图论 GRAPH THEORY/Making Graphs into Trees - immortalCO, WrongAnswer.pdf",
     "图论 GRAPH THEORY/经典网络流教程.pdf",
-    "图论 GRAPH THEORY/区间图、弦图和完美图.pdf",
     "英文资料 ENGLISH MATERIALS/Game Theory - Thomas S. Ferguson.pdf",
     "数据结构 DATA STRUCTURE/后缀自动机 - 陈立杰.pdf",
     "其他 OTHERS/C++的pb-ds库在OI中的应用 - 于纪平.pdf",
