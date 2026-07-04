@@ -34,7 +34,6 @@ REFERENCE_NOTE_SOURCES = {
 }
 COMPANION_NOTE_SOURCES = {
     "IOI中国国家候选队论文/2000/骆骥论文.pdf",
-    "IOI中国国家候选队论文/1999/陈宏.pdf",
     "IOI中国国家候选队论文/1999/来煜坤.pdf",
     "IOI中国国家候选队论文/2001/刘汝佳(不完整).pdf",
     "IOI中国国家候选队论文/2004/鬲融.pdf",
