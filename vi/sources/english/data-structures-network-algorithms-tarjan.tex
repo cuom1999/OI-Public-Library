@@ -1159,6 +1159,115 @@ ta xây đồ thị mức và tìm một luồng chặn để loại bỏ cả m
 ngắn nhất. Sách cũng bàn cách tìm luồng chặn và chuyển sang luồng chi phí nhỏ
 nhất, nơi ngoài giá trị luồng còn cần tối ưu tổng chi phí.
 
+\subsection*{Luồng, lát cắt và đường tăng}
+
+Mạng là đồ thị có hướng với nguồn \(s\), đích \(t\), và dung lượng dương
+\(\operatorname{cap}(v,w)\) trên mỗi cạnh. Một luồng \(f\) là hàm trên cặp đỉnh
+thỏa ba điều kiện: phản đối xứng \(f(v,w)=-f(w,v)\), ràng buộc dung lượng
+\(f(v,w)\le \operatorname{cap}(v,w)\), và bảo toàn luồng tại mọi đỉnh khác
+\(s,t\). Giá trị \(|f|\) là tổng luồng ròng rời nguồn. Bài toán max-flow cần
+tìm luồng giá trị lớn nhất.
+
+Một lát cắt \(X,\overline X\) có \(s\in X\), \(t\in\overline X\). Dung lượng
+lát cắt là tổng dung lượng các cạnh đi từ \(X\) sang \(\overline X\). Luồng qua
+mọi lát cắt bằng đúng giá trị luồng, nên mọi luồng bị chặn trên bởi mọi lát cắt.
+Định lý max-flow min-cut nói rằng giá trị luồng cực đại bằng dung lượng lát cắt
+nhỏ nhất.
+
+Với luồng \(f\), dung lượng dư là
+\(\operatorname{res}(v,w)=\operatorname{cap}(v,w)-f(v,w)\). Đồ thị dư chứa cạnh
+\([v,w]\) khi \(\operatorname{res}(v,w)>0\). Một đường từ \(s\) tới \(t\) trong
+đồ thị dư là đường tăng; ta có thể tăng luồng dọc đường này một lượng bằng dung
+lượng dư nhỏ nhất trên đường. Nếu không còn đường tăng, tập đỉnh đạt được từ
+\(s\) trong đồ thị dư tạo một lát cắt có dung lượng bằng giá trị luồng, chứng
+minh luồng là cực đại.
+
+Ford--Fulkerson lặp việc chọn một đường tăng bất kỳ. Với dung lượng nguyên,
+thuật toán dừng và sinh luồng nguyên. Nhưng chọn đường tùy ý có thể rất chậm,
+thậm chí không hội tụ tốt với dung lượng thực. Một lựa chọn tốt hơn là đường
+tăng có dung lượng lớn nhất; với dung lượng nguyên lớn nhất \(c\), cần
+\(O(m\log c)\) lần tăng, nhưng mỗi lần phải giải bài toán đường cổ chai.
+
+\subsection*{Tăng bằng luồng chặn}
+
+Edmonds--Karp chọn đường tăng ngắn nhất theo số cạnh. Dinic gom các đường ngắn
+nhất lại. Với luồng hiện tại, gán mức của mỗi đỉnh là khoảng cách từ \(s\) trong
+đồ thị dư. Đồ thị mức giữ các cạnh \([v,w]\) thỏa
+\(\operatorname{level}(w)=\operatorname{level}(v)+1\). Nó chứa mọi đường tăng
+ngắn nhất và là DAG.
+
+Một luồng là luồng chặn nếu mọi đường từ \(s\) tới \(t\) có ít nhất một cạnh bão
+hòa. Dinic lặp: xây đồ thị mức, tìm một luồng chặn trên đó, rồi cộng vào luồng
+hiện tại. Sau mỗi bước, khoảng cách mức của \(t\) tăng nghiêm hoặc \(t\) không
+còn đạt được, nên có nhiều nhất \(n-1\) bước chặn. Trên mạng đơn vị, số bước còn
+nhỏ hơn, \(O(\sqrt n)\), và cũng có cận theo \(\sqrt m\) khi mọi dung lượng cạnh
+bằng một.
+
+Nếu chỉ tăng từng đường trong đồ thị mức bằng DFS, mỗi lần bão hòa ít nhất một
+cạnh; cách cài Dinic cổ điển tìm luồng chặn trong \(O(nm)\), cho max-flow
+\(O(n^2m)\), và tốt hơn trên mạng đơn vị. Edmonds--Karp, nhìn như Ford--Fulkerson
+với đường ngắn nhất từng cái, có nhiều nhất \((n-1)m\) lần tăng và thời gian
+\(O(nm^2)\).
+
+\subsection*{Tìm luồng chặn}
+
+Karzanov đưa ra hướng bão hòa theo đỉnh thay vì theo cạnh. Tarjan trình bày
+phiên bản \emph{wave}: dùng tiền-luồng, cho phép luồng dư dương tạm thời tích ở
+đỉnh. Đỉnh chưa chặn được cân bằng bằng cách đẩy luồng ra theo cạnh chưa bão
+hòa; nếu không đẩy hết được thì đánh dấu đỉnh là chặn. Đỉnh đã chặn được cân
+bằng bằng cách giảm luồng đi vào. Quét tiến theo thứ tự topo rồi quét lùi, mỗi
+vòng chặn thêm ít nhất một đỉnh, và tìm luồng chặn trong \(O(n^2)\). Kết hợp với
+Dinic cho max-flow \(O(n^3)\).
+
+Malhotra--Kumar--Maheshwari dùng khái niệm thông lượng tiềm năng của đỉnh:
+tối thiểu giữa tổng dung lượng dư đi vào và đi ra. Mỗi bước chọn đỉnh có thông
+lượng tiềm năng nhỏ nhất, gửi lượng đó tiến tới \(t\) và lùi về \(s\), rồi xóa
+cạnh bão hòa và đỉnh không còn nằm trên đường \(s\)-\(t\). Ý tưởng đơn giản,
+nhưng khi cài đặt không nhất thiết đơn giản hơn wave và có thể chọn nhiều nút cổ
+chai hẹp.
+
+Sleator--Tarjan tăng tốc cách DFS của Dinic bằng dynamic tree. Trong đồ thị mức,
+mỗi đỉnh giữ một cạnh hiện tại \([v,p(v)]\), các cạnh này tạo một rừng. Chi phí
+đỉnh là dung lượng dư của cạnh hiện tại nếu có cha, hoặc một hằng rất lớn nếu là
+gốc. Dynamic tree hỗ trợ tìm gốc, tìm chi phí nhỏ nhất trên đường, cộng chi phí
+trên đường, link và cut. Một lần tăng tương ứng với tìm chi phí nhỏ nhất trên
+đường từ \(s\), trừ lượng đó khỏi cả đường, rồi cắt/xóa các cạnh bão hòa. Tổng
+cộng có \(O(m)\) thao tác cây cho một luồng chặn, nên tìm luồng chặn trong
+\(O(m\log n)\), và max-flow trong \(O(nm\log n)\).
+
+\subsection*{Luồng chi phí nhỏ nhất}
+
+Mỗi cạnh giờ có thêm chi phí đơn vị \(\operatorname{cost}(v,w)\), giả sử phản
+đối xứng. Chi phí của luồng là tổng chi phí đơn vị nhân lượng luồng. Một luồng
+là chi phí nhỏ nhất nếu trong các luồng cùng giá trị, nó có chi phí nhỏ nhất.
+Bài toán cần luồng cực đại có chi phí nhỏ nhất.
+
+Định lý cơ bản: một luồng là chi phí nhỏ nhất khi và chỉ khi đồ thị dư của nó
+không có chu trình âm theo chi phí. Nếu có chu trình âm, đẩy luồng quanh chu
+trình làm giảm chi phí mà không đổi giá trị. Ngược lại, hiệu giữa một luồng chưa
+tối ưu và luồng tối ưu cùng giá trị phân rã thành các chu trình trong đồ thị dư,
+trong đó có chu trình âm.
+
+Nếu luồng hiện tại đã là chi phí nhỏ nhất, tăng dọc một đường tăng có chi phí
+nhỏ nhất sẽ tạo ra luồng mới cũng chi phí nhỏ nhất trong các luồng cùng giá trị
+mới. Điều này dẫn tới thuật toán tăng theo đường chi phí nhỏ nhất, khi mạng ban
+đầu không có chu trình âm. Với dung lượng nguyên, thuật toán thực hiện nhiều
+nhất \(|f^*|\) lần tăng.
+
+Để tìm liên tiếp các đường tăng chi phí nhỏ nhất, dùng thuật toán đường đi ngắn
+nhất trên đồ thị dư. Sau mỗi lần tăng, đổi chi phí cạnh bằng thế năng khoảng cách:
+\[
+  \operatorname{cost}'(v,w)=
+  \operatorname{cost}(v,w)+\operatorname{dist}(v)-\operatorname{dist}(w).
+\]
+Chi phí mới không âm, cạnh trên đường vừa tăng có chi phí mới \(0\), nên các
+lần sau có thể dùng Dijkstra. Nếu chi phí ban đầu không âm hoặc đồ thị là DAG,
+lần đầu cũng nhanh; nếu không, dùng quét rộng tổng quát. Cận nêu trong sách là
+\[
+  O(nm + m|f^*|\log_{2+m/n} n),
+\]
+hoặc bỏ hạng \(nm\) khi chi phí ban đầu không âm hay đồ thị phi chu trình.
+
 \section{Chương 9: Ghép cặp}
 
 Chương cuối xét ghép cặp. Với đồ thị hai phía, ghép cặp cực đại có thể quy về
