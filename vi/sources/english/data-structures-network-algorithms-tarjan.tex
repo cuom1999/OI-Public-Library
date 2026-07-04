@@ -1177,6 +1177,81 @@ Nếu \(\operatorname{dist}(u,u)<0\), phát hiện chu trình âm. Để phục 
 Floyd chạy \(O(n^3)\), dùng \(O(n^2)\) bộ nhớ, thường tốt trên đồ thị dày nhưng
 không tận dụng được độ thưa.
 
+\subsection*{Bất biến và ghi chú cài đặt của Chương 7}
+
+Tarjan dành khá nhiều chỗ cho các bất biến của phương pháp gán nhãn, vì đây là
+phần dễ bị xem nhẹ khi chỉ nhớ tên Bellman--Ford hoặc Dijkstra. Trong suốt thuật
+toán, nếu \(\operatorname{dist}(v)\) hữu hạn thì luôn tồn tại một đường thật từ
+\(s\) tới \(v\) có đúng độ dài đó. Khi thuật toán dừng, với mọi đường \(p\) từ
+\(s\) tới \(v\), ta có
+\[
+  \operatorname{length}(p)\ge \operatorname{dist}(v),
+\]
+nên nhãn hữu hạn chính là khoảng cách ngắn nhất. Điều này tách hai câu hỏi:
+\emph{nhãn có nghĩa là một đường thật hay không} và \emph{không còn đường nào
+tốt hơn hay không}.
+
+Các con trỏ cha \(p(v)\) cũng có bất biến riêng. Nếu \(p(v)\ne\mathrm{null}\)
+thì
+\[
+  \operatorname{dist}(p(v))+\operatorname{length}(p(v),v)
+  \le \operatorname{dist}(v),
+\]
+và khi thuật toán dừng thì dấu bằng xảy ra. Tập cạnh cha hoặc tạo một cây gốc
+\(s\) trên các đỉnh có nhãn hữu hạn, hoặc chứa một chu trình. Nếu một bước giảm
+nhãn tạo chu trình cha thì tổng độ dài chu trình đó âm. Vì vậy phát hiện chu
+trình trong cây cha không chỉ là kiểm tra lỗi cài đặt; nó là cách trích ra chứng
+nhận chu trình âm.
+
+Với quét theo hàng đợi trong trường hợp tổng quát, nguồn được quét ở lượt 0.
+Lượt \(j>0\) gồm các đỉnh đã nằm trong hàng đợi ở cuối lượt \(j-1\). Mỗi lượt
+tốn \(O(m)\) vì mỗi đỉnh bị quét nhiều nhất một lần trong lượt. Nếu không có
+chu trình âm đạt được từ \(s\), thì đến đầu lượt \(k\), mọi đường ngắn nhất dùng
+nhiều nhất \(k\) cạnh đã được phản ánh vào nhãn; do đó thuật toán dừng muộn nhất
+sau lượt \(n-1\). Nếu sau lượt \(n-1\) hàng đợi vẫn còn đỉnh, lần theo cha từ
+một đỉnh bị quét ở lượt \(n\) sẽ lặp một đỉnh và cho chu trình âm.
+
+Tarjan cũng nêu hai cách phát hiện chu trình âm sớm hơn đếm lượt. Khi xét cạnh
+\([v,w]\) có thể giảm nhãn \(w\), ta có thể tìm \(w\) trong dãy tổ tiên của
+\(v\), hoặc tìm \(v\) trong tập hậu duệ của \(w\) trong cây cha. Cách thứ nhất
+dễ viết bằng con trỏ cha nhưng có thể nâng cận xấu nhất lên \(O(n^2m)\). Cách
+thứ hai cần lưu thêm thông tin cây, chẳng hạn một danh sách preorder đủ để kiểm
+tra quan hệ hậu duệ, nhưng nếu cài cẩn thận vẫn giữ được \(O(nm)\).
+
+Với Dijkstra, chương nhấn mạnh rằng cài đặt gần như trùng với Prim; khác biệt
+là khóa của heap là nhãn khoảng cách thay vì chi phí cạnh rẻ nhất nối vào cây.
+Ngoài \(d\)-heap và tập không thứ tự, nguồn còn nhắc tới mảng bucket cho độ dài
+cạnh nguyên nhỏ, đạt cận theo \(O(m+d)\) với \(d\) là khoảng cách lớn nhất từ
+nguồn và cần \(O(m+L)\) bộ nhớ với \(L\) là độ dài cạnh lớn nhất. Chương cũng
+ghi lại hai biến thể: tìm đường ngắn nhất một cặp bằng tìm kiếm hai chiều trên
+đồ thị không âm, và bài toán đường cổ chai một nguồn, nơi ta tối thiểu hóa cạnh
+lớn nhất trên đường thay vì tổng độ dài.
+
+Trong phần mọi cặp, phép đổi trọng số kiểu Johnson được viết như một phép thế
+năng. Nếu thêm nguồn mới và đặt \(h(v)=\operatorname{distance}(v)\), thì
+\[
+  \ell'(v,w)=\ell(v,w)+h(v)-h(w)\ge0.
+\]
+Với mọi đường \(p:a\to b\), tổng trọng số mới bằng tổng trọng số cũ cộng
+\(h(a)-h(b)\), một hằng số chỉ phụ thuộc hai đầu. Vì thế đường tối ưu được bảo
+toàn, còn Dijkstra trở nên hợp lệ trên từng nguồn.
+
+Với Floyd, ngoài bảng khoảng cách có thể lưu \(p(v,w)\), cha của \(w\) trong cây
+đường đi ngắn nhất gốc \(v\). Khi cải thiện qua trung gian \(u\), đặt
+\[
+  p(v,w)\leftarrow p(u,w),
+\]
+vì đoạn cuối của đường mới từ \(v\) tới \(w\) chính là đoạn cuối của đường từ
+\(u\) tới \(w\). Các bất biến của Tarjan gồm: đường được lưu có đúng độ dài
+\(\operatorname{dist}(v,w)\), chỉ dùng đỉnh trung gian đã xử lý, là đường đơn
+khi \(v\ne w\), là chu trình đơn khi \(v=w\), và thỏa
+\[
+  \operatorname{path}(v,w)
+  =\operatorname{path}(v,p(v,w))\mathbin{\&}[w].
+\]
+Nếu trong lúc xử lý có \(\operatorname{dist}(u,u)<0\), các con trỏ cha tương
+ứng cho phép phục hồi một chu trình âm.
+
 \section{Chương 8: Luồng mạng}
 
 Luồng mạng được trình bày qua định nghĩa luồng, lát cắt và đường tăng. Từ
