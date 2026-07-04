@@ -323,6 +323,7 @@ They remain `translated`.
 | `sources/data-structure/suffix-automaton-chen-lijie.tex` | 57 | Reviewed as a slide/embedded-graphics false positive: it covers SAM definitions, `Right` sets, the parent tree, construction and pseudocode, applications to minimal rotation/NSUBSTR/SubString/SUBLEX/LCS/LCS2, and related structures; polished the source note so it reads as a reconstruction note rather than an extraction log. |
 | `sources/dynamic-programming/state-compression-zhou-wei.tex` | 16 | Reviewed against the truncated source PDF: it covers all available text through the Shortest Common Superstring introduction, including domino/L-tromino/\(1\times r\) tiling, assignment-style examples, and the note that the source stops at page 16; polished the embedded-figure source note. |
 | `sources/english/game-theory-ferguson-impartial-games.tex` | 46 | Reviewed the appendix image caveat: exercise lists are translated, and figure-dependent items are marked as read-image exercises instead of being left as caption-only fragments; polished that wording in Vietnamese. |
+| `sources/english/dag-shortest-paths-lecture-17.tex` | 6 | Reviewed the compact English lecture translation. It covers DAG topological order, DFS topological sorting, DAG shortest paths, initialization/relaxation, correctness proof, complexity, and the longest-path note; restored the six-vertex \(r,s,t,x,y,z\) weighted DAG example as a native TikZ figure plus final distance/predecessor table. |
 
 ## Article-Coverage Complete Annual Collections
 
