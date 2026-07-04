@@ -2,6 +2,8 @@
 % Source-File: IOI中国国家候选队论文/2008/Day2/9.苏煜《对块状链表的一点研究》/对块状链表的一点研究.doc
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
 
 \newcommand{\Oh}{\mathcal{O}}
 
@@ -94,10 +96,56 @@ chèn xong. Thao tác xóa tìm đầu đoạn, tách khối đầu và khối c
 bộ các nút nằm giữa. Thao tác lấy đoạn cũng định vị điểm bắt đầu, sau đó quét
 qua các khối cho tới khi đủ số ký tự.
 
-Trong bản Word gốc có hai hình minh họa cho thao tác chèn và xóa. Hình chèn
-đánh dấu vị trí ``bắt đầu chèn'', tách khối hiện tại rồi móc các khối mới vào
-giữa. Hình xóa đánh dấu đoạn giữa hai đường biên, tách hai đầu đoạn rồi bỏ
-các khối nằm trọn trong đoạn đó.
+Hai thao tác chính có thể hình dung như sau. Với thao tác chèn, ta tách khối
+chứa vị trí bắt đầu rồi móc các khối mới vào giữa hai nửa. Với thao tác xóa,
+ta tách hai biên của đoạn cần xóa, bỏ các khối nằm trọn trong đoạn đó, rồi nối
+phần trước với phần sau.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  block/.style={draw, minimum width=1.25cm, minimum height=0.62cm, align=center},
+  small/.style={draw, minimum width=0.85cm, minimum height=0.62cm, align=center},
+  arrow/.style={->, thick},
+  node distance=0.08cm
+]
+\node[block] (a) {A};
+\node[small, right=0.35cm of a] (b1) {B\(_L\)};
+\node[small, right=0.08cm of b1] (b2) {B\(_R\)};
+\node[block, right=0.35cm of b2] (c) {C};
+\node[block, below=0.8cm of b1] (x) {mới};
+\node[block, right=0.08cm of x] (y) {mới};
+\draw[arrow] (a) -- (b1);
+\draw[arrow] (b1) -- (x);
+\draw[arrow] (x) -- (y);
+\draw[arrow] (y) -- (b2);
+\draw[arrow] (b2) -- (c);
+\draw[dashed] (b1.north east) -- (b1.south east);
+\node[above=0.18cm of b1] {\small tách tại vị trí chèn};
+\end{tikzpicture}
+\caption{Chèn trong danh sách khối: tách khối hiện tại và nối các khối mới vào giữa.}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  block/.style={draw, minimum width=1.15cm, minimum height=0.62cm, align=center},
+  del/.style={draw, dashed, fill=gray!10, minimum width=1.15cm, minimum height=0.62cm, align=center},
+  arrow/.style={->, thick}
+]
+\node[block] (a) {A};
+\node[block, right=0.35cm of a] (l) {L};
+\node[del, right=0.35cm of l] (m1) {xóa};
+\node[del, right=0.08cm of m1] (m2) {xóa};
+\node[block, right=0.35cm of m2] (r) {R};
+\node[block, right=0.35cm of r] (c) {C};
+\draw[arrow] (a) -- (l);
+\draw[arrow] (l) to[bend right=18] node[below] {\small nối lại} (r);
+\draw[arrow] (r) -- (c);
+\draw[<->, thick] (m1.north west) -- node[above] {\small đoạn bị xóa} (m2.north east);
+\end{tikzpicture}
+\caption{Xóa trong danh sách khối: sau khi tách hai biên, bỏ các khối ở giữa và nối lại.}
+\end{figure}
 
 Một vấn đề còn lại là việc tách khối quá thường xuyên có thể tạo ra nhiều
 khối liên tiếp chứa rất ít dữ liệu, làm giảm hiệu quả. Vì vậy sau mỗi thao
