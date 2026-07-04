@@ -5641,18 +5641,32 @@ dài LCS giữa tiền tố độ dài $x$ của $a$ và xâu con $b[y:z)$. Bài
 $n,m,q\le 10^4$.
 
 Dựng đồ thị lưới tương tự: nếu $a_i=b_j$, thêm cạnh chéo trọng số $0$ từ
-$(i,j)$ tới $(i+1,j+1)$. Ma trận khoảng cách từ gốc tới các ô vẫn là ma trận
-Monge á đơn vị đơn giản, và câu trả lời truy vấn có thể đọc từ một phần tử của
-ma trận mật độ/phân bố thích hợp. Khi chuyển từ tiền tố $i$ sang $i+1$, ma trận
-tương ứng thay đổi theo một ma trận Monge á đơn vị đơn giản rất thưa, vì chỉ
-các vị trí $j$ với $b_j=a_i$ mới tạo cạnh chéo mới. Bài viết dùng điều kiện
-hiệu kề nhau của các hàng để xác định vị trí đầu tiên làm thay đổi quyết định,
-rồi duy trì tích các ma trận biến đổi bằng thuật toán nhân nhanh ở trên.
+$(i,j)$ tới $(i+1,j+1)$. Gọi \(A^{(i)}_{l,r}\) là độ dài đường đi ngắn nhất từ
+\((0,l)\) tới \((i,r)\), và đặt \(A^{(i)}_{l,r}=0\) khi \(r\le l\). Khi đó mỗi
+\(A^{(i)}\) là ma trận Monge á đơn vị đơn giản, và truy vấn \((x,y,z)\) có đáp
+án
+\[
+  z-y-A^{(x)}_{y,z}.
+\]
 
-Bản quét của phần cuối có nhiều chỉ số bị nhiễu, nhưng ý chính là ma trận của
-mỗi bước là á đơn vị đơn giản và tích của chúng cũng nằm trong cùng lớp; nhờ
-đó các truy vấn LCS dạng tiền tố--xâu con có thể xử lý bằng cách duy trì/nhân
-các ma trận khoảng cách thay vì dựng toàn bộ bảng quy hoạch động.
+Nếu \(B^{(i)}_{l,r}\) là độ dài đường đi ngắn nhất từ \((i,l)\) tới
+\((i+1,r)\), với quy ước \(B^{(i)}_{l,r}=0\) khi \(r\le l\), thì
+\[
+  A^{(i)}=A^{(i-1)}B^{(i-1)}.
+\]
+Với \(l<r\), ma trận bước này có dạng rất thưa:
+\[
+  B^{(i)}_{l,r}=r-l-\bigl[\exists p\in[l,r),\ a_i=b_p\bigr].
+\]
+Để dựng biểu diễn hoán vị của \(B^{(i)M}\), xét với mỗi \(l,l+1\) vị trí nhỏ
+nhất \(r\) sao cho \(B^{(i)}_{l,r}-B^{(i)}_{l+1,r}=1\). Trường hợp \(r\le l\)
+không xảy ra; với \(r=l+1\) điều kiện tương đương \(a_i\ne b_l\); với
+\(r>l+1\) nó tương đương hai mệnh đề
+\([\exists p\in[l,r),a_i=b_p]\) và \([\exists p\in[l+1,r),a_i=b_p]\) khác nhau.
+Vì vậy nếu \(a_i\ne b_l\) thì vị trí nhỏ nhất là \(l+1\); nếu không, lấy
+\(l_1>l\) nhỏ nhất sao cho \(a_i=b_{l_1}\), vị trí nhỏ nhất là \(l_1+1\).
+Quét ngược một lần sẽ tính được \(B^{(i)M}\), từ đó tính lần lượt các
+\(A^{(i)}\) và xử lý các truy vấn theo mô tả của bài gốc.
 
 \subsubsection{Quy hoạch động một chiều--một chiều}
 
@@ -6282,17 +6296,21 @@ với $A\setminus\{1,i\}$ là ma trận sau khi xóa hàng/cột $1$ và $i$.
 \subsubsection{Dạng ma trận của định lý Tutte--Berge}
 
 Bài viết nêu một dạng tăng cường bằng ma trận của định lý Tutte--Berge. Với ma
-trận Tutte $A(G)$ và các tập hàng/cột $I,J$, hạng của $A[I,J]$ có thể viết dưới
-dạng một cực tiểu theo các tập con $I',J'$, trong đó xuất hiện số thành phần liên
-thông lẻ của đồ thị con cảm sinh. OCR làm nhiễu công thức đầy đủ, nhưng dạng cốt
-lõi là
+trận Tutte \(A(G)\), các tập hàng/cột \(I,J\), và
+\[
+  D(I,J)=\{(I',J')\mid A[I\setminus I',J']=0,
+  A[I',J\setminus J']=0,\ I'\subseteq I,\ J'\subseteq J\},
+\]
+hạng của \(A[I,J]\) là
 \[
   \operatorname{rank} A[I,J]
   =
-  \min\bigl(|I\setminus I'|+|J\setminus J'|
+  \min_{(I',J')\in D(I,J)}
+  \bigl(|I\setminus I'|+|J\setminus J'|
   + |I'\cap J'|-\operatorname{odd}(G[I'\cap J'])\bigr),
 \]
-với các điều kiện không có cạnh thích hợp giữa phần bị loại và phần giữ lại.
+trong đó \(\operatorname{odd}(G)\) là số thành phần liên thông có kích thước lẻ
+của \(G\), còn \(G[S]\) là đồ thị con cảm sinh bởi \(S\).
 
 Chứng minh dùng ba bổ đề về tính dưới mô-đun của hạng:
 \[
@@ -6463,25 +6481,25 @@ hiệu số cặp tối đa là $\nu(A)$.
 Bài viết nêu hai cách dựng đại số.
 
 \paragraph{Dạng thưa.}
-Giả sử matroid có biểu diễn tuyến tính bằng các cột của ma trận $A$. Dựng một ma
-trận Tutte $T$ trên đồ thị mà cạnh là các cặp phần tử của bài toán. Khi đó có
-một ma trận khối sao cho
+Giả sử matroid có biểu diễn tuyến tính bằng các cột của ma trận \(A\). Gọi số
+cột là \(m\); dựng ma trận Tutte \(T\) của đồ thị có tập đỉnh là các cột, cạnh
+là các cặp phần tử trong bài toán parity. Khi đó
 \[
   2\nu(A)=\operatorname{rank}
   \begin{pmatrix}
-  0&A\\ -A^T&T
+  O&A\\ -A^T&T
   \end{pmatrix}
   -m,
 \]
-với $m$ là số hàng/cột phụ tương ứng. OCR làm nhiễu chỉ số, nhưng đây là công
-thức thưa chuẩn.
+trong đó \(O\) là khối không có kích thước phù hợp.
 
 \paragraph{Dạng gọn.}
-Với mỗi cặp vector $(b_i,c_i)$, dùng tích ngoài
+Với mỗi cặp vector cột \((b_i,c_i)\), gán một biến độc lập \(x_i\) và dùng tích
+ngoài
 \[
   b_i\wedge c_i=b_ic_i^T-c_ib_i^T.
 \]
-Khi gán biến ngẫu nhiên $x_i$ cho từng cặp, ta có
+Khi đó
 \[
   2\nu(A)=
   \operatorname{rank}\sum_i x_i(b_i\wedge c_i).
