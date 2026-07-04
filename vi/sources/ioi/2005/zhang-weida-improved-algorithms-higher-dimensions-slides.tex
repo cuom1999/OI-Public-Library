@@ -3,6 +3,8 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
+\newcommand{\Oh}{\mathcal{O}}
+
 \title{Bản trình chiếu: Cải tiến thuật toán khi tăng quy mô và số chiều}
 \author{Zhang Weida}
 \date{2005}
@@ -10,33 +12,127 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for improved algorithms in higher dimensions}
+\origtitle{Dùng tư tưởng cải tiến thuật toán để giải bài tăng quy mô và số chiều: bản trình chiếu}
 \sourcepath{IOI China candidate team papers / 2005 / Zhang Weida / Zhang Weida.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mạch chính của slide}
 
-Bản trình chiếu đi kèm bài viết về việc nâng cấp thuật toán từ bài toán một
-chiều sang hai chiều, ba chiều hoặc quy mô lớn hơn. Phần chữ đọc được nhắc
-tới \textit{Team Selection} của Balkan OI 2004 Day 1, giới hạn
-\(3\le N\le 500000\), và các quan hệ ``\(A\) tốt hơn \(B\)''.
+Bản trình chiếu đi kèm bài viết về tư tưởng cải tiến thuật toán khi bài toán
+tăng quy mô hoặc tăng số chiều. Phần văn bản trích xuất được từ PowerPoint cũ
+chủ yếu tập trung vào \textit{Team Selection} của Balkan OI 2004 Day 1, với
+giới hạn \(3\le N\le 500000\), quan hệ ``\(A\) tốt hơn \(B\)'', khái niệm
+\textit{excellent}, các vòng lặp \(X,Y\), đại lượng \(B[A_i]\), giá trị
+\(\operatorname{best}_i\), cặp \((\mathit{key},\mathit{value})\), và truy vấn
+giá trị nhỏ nhất trong đoạn khóa. Bản dịch này giữ luồng của slide và dùng
+bài viết đã dịch làm nền để nối các bước bị mất chữ.
 
-\section{Tư tưởng cải tiến}
+Thông điệp trung tâm là: khi một bài quen thuộc được mở rộng thêm chiều, không
+nên chỉ thêm chỉ số vào công thức cũ. Cần hỏi thuật toán gốc thật sự dùng tính
+chất nào, rồi đưa phần tăng thêm vào đúng chỗ bằng thứ tự duyệt, liệt kê,
+tham lam hoặc cấu trúc dữ liệu.
 
-Khi một bài toán quen thuộc được mở rộng thêm chiều hoặc thêm yếu tố, lời giải
-trực tiếp thường tăng độ phức tạp quá mạnh. Ta cần giữ lại cấu trúc cốt lõi
-của bài cũ, rồi thay bước đắt nhất bằng cấu trúc dữ liệu, sắp xếp, chia để
-trị, hoặc quét theo thứ tự phù hợp.
+\section{Từ mô phỏng trực tiếp tới tập ứng viên}
 
-\section{Ví dụ chọn đội}
+Bài \textit{Team Selection} có \(N\) thí sinh, mỗi thí sinh có thứ hạng trong
+ba cuộc thi. Thí sinh \(A\) tốt hơn \(B\) nếu \(A\) xếp trước \(B\) ở cả ba
+cuộc thi. Một thí sinh là \textit{excellent} nếu không có ai tốt hơn mình.
+Yêu cầu là đếm số thí sinh excellent.
 
-Trong mô hình \textit{Team Selection}, các quan hệ so sánh ``tốt hơn'' tạo
-thành thứ tự một phần. Với \(N\) lớn, không thể so sánh mọi cặp. Cần phát hiện
-tiêu chí chi phối và duy trì tập ứng viên xuất sắc khi quét dữ liệu.
+Thuật toán đầu tiên mà slide ghi lại là hai vòng lặp:
+\[
+  \text{for }X\quad \text{for }Y\quad \text{kiểm tra }Y\text{ tốt hơn }X.
+\]
+Mỗi phép kiểm tra chỉ cần so sánh ba thứ hạng, nhưng tổng thể là
+\(\Oh(N^2)\), không thể chạy với \(N=500000\).
+
+Bước cải tiến đầu tiên là duyệt theo thứ hạng cuộc thi thứ nhất. Khi xét
+thí sinh \(X\), chỉ các thí sinh đứng trước \(X\) ở cuộc thi thứ nhất mới có
+khả năng tốt hơn \(X\). Điều này làm rõ một chiều của bài toán nhưng chưa đủ
+giảm độ phức tạp.
+
+Bước tiếp theo dùng tập excellent đã biết. Nếu \(Y\) không excellent vì có
+\(Z\) tốt hơn \(Y\), thì bất kỳ khi nào \(Y\) tốt hơn \(X\), \(Z\) cũng tốt
+hơn \(X\). Vì vậy ta không cần giữ \(Y\) như một ứng viên riêng. Khi xét
+\(X\), chỉ cần so sánh với các thí sinh excellent đã gặp. Độ phức tạp trở
+thành \(\Oh(NK)\), với \(K\) là số thí sinh excellent, nhưng \(K\) vẫn có thể
+lớn. Slide dùng bước này để minh họa rằng cải tiến cục bộ có ích cho tư duy,
+nhưng chưa chắc đủ cho dữ liệu lớn.
+
+\section{Hạ chiều: bài hai cuộc thi}
+
+Để thấy bản chất, slide quay về bài chỉ có hai cuộc thi. Gọi \(A_i\) là thí
+sinh đứng thứ \(i\) ở cuộc thi thứ nhất, và \(B[A_i]\) là thứ hạng của thí
+sinh ấy ở cuộc thi thứ hai. Duyệt dãy \(A_1,A_2,\ldots,A_N\). Khi đang xét
+\(A_i\), điều kiện ``xếp trước ở cuộc thi thứ nhất'' đã tự động đúng với mọi
+\(A_j\), \(j<i\). Do đó \(A_i\) không excellent khi và chỉ khi
+\[
+  \exists j<i:\ B[A_j]<B[A_i].
+\]
+
+Ta chỉ cần duy trì giá trị tốt nhất đã gặp:
+\[
+  \operatorname{best}_i=\min_{j<i}B[A_j].
+\]
+Nếu \(\operatorname{best}_i<B[A_i]\), có người tốt hơn \(A_i\); ngược lại
+\(A_i\) là excellent. Bài hai chiều được giải trong \(\Oh(N)\).
+
+Đây là bước quan trọng của slide. Cải tiến không phải là thêm mẹo vào vòng
+lặp, mà là chọn một thứ tự duyệt để một điều kiện tự biến mất, rồi nén điều
+kiện còn lại thành một đại lượng duy nhất.
+
+\section{Mở rộng lên ba cuộc thi}
+
+Quay lại ba cuộc thi, đặt \(C[A_i]\) là thứ hạng của \(A_i\) ở cuộc thi thứ
+ba. Khi xét \(X=A_i\), ta cần biết trong các thí sinh đã xử lý có ai thỏa
+\[
+  B[A_j]<B[A_i]\quad\text{và}\quad C[A_j]<C[A_i]
+\]
+hay không. Điều kiện thứ nhất vẫn được giải quyết bởi thứ tự duyệt. Hai điều
+kiện còn lại tạo thành một bài truy vấn hai chiều: trong các khóa
+\(B[A_j]\) nhỏ hơn \(B[A_i]\), tìm giá trị nhỏ nhất của \(C[A_j]\).
+
+Slide biểu diễn mỗi thí sinh đã gặp bằng một cặp
+\[
+  (\mathit{key},\mathit{value})=(B[X],C[X]).
+\]
+Cấu trúc dữ liệu cần hỗ trợ:
+\begin{itemize}
+  \item chèn một cặp \((\mathit{key},\mathit{value})\);
+  \item hỏi giá trị \(\mathit{value}\) nhỏ nhất trong các key nhỏ hơn key hiện
+  tại.
+\end{itemize}
+Một cây đoạn trên miền thứ hạng của cuộc thi thứ hai làm đúng việc này. Mỗi
+lá ứng với một key; mỗi nút lưu giá trị \(C\) nhỏ nhất trong đoạn key của nó.
+Khi chèn, cập nhật các nút trên đường từ lá tới gốc. Khi hỏi, phân rã đoạn
+\([1,\mathit{key}-1]\) thành các đoạn chuẩn và lấy min.
+
+Thuật toán cuối cùng:
+\begin{enumerate}
+  \item duyệt thí sinh theo thứ tự cuộc thi thứ nhất;
+  \item với thí sinh \(X\), hỏi \(\min C[Y]\) trong các \(Y\) đã gặp và có
+  \(B[Y]<B[X]\);
+  \item nếu giá trị này nhỏ hơn \(C[X]\), \(X\) bị một thí sinh khác trội hơn;
+  \item ngược lại, \(X\) là excellent;
+  \item chèn \((B[X],C[X])\) vào cây.
+\end{enumerate}
+Mỗi bước mất \(\Oh(\log N)\), nên tổng thời gian là \(\Oh(N\log N)\) và bộ
+nhớ tuyến tính theo \(N\).
+
+\section{Ý nghĩa của tư tưởng cải tiến}
+
+Ví dụ \textit{Team Selection} thể hiện đủ các tầng cải tiến mà bài viết muốn
+nhấn mạnh. Cách làm thô so sánh mọi cặp. Cách duyệt theo cuộc thi thứ nhất
+loại bỏ một phần ứng viên. Cách giữ tập excellent giảm lặp lại nhưng vẫn chưa
+đủ. Bài hai cuộc thi cho thấy điều kiện đã được bảo đảm bởi thứ tự duyệt có
+thể bỏ khỏi trạng thái. Cuối cùng, bài ba cuộc thi giữ đúng ý tưởng ấy và thay
+đại lượng ``tốt nhất đã gặp'' bằng truy vấn min trên một miền khóa.
 
 \section{Kết luận}
 
-Bản trình chiếu nhấn mạnh một thói quen quan trọng: trước khi cài đặt bài mở
-rộng, hãy xác định thuật toán cho bài gốc bị phá vỡ ở bước nào. Phần cải tiến
-nên tập trung đúng vào bước đó.
+Bản trình chiếu không nhằm giới thiệu riêng cây đoạn, mà dùng cây đoạn như
+một kết quả tự nhiên của phân tích. Với bài toán tăng số chiều, việc thêm cấu
+trúc dữ liệu chỉ nên đến sau khi ta đã biết chiều nào được xử lý bằng thứ tự
+duyệt, chiều nào làm khóa, và chiều nào là giá trị cần tối ưu. Đó là điểm
+khác nhau giữa ``cố áp dụng thuật toán cũ'' và thật sự cải tiến thuật toán.
 
 \end{document}

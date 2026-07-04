@@ -3,6 +3,9 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
+\newcommand{\GA}{\ensuremath{\mathrm{GA}}}
+\newcommand{\Pruefer}{Prüfer}
+
 \title{Bản trình chiếu: Thuật toán di truyền}
 \author{Qian Ziqiang}
 \date{2005}
@@ -10,14 +13,18 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for genetic algorithms}
+\origtitle{Phân tích và nghiên cứu ứng dụng của thuật toán di truyền: bản trình chiếu}
 \sourcepath{IOI China candidate team papers / 2005 / Qian Ziqiang / Qian Ziqiang.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mạch chính của slide}
 
-Bản trình chiếu đi cùng bài viết về thuật toán di truyền. Phần chữ đọc được
-nhắc tới John Holland, \textit{Genetic Algorithm}, IOI 2005, cùng các thuật
-toán Prim và Kruskal trong phần ví dụ.
+Bản trình chiếu đi cùng bài viết về thuật toán di truyền. Lớp văn bản của
+slide còn đọc được các mốc: \textit{Genetic Algorithm}, John Holland,
+IOI 2005, các thuật toán Prim và Kruskal, một ví dụ có số \(1200\), cùng
+nhiều hình và biểu đồ không trích được ổn định từ tệp PowerPoint cũ. Bản ghi
+chú này dựa trên bài viết đã dịch để phục hồi nội dung slide ở mức ý tưởng:
+giới thiệu thuật toán di truyền, nêu quy trình, rồi dùng bài cây khung nhỏ
+nhất đa mục tiêu để minh họa.
 
 \section{Tư tưởng}
 
@@ -26,18 +33,117 @@ thích nghi đánh giá chất lượng, rồi quần thể được cập nhậ
 ghép và đột biến. Cách tiếp cận này thường dùng cho bài tối ưu khó, nơi lời
 giải chính xác quá đắt hoặc không cần thiết.
 
-\section{Ví dụ cây khung}
+Điểm khác biệt của \GA{} so với tìm kiếm cục bộ đơn lẻ là nó làm việc trên
+cả một quần thể. Mỗi cá thể là một điểm trong không gian nghiệm; qua nhiều
+thế hệ, những cá thể có độ thích nghi cao có xác suất đóng góp nhiều hơn vào
+thế hệ sau. Nhờ vậy thuật toán vừa khai thác các nghiệm tốt đã tìm thấy, vừa
+giữ một mức ngẫu nhiên để thoát khỏi cực trị cục bộ.
+
+Quy trình cơ bản gồm năm bước:
+\begin{enumerate}
+  \item chọn cách mã hóa nghiệm thành nhiễm sắc thể;
+  \item sinh quần thể ban đầu;
+  \item tính độ thích nghi của từng cá thể;
+  \item tạo thế hệ mới bằng giữ lại, lai ghép và đột biến;
+  \item lặp cho tới khi hết số thế hệ hoặc hội tụ đủ chậm.
+\end{enumerate}
+
+Slide nhấn mạnh rằng \GA{} không phải phép màu thay cho mô hình hóa. Nếu mã
+hóa không bảo toàn cấu trúc của nghiệm, hoặc hàm thích nghi không phản ánh
+đúng mục tiêu, quần thể có thể tiến hóa rất nhanh nhưng đi về hướng sai.
+
+\section{Bài cây khung nhỏ nhất đa mục tiêu}
 
 Việc nhắc tới Prim và Kruskal cho thấy slide có ví dụ liên quan tới cây khung
-hoặc tối ưu trên đồ thị. Trong bối cảnh thuật toán di truyền, một cá thể có
-thể mã hóa một cây hoặc một thứ tự chọn cạnh; hàm thích nghi đo tổng trọng số
-và mức vi phạm ràng buộc.
+trên đồ thị. Với cây khung nhỏ nhất một mục tiêu, Prim và Kruskal chọn cạnh
+theo trọng số và cho lời giải tối ưu hiệu quả. Nhưng trong bài toán thực tế,
+mỗi cạnh có thể có nhiều trọng số: chi phí, độ ổn định, độ khó thi công, độ
+trễ, tác động môi trường, v.v. Khi ấy ta không còn một tổng trọng số duy nhất
+để tối thiểu hóa.
+
+Bài toán trong bài viết là cây khung nhỏ nhất đa mục tiêu. Một nghiệm là một
+cây khung, còn giá trị của nghiệm là vector
+\[
+  F(x)=\bigl(f_1(x),f_2(x),\ldots,f_m(x)\bigr),
+\]
+trong đó \(f_i(x)\) là tổng chi phí của cây trên mục tiêu thứ \(i\). Ta quan
+tâm các nghiệm không bị trội: không có nghiệm khác tốt hơn hoặc bằng trên mọi
+mục tiêu và tốt hơn hẳn trên ít nhất một mục tiêu. Lớp bài toán này là
+NP-khó, nên vét cạn hoặc cố ép về một mục tiêu bằng trọng số tuyến tính đều
+có hạn chế.
+
+\section{Mã hóa bằng mã \Pruefer}
+
+Để dùng \GA{}, trước hết phải mã hóa cây khung thành nhiễm sắc thể. Slide đi
+theo mã \Pruefer{}: với đồ thị đầy đủ \(n\) đỉnh, mỗi cây tương ứng với một
+chuỗi độ dài \(n-2\), mỗi phần tử là một số trong \(1,\ldots,n\). Biểu diễn
+này có hai lợi ích thực dụng. Thứ nhất, sinh một nhiễm sắc thể ngẫu nhiên rất
+dễ: chỉ cần sinh \(n-2\) số. Thứ hai, giải mã một chuỗi thành cây luôn cho
+một cây hợp lệ, nên các thao tác di truyền không cần sửa chữa quá nhiều nghiệm
+không hợp lệ.
+
+Bản slide gốc có hình minh họa cây và chuỗi \Pruefer{} tương ứng; ở đây không
+lặp lại hình. Ý chính là: khi mã hóa, liên tục xóa lá có nhãn nhỏ nhất và ghi
+lại đỉnh kề nó; khi giải mã, dùng phần tử đầu của chuỗi cùng đỉnh nhỏ nhất
+chưa xuất hiện trong chuỗi để phục hồi cạnh. Phần này là nền để hiểu vì sao
+lai ghép và đột biến trên chuỗi vẫn tạo ra cây khung sau khi giải mã.
+
+\section{Hàm thích nghi và toán tử}
+
+Với nhiều mục tiêu, không nên cộng thô các chi phí vì thang đo của từng mục
+tiêu có thể rất khác nhau. Bài viết dùng hàm đánh giá dạng
+\[
+  g(x)=\sum_{i=1}^{m}
+  \left(\frac{\operatorname{min}[i]}{f_i(x)}\cdot 100\right)^2,
+\]
+trong đó \(\operatorname{min}[i]\) là giá trị tốt nhất đã thấy trên mục tiêu
+thứ \(i\). Cách chuẩn hóa này giúp cá thể tốt ở một mục tiêu không bị che mất
+chỉ vì mục tiêu khác có miền giá trị lớn hơn.
+
+Ba nhóm toán tử chính là:
+\begin{itemize}
+  \item \term{giữ lại}: đưa cá thể tốt sang thế hệ sau để hỗ trợ hội tụ;
+  \item \term{lai ghép}: hoán đổi các đoạn ngắn cùng vị trí giữa hai chuỗi
+  \Pruefer{}, rồi giữ cá thể con tốt hơn;
+  \item \term{đột biến}: thay ngẫu nhiên một vị trí trong chuỗi, thường với
+  xác suất nhỏ để tránh phá hỏng cấu trúc tốt đã có.
+\end{itemize}
+Các tỷ lệ trong bài viết là giữ lại \(54\%\), lai ghép \(45\%\), đột biến
+\(1\%\). Slide chỉ cần người đọc nhớ vai trò cân bằng: giữ lại giúp hội tụ,
+lai ghép khai thác nghiệm hiện có, đột biến duy trì khả năng tìm kiếm toàn
+cục.
+
+\section{Thử nghiệm và cách đọc kết quả}
+
+Các biểu đồ trong slide dùng để so sánh \GA{} với tìm kiếm nguyên thủy trên
+dữ liệu nhỏ, vừa và một số dữ liệu có tương quan giữa các mục tiêu. Với dữ
+liệu rất nhỏ, tìm kiếm nguyên thủy có thể xác nhận nghiệm tối ưu. Khi kích
+thước tăng, không gian cây khung tăng rất nhanh; bài viết ghi những trường
+hợp tìm kiếm mất hàng chục phút, nhiều giờ, thậm chí ước lượng hàng trăm năm,
+trong khi \GA{} vẫn cho nghiệm gần tối ưu trong thời gian ngắn.
+
+Mốc \(1200\) đọc được trong slide nhiều khả năng thuộc phần minh họa dữ liệu
+hoặc tham số thử nghiệm. Điều quan trọng hơn là cách đánh giá: thuật toán di
+truyền không hứa tìm toàn bộ tập Pareto tối ưu một cách chứng minh được trong
+mọi lần chạy. Nó cho một nhóm nghiệm tốt, thường rất gần biên tối ưu, và có
+thể chạy lại nhiều lần để tăng xác suất tìm được nghiệm mong muốn.
+
+\section{Ghi chú về mã nguồn}
+
+Tài liệu gốc có phụ lục chương trình Pascal khá dài. Theo tinh thần bản ghi
+chú slide, không cần chép lại khuôn mã ấy. Các điểm cần giữ khi cài đặt là:
+mã hóa và giải mã \Pruefer{}, tính vector chi phí của cây, cập nhật tập nghiệm
+không bị trội, chọn cá thể theo độ thích nghi, rồi áp dụng ba toán tử với tỷ
+lệ đã đặt.
 
 \section{Kết luận}
 
 Thuật toán di truyền mạnh ở khả năng tìm nghiệm tốt trong không gian lớn,
 nhưng cần thiết kế mã hóa và hàm thích nghi cẩn thận. Bài trình bày nhấn mạnh
 đây là công cụ heuristic, không phải thay thế cho chứng minh tối ưu khi bài
-đòi hỏi đáp án chính xác.
+đòi hỏi đáp án chính xác. Với bài cây khung đa mục tiêu, thông điệp của slide
+rất rõ: Prim và Kruskal giải đẹp bài một mục tiêu, còn khi mục tiêu trở thành
+một vector và không gian nghiệm quá lớn, tư tưởng tiến hóa là một hướng thực
+dụng để tìm nhanh các nghiệm tốt.
 
 \end{document}

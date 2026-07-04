@@ -3,6 +3,8 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
+\newcommand{\Oh}{\mathcal{O}}
+
 \title{Bản trình chiếu: Ghi chú về tối ưu trên lưới}
 \author{Wu Jingyue}
 \date{2005}
@@ -10,27 +12,127 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for Wu Jingyue's grid presentation}
+\origtitle{Ghi chú về tối ưu trên lưới: bản trình chiếu}
 \sourcepath{IOI China candidate team papers / 2005 / Wu Jingyue / Wu Jingyue.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Phạm vi khôi phục}
 
-Tệp gốc chỉ có PowerPoint. Phần văn bản đọc được gồm mô hình lưới
-\(M\times N\), gốc \((0,0)\), ràng buộc \(M,N\le 4000\), các bước
-\((r+P,c+Q)\), \((r+Q,c+P)\), \(P,Q\le 10\), \(B\le 10\), và \(D\le 5000\).
+Tệp gốc hiện chỉ có PowerPoint, không có bài viết Word đi kèm trong thư mục
+2005. Phần văn bản đọc được từ slide gồm các mốc sau: tác giả ``Jingyue Wu'',
+lưới \(M\times N\), gốc \((0,0)\), điều kiện \(M,N\le 4000\), trạng thái
+\((r,c)\), hai phép chuyển
+\[
+  (r,c)\to(r+P,c+Q),\qquad
+  (r,c)\to(r+Q,c+P),
+\]
+với \(P,Q\le 10\), thêm các giới hạn \(B\le 10\), \(D\le 5000\), và một biến
+thể có \(M\le 10^{15}\). Các mốc khác như \(D=3\), \(M=4\), \(N\le 1000\),
+\(\le 8\), \(N=5\), \(R=2\), cùng nhãn hình \texttt{p10743a} và
+\texttt{p10743b}, cho thấy slide chủ yếu minh họa bằng hình và dữ liệu mẫu.
 
-\section{Mô hình nhận diện được}
+Bản ghi chú này vì thế không cố dựng lại toàn bộ đề bài. Nó dịch và hệ thống
+hóa những nội dung chắc chắn nhận diện được: các bài tối ưu trên lưới lớn,
+trong đó phép chuyển hoặc tham số cục bộ nhỏ hơn rất nhiều so với kích thước
+lưới.
 
-Các slide mô tả một bài toán di chuyển hoặc phủ trên lưới. Từ một ô
-\((r,c)\), trạng thái có thể chuyển sang hai vị trí đối xứng theo \(P,Q\).
-Khi \(P,Q\) nhỏ nhưng \(M,N\) lớn, cách tiếp cận tự nhiên là dùng BFS, quy
-hoạch động theo lớp, hoặc nén trạng thái theo phần dư.
+\section{Mô hình bước đi trên lưới}
 
-\section{Thông điệp}
+Mô hình rõ nhất là bài toán đi trên lưới. Từ ô \((r,c)\), ta có thể đi tới
+\((r+P,c+Q)\) hoặc \((r+Q,c+P)\). Hai bước này đối xứng theo hoán đổi
+\(P,Q\), giống một quân cờ có hai hướng tiến. Vì \(P,Q\le 10\), số kiểu bước
+rất nhỏ, nhưng \(M,N\) có thể tới \(4000\), nên số ô đã là \(1.6\cdot 10^7\).
+Nếu mỗi ô còn kèm thêm trạng thái phụ, lời giải trực tiếp dễ vượt bộ nhớ.
 
-Với lưới lớn, không thể lưu mọi biến thể nếu mỗi ô còn kèm nhiều tham số. Cần
-khai thác giới hạn nhỏ của \(P,Q,B\) hoặc \(D\) để giảm trạng thái. Bản dịch
-này giữ lại các ràng buộc và mô hình chuyển trạng thái chắc chắn đọc được từ
-slide.
+Khi chỉ hỏi khả năng tới được hoặc số bước ít nhất trong lưới vừa phải, đồ thị
+trạng thái có đỉnh là ô và cạnh là phép chuyển. Vì mọi cạnh cùng trọng số,
+BFS là công cụ đầu tiên. Tuy nhiên, BFS cần đánh dấu mọi ô có thể tới. Với
+\(M,N\le 4000\), bitset hoặc mảng một byte còn có thể chấp nhận; với nhiều
+tầng trạng thái thì phải nén.
+
+Một quan sát cơ bản là mọi bước đều tăng cả hàng và cột. Vì vậy đồ thị có
+hướng không chu trình nếu chỉ xét các bước như trên. Khi đó có thể xử lý theo
+thứ tự tăng của \(r+c\), hoặc theo từng đường chéo \(r+c=\text{hằng số}\),
+thay vì dùng hàng đợi tổng quát. Nếu bài toán yêu cầu đếm hoặc tối ưu giá trị,
+quy hoạch động theo lớp thường đơn giản hơn BFS.
+
+\section{Khai thác tham số nhỏ}
+
+Các giới hạn \(P,Q\le 10\), \(B\le 10\) và \(D\le 5000\) gợi ý rằng phần khó
+không nằm ở một ô riêng lẻ, mà ở cách trạng thái phụ lan truyền trên lưới.
+Một mẫu xử lý thường gặp là đưa các tham số nhỏ vào trạng thái, còn tọa độ lớn
+được xử lý bằng lớp hoặc phần dư.
+
+Nếu bước đi chỉ phụ thuộc vào \(r\bmod g\) và \(c\bmod g\), trong đó
+\(g=\gcd(P,Q)\) hoặc một mô-đun nhỏ khác, các ô cùng lớp phần dư có hành vi
+tương tự. Khi đó ta không cần xét mọi tọa độ độc lập; có thể xử lý trên đồ thị
+phần dư rồi suy ra vùng tọa độ tương ứng. Điều này đặc biệt quan trọng khi
+slide nêu biến thể \(M\le 10^{15}\): không thuật toán nào đi qua từng hàng
+được, nên chắc chắn phải dùng tính chu kỳ, công thức, hoặc ma trận chuyển
+trên số trạng thái nhỏ.
+
+Nếu \(B\le 10\) biểu diễn số vật cản, số điểm đặc biệt hoặc số lần được dùng
+một thao tác, cách tự nhiên là tách phần đặc biệt khỏi nền lưới. Ta tính quan
+hệ giữa các điểm đặc biệt bằng BFS hoặc công thức trên lưới trống, rồi chạy
+DP theo tập con hoặc theo số lần dùng thao tác. Với \(B\) nhỏ, miền \(2^B\)
+còn khả thi; với \(M,N\) lớn, điều quan trọng là không nhân \(2^B\) với toàn
+bộ số ô nếu có thể tránh.
+
+Nếu \(D\le 5000\) là giới hạn khoảng cách hoặc số bước, ta có thể chỉ giữ một
+dải quanh biên đang xét. Khi mỗi bước tăng tọa độ, sau \(D\) bước chỉ có
+\(\Oh(D)\) lớp đường chéo liên quan; những lớp quá xa không ảnh hưởng tới đáp
+án. Đây là một kiểu tối ưu bộ nhớ bằng cửa sổ trượt.
+
+\section{Lưới rất lớn và tính chu kỳ}
+
+Mốc \(M\le 10^{15}\) cho thấy slide có ít nhất một ví dụ nơi kích thước lưới
+vượt xa khả năng duyệt. Trong các bài như vậy, cần tìm một cấu trúc lặp. Có
+ba hướng phổ biến:
+\begin{itemize}
+  \item nén tọa độ theo những hàng hoặc cột đặc biệt;
+  \item dùng phần dư theo chu kỳ của phép chuyển;
+  \item xây một ma trận hoặc đồ thị chuyển nhỏ rồi lũy thừa nhanh theo số lớp.
+\end{itemize}
+
+Chẳng hạn, nếu trạng thái của một đường chéo chỉ phụ thuộc vào vài đường chéo
+trước đó, ta có thể xem mỗi đường chéo là một trạng thái tổng hợp. Với số mẫu
+trạng thái nhỏ, chuyển qua \(M\) hoặc \(N\) lớp có thể tính bằng lũy thừa ma
+trận hoặc phát hiện chu kỳ. Nếu có các điểm đặc biệt thưa, chỉ cần chia lưới
+thành các khoảng giữa các điểm ấy; trong mỗi khoảng, phép chuyển giống nhau và
+có thể xử lý hàng loạt.
+
+Điểm cần kiểm soát là quy tắc thay thế. Không phải mọi phần lặp đều có thể
+nén; chỉ nén được khi phần bị bỏ không chứa thông tin phân biệt ảnh hưởng tới
+đáp án. Vì vậy khi dùng chu kỳ hoặc phần dư, phải chứng minh rằng hai ô cùng
+lớp thật sự có cùng tập chuyển và cùng điều kiện biên liên quan.
+
+\section{Cách trình bày thuật toán}
+
+Với một bài tối ưu lưới kiểu này, slide thường nên đọc theo trình tự:
+\begin{enumerate}
+  \item xác định trạng thái tối thiểu, ví dụ ô \((r,c)\), lớp đường chéo, hay
+  cặp phần dư;
+  \item xác định phép chuyển, ở đây là hai bước \((P,Q)\) và \((Q,P)\);
+  \item tìm thứ tự xử lý tự nhiên: BFS, thứ tự tăng \(r+c\), hoặc lũy thừa
+  chuyển;
+  \item dùng các giới hạn nhỏ như \(P,Q,B,D\) để giảm bộ nhớ và thời gian;
+  \item xử lý riêng biên của hình chữ nhật \(M\times N\).
+\end{enumerate}
+
+Biên là phần dễ sai. Một công thức đúng trên lưới vô hạn có thể đếm cả các ô
+ngoài hình chữ nhật. Khi \(M,N\le 4000\), kiểm tra biên trực tiếp trong BFS
+hoặc DP là đủ. Khi \(M\) rất lớn, cần đưa biên vào công thức nén: số lớp đầy
+đủ ở giữa, cộng với vài lớp đầu và cuối xử lý riêng.
+
+\section{Kết luận}
+
+Nội dung chắc chắn của bản trình chiếu là một nhóm ví dụ về tối ưu trên lưới
+lớn với bước đi nhỏ. Mẫu tư duy chung là không để kích thước hình chữ nhật
+quyết định trực tiếp độ phức tạp. Nếu lưới vừa phải, dùng BFS hoặc DP theo
+lớp và tối ưu bộ nhớ. Nếu một chiều rất lớn, tìm chu kỳ, phần dư, điểm đặc
+biệt hoặc phép chuyển tổng hợp để nhảy qua nhiều lớp cùng lúc.
+
+Do phần chữ của PowerPoint quá ít, bản ghi chú này giữ mức khái quát và chỉ
+dùng các ràng buộc đọc được từ slide. Các chi tiết bài cụ thể trong hình gốc
+không được suy đoán thêm.
 
 \end{document}

@@ -3,6 +3,8 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
+\newcommand{\Oh}{\mathcal{O}}
+
 \title{Bản trình chiếu: Cây lệch trái và ứng dụng}
 \author{Huang Yuanhe}
 \date{2005}
@@ -10,37 +12,139 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for leftist-tree applications}
+\origtitle{Đặc điểm và ứng dụng của cây lệch trái: bản trình chiếu}
 \sourcepath{IOI China candidate team papers / 2005 / Huang Yuanhe / Huang Yuanhe.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mạch trình bày}
 
-Bản trình chiếu đi cùng bài viết về cây lệch trái. Các slide đọc được chứa
-các thuật ngữ \textit{Leftist Tree}, \textit{Mergeable Heap},
-\textit{Heap Ordered}, \textit{Leftist Property}, \(\operatorname{dist}(i)\),
-cùng mã giả \texttt{Merge(A,B)}.
+Bản trình chiếu đi cùng bài viết \emph{Đặc điểm và ứng dụng của cây lệch
+trái}. Văn bản trích xuất được từ PowerPoint có các mốc chính:
+\textit{Leftist Tree}, \textit{Mergeable Heap}, \textit{Heap Ordered},
+\textit{Leftist Property}, \textit{External Node}, \(\operatorname{dist}(i)\),
+các thao tác \textsc{MakeNull}, \textsc{Merge}, \textsc{Insert},
+\textsc{Min}, \textsc{DeleteMin}, \textsc{Delete}, \textsc{Decrease}, cùng
+bài ví dụ với \(n\le 10^6\), \(0\le a_i\le 2\cdot 10^9\), trung vị và độ
+phức tạp \(\Oh(n\log n)\). Bản ghi chú này tóm lược nội dung slide theo bài
+viết đã dịch; phần mã gộp chỉ được diễn giải, không chép lại thành khuôn dài.
 
 \section{Tính chất}
 
-Cây lệch trái là một đống có thể gộp. Mỗi nút lưu khoảng cách tới nút ngoài
-gần nhất. Tính chất lệch trái đảm bảo
+Cây lệch trái là một hiện thực của đống có thể gộp. Đống nhị phân rất tốt cho
+chèn và xóa phần tử nhỏ nhất, nhưng gộp hai đống nhị phân thường tốn
+\(\Oh(n)\). Nếu thuật toán cần liên tục hợp nhất các hàng đợi ưu tiên, thao
+tác gộp trở thành nút thắt; cây lệch trái được thiết kế để giải quyết đúng
+điểm này.
+
+Mỗi nút có khóa, con trái, con phải và một giá trị khoảng cách
+\(\operatorname{dist}\). Nút ngoài là nút có ít nhất một con rỗng. Khoảng cách
+của nút \(i\), ký hiệu \(\operatorname{dist}(i)\), là số cạnh trên đường ngắn
+nhất từ \(i\) tới một nút ngoài trong cây con của nó; nút rỗng được quy ước có
+khoảng cách \(-1\).
+
+Cây lệch trái thỏa hai tính chất. Thứ nhất là tính chất đống:
+khóa của cha không lớn hơn khóa của con, nên gốc chứa phần tử nhỏ nhất. Thứ
+hai là tính chất lệch trái:
 \[
   \operatorname{dist}(\operatorname{left}(x)) \ge
   \operatorname{dist}(\operatorname{right}(x)),
 \]
-nên nhánh phải ngắn và thao tác gộp có độ phức tạp \(O(\log N)\).
+nên đường đi theo con phải luôn ngắn. Từ định nghĩa này suy ra
+\[
+  \operatorname{dist}(x)=\operatorname{dist}(\operatorname{right}(x))+1.
+\]
+Nếu một cây lệch trái có \(N\) nút, khoảng cách của gốc không vượt quá
+\[
+  \lfloor\log(N+1)\rfloor-1.
+\]
+Đây là lý do mọi thao tác chỉ đi dọc nhánh phải có độ phức tạp logarit.
 
 \section{Thao tác gộp}
 
-Hàm \texttt{Merge(A,B)} chọn gốc có khóa nhỏ hơn, gộp cây còn lại vào con phải,
-rồi hoán đổi hai con nếu tính chất lệch trái bị vi phạm. Từ thao tác gộp, ta
-có \texttt{Insert}, \texttt{DeleteMin}, \texttt{Delete} và
-\texttt{DecreaseKey}.
+Thao tác trung tâm của toàn bộ cấu trúc là
+\[
+  C\gets\operatorname{Merge}(A,B).
+\]
+Nếu một cây rỗng, kết quả là cây còn lại. Nếu cả hai cây không rỗng, chọn gốc
+có khóa nhỏ hơn làm gốc mới; cây kia được gộp đệ quy vào con phải của gốc ấy.
+Sau khi gộp xong, có thể khoảng cách con phải lớn hơn con trái, làm mất tính
+chất lệch trái. Khi đó chỉ cần hoán đổi hai con, rồi cập nhật
+\(\operatorname{dist}\) từ con phải mới.
 
-\section{Ứng dụng}
+Slide có mã giả \textsc{Merge}, nhưng ý tưởng chỉ gồm ba bước trên: chọn gốc
+nhỏ hơn, gộp vào nhánh phải, rồi sửa lại bằng hoán đổi nếu cần. Vì mỗi bước
+đệ quy đi xuống một nhánh phải, số bước bị chặn bởi tổng khoảng cách của hai
+cây. Do đó
+\[
+  \operatorname{Merge}(A,B)=\Oh(\log N_1+\log N_2),
+\]
+thường viết gọn là \(\Oh(\log N)\).
 
-Các slide có ví dụ ghép hai đa tập \(\{a_i\}\), \(\{b_i\}\) để tối thiểu hóa
-\(\sum_i |a_i-b_i|\), cùng các mốc Fibonacci và \(O(n\log n)\). Bản bài viết
-đã dịch trình bày chi tiết hơn các ứng dụng này.
+Các thao tác khác đều quy về gộp. Chèn một phần tử là gộp cây hiện tại với
+cây một nút. Lấy phần tử nhỏ nhất chỉ cần đọc gốc. Xóa phần tử nhỏ nhất là
+xóa gốc rồi gộp hai cây con. Xóa một nút đã biết hoặc giảm khóa cần thêm con
+trỏ cha và một bước sửa dọc đường lên, nhưng vẫn dựa trên thao tác gộp và giữ
+được độ phức tạp \(\Oh(\log N)\). Slide liệt kê các tên thao tác này để nhấn
+mạnh rằng cây lệch trái không chỉ là một mẹo gộp, mà là một hàng đợi ưu tiên
+hoàn chỉnh khi cần hợp nhất động.
+
+\section{Xây dựng và so sánh}
+
+Nếu chèn từng nút một, xây cây từ \(n\) phần tử tốn \(\Oh(n\log n)\). Bài
+viết còn nêu cách dùng một hàng đợi: ban đầu mỗi phần tử là một cây một nút,
+mỗi lần lấy hai cây đầu hàng đợi gộp lại rồi đưa về cuối. Lịch gộp theo từng
+cặp làm kích thước các cây gần nhau, và tổng chi phí là \(\Oh(n)\). Đây là
+một chi tiết hữu ích khi cần khởi tạo lớn.
+
+So với đống nhị phân, cây lệch trái tốn thêm con trỏ và trường
+\(\operatorname{dist}\), nên không phải lựa chọn tốt nhất cho mọi hàng đợi ưu
+tiên. Điểm mạnh của nó là thao tác gộp nhanh và các nút có vị trí vật lý ổn
+định hơn, thuận tiện khi cần xóa một nút đã biết. Slide cũng nhắc đống
+Fibonacci: nó có một số độ phức tạp lý thuyết tốt hơn, nhưng cài đặt dài và
+dễ sai hơn. Trong bối cảnh thi lập trình, cây lệch trái thường hấp dẫn vì cân
+bằng giữa hiệu năng và độ đơn giản.
+
+\section{Ứng dụng: dãy không giảm gần nhất}
+
+Ví dụ chính của slide là bài \textit{Dãy số} của Baltic 2004. Cho dãy
+\[
+  a_1,a_2,\ldots,a_n,\qquad n\le 10^6,\quad 0\le a_i\le 2\cdot10^9,
+\]
+cần tìm dãy không giảm
+\[
+  b_1\le b_2\le\cdots\le b_n
+\]
+sao cho
+\[
+  |a_1-b_1|+|a_2-b_2|+\cdots+|a_n-b_n|
+\]
+nhỏ nhất.
+
+Nếu một đoạn của nghiệm có cùng giá trị, giá trị tối ưu của đoạn đó là trung
+vị của các \(a_i\) trong đoạn. Vì nghiệm \(b\) phải không giảm, thuật toán
+duy trì dãy các đoạn, mỗi đoạn có một trung vị \(w\). Khi thêm \(a_{k+1}\),
+ta tạo một đoạn mới. Nếu trung vị đoạn trước lớn hơn trung vị đoạn sau, hai
+đoạn vi phạm tính không giảm và phải được gộp. Sau khi gộp, trung vị mới lại
+có thể vi phạm với đoạn trước nữa, nên tiếp tục gộp ngược cho tới khi các
+trung vị tăng dần.
+
+Cấu trúc dữ liệu cần hỗ trợ hai việc: gộp tập phần tử của hai đoạn và biết
+trung vị của tập sau khi gộp. Ta dùng một đống lớn cho mỗi đoạn, giữ nửa nhỏ
+hơn của các phần tử; đỉnh đống là trung vị theo quy ước của bài viết. Khi hai
+đoạn gộp lại, chỉ cần gộp hai đống, rồi xóa bớt đỉnh nếu số phần tử trong
+đống vượt quá nửa kích thước đoạn. Vì các đống phải gộp nhiều lần, cây lệch
+trái là lựa chọn tự nhiên. Tổng số lần gộp và xóa bị chặn bởi số phần tử, nên
+độ phức tạp toàn bài là
+\[
+  \Oh(n\log n).
+\]
+
+\section{Tổng kết}
+
+Thông điệp của bản trình chiếu là: cây lệch trái không phải cây cân bằng để
+tìm kiếm theo khóa, mà là đống có thể gộp. Nó giữ đường phải ngắn bằng giá
+trị \(\operatorname{dist}\), nhờ vậy thao tác gộp nhanh; từ gộp suy ra chèn,
+xóa nhỏ nhất và các thao tác mở rộng. Trong các bài mà các tập ưu tiên liên
+tục hợp nhất, đặc biệt khi cần trung vị hoặc cực trị của các khối đang gộp,
+cây lệch trái thường cho lời giải vừa gọn vừa đủ nhanh.
 
 \end{document}

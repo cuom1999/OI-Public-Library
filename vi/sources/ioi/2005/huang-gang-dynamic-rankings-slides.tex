@@ -3,6 +3,8 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
+\newcommand{\Oh}{\mathcal{O}}
+
 \title{Bản trình chiếu: Dynamic Rankings}
 \author{Huang Gang}
 \date{2005}
@@ -10,34 +12,133 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for Dynamic Rankings}
+\origtitle{Dynamic Rankings: bản trình chiếu}
 \sourcepath{IOI China candidate team papers / 2005 / Huang Gang / Huang Gang.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mạch trình bày}
 
-Tệp gốc chỉ có PowerPoint. Phần chữ đọc được khá rõ: chủ đề là
-\textit{Dynamic Rankings}, với các thao tác \(C(i,j)\), \(Q(i,j,k)\),
-\(T(i,j,w)\), dãy \(A[1..N]\), ràng buộc \(N\le 50000\), và độ phức tạp
-\(O(\log N)\), \(O(N\log N)\), \(O(\log^2 N)\).
+Tệp gốc chỉ có PowerPoint, nhưng phần chữ đọc được từ slide khá rõ. Chủ đề là
+\textit{Dynamic Rankings}; giới hạn xuất hiện trên slide gồm
+\[
+  1\le N\le 50000,\qquad 1\le A[i]\le \mathrm{MaxLongint},
+\]
+cùng các thao tác \(C(i,j)\), \(Q(i,j,k)\), \(T(i,j,w)\). Các mốc độ phức
+tạp gồm \(\Oh(\log N)\), \(\Oh(N\log N)\), \(\Oh(\log^2 N)\) và tổng
+\(\Oh(M\log\mathrm{MaxLongint}\log^2 N)\). Bản ghi chú này dịch lại mạch
+slide: từ truy vấn xếp hạng tĩnh, thêm cập nhật, rồi quy truy vấn hạng về
+truy vấn đếm.
 
 \section{Bài toán}
 
-Ta có dãy động \(A\). Truy vấn \(Q(i,j,k)\) yêu cầu phần tử hạng \(k\) trong
-đoạn \(A[i],A[i+1],\ldots,A[j]\). Thao tác \(C(i,j)\) có thể là cập nhật giá
-trị tại vị trí \(i\) thành \(j\). Đây là bài toán thống kê thứ tự trên đoạn có
-cập nhật.
+Ta có dãy
+\[
+  A[1],A[2],\ldots,A[N].
+\]
+Truy vấn
+\[
+  Q(i,j,k)
+\]
+yêu cầu tìm phần tử nhỏ thứ \(k\) trong đoạn
+\[
+  A[i],A[i+1],\ldots,A[j].
+\]
+Thao tác
+\[
+  C(i,j)
+\]
+cập nhật \(A[i]\) thành \(j\). Slide có ví dụ nhỏ
+\[
+  N=6,\qquad A=[3,1,6,5,2,4],
+\]
+để minh họa rằng truy vấn không hỏi thứ tự toàn cục của cả dãy, mà hỏi thứ tự
+của một đoạn con thay đổi theo thời gian.
+
+Nếu không có cập nhật, bài toán có thể xử lý offline hoặc xây cấu trúc dữ liệu
+tĩnh. Nếu chỉ hỏi hạng trên toàn bộ dãy, một cây cân bằng hoặc cây Fenwick
+theo giá trị cũng đủ. Điểm khó của \textit{Dynamic Rankings} là hai chiều động
+cùng xuất hiện: đoạn truy vấn thay đổi theo chỉ số, còn giá trị tại một vị trí
+cũng thay đổi sau các lệnh \(C\).
 
 \section{Mô hình dữ liệu}
 
-Một cách giải điển hình là cây đoạn theo chỉ số, trong mỗi nút lưu cấu trúc
-theo giá trị, hoặc Fenwick tree trên vị trí kết hợp cây cân bằng theo giá trị.
-Truy vấn \(T(i,j,w)\) thường đếm số phần tử trong đoạn \([i,j]\) không vượt
-quá \(w\). Từ phép đếm này, ta nhị phân giá trị để tìm hạng \(k\).
+Slide dẫn từ truy vấn toàn cục \(Q(k)\), rồi đến truy vấn đoạn \(Q(i,j)\), và
+cuối cùng tới \(Q(i,j,k)\). Cách nhìn này rất quan trọng: trước khi tìm phần
+tử hạng \(k\), ta cần biết cách trả lời câu hỏi đơn giản hơn:
+\[
+  T(i,j,w)=\#\{x\mid i\le x\le j,\ A[x]\le w\}.
+\]
+Nói cách khác, \(T(i,j,w)\) đếm có bao nhiêu phần tử trong đoạn \([i,j]\)
+không vượt quá ngưỡng \(w\). Ví dụ slide ghi dãy
+\[
+  A=[1,4,2,1]
+\]
+và truy vấn \(T(2,4,3)\). Đoạn cần xét là \(4,2,1\), nên có hai phần tử không
+vượt quá \(3\).
 
-\section{Kết luận}
+Khi đã có \(T\), truy vấn hạng được chuyển thành tìm ngưỡng nhỏ nhất \(w\) sao
+cho
+\[
+  T(i,j,w)\ge k.
+\]
+Vì \(T(i,j,w)\) đơn điệu theo \(w\), có thể nhị phân trên miền giá trị. Đây là
+ý tưởng trung tâm của slide: không trực tiếp duy trì phần tử hạng \(k\), mà
+duy trì một hàm đếm đủ mạnh để khôi phục hạng bằng tìm kiếm.
 
-Các slide nhấn mạnh quá trình tách truy vấn hạng thành truy vấn đếm. Khi cả
-cập nhật và truy vấn đều động, độ phức tạp \(O(\log^2 N)\) là mục tiêu tự
-nhiên cho mỗi thao tác.
+\section{Cấu trúc hai tầng}
+
+Một hiện thực chuẩn là cây đoạn hoặc cây Fenwick theo chỉ số, trong mỗi nút
+lưu một cấu trúc có thứ tự theo giá trị. Với một tiền tố \(A[1..p]\), Fenwick
+tree biểu diễn nó bằng \(\Oh(\log N)\) nút. Vì thế đoạn \([i,j]\) được trả lời
+bằng hiệu của hai tiền tố \(j\) và \(i-1\). Trong từng nút, ta cần biết có bao
+nhiêu giá trị không vượt quá \(w\); việc này có thể làm bằng cây cân bằng,
+mảng đã sắp xếp nếu tĩnh, hoặc cấu trúc động tương ứng nếu có cập nhật.
+
+Với cập nhật \(C(i,j)\), giá trị cũ của \(A[i]\) bị xóa khỏi mọi nút Fenwick
+chứa vị trí \(i\), và giá trị mới \(j\) được chèn vào các nút ấy. Có
+\(\Oh(\log N)\) nút bị ảnh hưởng. Nếu mỗi thao tác chèn, xóa, đếm trong cấu
+trúc con tốn \(\Oh(\log N)\), một lần cập nhật hoặc một lần tính \(T(i,j,w)\)
+tốn \(\Oh(\log^2 N)\). Đây là mốc độ phức tạp xuất hiện trong PowerPoint.
+
+Slide cũng ghi mốc xây dựng \(\Oh(N\log N)\). Điều này phù hợp với cách đưa
+mỗi phần tử ban đầu vào các nút Fenwick/cây đoạn tương ứng. Nếu cần nén giá
+trị, ta có thể thu thập trước mọi giá trị ban đầu và mọi giá trị xuất hiện
+trong cập nhật, rồi đánh số lại; khi đó nhị phân theo giá trị chạy trên tập
+giá trị rời rạc thay vì toàn bộ \(\mathrm{MaxLongint}\).
+
+\section{Từ T tới Q}
+
+Để trả lời \(Q(i,j,k)\), ta nhị phân \(w\). Với mỗi \(w\), gọi
+\[
+  c=T(i,j,w).
+\]
+Nếu \(c\ge k\), phần tử hạng \(k\) không lớn hơn \(w\), nên thu hẹp nửa trái.
+Nếu \(c<k\), cần tìm giá trị lớn hơn. Sau khi vòng nhị phân kết thúc, giá trị
+nhỏ nhất thỏa \(T(i,j,w)\ge k\) chính là đáp án.
+
+Nếu nhị phân trên toàn miền số nguyên, mỗi truy vấn tốn
+\[
+  \Oh(\log\mathrm{MaxLongint}\cdot\log^2 N).
+\]
+Với \(M\) lệnh, tổng thời gian khớp với mốc trên slide:
+\[
+  \Oh(M\log\mathrm{MaxLongint}\log^2 N),
+\]
+chưa tính bước xây dựng ban đầu. Nếu nén giá trị, thừa số
+\(\log\mathrm{MaxLongint}\) được thay bằng \(\log V\), trong đó \(V\) là số
+giá trị khác nhau có thể xuất hiện.
+
+\section{Nhận xét}
+
+Điểm đáng học của bản trình chiếu không chỉ là một cấu trúc dữ liệu cụ thể.
+Nó là cách tách bài toán thống kê thứ tự thành hai lớp: lớp ngoài xử lý đoạn
+theo chỉ số, lớp trong xử lý thứ tự theo giá trị. Truy vấn hạng \(k\) vốn có
+vẻ khó cập nhật trực tiếp được thay bằng truy vấn đếm \(T(i,j,w)\), một câu
+hỏi có tính cộng trừ theo tiền tố và đơn điệu theo \(w\).
+
+Khi gặp biến thể khác của bài toán, ta nên kiểm tra ba điểm: thao tác cập nhật
+có thể sửa bao nhiêu nút lớp ngoài; cấu trúc lớp trong có hỗ trợ đếm theo
+ngưỡng không; và miền giá trị có thể nén được không. Ba câu hỏi này thường
+quyết định lời giải đạt \(\Oh(\log^2 N)\) hay bị đội lên bởi các thao tác đếm
+hoặc nhị phân không cần thiết.
 
 \end{document}

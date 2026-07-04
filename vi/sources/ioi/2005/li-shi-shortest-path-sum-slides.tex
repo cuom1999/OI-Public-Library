@@ -3,6 +3,8 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
+\newcommand{\Oh}{\mathcal{O}}
+
 \title{Bản trình chiếu: Ghi chú về tổng khoảng cách ngắn nhất}
 \author{Li Shi}
 \date{2005}
@@ -10,38 +12,87 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for Li Shi's shortest-distance presentation}
+\origtitle{Shortest-distance sum presentation}
 \sourcepath{IOI China candidate team papers / 2005 / Li Shi / Li Shi.ppt}
 
 \section{Phạm vi bản dịch}
 
-Tệp gốc chỉ có PowerPoint. Phần chữ đọc được lặp lại công thức
+Tệp gốc chỉ có PowerPoint và phần chữ trích được rất ít. Những mốc ổn định
+nhất là công thức
 \[
-  d[i]=\min\{\operatorname{dis}[i,j]\},
-  \qquad d[1]+d[2]+\cdots+d[n],
+  d[i]=\min_j\{\operatorname{dis}[i,j]\},
+  \qquad
+  d[1]+d[2]+\cdots+d[n],
 \]
-cùng một số đối tượng hình ảnh. Nội dung dưới đây ghi lại mô hình thuật toán
-có thể xác định từ các công thức đó.
+cùng một số hình/hoạt ảnh không có lớp văn bản. Vì vậy bản ghi chú này không
+thể phục dựng một đề bài đầy đủ như các deck có bài viết đi kèm; nó ghi lại
+mạch thuật toán có thể xác nhận từ công thức và từ chủ đề của slide.
 
-\section{Mô hình}
+Trọng tâm là một dạng bài chọn đối tượng trung tâm: với mỗi đỉnh \(i\), ta cần
+biết khoảng cách ngắn nhất từ \(i\) đến một đỉnh hoặc một tập đỉnh được chọn,
+rồi tối ưu tổng các khoảng cách ấy.
 
-Với mỗi điểm hoặc đỉnh \(i\), đại lượng \(d[i]\) là khoảng cách tốt nhất từ
-\(i\) tới một tập đích hoặc một điểm được chọn. Mục tiêu là tối ưu tổng
-\(\sum_i d[i]\). Đây là dạng bài thường gặp trong chọn trung tâm, chọn trạm,
-hoặc gom nhóm trên đồ thị.
+\section{Mô hình khoảng cách}
 
-\section{Hướng giải}
+Giả sử đã có một đồ thị hoặc một không gian rời rạc. Ký hiệu
+\(\operatorname{dis}[i,j]\) là khoảng cách ngắn nhất từ \(i\) đến \(j\). Nếu
+chọn một tập trung tâm \(S\), đại lượng của mỗi đỉnh là
+\[
+  d[i]=\min_{j\in S}\operatorname{dis}[i,j].
+\]
+Hàm mục tiêu là
+\[
+  \sum_{i=1}^n d[i].
+\]
+Nếu \(S\) chỉ có một phần tử, ta chỉ cần so sánh tổng cột của ma trận khoảng
+cách. Nếu \(S\) có nhiều phần tử, bài toán trở thành chọn trạm, chọn điểm gom
+nhóm, hoặc phủ khoảng cách.
 
-Nếu \(\operatorname{dis}[i,j]\) là khoảng cách trên đồ thị, bước đầu là tính
-khoảng cách ngắn nhất bằng BFS, Dijkstra, Floyd hoặc biến thể theo cấu trúc
-đề. Sau đó bài toán trở thành chọn \(j\) hoặc một tập các \(j\) sao cho tổng
-khoảng cách nhỏ nhất. Khi số đỉnh lớn, cần khai thác tính chất đặc biệt thay
-vì thử mọi tập.
+\section{Tính khoảng cách}
 
-\section{Ghi chú}
+Slide không để lại đủ chữ để xác định đồ thị cụ thể, nên bước đầu được ghi ở
+mức phương pháp:
+\begin{itemize}
+  \item đồ thị không trọng số: dùng BFS từ từng đỉnh hoặc từ các trung tâm;
+  \item đồ thị trọng số không âm: dùng Dijkstra;
+  \item đồ thị nhỏ hoặc cần mọi cặp: dùng Floyd--Warshall;
+  \item đồ thị có cấu trúc đặc biệt: khai thác cây, lưới, thứ tự topo hoặc
+  ràng buộc hình học để tránh tính mọi cặp.
+\end{itemize}
 
-Do phần văn bản chính của slide không đọc được đầy đủ, bản dịch này giữ vai
-trò companion note và không mở rộng thành một lời giải cụ thể hơn dữ liệu
-khôi phục được.
+Sau khi có \(\operatorname{dis}\), việc cập nhật \(d[i]\) khi thêm một trung
+tâm mới \(x\) rất đơn giản:
+\[
+  d[i]\leftarrow \min(d[i],\operatorname{dis}[i,x]).
+\]
+Do đó nhiều lời giải có thể dùng chiến lược thử ứng viên, quy hoạch động trên
+tập nhỏ, hoặc chia trường hợp theo số trung tâm đã chọn.
+
+\section{Tối ưu tổng}
+
+Một cách nhìn hữu ích là tách bài toán thành hai phần. Phần thứ nhất là mô
+hình khoảng cách: làm sao tính \(\operatorname{dis}[i,j]\) chính xác và đủ
+nhanh. Phần thứ hai là bài toán lựa chọn: chọn những \(j\) nào để tổng
+\(\sum_i d[i]\) nhỏ nhất.
+
+Nếu tập ứng viên nhỏ, có thể duyệt từng \(j\). Nếu cần chọn \(k\) trung tâm,
+duyệt toàn bộ là \(\Oh(n^k)\), thường không khả thi. Khi đó cần tìm thêm tính
+chất:
+\begin{itemize}
+  \item trên đường thẳng hoặc cây, nghiệm thường có cấu trúc đoạn/con cây;
+  \item nếu chi phí thỏa bất đẳng thức tứ giác hoặc tính đơn điệu, có thể tối
+  ưu quy hoạch động;
+  \item nếu bài toán chỉ hỏi có tồn tại tổng không vượt quá một ngưỡng, có thể
+  chuyển sang bài quyết định rồi nhị phân;
+  \item nếu các trung tâm độc lập theo vùng, có thể chia để trị hoặc quy hoạch
+  theo thành phần.
+\end{itemize}
+
+\section{Kết luận}
+
+Phần chữ còn lại của PPT chỉ xác nhận chắc chắn công thức khoảng cách gần nhất
+và tổng khoảng cách. Vì vậy bản dịch giữ phạm vi thận trọng: nhấn mạnh cách
+đọc công thức, các bước thuật toán hợp lý và những hướng tối ưu thường dùng,
+thay vì tự bịa một đề bài cụ thể không còn trong lớp văn bản của slide.
 
 \end{document}

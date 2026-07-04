@@ -3,6 +3,8 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
+\newcommand{\Oh}{\mathcal{O}}
+
 \title{Bản trình chiếu: Tư tưởng cơ bản của lý thuyết đồ thị}
 \author{Ren Kai}
 \date{2005}
@@ -10,30 +12,125 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for graph-theory methods}
+\origtitle{Những tư tưởng và phương pháp cơ bản của lý thuyết đồ thị: bản trình chiếu}
 \sourcepath{IOI China candidate team papers / 2005 / Ren Kai / Ren Kai.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mạch chính của slide}
 
-Bản trình chiếu đi kèm bài viết về các tư tưởng và phương pháp cơ bản của lý
-thuyết đồ thị. Phần chữ khôi phục được từ PPT cũ có nhắc tới POI 2002, các
-ký hiệu cạnh \(E\), đỉnh \(u,v\), và độ phức tạp \(O(nm)\). Nội dung dưới đây
-dựa trên bản dịch bài viết cùng thư mục để ghi lại mạch trình bày.
+Bản trình chiếu đi cùng bài viết \emph{Những tư tưởng và phương pháp cơ bản
+của lý thuyết đồ thị}. Văn bản trích xuất được từ tệp PowerPoint cũ chỉ còn
+một số mốc rõ: \textit{POI 2002}, giới hạn \(n\le 5000\), các ký hiệu cạnh
+\(E\), đỉnh \(u,v\), điều kiện kiểu \(u=v\), và một mốc độ phức tạp
+\(\Oh(nm)\). Vì vậy bản ghi chú này dùng bài viết đã dịch trong cùng thư mục
+làm neo để phục hồi mạch slide: trước hết chọn mô hình đồ thị đúng, sau đó
+khai thác tính chất riêng của mô hình ấy.
 
-\section{Mạch nội dung}
+Thông điệp không phải là liệt kê nhiều thuật toán đồ thị. Tác giả nhấn mạnh
+rằng mô hình quyết định phần lớn độ khó còn lại. Cùng một đề có thể nhìn như
+luồng mạng, tập thứ tự bộ phận, bài toán liên thông, bài toán chia để trị, hay
+cây DFS. Mỗi mô hình giữ lại một loại quan hệ khác nhau; mô hình tốt làm bản
+chất bài toán nổi lên và thường dẫn tới thuật toán ngắn hơn.
 
-Tư tưởng chính là biến quan hệ rời rạc trong đề bài thành cấu trúc đồ thị:
-đỉnh biểu diễn đối tượng, cạnh biểu diễn ràng buộc, còn đường đi hoặc thành
-phần liên thông biểu diễn khả năng lan truyền thông tin. Khi mô hình đúng,
-nhiều bài toán chuyển về tìm cầu, khớp, thành phần liên thông mạnh, hoặc cây
-khung.
+\section{\textit{Skiers}: từ luồng mạng tới thứ tự bộ phận}
 
-\section{Thông điệp thuật toán}
+Ví dụ đầu tiên là \textit{Skiers} của POI 2002. Đề cho một đồ thị phẳng có
+hướng không chu trình. Có một đỉnh cao nhất \(v_h\) và một đỉnh thấp nhất
+\(v_l\); mọi cạnh đi từ cao xuống thấp. Cần dùng ít đường đi từ \(v_h\) tới
+\(v_l\) nhất để phủ toàn bộ cạnh.
 
-Các slide nhấn mạnh rằng không nên chỉ nhớ tên thuật toán. Cần nhận ra vì sao
-đồ thị mô tả đúng quan hệ trong dữ liệu, sau đó mới chọn DFS, BFS, Tarjan,
-Dijkstra hay mô hình luồng phù hợp. Bản trình chiếu dùng các ví dụ thi để
-minh họa cách giảm bài toán gốc về một bất biến hoặc một cấu trúc đồ thị nhỏ
-hơn.
+Cách nhìn trực tiếp là luồng mạng có cận dưới. Mỗi đường trượt là một đơn vị
+luồng từ nguồn tới đích; yêu cầu phủ mọi cạnh nghĩa là lưu lượng trên mỗi cạnh
+ít nhất bằng \(1\), còn số đường cần dùng là tổng lưu lượng ra khỏi nguồn. Sau
+khi dựng một luồng khả thi, ta tìm luồng ngược cực đại từ đích về nguồn để
+giảm tổng lưu lượng. Đây là mô hình quen thuộc, dễ kiểm chứng và có thể đạt
+\(\Oh(n^2)\) vì đồ thị phẳng có số cạnh tuyến tính.
+
+Nhưng slide muốn đi xa hơn: mô hình luồng đúng, song chưa dùng hết điều kiện
+phẳng và thứ tự hình học. Ta xem mỗi cạnh của đồ thị gốc là một phần tử của
+tập \(E\). Với hai cạnh
+\[
+  a=(u_a,v_a),\qquad b=(u_b,v_b),
+\]
+đặt \(a\le b\) nếu tồn tại đường đi từ \(v_a\) tới \(u_b\). Khi đó một đường
+trượt phủ được một dãy cạnh so sánh được, tức là một chuỗi trong tập thứ tự bộ
+phận. Bài toán trở thành chia \(E\) thành ít chuỗi nhất.
+
+Theo định lý Dilworth, số chuỗi ít nhất bằng kích thước phản chuỗi lớn nhất.
+Vì vậy ta không trực tiếp tìm các đường phủ nữa, mà tìm nhiều cạnh đôi một
+không thể đi nối tiếp nhau nhất. Điều này đổi mục tiêu từ ``phủ cạnh bằng
+đường đi'' thành ``tìm phản chuỗi lớn nhất'', một dạng phù hợp hơn với hình
+học phẳng của đề.
+
+\section{Khai thác đồ thị phẳng}
+
+Khi đã chuyển sang phản chuỗi, tính phẳng mới phát huy tác dụng. Trong một
+phản chuỗi lớn nhất, các cạnh có thể sắp từ trái sang phải. Hai cạnh kề nhau
+trong thứ tự ấy nằm trên hai biên của cùng một miền phẳng. Do đó nếu biết các
+miền của đồ thị, ta có thể quy hoạch động theo biên miền.
+
+Đặt \(f(x)\) là độ dài phản chuỗi tốt nhất ở phần bên trái cạnh \(x\) và kết
+thúc bằng \(x\). Nếu \(x\) nằm trên biên phải của một miền \(F\), cạnh đứng
+ngay trước \(x\) trong phản chuỗi chỉ có thể nằm trên biên trái của \(F\).
+Vì vậy:
+\[
+  f(x)=1+\max\{f(y)\mid y\text{ nằm trên biên trái của }F\}.
+\]
+
+Việc còn lại là duyệt các miền đúng thứ tự. Bài viết dùng DFS theo thứ tự
+cạnh đi ra từ trái sang phải. Khi gặp một cạnh quay về đỉnh đã duyệt, đường
+truy vết theo cha DFS và cạnh mới cho biết hai biên của một miền; khi đó có
+thể cập nhật công thức trên. Mã giả trong tài liệu gốc chỉ là khung DFS tìm
+biên miền, nên ở đây không chép lại. Điểm đáng ghi là mỗi cạnh của đồ thị
+phẳng nằm trên biên của nhiều nhất hai miền, do đó toàn bộ quá trình tính
+được trong thời gian \(\Oh(n)\).
+
+\section{\textit{Alice and Bob}: cùng mô hình, nhiều mức khai thác}
+
+Ví dụ thứ hai là \textit{Alice and Bob} của CEPC 2001. Alice vẽ một đa giác
+lồi có \(n\le 10000\) đỉnh, thêm các đường chéo không cắt nhau, rồi chỉ đưa
+cho Bob danh sách các đoạn nối. Bob phải khôi phục thứ tự các đỉnh trên biên
+đa giác.
+
+Mô hình tự nhiên là một đồ thị phẳng \(G\). Các cạnh biên của đa giác tạo ra
+chu trình Hamilton duy nhất; các đường chéo không thể nằm trên chu trình này
+vì chúng chia đa giác thành hai phần. Vấn đề là phân biệt cạnh biên và đường
+chéo.
+
+Phương pháp định nghĩa kiểm tra từng cạnh \((u,v)\): xóa \(u\) và \(v\), nếu
+đồ thị còn lại mất liên thông thì cạnh đó là đường chéo; nếu vẫn liên thông
+thì đó là cạnh biên. Cách này đúng nhưng tốn \(\Oh(n^2)\).
+
+Phương pháp phân tích dùng tính chất luôn tồn tại một đỉnh bậc \(2\). Hai
+cạnh kề đỉnh ấy là cạnh của đa giác hiện tại; ta xóa đỉnh, thêm cạnh ảo nối
+hai láng giềng nếu cần, và lặp lại. Đồ thị phụ \(C\) lưu các cạnh biên đã xác
+định; cấu trúc hợp nhất--tìm kiếm cho biết một cạnh đang xét đã bị biến thành
+đường chéo do phần giữa đã bị xóa hay chưa. Cách này giảm thời gian xuống
+\(\Oh(n\alpha(n))\), nhưng cài đặt nhiều chi tiết.
+
+Phương pháp tổng hợp dùng một lần DFS. Với mỗi đỉnh \(v\), lưu thứ tự thăm
+\(\operatorname{dfn}[v]\) và giá trị thấp nhất \(\operatorname{low}[v]\) có
+thể quay về qua cạnh ngược. Dựa vào số con của \(v\) trong cây DFS và quan hệ
+giữa \(\operatorname{low}\) của con với \(\operatorname{dfn}\) của cha, ta
+nhận ra cạnh nào là cạnh biên, cạnh nào là đường chéo. Tất cả tính chất phẳng,
+chu trình Hamilton duy nhất và vai trò của đường chéo được dùng cùng lúc, nên
+thuật toán trở thành tuyến tính.
+
+\section{Ba cách tư duy}
+
+Hai ví dụ trên cho thấy ba cách giải bài toán đồ thị.
+\begin{itemize}
+  \item Phương pháp định nghĩa bám sát khái niệm gốc, thường dễ đúng nhưng có
+  thể chậm.
+  \item Phương pháp phân tích tách bài toán thành các bước nhỏ quen thuộc,
+  chẳng hạn xóa đỉnh bậc \(2\), dùng bảng băm và hợp nhất--tìm kiếm.
+  \item Phương pháp tổng hợp tìm một cấu trúc toàn cục, như cây DFS, để mọi
+  quyết định xuất hiện trong cùng một lần duyệt.
+\end{itemize}
+
+Điểm kết luận của slide là: học đồ thị không chỉ học DFS, BFS, luồng hay
+Tarjan. Trước hết phải hỏi đỉnh và cạnh đang biểu diễn quan hệ nào, quan hệ ấy
+có thể thay bằng mô hình khác tốt hơn không, và mô hình mới có tính chất nào
+đủ mạnh để giảm độ phức tạp. Khi mô hình đúng, thuật toán thường tự nhiên hơn
+rất nhiều.
 
 \end{document}

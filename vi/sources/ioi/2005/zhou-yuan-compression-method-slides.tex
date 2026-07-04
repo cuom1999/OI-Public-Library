@@ -3,6 +3,10 @@
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
 
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\lei}{\ensuremath{\mathrm{lei}}}
+\newcommand{\euro}{\ensuremath{\mathrm{euro}}}
+
 \title{Bản trình chiếu: Phương pháp nén trong thi tin học}
 \author{Zhou Yuan}
 \date{2005}
@@ -10,37 +14,157 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for compression methods}
+\origtitle{Bỏ phần thừa, giữ tinh hoa: phương pháp nén trong thi tin học, bản trình chiếu}
 \sourcepath{IOI China candidate team papers / 2005 / Zhou Yuan / Zhou Yuan.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mạch chính của slide}
 
-Bản trình chiếu đi cùng bài viết về phương pháp nén. Phần chữ khôi phục được
-nhắc tới BOI 2003 \textit{Euro}, ZOJ 1794, các dãy
-\(a_{1,1},a_{1,2},\ldots,a_{k,n_k}\), và các độ phức tạp \(O(KNK)\),
-\(O(N\log^2 K)\).
+Bản trình chiếu đi cùng bài viết \emph{Bỏ phần thừa, giữ tinh hoa}. Phần chữ
+khôi phục được từ PowerPoint cũ nhắc tới \textit{BOI 2003 Euro}, \textit{ZOJ
+p1794}, các dãy
+\[
+  a_{1,1},a_{1,2},\ldots,a_{1,n_1},\quad
+  a_{2,1},\ldots,a_{2,n_2},\quad
+  \ldots,\quad
+  a_{K,1},\ldots,a_{K,n_K},
+\]
+các mốc độ phức tạp \(\Oh(KNK)\), \(\Oh(N\log^2K)\), và các công thức đồng
+dư. Bản ghi chú này dùng bài viết đã dịch làm neo để phục hồi mạch slide:
+định nghĩa phương pháp nén, hai yếu tố then chốt, rồi hai ứng dụng chính.
 
-\section{Tư tưởng nén}
+\section{Định nghĩa của phương pháp nén}
 
-Khi dữ liệu quá lớn nhưng chỉ có một số mốc ảnh hưởng đến đáp án, ta thay
-không gian gốc bằng không gian đại diện. Các kiểu thường gặp là nén tọa độ,
-nén trạng thái tương đương, và nén các đoạn có cùng hành vi. Sau bước nén,
-thuật toán chạy trên số mốc quan trọng thay vì toàn bộ miền.
+Trong bài viết, ``nén'' không chỉ là giảm dung lượng như tệp nén. Nó là một
+cách giải bài toán: bỏ thông tin dư thừa, giữ phần tinh hoa đủ ảnh hưởng tới
+đáp án, rồi thay một khối dữ liệu phức tạp bằng một đối tượng đơn giản hơn.
 
-\section{Ví dụ số học}
+Giả sử có một tập \(S\). Nếu quan hệ giữa các phần tử bên trong \(S\) không
+còn ảnh hưởng tới kết quả, và phần còn lại của bài toán chỉ cần biết cách
+\(S\) liên hệ với bên ngoài, ta có thể xem \(S\) là một gói. Khi nén, ta bỏ
+chi tiết nội bộ của gói, giữ các liên hệ cần thiết, rồi dùng một phần tử mới
+thay cho cả gói.
 
-Các công thức dạng
+Hai ví dụ đơn giản là nhiều nguồn trong đường đi ngắn nhất và đội bóng truyền
+tin. Với nhiều nguồn, ta nén cả tập nguồn thành một siêu nguồn để chạy
+Dijkstra một lần. Với đội bóng, mỗi thành phần liên thông mạnh có trạng thái
+biết tin giống nhau; nén các thành phần ấy thành đỉnh của một DAG, đáp án là
+số đỉnh có bậc vào bằng \(0\).
+
+\section{Hai yếu tố then chốt}
+
+Yếu tố thứ nhất là \emph{tính nén được}. Ta phải biết vì sao thông tin nội bộ
+có thể bỏ. Nếu bỏ nhầm quan hệ còn ảnh hưởng tới đáp án, lời giải sai dù chạy
+rất nhanh. Trong ví dụ nhiều nguồn, đi lại giữa hai nguồn không giúp đường đi
+ngắn nhất tốt hơn, nên các cạnh nội bộ của tập nguồn là thừa. Trong ví dụ
+thành phần liên thông mạnh, mọi đỉnh trong cùng thành phần có thể thông báo
+cho nhau, nên chỉ cần biết có thành phần ấy hay không.
+
+Yếu tố thứ hai là \emph{quy tắc thay thế}. Nén không phải là xóa sạch; phải
+giữ lại đúng thông tin bên ngoài. Với đồ thị, quy tắc có thể là thay một tập
+đỉnh bằng một đỉnh mới và nối các cạnh ra ngoài. Với số học, quy tắc có thể
+là thay hai điều kiện bằng một điều kiện tương đương.
+
+Slide có các công thức đồng dư:
 \[
   a_1x \equiv c_1 \pmod {b_1},\qquad
-  a_2x \equiv c_2 \pmod {b_2}
+  a_2x \equiv c_2 \pmod {b_2}.
 \]
-cho thấy một phần trình bày dùng đồng dư để nén các điều kiện lặp. Thay vì xét
-từng giá trị \(x\), ta xét lớp phần dư và ghép các ràng buộc tương thích.
+Mỗi phương trình có thể đưa về dạng
+\[
+  x=x_1+p_1t,\qquad x=x_2+p_2s.
+\]
+Nếu hai tập nghiệm giao nhau, giao ấy lại là một lớp đồng dư
+\[
+  x\equiv x_0 \pmod{\operatorname{lcm}(p_1,p_2)}.
+\]
+Đó là một phép nén: hai ràng buộc được thay bằng một ràng buộc giữ nguyên tập
+nghiệm.
+
+\section{\textit{Euro}: nén để khôi phục tính đơn điệu}
+
+\textit{Euro} của BOI 2003 cho dãy thu nhập euro \(a_1,\ldots,a_N\), mỗi
+ngày \(i\) có tỷ giá \(1\euro:i\lei\). Mỗi lần đổi phải trả phí cố định
+\(T\lei\), và tới ngày \(N\) phải đổi hết. Cần tối đa hóa số \(\lei\) nhận
+được.
+
+Nếu chọn các ngày đổi \(c_1<c_2<\cdots<c_k=N\), lợi nhuận là tổng các khoản
+thu trong từng đoạn, nhân với ngày đổi của đoạn, trừ phí. Quy hoạch động tự
+nhiên là
+\[
+  f(n)=\max_{0\le i<n}\{f(i)+n(S_n-S_i)-T\},
+\]
+trong đó \(S_i\) là tổng tiền tố. Công thức này giống dạng tối ưu hóa bao
+lồi, nhưng \(a_i\) có thể âm nên \(S_i\) không đơn điệu. Đây là mâu thuẫn
+chính của ví dụ.
+
+Nhận xét nén là: nếu từ ngày \(i\), các tổng tiền tố của đoạn vẫn dương cho
+tới trước ngày \(j\), còn tổng cả đoạn tới \(j\) không dương, thì trong một
+phương án tối ưu không cần đổi giữa chừng trong đoạn ấy. Nếu đang giữ euro
+dương, đổi muộn hơn tốt hơn; nếu đang giữ euro âm, có thể dời điểm đổi về
+trước đoạn mà không làm xấu kết quả. Vì vậy cả đoạn có thể thay bằng một cặp
+\((b,t)\): \(b\) là tổng euro của đoạn, \(t\) là ngày kết thúc đoạn.
+
+Sau khi nén liên tiếp, các khối chính có tổng không dương, nên dãy tổng tiền
+tố mới trở nên đơn điệu theo hướng cần thiết. Điều kiện của tối ưu hóa bao
+lồi được phục hồi. Thuật toán vì thế gồm một lần quét để nén và một lần quy
+hoạch động tối ưu hóa bằng bao lồi, tổng thời gian \(\Oh(N)\). Đây là ví dụ
+đẹp vì nén không chỉ giảm số phần tử; nó còn biến dữ liệu về dạng có tính
+đơn điệu.
+
+\section{\textit{Merging Sequence}: nén hai giai đoạn}
+
+Ví dụ lớn thứ hai là \textit{ZOJ p1794 Merging Sequence Problem}. Có \(K\)
+dãy, độ dài \(n_1,\ldots,n_K\), tổng độ dài \(N\). Mỗi bước chọn phần tử đầu
+của một dãy còn lại và đưa vào dãy kết quả \(S\). Mục tiêu là làm cho giá trị
+lớn nhất của các tổng tiền tố trong \(S\) nhỏ nhất có thể.
+
+Nếu xử lý trực tiếp, trạng thái phải nhớ đã lấy bao nhiêu phần tử từ mỗi dãy,
+không khả thi. Ta tìm các đoạn trong cùng một dãy mà khi đã bắt đầu lấy thì
+có thể lấy liên tiếp trong một nghiệm tối ưu. Đoạn như vậy được nén thành một
+cặp \((a,b)\): \(a\ge0\) là đỉnh tương đối lớn nhất bên trong đoạn, còn
+\(a+b\) là tổng của cả đoạn, với \(b\le0\). Cặp này mô tả đủ ảnh hưởng của
+đoạn lên tổng tiền tố toàn cục.
+
+Giai đoạn nén thứ nhất xét một đoạn có các tổng tiền tố trước cuối đều không
+âm, còn tổng cả đoạn âm. Khi đã lấy phần tử đầu của đoạn, hoặc chưa lấy gì
+thêm, hoặc lấy liên tiếp tới hết đoạn; xen phần tử khác vào giữa không giúp
+giảm đỉnh lớn nhất. Vì vậy đoạn được nén thành một cặp âm.
+
+Giai đoạn nén thứ hai xử lý các cặp âm liên tiếp. Nếu đỉnh của hai cặp nằm ở
+cặp thứ nhất, tức
+\[
+  a_1\ge a_1+b_1+a_2,
+\]
+thì đưa cặp thứ hai đứng ngay sau cặp thứ nhất không làm tăng đỉnh lớn nhất.
+Do đó hai cặp có thể nén tiếp. Lặp lại điều kiện này làm cho trong mỗi dãy,
+đỉnh tương đối của các cặp còn lại tăng dần.
+
+\section{Tham lam sau khi nén}
+
+Sau hai giai đoạn, bài toán còn \(K\) dãy các cặp có tổng âm và đỉnh tương
+đối tăng dần trong từng dãy. Vì mỗi cặp làm tổng hiện tại giảm sau khi đi qua,
+cặp có đỉnh nhỏ nên được xử lý sớm; cặp có đỉnh lớn nên để muộn hơn khi tổng
+nền đã thấp hơn. Do từng dãy đã có thứ tự tăng, lời giải là trộn \(K\) dãy
+đã sắp xếp theo đỉnh tương đối.
+
+Dùng heap lưu cặp đầu của mỗi dãy, mỗi lần lấy cặp có đỉnh nhỏ nhất rồi đẩy
+cặp kế tiếp của dãy đó. Thời gian là
+\[
+  \Oh(N\log K).
+\]
+Phần mã trong tài liệu gốc chỉ triển khai hai giai đoạn nén và phép trộn bằng
+heap; bản ghi chú không chép lại chương trình.
 
 \section{Kết luận}
 
-Nén không chỉ làm nhỏ dữ liệu; nó làm rõ phần nào của dữ liệu thật sự quyết
-định đáp án. Đây là lý do các bài có miền giá trị rất lớn vẫn có thể giải
-bằng thuật toán gần tuyến tính theo số phần tử đầu vào.
+Phương pháp nén gồm hai câu hỏi: có thể bỏ thông tin nội bộ nào, và thay phần
+bị bỏ bằng đại diện nào. Nếu trả lời đúng, bài toán không chỉ nhỏ hơn mà còn
+có cấu trúc rõ hơn: nhiều nguồn thành một nguồn, thành phần liên thông mạnh
+thành DAG, dãy \textit{Euro} thành dãy đơn điệu, và \(K\) dãy lộn xộn thành
+các cặp có thể trộn tham lam.
+
+Vì vậy khẩu hiệu của slide là ``bỏ phần thừa, giữ tinh hoa''. Nén không phải
+mẹo cài đặt cuối cùng; nó là một bước mô hình hóa thông tin trước khi chọn
+thuật toán.
 
 \end{document}
