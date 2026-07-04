@@ -1,6 +1,9 @@
 \documentclass[11pt]{article}
 % Source-PDF: 其他 OTHERS/QTREE解法的一些研究 - Yang Zhe.pdf
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\renewcommand{\figurename}{Hình}
 
 \title{Một số nghiên cứu về lời giải cho SPOJ375 QTREE}
 \author{Yang Zhe}
@@ -127,9 +130,41 @@ $\operatorname{parent}(u)$, thì vì Preferred Child của $\operatorname{parent
 sẽ đổi thành $u$, Preferred Path vốn chứa $\operatorname{parent}(u)$ sẽ không
 còn chứa phần từ $\operatorname{parent}(u)$ trở lên.
 
-Hình 1 trong bản gốc minh họa một cây, Link-Cut Trees tương ứng, và trạng thái
-trước/sau một thao tác \texttt{ACCESS(N)}. Văn bản trích xuất từ PDF không giữ
-được bố cục hình, nên bản dịch này chỉ giữ nội dung thuật toán.
+Sơ đồ sau tóm tắt tác dụng của thao tác này. Các cạnh đậm là Preferred Path;
+sau \texttt{ACCESS(N)}, đường từ \(N\) lên gốc trở thành đường ưu tiên mới, còn
+các đoạn bị tách ra được giữ bằng Path Parent giữa các Auxiliary Tree.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.86, every node/.style={circle, draw, inner sep=1.8pt, font=\small}, >=Latex]
+  \node (a) at (0,3) {A};
+  \node (b) at (-1.2,2) {B};
+  \node (c) at (1.2,2) {C};
+  \node (d) at (-1.8,1) {D};
+  \node (e) at (-0.6,1) {E};
+  \node (n) at (-2.2,0) {N};
+  \node[draw=none, rectangle] at (0,3.65) {trước};
+  \draw[thick] (a)--(c);
+  \draw (a)--(b) (b)--(d) (b)--(e) (d)--(n);
+  \draw[dashed, ->] (b) to[bend left=15] (a);
+  \draw[dashed, ->] (d) to[bend left=15] (b);
+
+  \begin{scope}[xshift=5.2cm]
+    \node (a2) at (0,3) {A};
+    \node (b2) at (-1.2,2) {B};
+    \node (c2) at (1.2,2) {C};
+    \node (d2) at (-1.8,1) {D};
+    \node (e2) at (-0.6,1) {E};
+    \node (n2) at (-2.2,0) {N};
+    \node[draw=none, rectangle] at (0,3.65) {sau \texttt{ACCESS(N)}};
+    \draw[thick] (a2)--(b2)--(d2)--(n2);
+    \draw (a2)--(c2) (b2)--(e2);
+    \draw[dashed, ->] (c2) to[bend left=15] (a2);
+    \draw[dashed, ->] (e2) to[bend left=15] (b2);
+  \end{scope}
+\end{tikzpicture}
+\caption{Minh họa \texttt{ACCESS}: đường truy cập trở thành Preferred Path, các đường cũ được nối lại bằng Path Parent.}
+\end{figure}
 
 Cách thực hiện \texttt{ACCESS} có vẻ bất ngờ: ta cập nhật trực tiếp các
 Auxiliary Tree cần thay đổi. Thoạt nhìn cách này không hiệu quả, nhưng phần
@@ -362,7 +397,7 @@ thao tác \texttt{ACCESS} là
 &\le 3\lg n + \text{số lần Preferred Child thay đổi}.
 \end{aligned}
 \]
-Ở dòng giữa, bản PDF bị hỏng chỉ số một phần; công thức trên giữ đúng ý nghĩa
+Dòng giữa trong bản in không rõ một vài chỉ số; công thức trên giữ đúng ý nghĩa
 telescoping của chứng minh trong bài gốc.
 
 Vì đã chứng minh số lần Preferred Child thay đổi là $O(\log n)$ khấu hao, thao
@@ -748,9 +783,39 @@ end procedure
 \endgroup
 
 Từ mã giả có thể thấy quá trình xây dựng cây nhị phân cân bằng toàn cục mất
-$O(n\log n)$. Hình 2 trong bản gốc minh họa một cây, phân rã nặng-nhẹ của nó,
-và cây nhị phân cân bằng toàn cục tương ứng; bản dịch không vẽ lại vì trích
-xuất PDF làm hỏng bố cục hình.
+$O(n\log n)$. Ý tưởng là trước hết gom từng chuỗi nặng thành một đoạn tuyến
+tính, rồi dựng cây nhị phân cân bằng trên các đoạn đó để độ sâu toàn cục vẫn
+bị chặn bởi \(O(\log n)\).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.84, every node/.style={circle, draw, inner sep=1.8pt, font=\small}]
+  \node (r) at (0,3) {1};
+  \node (a) at (-1.2,2) {2};
+  \node (b) at (1.2,2) {3};
+  \node (c) at (-1.7,1) {4};
+  \node (d) at (-0.5,1) {5};
+  \node (e) at (0.8,1) {6};
+  \node (f) at (1.9,1) {7};
+  \node[draw=none, rectangle] at (0,3.65) {cây gốc và cạnh nặng};
+  \draw[very thick] (r)--(a)--(c);
+  \draw[very thick] (b)--(e);
+  \draw (r)--(b) (a)--(d) (b)--(f);
+
+  \begin{scope}[xshift=5.1cm, every node/.style={rectangle, draw, rounded corners=1pt, inner sep=2.2pt, font=\small}]
+    \node (m) at (0,2.9) {2};
+    \node (l) at (-1.0,1.8) {1};
+    \node (rr) at (1.0,1.8) {3};
+    \node (ll) at (-1.6,0.7) {4};
+    \node (lr) at (-0.4,0.7) {5};
+    \node (rl) at (0.4,0.7) {6};
+    \node (rrr) at (1.6,0.7) {7};
+    \node[draw=none] at (0,3.65) {cây cân bằng toàn cục};
+    \draw (m)--(l) (m)--(rr) (l)--(ll) (l)--(lr) (rr)--(rl) (rr)--(rrr);
+  \end{scope}
+\end{tikzpicture}
+\caption{Từ phân rã nặng-nhẹ sang cây nhị phân cân bằng toàn cục: các chuỗi nặng giữ liên hệ đường đi, còn cây cân bằng giới hạn độ sâu.}
+\end{figure}
 
 \subsubsection{Lời giải dùng cây nhị phân cân bằng toàn cục}
 
