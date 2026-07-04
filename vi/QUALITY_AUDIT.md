@@ -193,7 +193,7 @@ but they should not be counted as ToC-only or partially covered collections.
 | --- | ---: | --- | --- |
 | `sources/ioi/2013-national-training-team-collection.tex` | 137 | ToC plus all twelve articles translated | Final inclusion--exclusion article translated from physical PDF pages 125--137. |
 | `sources/ioi/2014-national-training-team-collection.tex` | 228 | ToC plus all fifteen articles translated | Final best-\(k\)-solution article translated from physical PDF pages 199--228. |
-| `sources/ioi/2015-national-training-team-collection.tex` | 291 | ToC plus all fifteen articles translated | Final set-power article translated from physical PDF pages 275--291. |
+| `sources/ioi/2015-national-training-team-collection.tex` | 291 | ToC plus all fifteen articles translated | Restored all visible figure placeholders from the source PDF, including the suffix-automaton-on-trie examples, online block landmarks, cactus diagrams, blossom/matching figures, and electrical-circuit transformations; current source has no visible `\fbox` figure placeholders. |
 | `sources/ioi/2016-national-training-team-collection.tex` | 234 | ToC plus all fifteen articles translated | Final \emph{move} report translated from physical PDF pages 225--234. |
 | `sources/ioi/2017-national-training-team-collection.tex` | 204 | ToC plus all fifteen articles translated | Final genome-reconstruction report translated from physical PDF pages 192--204; restored the block-size optimization plots and long-chain-decomposition ancestor-query tree schematic from caption-only placeholders. |
 | `sources/ioi/2018-national-training-team-collection.tex` | 210 | ToC plus all fifteen articles translated | Final Euler graph generation/counting article translated from physical PDF pages 194--210. |
