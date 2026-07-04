@@ -210,7 +210,7 @@ inflate the full translated-document count.
 
 | Translation | Source pages | Notes |
 | --- | ---: | --- |
-| `sources/ioi/2001/liu-rujia-sokoban-insights.tex` | 36 | Reviewed as an incomplete A4 PDF. The Vietnamese follows the extractable fragment through chapter 3, Baby-1 through Baby-4 experiments, and the long `S4BABY4.PAS` listing, but the source ToC advertises chapters 4--11 and appendices A--F that are absent from the PDF; the first Sokoban board figure is replaced by a note and the deadlock figure only approximated. |
+| `sources/ioi/2001/liu-rujia-sokoban-insights.tex` | 36 | Reviewed as an incomplete A4 PDF. The Vietnamese follows the extractable fragment through chapter 3, Baby-1 through Baby-4 experiments, and the long `S4BABY4.PAS` listing; the two embedded source figures for the first standard Sokoban level and the deadlock example are restored. It remains a companion note because the source ToC advertises chapters 4--11 and appendices A--F that are absent from the PDF. |
 | `sources/usaco/usaco-nocow-solutions.tex` | 47 | Reviewed as A4 solution-note anthology. Companion note covers the USACO Training problem list and main ideas, but compresses alternate explanations, detailed derivations, sample details, and long source commentary into short per-problem notes. |
 | `sources/dynamic-programming/tree-dp-selected-topics-gu-yihong.tex` | 142 | Reviewed as Beamer overlay deck: about 40 logical slides. Companion note keeps the DP states, transitions and examples. |
 | `sources/dynamic-programming/dp-optimization-tang-wenbin.tex` | 23 | Reviewed as PowerPoint slide deck. Companion note keeps the LIS, Fibonacci subsequence, Painting the Balls, Divide, and quadrangle-inequality examples. |
