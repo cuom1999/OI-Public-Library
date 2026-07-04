@@ -576,6 +576,107 @@ với kiểu thao tác cần hỗ trợ: chèn, lấy phần tử nhỏ nhất, 
 hai heap. Heap trái là một ví dụ cho việc thay đổi hình dạng cây để thao tác
 ghép được nhanh.
 
+\subsection*{Heap và cây có thứ tự heap}
+
+Heap là cấu trúc trừu tượng gồm một tập phần tử, mỗi phần tử có một khóa thực.
+Hai thao tác cơ bản là \(\operatorname{insert}(i,h)\), chèn phần tử \(i\) vào
+heap \(h\), và \(\operatorname{deletemin}(h)\), xóa rồi trả về một phần tử có
+khóa nhỏ nhất. Thao tác \(\operatorname{makeheap}(s)\) tạo heap từ một tập phần
+tử. Tùy ứng dụng, ta còn dùng \(\operatorname{findmin}\) để xem phần tử nhỏ nhất
+mà không xóa, \(\operatorname{delete}\) để xóa phần tử bất kỳ, và
+\(\operatorname{meld}\) để ghép hai heap rời nhau.
+
+Một cách cài heap là dùng cây có thứ tự heap: mỗi nút chứa một phần tử, và khóa
+của cha không lớn hơn khóa của con. Vì vậy gốc chứa một phần tử khóa nhỏ nhất,
+nên \(\operatorname{findmin}\) chỉ cần truy cập gốc và tốn \(O(1)\). Thời gian
+các thao tác còn lại phụ thuộc vào cách khống chế hình dạng cây.
+
+\subsection*{\(d\)-heap}
+
+Với heap ngoại sinh, phần tử và nút cây là hai đối tượng khác nhau; khi cập
+nhật, ta có thể phục hồi thứ tự heap bằng cách di chuyển phần tử giữa các nút.
+Để chèn \(i\), thêm một lá rỗng \(x\). Nếu cha của \(x\) có khóa lớn hơn
+\(\operatorname{key}(i)\), đẩy phần tử ở cha xuống \(x\), chuyển ô rỗng lên cha,
+và lặp lại. Khi dừng, đặt \(i\) vào ô rỗng. Đây là thao tác \emph{sift-up}.
+
+Để xóa một phần tử \(i\), lấy phần tử \(j\) ở lá được tạo sau cùng chưa bị xóa,
+xóa lá đó, rồi dùng \(j\) lấp vào vị trí của \(i\). Nếu khóa của \(j\) nhỏ hơn
+hoặc bằng khóa cũ của \(i\), phục hồi bằng sift-up. Nếu lớn hơn, dùng
+\emph{sift-down}: so sánh \(j\) với các con của ô rỗng, đưa con có khóa nhỏ
+nhất lên nếu nó nhỏ hơn \(j\), rồi tiếp tục đi xuống cho tới khi hợp lệ.
+
+Hình dạng cây được chọn là cây \(d\)-phân đầy đủ: mỗi nút có nhiều nhất \(d\)
+con và nút được thêm theo thứ tự duyệt rộng. Một \(d\)-heap là cây \(d\)-phân
+đầy đủ có một phần tử mỗi nút và thỏa thứ tự heap. Với \(n\) phần tử,
+\(\operatorname{findmin}\) tốn \(O(1)\), chèn tốn \(O(\log_d n)\), còn
+\(\operatorname{delete}\) và \(\operatorname{deletemin}\) tốn
+\(O(d\log_d n)\). Tham số \(d\) cho phép điều chỉnh theo tần suất thao tác: nếu
+xóa ít hơn chèn, có thể chọn \(d\) lớn hơn để giảm chiều sâu.
+
+Vì cây \(d\)-phân đầy đủ rất đều, không cần lưu con trỏ. Đánh số các nút từ
+\(1\) tới \(n\) theo thứ tự duyệt rộng, cha của nút \(x\) là
+\(\lfloor(x-1)/d\rfloor\), còn các con của \(x\) nằm trong khoảng
+\[
+  [d(x-1)+2 \ ..\ \min\{dx+1,n\}].
+\]
+Do đó heap được biểu diễn bằng một mảng/ánh xạ từ vị trí \(1..n\) tới phần tử.
+Nếu cần xóa phần tử bất kỳ, mỗi phần tử cũng nên giữ chỉ số heap ngược lại để
+biết vị trí hiện tại của nó.
+
+Thao tác \(\operatorname{makeheap}\) không nên thực hiện bằng \(n\) lần chèn, vì
+tốn \(O(n\log_d n)\). Cách tốt hơn là đặt các phần tử tùy ý vào cây \(d\)-phân
+đầy đủ, rồi chạy sift-down từ các nút \(n,n-1,\ldots,1\). Vì số nút ở chiều cao
+\(i\) giảm theo \(d^i\), tổng thời gian là tuyến tính \(O(n)\). Đây là dạng tổng
+quát của thuật toán xây heap từ dưới lên.
+
+\subsection*{Heap trái}
+
+\(d\)-heap không thuận tiện cho meld. Khi cần ghép heap thường xuyên, Tarjan
+trình bày heap trái. Trong cây nhị phân đầy đủ, hạng của nút \(x\) là độ dài
+ngắn nhất từ \(x\) tới một nút ngoài. Cây là \emph{leftist} nếu với mọi nút
+trong \(x\), hạng của con trái ít nhất bằng hạng của con phải. Khi đó đường đi
+theo con phải từ gốc là một đường ngắn nhất tới nút ngoài, và có độ dài
+không quá \(\lg n\).
+
+Heap trái là cây leftist chứa một phần tử ở mỗi nút trong, các phần tử vẫn thỏa
+thứ tự heap. Nó thường được xem là cấu trúc nội sinh: chính phần tử là nút cây;
+nút ngoài được biểu diễn bằng \(\text{null}\). Mỗi nút cần hai con trỏ trái/phải
+và một hạng, còn heap được nhận diện bằng con trỏ gốc.
+
+Thao tác chính là meld. Để ghép hai heap, trộn hai đường phải theo thứ tự khóa
+không giảm, rồi đi ngược lại cập nhật hạng và đổi hai con khi cần để khôi phục
+tính leftist. Vì mỗi đường phải dài \(O(\log n)\), meld tốn \(O(\log n)\). Chèn
+một phần tử là tạo heap một nút rồi meld; xóa phần tử nhỏ nhất là bỏ gốc rồi
+meld hai cây con trái/phải. Cả hai thao tác đều tốn \(O(\log n)\).
+
+Thứ tự heap cũng cho phép liệt kê mọi phần tử có khóa không vượt quá một ngưỡng
+\(x\). Ta duyệt preorder từ gốc: gặp nút có khóa lớn hơn \(x\) thì dừng cả cây
+con đó; gặp nút hợp lệ thì đưa nó vào kết quả và duyệt hai con. Với heap trái,
+thời gian tỉ lệ với số phần tử được liệt kê.
+
+Thao tác \(\operatorname{heapify}\) cho một danh sách heap rời nhau có thể làm
+như merge sort: dùng danh sách làm hàng đợi, lặp bước lấy hai heap đầu, meld
+chúng, rồi đưa heap mới về cuối. Với \(k\) heap ban đầu và tổng \(n\) phần tử,
+phân tích từng lượt qua hàng đợi cho cận \(O(k\max\{1,\log(n/k)\})\). Đặc biệt,
+nếu bắt đầu từ \(n\) heap một nút, ta tạo heap trái từ \(n\) phần tử trong
+\(O(n)\).
+
+Xóa tùy ý trong heap trái có thể đạt \(O(\log n)\) nếu thêm con trỏ cha, nhưng
+Chương 3 nêu một cách phù hợp hơn cho các ứng dụng sau: xóa lười. Khi muốn xóa,
+chỉ đánh dấu phần tử là đã xóa. Đến \(\operatorname{findmin}\) hoặc
+\(\operatorname{deletemin}\), duyệt cây để lấy các nút chưa xóa mà mọi tổ tiên
+thật sự của chúng đã bị đánh dấu, rồi heapify các cây con tương ứng. Meld cũng
+có thể làm lười bằng cách tạo nút giả có hai con là hai heap cần ghép; khi tìm
+min, nút giả được xử lý như nút đã xóa. Cách này làm meld và delete chỉ tốn
+\(O(1)\) tại thời điểm gọi, còn chi phí thật được trả dồn trong lần tìm/xóa min
+sau.
+
+Một mở rộng hữu ích là \(\operatorname{addtokeys}(x,h)\), cộng \(x\) vào khóa
+của mọi phần tử trong heap \(h\). Thay vì lưu khóa tuyệt đối ở mỗi nút, lưu hiệu
+khóa giữa nút và cha; khóa thật của một nút là tổng các hiệu trên đường tới gốc.
+Khi đó cộng cùng một lượng vào mọi khóa chỉ cần cộng vào hiệu khóa ở gốc trong
+\(O(1)\), còn bậc thời gian của các thao tác heap khác không đổi.
+
 \section{Chương 4: Cây tìm kiếm}
 
 Chương này nhắc lại cây tìm kiếm nhị phân cho tập có thứ tự, rồi chuyển sang
