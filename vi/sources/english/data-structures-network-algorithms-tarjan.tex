@@ -815,6 +815,121 @@ Cấu trúc này là một trong các đóng góp nổi tiếng của Sleator--T
 phép đưa nhiều thuật toán đồ thị động hoặc thuật toán tối ưu mạng từ mức ý
 tưởng xuống mức cài đặt hiệu quả.
 
+\subsection*{Bài toán nối và cắt cây}
+
+Các cây ở những chương trước chủ yếu là biểu diễn cụ thể của cấu trúc dữ liệu
+trừu tượng. Ở đây cây xuất hiện trực tiếp hơn: ta cần duy trì một họ cây có gốc,
+rời nhau theo đỉnh, trong khi cạnh được thêm hoặc xóa theo thời gian. Mỗi đỉnh
+có một chi phí thực. Các thao tác là:
+\begin{itemize}
+  \item \(\operatorname{maketree}(v)\): tạo cây một đỉnh \(v\), chi phí \(0\);
+  \item \(\operatorname{findroot}(v)\): trả về gốc của cây chứa \(v\);
+  \item \(\operatorname{findcost}(v)\): trên đường từ \(v\) tới gốc, trả về đỉnh
+        gần gốc nhất có chi phí nhỏ nhất và giá trị chi phí đó;
+  \item \(\operatorname{addcost}(v,x)\): cộng \(x\) vào chi phí mọi đỉnh trên
+        đường từ \(v\) tới gốc;
+  \item \(\operatorname{link}(v,w)\): thêm cạnh có hướng từ gốc \(v\) sang đỉnh
+        \(w\) của cây khác;
+  \item \(\operatorname{cut}(v)\): xóa cạnh đi ra khỏi \(v\), với \(v\) không
+        phải gốc.
+\end{itemize}
+
+Nếu chỉ lưu cha và chi phí ở mỗi đỉnh, các thao tác maketree/link/cut là
+\(O(1)\), nhưng findroot/findcost/addcost có thể tốn theo độ sâu, tức \(O(n)\).
+Mục tiêu của chương là biểu diễn cây ẩn để các thao tác đường đi tốn
+\(O(\log n)\) khấu hao, còn link/cut cũng chỉ \(O(\log n)\).
+
+\subsection*{Biểu diễn cây bằng các đường}
+
+Giả sử ta đã có cấu trúc hỗ trợ các thao tác trên một họ đường rời nhau:
+\(\operatorname{makepath}\), \(\operatorname{findpath}\),
+\(\operatorname{findtail}\), \(\operatorname{findpathcost}\),
+\(\operatorname{addpathcost}\), \(\operatorname{join}\), và
+\(\operatorname{split}\). Ta dùng các đường này để biểu diễn cây bằng cách tô
+mỗi cạnh là đặc hoặc đứt, với điều kiện nhiều nhất một cạnh đặc đi vào mỗi
+đỉnh. Các cạnh đặc phân hoạch cây thành những đường đặc rời nhau.
+
+Với mỗi đường đặc \(p\), lưu \(\operatorname{successor}(p)\), là đỉnh mà cạnh
+đứt rời khỏi đuôi của \(p\) đi vào; nếu đuôi của \(p\) là gốc cây thì successor
+là null. Thao tác tổng hợp quan trọng là \(\operatorname{expose}(v)\): biến toàn
+bộ đường từ \(v\) tới gốc thành một đường đặc bằng cách đổi một số cạnh đứt
+thành đặc và đẩy các cạnh đặc lệch khỏi đường đó thành đứt.
+
+Trong expose, mỗi vòng lặp được gọi là một \emph{splice}. Một splice tách đường
+đặc hiện tại tại \(v\), cập nhật successor cho phần bị tách ra, rồi nối phần đã
+lộ phía dưới với \(v\) và đoạn phía trên. Mỗi thao tác cây dùng \(O(1)\) thao tác
+đường và nhiều nhất hai expose. Vì vậy phần còn lại là đếm số splice.
+
+Đặt \(\operatorname{size}(v)\) là số hậu duệ của \(v\), kể cả \(v\). Cạnh từ
+\(v\) tới cha \(w\) là nặng nếu \(2\operatorname{size}(v)>\operatorname{size}(w)\),
+và nhẹ nếu không. Mỗi đỉnh có nhiều nhất một cạnh nặng đi vào, và trên mọi
+đường từ một đỉnh tới gốc có nhiều nhất \(\lfloor\lg n\rfloor\) cạnh nhẹ.
+
+Phân tích số splice theo số cạnh vừa đặc vừa nặng. Ban đầu không có cạnh như
+vậy, cuối cùng nhiều nhất \(n-1\). Trong một expose, mỗi splice trừ splice đầu
+đổi một cạnh đứt thành đặc; chỉ \(O(\log n)\) trong số đó có thể là cạnh nhẹ.
+Mỗi lần đổi một cạnh nặng đứt thành đặc làm tăng số cạnh nặng-đặc, trừ khi sau
+này nó bị phá bởi expose, link hoặc cut. Đếm các lần tạo và phá cạnh nặng-đặc
+cho thấy \(m\) thao tác cây gây \(O(m\log n)\) splice tổng cộng, tức
+\(O(\log n)\) splice khấu hao cho mỗi expose.
+
+\subsection*{Biểu diễn đường bằng cây nhị phân}
+
+Mỗi đường đặc được biểu diễn bằng một cây nhị phân, trong đó thứ tự giữa của
+các nút chính là thứ tự đỉnh trên đường. Tarjan gọi các cây này là cây đặc
+(\emph{solid tree}) để phân biệt với cây thật đang được duy trì. Gốc của cây đặc
+nhận diện đường đặc và giữ successor của đường.
+
+Để hỗ trợ chi phí, mỗi nút \(x\) giữ hai giá trị hiệu thay vì chi phí tuyệt đối:
+\(\Delta\operatorname{cost}(x)\) và \(\Delta\min(x)\). Ý tưởng giống hiệu khóa ở
+heap: từ các hiệu dọc đường trong cây đặc, ta khôi phục được chi phí của đỉnh và
+chi phí nhỏ nhất trong cây con. Nhờ cách lưu chênh lệch này, xoay đơn/xoay kép,
+assemble và disassemble của cây đặc đều làm được trong \(O(1)\) trong khi vẫn
+giữ đúng thông tin min.
+
+Các thao tác đường được quy về thao tác cây tìm kiếm:
+\(\operatorname{makepath}\) tạo cây một nút;
+\(\operatorname{findpath}\) đi theo cha trong cây đặc tới gốc;
+\(\operatorname{findtail}\) đi theo con phải tới cuối đường;
+\(\operatorname{findpathcost}\) đi xuống theo thông tin min để tìm đỉnh cuối
+cùng có chi phí nhỏ nhất;
+\(\operatorname{addpathcost}\) chỉ cộng vào giá trị min ở gốc đường;
+\(\operatorname{join}\) và \(\operatorname{split}\) là join/split của cây tìm
+kiếm.
+
+Nếu dùng cây nhị phân cân bằng để biểu diễn đường đặc, mỗi thao tác đường tốn
+\(O(\log n)\). Kết hợp với định lý số splice cho ta \(O(m(\log n)^2)\) cho \(m\)
+thao tác cây. Có thể tiết kiệm trường nhớ bằng cách dùng chung một trường cho
+parent của nút không phải gốc cây đặc và successor của gốc cây đặc, kèm một bit
+cho biết nút có là gốc cây đặc hay không.
+
+\subsection*{Dùng cây tự điều chỉnh}
+
+Cận được cải thiện còn \(O(m\log n)\) nếu biểu diễn đường đặc bằng cây splay
+thay cho cây cân bằng. Khi \(\operatorname{findpath}(v)\), ta splay \(v\) để nó
+trở thành gốc cây đặc. \(\operatorname{findtail}\) đi sang phải tới đuôi rồi
+splay đỉnh đó. \(\operatorname{findpathcost}\) đi xuống theo thông tin min rồi
+splay đỉnh tìm được. \(\operatorname{split}(v)\) chỉ cần splay \(v\) rồi tách
+hai cây con trái/phải.
+
+Phân tích dùng trọng số riêng của đỉnh \(v\) là
+\[
+  \operatorname{size}(v)-\sum \operatorname{size}(w),
+\]
+trong đó tổng lấy trên các con đặc của \(v\) trong cây thật. Tổng trọng số của
+một nút trong cây đặc bằng số hậu duệ của nó trong cây ảo tương ứng. Vì giá trị
+này nằm giữa \(1\) và \(n\), hạng theo \(\lfloor\lg \operatorname{tw}\rfloor\)
+nằm trong \(O(\log n)\). Một splice cần \(O(1)\) cộng với phần thế năng splay;
+các phần thế năng cộng dồn qua expose chỉ còn \(O(\log n)\). Link cần thêm
+\(O(\log n)\) tín dụng do tăng tổng trọng số của một nút; cut chỉ giảm trọng số
+nên giải phóng tín dụng. Vì vậy \(m\) thao tác cây tốn tổng \(O(m\log n)\).
+
+Chương cũng nêu các mở rộng. Quan trọng nhất là \(\operatorname{evert}(v)\), đổi
+gốc cây chứa \(v\) để \(v\) trở thành gốc. Với evert, cấu trúc xử lý được cả cây
+tự do không gốc bằng cách gốc hóa lại khi cần. Có thể gán chi phí cho cạnh thay
+vì đỉnh. Nếu cần cận xấu nhất thay vì khấu hao, có biến thể dùng biased search
+tree, phức tạp hơn nhưng đạt \(O(\log n)\) xấu nhất cho mỗi thao tác.
+
 \section{Chương 6: Cây khung nhỏ nhất}
 
 Chương này bắt đầu phần thuật toán mạng. Bài toán cây khung nhỏ nhất là môi
