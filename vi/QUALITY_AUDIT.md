@@ -13,6 +13,15 @@ tables of contents.
 No annual national training-team collection is currently known to be
 article-incomplete.
 
+## Spot-Checked Repaired Articles
+
+These non-annual files were flagged by the line/page audit and then repaired
+or reclassified.
+
+| Translation | Source pages | Resolution |
+| --- | ---: | --- |
+| `sources/ioi/2009-wu-sen-binary-thinking.tex` | 29 | Expanded from the A4 article source: restored the binary preface, detailed Matrix proof, Sudoku search discussion, Requirements sign-mask proof, Cow XOR trie details, and fuller appendix statements. |
+
 ## Article-Coverage Complete Annual Collections
 
 These annual collections now have a translated section for every ToC article.
@@ -60,10 +69,14 @@ inflate the full translated-document count.
 | --- | ---: | --- |
 | `sources/dynamic-programming/tree-dp-selected-topics-gu-yihong.tex` | 142 | Reviewed as Beamer overlay deck: about 40 logical slides. Companion note keeps the DP states, transitions and examples. |
 | `sources/dynamic-programming/dp-optimization-tang-wenbin.tex` | 23 | Reviewed as PowerPoint slide deck. Companion note keeps the LIS, Fibonacci subsequence, Painting the Balls, Divide, and quadrangle-inequality examples. |
+| `sources/dynamic-programming/intro-digit-dp.tex` | 26 | Reviewed as image-only slide deck. Companion note covers the contents-page topics: HDU2089, HDU3652, URAL1057, `test-09-07-p1`, SPOJ Sorted Bit Sequence, and references. |
 | `sources/graph-theory/making-graphs-into-trees-immortalco-wronganswer.tex` | 172 | Reviewed as Beamer overlay deck: about 51 logical slides. Companion note keeps DFS/BFS/cactus concepts and describes omitted figures in prose. |
+| `sources/graph-theory/interval-chordal-perfect-graphs.tex` | 46 | Reviewed as Impress slide deck. Companion note covers interval graphs, coloring/clique, PEO, chordal recognition, interval recognition, PQ-tree, and perfect graphs. |
+| `sources/graph-theory/network-flow-selected-problems-li-yuliang.tex` | 30 | Reviewed as Impress slide deck. Companion note expands the same sequence of flow-modeling examples and describes omitted figures in prose. |
 | `sources/data-structure/suffix-automaton-chen-lijie.tex` | 57 | Reviewed as slide deck with diagram/code-image pages. Companion note reconstructs the SAM construction and applications in lecture order. |
 | `sources/others/pb-ds-in-oi-yu-jiping.tex` | 186 | Reviewed as slide deck with damaged text extraction. Companion note is self-contained and keeps the interfaces, code snippets and performance tables. |
 | `sources/others/cdq-divide-and-conquer-introduction.tex` | 74 | Repaired after OCR of pages 51--74; companion note now includes submatrix k-th, ZJOI2013 K-th Query, HNOI2010 City, and FJOI2012 Point. |
+| `sources/others/noi2016-wilderness-computation-solution.tex` | 42 | Reviewed as Beamer solution deck. Companion note keeps the operation table, scoring table, ten tests, and explicit notes for visual-only slides. |
 | `sources/others/game-theory-li-xiaoxiao.tex` | 60 | Reviewed as slide deck. Companion note keeps the impartial-game definitions, Sprague--Grundy examples, and airplane-game DP discussion. |
 | `sources/mathematics/linear-programming-simplex-wu-yifan.tex` | 40 | Reviewed as Beamer slide deck. Companion note keeps standard/slack forms, simplex pivots, Bland rule, duality, network flow, and BZOJ3876. |
 | `sources/ioi/2003-wu-yu-symmetric-2sat.tex` | 24 | Reviewed as rasterized slide deck. Companion note keeps the Peaceful Commission example, implication graph symmetry, and construction algorithm. |
