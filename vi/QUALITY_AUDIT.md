@@ -50,6 +50,7 @@ or reclassified.
 | `sources/dynamic-programming/resource-allocation-dp-lou-tiancheng.tex` | 17 | Repaired from companion-note status: checked the extractable Impress slide deck, restored the system-reliability input format and sample, fast-food input/output and four-step optimization sketch, shopping file formats, Jinming main/accessory table, and budget input/output constraints while keeping the resource-allocation DP formulas aligned with the source. |
 | `sources/graph-theory/bipartite-graph-he-zhenhao.tex` | 22 | Repaired from companion-note status: checked the extractable Impress slide deck, reconstructed the augmenting-path before/after matching figures and laser-grid vertex-cover example in TikZ, preserved the Hopcroft--Karp/KM appendix links, and kept the attached source listings under the code-template exception. |
 | `sources/graph-theory/network-flow-selected-problems-li-yuliang.tex` | 30 | Repaired from companion-note status: checked the extractable Impress slide deck, restored the Utopia three-special-vertex layer example, the NOI2008 volunteer sample and transformed balance equations, and the longest-\(k\)-overlap interval-flow diagram in TikZ while keeping the full sequence of min-cut, feasible-flow, max-flow, and min/max-cost-flow models. |
+| `sources/mathematics/linear-programming-simplex-wu-yifan.tex` | 40 | Repaired from companion-note status: checked the Beamer deck visually because extracted Chinese text is mojibake, confirmed the pivot-code screenshot is transcribed as searchable code, documented the repeated direct-practice overlay slides, and kept the standard/slack forms, pivot example, Bland rule, network-flow/duality discussion, BZOJ3876 example, and final problem list aligned with the source. |
 
 ## Low-Density Files Reviewed And Kept As Translated
 
@@ -229,7 +230,6 @@ inflate the full translated-document count.
 | `sources/others/cdq-divide-and-conquer-introduction.tex` | 74 | Repaired after OCR of pages 51--74; companion note now includes submatrix k-th, ZJOI2013 K-th Query, HNOI2010 City, and FJOI2012 Point. |
 | `sources/others/noi2016-wilderness-computation-solution.tex` | 42 | Reviewed as Beamer solution deck. Companion note keeps the operation table, scoring table, ten tests, and explicit notes for visual-only slides. |
 | `sources/others/game-theory-li-xiaoxiao.tex` | 60 | Reviewed as slide deck. Companion note keeps the impartial-game definitions, Sprague--Grundy examples, and airplane-game DP discussion. |
-| `sources/mathematics/linear-programming-simplex-wu-yifan.tex` | 40 | Reviewed as Beamer slide deck. Companion note keeps standard/slack forms, simplex pivots, Bland rule, duality, network flow, and BZOJ3876. |
 
 ## Explicitly Acceptable Short Files
 
