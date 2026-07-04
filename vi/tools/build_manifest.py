@@ -34,7 +34,6 @@ REFERENCE_NOTE_SOURCES = {
 }
 COMPANION_NOTE_SOURCES = {
     "IOI中国国家候选队论文/2001/刘汝佳(不完整).pdf",
-    "IOI中国国家候选队论文/2007/day1/9.王欣上《浅谈基于分层思想的网络流算法》.pdf",
     "IOI中国国家候选队论文/2007/day2/7.胡伯涛《最小割模型在信息学竞赛中的应用》.pdf",
     "IOI中国国家候选队论文/2009/周而进/浅谈估价函数在信息学竞赛中的应用.pdf",
     "USACO/USACO题解(NOCOW整理版)47P.pdf",
