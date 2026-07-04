@@ -55,7 +55,6 @@ COMPANION_NOTE_SOURCES = {
     "其他 OTHERS/博弈论相关 - 李晓潇.pdf",
     "数学 MATHEMATICS/线性规划与单纯形算法 - 吴一凡.pdf",
     "IOI中国国家候选队论文/2003/伍昱/由对称性解2-SAT问题.pdf",
-    "IOI中国国家候选队论文/2002/金恺.pdf",
     "IOI中国国家候选队论文/2008/Day1/10.俞华程《矩阵乘法在信息学中的应用》/slide.pdf",
     "IOI中国国家候选队论文/2009/金斌/slide.pdf",
     "IOI中国国家候选队论文/2009/周而进/演示文稿.pdf",
