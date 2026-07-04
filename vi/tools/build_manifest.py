@@ -32,9 +32,7 @@ REFERENCE_NOTE_SOURCES = {
     "USACO/【由 BirDOR 整理】USACO 2001-2007 月赛测试数据+题目+题解/USACO月赛十年题典v10.pdf",
     "其他 OTHERS/一份不太简短的LATEX介绍.pdf",
 }
-COMPANION_NOTE_SOURCES = {
-    "IOI中国国家候选队论文/2001/刘汝佳(不完整).pdf",
-}
+COMPANION_NOTE_SOURCES = set()
 CODE_TEMPLATE_SOURCES = {
     "模板 TEMPLATES/HEOI2018模板复习手册 - Kvar_ispw17.pdf",
     "模板 TEMPLATES/Macac_rio_Maratona_de_Programa__o.pdf",

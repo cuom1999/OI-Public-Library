@@ -65,6 +65,7 @@ or reclassified.
 | `sources/data-structure/link-cut-trees.tex` | 81 | Repaired from companion-note status: checked the text-extractable Word/PDF source, preserved the Link-Cut Tree definitions, access/LCA/findroot/makeroot/link/cut operations, LCT-specific Splay implementation, Cave Survey, Bouncing Sheep, edge-weight conversion, Tree Statistics, Coloring, Fruit Street III, Comfortable Route, SPFA/LCT dynamic-MST discussion, and restored the exact sample input/output blocks for all practice problems while keeping full program listings summarized under the code-template exception. |
 | `sources/graph-theory/making-graphs-into-trees-immortalco-wronganswer.tex` | 172 | Repaired from companion-note status: checked the 51 logical Beamer slides, restored the UOJ \#259 recommendation and root hint, BZOJ4316/BZOJ1023/UOJ87/UOJ189/UOJ23/UOJ158 names and constraints, the virtual-cactus circle-coverage cases, the source figure examples for the UOJ189 sample, BZOJ2125 weighted shortest-path view, \(\{2,8\}\) virtual cactus, heavy-chain DFS order, and the summary/outlook/acknowledgment slides, while preserving the DFS/BFS tree, circle-square tree, cactus DP, shortest-path, virtual-cactus, decomposition, HLD, contraction-tree comparison, and generalized circle-square tree sections. |
 | `sources/others/pb-ds-in-oi-yu-jiping.tex` | 186 | Repaired from companion-note status: checked the Beamer deck with mojibake Chinese extraction and no embedded figures, restored the front-matter self-introduction/contact slides, the explicit ``Why pb\_ds?'' comparison and NOI-rule/stress-test note, the omitted example-slide aside, and the closing acknowledgments, while preserving the priority queue, heap-tag complexity/benchmark, tree/order-statistics/split/join/custom Node\_Update, hash-table, and final technical summary material. |
+| `sources/ioi/2001/liu-rujia-sokoban-insights.tex` | 36 | Reclassified from companion-note status after source inspection: the PDF itself is marked incomplete and its text ends after the Baby-4 Pascal listing, while chapters 4--11 and appendices A--F appear only in the table of contents. The Vietnamese covers all available extractable pages, restores the two embedded source figures, and keeps an explicit source-limitation note instead of implying the missing chapters exist in the repository source. |
 
 ## Low-Density Files Reviewed And Kept As Translated
 
@@ -222,20 +223,11 @@ do not inflate the count of full translated documents.
 
 ## Lower-Confidence Compression Suspects
 
-These files were flagged by low line-per-page ratios. The current rows below
-have been reviewed as slide-deck companion notes rather than full article/book
-translations. The manifest marks them as `companion-note`, so they do not
-inflate the full translated-document count.
-
-| Translation | Source pages | Notes |
-| --- | ---: | --- |
-| `sources/ioi/2001/liu-rujia-sokoban-insights.tex` | 36 | Reviewed as an incomplete A4 PDF. The Vietnamese follows the extractable fragment through chapter 3, Baby-1 through Baby-4 experiments, and the long `S4BABY4.PAS` listing; the two embedded source figures for the first standard Sokoban level and the deadlock example are restored. It remains a companion note because the source ToC advertises chapters 4--11 and appendices A--F that are absent from the PDF. |
-| `sources/dynamic-programming/tree-dp-selected-topics-gu-yihong.tex` | 142 | Reviewed as Beamer overlay deck: about 40 logical slides. Companion note keeps the DP states, transitions and examples. |
-| `sources/data-structure/link-cut-trees.tex` | 81 | Reviewed as Word-exported A4 tutorial. Companion note preserves definitions, core operations, Splay details, practice-problem ideas, and complexity, but abridges walkthrough figures, full statements, sample I/O, and complete implementations. |
-| `sources/graph-theory/making-graphs-into-trees-immortalco-wronganswer.tex` | 172 | Reviewed as Beamer overlay deck: about 51 logical slides. Companion note keeps DFS/BFS/cactus concepts and describes omitted figures in prose. |
-| `sources/others/pb-ds-in-oi-yu-jiping.tex` | 186 | Reviewed as slide deck with damaged text extraction. Companion note is self-contained and keeps the interfaces, code snippets and performance tables. |
-| `sources/others/cdq-divide-and-conquer-introduction.tex` | 74 | Repaired after OCR of pages 51--74; companion note now includes submatrix k-th, ZJOI2013 K-th Query, HNOI2010 City, and FJOI2012 Point. |
-| `sources/others/game-theory-li-xiaoxiao.tex` | 60 | Reviewed as slide deck. Companion note keeps the impartial-game definitions, Sprague--Grundy examples, and airplane-game DP discussion. |
+The former companion-note queue has been resolved. Files that were short because
+of slide formatting, missing source pages, or earlier compression are now either
+listed above as repaired/reclassified, listed as low-density translated files, or
+kept only as `reference-note`/`code-template` when they are outside the
+translation target.
 
 ## Explicitly Acceptable Short Files
 
@@ -243,8 +235,9 @@ inflate the full translated-document count.
   marks source notebooks under `模板 TEMPLATES/` as `code-template` when the
   useful Vietnamese work is a translated index, heading map, or light notes
   around preserved code.
-- PowerPoint-only files may remain concise companion notes when slide text is
-  limited or heavily image-based, provided the file says that clearly.
+- PowerPoint-only files may remain concise when the slide text is sparse, but
+  useful diagrams and visual-only examples should be restored, OCRed, or folded
+  into translated prose.
 - Temporary Microsoft Word lock files such as `~$*.doc` can remain short
   explanatory stubs.
 
