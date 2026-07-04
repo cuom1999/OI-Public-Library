@@ -33,7 +33,6 @@ REFERENCE_NOTE_SOURCES = {
     "其他 OTHERS/一份不太简短的LATEX介绍.pdf",
 }
 COMPANION_NOTE_SOURCES = {
-    "IOI中国国家候选队论文/2000/骆骥论文.pdf",
     "IOI中国国家候选队论文/2001/刘汝佳(不完整).pdf",
     "IOI中国国家候选队论文/2004/鬲融.pdf",
     "IOI中国国家候选队论文/2007/day1/2.王晓珂《解析一类组合游戏》.pdf",

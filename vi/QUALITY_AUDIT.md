@@ -34,6 +34,7 @@ or reclassified.
 | `sources/ioi/2006-zhu-zeyuan-half-plane-intersection.tex` | 11 | Repaired from companion-note status: restored source Figures i--vii for HPI examples, CPI sweep, polar-angle definition, equal-angle filtering, S&I stack processing, deque endpoint deletion, and zero-intersection hull cases. |
 | `sources/ioi/2007-gao-yihan-circle-discretization.tex` | 12 | Repaired from companion-note status: restored source Figures 1--7 for rectangle strips, circle-strip decomposition, flood-fill sampling, scan-line intervals, unchanged interval inheritance, special points near intersections, and uncovered arcs. |
 | `sources/ioi/2007-gu-nan-planar-embedding.tex` | 14 | Repaired from companion-note status: restored source Figures 1--14 for planar redraw, Kuratowski obstructions, edge embedding, degenerate outer cycles, external-active propagation, reversal, walkup/walkdown, virtual edges, and the correctness proof cases for \(\Kthree\)/\(\Kfive\). |
+| `sources/ioi/2000-luo-ji-mathematical-modeling.tex` | 16 | Repaired from companion-note status: restored the explanatory appendix notes, full NOI 1999 01-string statement with constraints and output condition, code-appendix summaries under the code-template exception, and the complete five-item bibliography. |
 
 ## Low-Density Files Reviewed And Kept As Translated
 
@@ -195,7 +196,6 @@ inflate the full translated-document count.
 
 | Translation | Source pages | Notes |
 | --- | ---: | --- |
-| `sources/ioi/2000-luo-ji-mathematical-modeling.tex` | 16 | Reviewed as an A4 Writer paper. The Vietnamese covers the main article body, all named examples, statistical table, model-selection discussion, and summary, but compresses the appendix beyond code listings: explanatory appendix notes, full 01-string statement details, and the complete bibliography are not fully translated. |
 | `sources/ioi/2001/liu-rujia-sokoban-insights.tex` | 36 | Reviewed as an incomplete A4 PDF. The Vietnamese follows the extractable fragment through chapter 3, Baby-1 through Baby-4 experiments, and the long `S4BABY4.PAS` listing, but the source ToC advertises chapters 4--11 and appendices A--F that are absent from the PDF; the first Sokoban board figure is replaced by a note and the deadlock figure only approximated. |
 | `sources/ioi/2004/ge-rong-special-enumeration-thinking.tex` | 27 | Reviewed as a Word/pdfFactory article. The Vietnamese covers the main 9-page paper, but source pages 9--27 contain long standalone problem statements and Pascal program appendices for Smart Typist, Logic Island, Strawberry, and threshold matching; the translation replaces most of that appendix material with compact notes and pseudocode. |
 | `sources/ioi/2007-wang-xiaoke-combinatorial-games.tex` | 16 | Reviewed as a LibreOffice article with image-only appendix material. The Vietnamese covers the main combinatorial-game article and several appendices, but omits the full image-only Beijing 2006 Problem A Robot appendix statement while incorrectly stating that the source only gives a title. |
