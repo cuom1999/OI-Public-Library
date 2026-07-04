@@ -2,8 +2,11 @@
 % Source-File: IOI中国国家候选队论文/2008/Day1/1.曹钦翔《数据结构的提炼与压缩》/数据结构的提炼与压缩.ppt
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 
 \newcommand{\Oh}{\mathcal{O}}
+\renewcommand{\figurename}{Hình}
 
 \title{Bản trình chiếu: Tinh luyện và nén cấu trúc dữ liệu}
 \author{Cao Qinxiang}
@@ -12,37 +15,120 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for data-structure refinement and compression}
-\sourcepath{IOI China candidate team papers / 2008 / Day 1 / Cao Qinxiang.ppt}
+\origtitle{Tinh luyện và nén cấu trúc dữ liệu: bản trình chiếu}
+\sourcepath{IOI China candidate team papers / 2008 / Day 1 / Cao Qinxiang / slides.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mạch chính của slide}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ tài liệu Word. Bản ghi chú này
-giữ lại mạch chính của slide: giảm thông tin vô dụng, nén cách lưu trữ và gộp
-những phần trùng lặp để làm cấu trúc dữ liệu nhỏ hơn.
+Bản trình chiếu đi cùng bài viết \emph{Tinh luyện và nén cấu trúc dữ liệu}.
+Luồng văn bản trong tệp PowerPoint cũ chỉ trích xuất được một phần, nhưng các
+tiêu đề và ví dụ chính khớp với bài Word: \textit{Ural 1568 Train Car
+Sorting}, \textit{CEOI 2007 Necklaces}, \textit{Hide and Seek}, thống kê trên
+cây, truy vấn trên đường trong trie, và hai ví dụ dùng cây DFS/BFS. Bản dịch
+này giữ lại mạch trình bày của slide, không lặp toàn bộ chứng minh dài của bài
+viết.
 
-\section{Tư tưởng chung}
+Thông điệp trung tâm: một cấu trúc dữ liệu tốt không nhất thiết lưu nhiều
+thông tin hơn. Trái lại, ta thường thắng bằng cách xác định thông tin nào là
+vô dụng, thông tin nào bị lặp lại, và cấu trúc nào có thể ép về một mô hình
+đơn giản hơn.
 
-Một cấu trúc dữ liệu tốt không chỉ cần thao tác nhanh, mà còn cần lưu đúng
-lượng thông tin cần thiết. Nếu giữ quá nhiều chi tiết không ảnh hưởng tới đáp
-án, thuật toán sẽ tốn bộ nhớ và thời gian không cần thiết. Vì vậy bước đầu là
-tinh luyện: xác định đâu là thông tin thật sự tham gia vào chuyển trạng thái,
-truy vấn hoặc chứng minh đúng đắn.
+\section{Tinh luyện: bỏ thông tin rỗng}
 
-\section{Nén và thu gọn}
+Ví dụ mở đầu là \textit{Train Car Sorting}. Bài toán có thể mô tả một hoán vị
+bằng ``ma trận mẹ''. Nếu lưu cả ma trận thì chi phí trở thành bậc hai, nhưng
+trong ma trận chỉ có \(n\) ô khác rỗng. Các ô bằng không không ảnh hưởng tới
+thao tác đọc hàng/cột và không cần nằm trong cấu trúc dữ liệu.
 
-Nén cấu trúc thường biến một bài toán hai chiều, đồ thị hoặc tập các chuỗi
-thành một biểu diễn tuyến tính hơn. Ví dụ, một cây có thể được đưa về thứ tự
-DFS hoặc BFS để dùng cấu trúc trên dãy; nhiều chuỗi có chung tiền tố hoặc hậu
-tố có thể được gộp trong trie. Khi các phiên bản dữ liệu chỉ khác nhau một
-thao tác nhỏ, chia sẻ phần chung có thể giảm bộ nhớ từ bậc hai xuống tuyến
-tính.
+Vì vậy slide nhấn mạnh bước tinh luyện:
+\begin{itemize}
+  \item tìm mô hình thuận tiện để chứng minh thuật toán;
+  \item nhìn lại mô hình đó và xóa các phần không tham gia vào tính toán;
+  \item lưu các đối tượng thật sự hoạt động, không lưu phần nền trống.
+\end{itemize}
+Với \textit{Train Car Sorting}, cách lưu này giảm bộ nhớ xuống \(\Oh(n)\) và
+tổng thời gian tỷ lệ với kích thước lời giải xuất ra.
 
-\section{Thông điệp triển khai}
+\section{Thu gọn: chia sẻ phần chung}
 
-Các slide nhấn mạnh rằng tối ưu cấu trúc dữ liệu không phải luôn là dùng cấu
-trúc phức tạp hơn. Nhiều khi câu trả lời là bỏ phần rỗng, dùng con trỏ tới
-phần chung, hoặc chọn một thứ tự duyệt để đưa bài toán về một mô hình quen
-thuộc hơn. Cấu trúc gọn hơn thường giúp cả thời gian chạy lẫn mã nguồn.
+\textit{CEOI 2007 Necklaces} là ví dụ chính của thu gọn thông tin lặp lại. Mỗi
+thao tác tạo một chuỗi mới từ chuỗi cũ bằng cách thêm hoặc xóa ở đầu trái hay
+đầu phải. Nếu sao chép toàn bộ chuỗi sau mỗi thao tác, bộ nhớ có thể tăng tới
+\(\Oh(n^2)\). Nhưng hai phiên bản liên tiếp chỉ khác một phần tử, nên phần
+chung cần được chia sẻ.
+
+Bài viết dùng cấu trúc left-right tree: một chuỗi được tách thành phần trái
+và phần phải. Phần trái được biểu diễn bằng một đường trong trie trái, phần
+phải bằng một đường trong trie phải. Một phiên bản chuỗi chỉ cần bốn con trỏ
+tới hai đường này.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=1.0cm, every node/.style={font=\small}]
+  \node[circle,draw] (lr) {L};
+  \node[circle,draw,below left=of lr] (la) {a};
+  \node[circle,draw,below=of lr] (lb) {b};
+  \node[circle,draw] (rr) at (4,0) {R};
+  \node[circle,draw,below=of rr] (rc) {c};
+  \node[circle,draw,below right=of rr] (rd) {d};
+  \draw[-{Latex[length=2mm]}] (la) -- (lr);
+  \draw[-{Latex[length=2mm]}] (lb) -- (lr);
+  \draw[-{Latex[length=2mm]}] (rr) -- (rc);
+  \draw[-{Latex[length=2mm]}] (rr) -- (rd);
+  \draw[thick,blue] (la) -- (lr);
+  \draw[thick,red] (rr) -- (rd);
+  \node[align=center] at (2,-1.8) {một chuỗi = đường trong trie trái\\ghép với đường trong trie phải};
+\end{tikzpicture}
+\caption{Sơ đồ hóa left-right tree: nhiều phiên bản chuỗi chia sẻ các đường trie chung.}
+\end{figure}
+
+Vấn đề còn lại là đi nhanh trên một đường trie, chẳng hạn tìm con kế tiếp của
+một tổ tiên trên đường tới lá. Slide đưa về bảng nhảy tổ tiên giống LCA:
+lưu độ sâu và các ``siêu cha'', rồi nhảy theo lũy thừa hai.
+
+\section{Nén cây thành dãy}
+
+\textit{Hide and Seek} minh họa việc nén cấu trúc cây thành chuỗi ngoặc DFS.
+Khoảng cách giữa hai đỉnh có thể đọc từ đoạn ngoặc giữa hai lần xuất hiện:
+sau khi triệt tiêu các cặp ngoặc khớp, số dấu đóng còn lại là số bước đi lên,
+số dấu mở còn lại là số bước đi xuống.
+
+Nhờ đó mỗi đoạn được mô tả bởi một cặp \((a,b)\), và phép ghép hai đoạn trở
+thành một phép hợp nhất cục bộ. Cây đoạn trên chuỗi ngoặc lưu thêm các đại
+lượng tốt nhất ở tiền tố/hậu tố, từ đó trả lời đường kính của các đỉnh đang
+được đánh dấu và hỗ trợ đảo màu một đỉnh.
+
+\section{Hai thứ tự DFS}
+
+Trong bài thống kê trên cây, với mỗi đỉnh \(v\) cần đếm số hậu duệ có nhãn nhỏ
+hơn \(v\). Thay vì duyệt lại toàn bộ cây con của từng đỉnh, slide dùng hai
+thứ tự:
+\begin{itemize}
+  \item DFS thông thường;
+  \item DFS sau khi đảo thứ tự con tại mỗi nút.
+\end{itemize}
+Giao của hai vùng ``sau \(v\)'' trong hai dãy này chính là phần hậu duệ cần
+đếm, trừ các hiệu chỉnh tổ tiên. Fenwick tree xử lý số lượng nhỏ hơn trên dãy
+và trên đường gốc-đỉnh, đưa bài toán về \(\Oh(n\log n)\).
+
+\section{DFS và BFS trong đồ thị}
+
+Phần cuối của slide chuyển từ cây sang đồ thị. Với cây DFS của đồ thị vô
+hướng, không có cạnh ngang; mọi cạnh ngoài cây nối một đỉnh với tổ tiên của
+nó. Tính chất này làm các bài liên quan tới cầu, khớp, hướng cạnh và điều kiện
+liên thông trở nên dễ kiểm soát hơn.
+
+Ngược lại, cây BFS giữ thông tin khoảng cách theo lớp. Trong bài chọn cây
+khung có đường kính nhỏ, thử từng gốc BFS và xét độ sâu các lớp cho ta ứng
+viên tốt; khi đường kính tối ưu lẻ, tâm có thể là một cạnh nên cần kiểm tra
+thêm điều kiện hai phía của cạnh tâm.
+
+\section{Kết luận của slide}
+
+Ba động tác ``tinh luyện, nén, thu gọn'' thực chất đều nhằm giảm quy mô thông
+tin phải xử lý. Sau khi ép cấu trúc phức tạp về dãy, trie dùng chung, chuỗi
+ngoặc, cây DFS hoặc cây BFS, ta có thể dùng những công cụ quen thuộc như cây
+đoạn, Fenwick tree và bảng nhảy tổ tiên. Đó là cách biến cấu trúc dữ liệu khó
+thành cấu trúc nhỏ hơn, nhanh hơn và dễ cài đặt hơn.
 
 \end{document}

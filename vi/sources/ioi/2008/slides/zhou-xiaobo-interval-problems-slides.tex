@@ -2,8 +2,11 @@
 % Source-File: IOI中国国家候选队论文/2008/Day1/9.周小博《浅谈信息学竞赛中的区间问题》/浅谈信息学竞赛中的区间问题.ppt
 \documentclass[11pt]{article}
 \usepackage{oipl-vn}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc}
 
 \newcommand{\Oh}{\mathcal{O}}
+\newcommand{\depth}{d}
 
 \title{Bản trình chiếu: Các bài toán đoạn trong thi tin học}
 \author{Zhou Xiaobo}
@@ -12,32 +15,141 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for interval problems in informatics contests}
-\sourcepath{IOI China candidate team papers / 2008 / Day 1 / Zhou Xiaobo.ppt}
+\origtitle{Bản trình chiếu: Bàn về các bài toán đoạn trong thi tin học}
+\sourcepath{IOI China 2008 / Day 1 / Zhou Xiaobo / interval problems.ppt}
 
-\section{Phạm vi bản dịch}
+\section{Mục tiêu của slide}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ tài liệu Word. Bản ghi chú này
-giữ lại các mô hình đoạn chính và kỹ thuật giải thường gặp.
+PPT của Zhou Xiaobo là một bản tổng kết theo mô hình. Thay vì bắt đầu từ tên
+cấu trúc dữ liệu, slide bắt đầu từ câu hỏi: đối tượng nào có thể xem là một
+đoạn trên trục, và điều kiện của đề tương ứng với thao tác gì trên các đoạn?
+Sáu nhóm chính trong slide khớp với bài viết:
+\begin{enumerate}
+  \item chọn nhiều đoạn đôi một không giao nhau nhất;
+  \item gán đoạn vào nhiều tài nguyên;
+  \item đặt đoạn có hạn chót;
+  \item phủ một đoạn mục tiêu bằng ít đoạn nhất;
+  \item các biến thể có trọng số;
+  \item quan hệ giữa đoạn và điểm.
+\end{enumerate}
 
-\section{Các mô hình cơ sở}
+\section{Chọn nhiều đoạn nhất}
 
-Bài toán đoạn kinh điển là chọn nhiều đoạn đôi một không giao nhau nhất. Thuật
-toán tham lam sắp theo đầu phải tăng dần và chọn đoạn hợp lệ đầu tiên là tối
-ưu. Với nhiều tài nguyên, số tài nguyên tối thiểu bằng độ sâu lớn nhất của
-tập đoạn, tức số đoạn cùng phủ một điểm.
+Mô hình cơ sở: cho \(n\) đoạn, chọn nhiều đoạn đôi một không giao nhau nhất.
+Thuật toán tham lam sắp theo đầu phải tăng dần, rồi chọn đoạn đầu tiên không
+giao với đoạn đã chọn cuối cùng.
 
-\section{Mở rộng}
+\begin{center}
+\begin{tikzpicture}[x=0.95cm,y=0.55cm, every node/.style={font=\small}]
+  \draw[-{Latex[length=2mm]}] (0,0) -- (7.2,0);
+  \foreach \a/\b/\y/\c in {0.4/2.0/1/blue,1.1/3.0/2/gray,2.2/3.4/1/blue,3.1/5.4/2/gray,3.7/4.7/1/blue,5.0/6.6/1/blue}
+    \draw[line width=2pt,\c!70] (\a,\y) -- (\b,\y);
+  \node[right] at (7.2,0) {thời gian};
+\end{tikzpicture}
+\end{center}
 
-Các biến thể gồm lập lịch có hạn chót, phủ đoạn tối thiểu, bài toán có trọng
-số và quan hệ giữa đoạn với điểm. Tùy ràng buộc, lời giải có thể dùng tham
-lam, DP, hàng đợi ưu tiên, cây đoạn hoặc quét sự kiện.
+Chứng minh trong slide là chứng minh đổi chỗ chuẩn. Nếu đoạn đầu tiên của một
+nghiệm tối ưu kết thúc sau đoạn tham lam chọn, ta thay nó bằng đoạn tham lam;
+số đoạn không giảm và phần còn lại còn nhiều không gian hơn. Lặp lại cho từng
+vị trí, thu được nghiệm tối ưu bắt đầu giống thuật toán. Độ phức tạp
+\(\Oh(n\log n)\) do bước sắp xếp.
 
-\section{Cách nhận diện}
+\section{Nhiều tài nguyên và độ sâu}
 
-Khi đề bài nói về thời gian bắt đầu--kết thúc, vùng phủ trên trục, tài nguyên
-không được trùng nhau hoặc chọn tập hoạt động tương thích, hãy thử đưa đối
-tượng về đoạn. Sau khi có mô hình đoạn, các chứng minh thường dựa trên đổi
-chỗ, đầu phải nhỏ nhất, hoặc độ sâu của hệ đoạn.
+Mô hình thứ hai: mọi đoạn phải được gán vào tài nguyên, trên cùng một tài
+nguyên các đoạn không giao nhau, và cần dùng ít tài nguyên nhất. Độ sâu
+\(\depth\) của tập đoạn là số đoạn lớn nhất cùng phủ một điểm.
+
+Rõ ràng cần ít nhất \(\depth\) tài nguyên. Ngược lại, quét các đoạn theo đầu
+trái; khi xử lý một đoạn \(I\), mọi đoạn trước đó giao với \(I\) đều chứa đầu
+trái của \(I\). Vì tại điểm ấy có nhiều nhất \(\depth\) đoạn chồng nhau, trong
+\(\depth\) tài nguyên luôn còn một tài nguyên trống cho \(I\). Do đó số tài
+nguyên tối thiểu đúng bằng độ sâu.
+
+Cài đặt thường dùng hàng đợi ưu tiên hoặc cây cân bằng lưu thời điểm kết thúc
+cuối cùng của mỗi tài nguyên. Khi cần nhận một đoạn mới, chọn tài nguyên có
+đầu phải phù hợp nhất; nếu không có thì mở tài nguyên mới. Tư tưởng này cũng
+xuất hiện trong ví dụ phân bến cảng trong bài viết.
+
+\section{Đoạn có hạn chót}
+
+Mô hình thứ ba không cố định vị trí đoạn. Mỗi công việc có độ dài \(p_i\) và
+hạn chót \(d_i\); cần đặt các đoạn liên tiếp sao cho độ trễ lớn nhất
+\[
+  L_{\max}=\max_i(r_i-d_i)
+\]
+nhỏ nhất. Slide đưa ra quy tắc kinh điển: sắp theo hạn chót tăng dần, rồi đặt
+liên tiếp không để khoảng trống.
+
+Hai quan sát đủ cho chứng minh. Thứ nhất, trong một nghiệm tối ưu có thể dời
+mọi phần sau một khoảng trống sang trái, nên tồn tại nghiệm tối ưu không có
+khoảng trống. Thứ hai, nếu hai đoạn kề nhau bị nghịch thế theo hạn chót, hoán
+đổi chúng không làm tăng độ trễ cực đại. Lặp hoán đổi sẽ cho thứ tự theo hạn
+chót.
+
+Ví dụ trong bài viết như \textit{Pendant} và \textit{Loan Scheduling} cho thấy
+mô hình hạn chót thường cần thêm DP, cây đoạn hoặc DSU khi có chọn tập con,
+trọng số, hoặc nhiều tài nguyên.
+
+\section{Phủ đoạn tối thiểu}
+
+Mô hình thứ tư: chọn ít đoạn nhất để phủ kín \([s,t]\). Thuật toán tham lam
+giữ điểm đã phủ tới \(x\). Trong tất cả các đoạn có đầu trái không vượt quá
+\(x\), chọn đoạn có đầu phải xa nhất, rồi cập nhật \(x\).
+
+Sau \(k\) bước, điểm xa nhất mà thuật toán phủ được không nhỏ hơn điểm xa nhất
+mà bất kỳ cách chọn \(k\) đoạn nào có thể bảo đảm theo cùng quy tắc xuất phát.
+Vì vậy khi thuật toán đã phủ tới \(t\), không có nghiệm dùng ít đoạn hơn. Nếu
+tại một bước không có đoạn nào bắt đầu trước hoặc tại \(x\), đoạn mục tiêu
+không thể phủ kín.
+
+\section{Có trọng số}
+
+Khi mỗi đoạn có trọng số hoặc lợi nhuận, các quy tắc tham lam cơ sở thường
+không còn đủ. Slide nhóm các biến thể thành hai hướng:
+\begin{itemize}
+  \item chọn các đoạn không giao nhau với tổng trọng số lớn nhất;
+  \item phủ hoặc gán đoạn sao cho chi phí nhỏ nhất hay lợi nhuận lớn nhất.
+\end{itemize}
+Với chọn đoạn có trọng số, cách chuẩn là sắp theo đầu phải, tính
+\(p(i)\) là đoạn cuối cùng kết thúc trước khi đoạn \(i\) bắt đầu, rồi dùng
+\[
+  f_i=\max(f_{i-1}, f_{p(i)}+w_i).
+\]
+Tìm \(p(i)\) bằng tìm kiếm nhị phân hoặc cây cân bằng, tổng thời gian
+\(\Oh(n\log n)\).
+
+Với phủ đoạn có trọng số, trạng thái thường là điểm đã phủ xa nhất hoặc đoạn
+cuối cùng được chọn; cần nén tọa độ nếu đầu mút lớn. Điểm slide muốn nhấn
+mạnh là: trọng số không phá mô hình đoạn, nhưng thường chuyển lời giải từ
+tham lam sang quy hoạch động có tối ưu hóa.
+
+\section{Quan hệ giữa đoạn và điểm}
+
+Nhóm cuối cùng không chỉ chọn đoạn, mà còn hỏi quan hệ giữa đoạn và điểm: một
+điểm bị bao bởi bao nhiêu đoạn, chọn điểm để đâm tất cả các đoạn, hoặc chọn
+đoạn để bao nhiều điểm nhất. Với dữ liệu tĩnh, quét sự kiện là công cụ đầu
+tiên. Với truy vấn động, ta dùng cây Fenwick, cây đoạn, cây cân bằng hoặc nén
+tọa độ tùy thao tác.
+
+Ví dụ slide nhắc tới các công thức dạng \(f[i]\), các đoạn \([M,E]\),
+\([M,T2_i]\), và thao tác \(\Oh(\log N)\). Đây là dấu hiệu của cách làm chung:
+sắp xếp đầu mút, biến quan hệ giao/phủ thành truy vấn tiền tố hoặc truy vấn
+đoạn, rồi cập nhật DP bằng cấu trúc dữ liệu.
+
+\section{Cách nhận diện mô hình đoạn}
+
+Khi đề bài nói về thời gian bắt đầu--kết thúc, hạn chót, vùng phủ trên một
+trục, tài nguyên không được dùng đồng thời, hoặc chọn tập hoạt động tương
+thích, nên thử đưa đối tượng về đoạn. Sau đó hỏi tiếp:
+\begin{itemize}
+  \item ta chọn nhiều nhất, ít nhất, hay tối ưu trọng số?
+  \item đoạn có vị trí cố định hay có thể dời?
+  \item các đoạn được phép chạm đầu mút không?
+  \item có truy vấn động hay tất cả dữ liệu đã biết trước?
+\end{itemize}
+Những câu hỏi này quyết định giữa tham lam, DP, quét sự kiện và cấu trúc dữ
+liệu. Đó cũng là thông điệp thực dụng của bản trình chiếu: mô hình đoạn rất
+quen, nhưng từng biến thể cần chứng minh và cài đặt riêng.
 
 \end{document}

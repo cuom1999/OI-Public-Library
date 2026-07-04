@@ -6,39 +6,156 @@
 \newcommand{\Oh}{\mathcal{O}}
 
 \title{Bản trình chiếu: Đạo của mã}
-\author{Zhou Mengyu}
+\author{Zhou Mengyu (Moony Chou)}
 \date{2008}
 
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for The Tao of Coding}
-\sourcepath{IOI China candidate team papers / 2008 / Day 1 / Zhou Mengyu.ppt}
+\origtitle{Đạo của mã: bàn về mã hóa và giải mã trong thi tin học}
+\sourcepath{IOI China candidate team papers / 2008 / Day 1 / Zhou Mengyu / slides}
 
-\section{Phạm vi bản dịch}
+\section{Từ thông tin luận tới mô hình truyền tin}
 
-Tệp PowerPoint này là bản trình chiếu của bài \textit{Đạo của mã}; bản PPTX
-cùng chủ đề đã được dịch. Bản ghi chú này tóm lược cách hiểu mã hóa và giải
-mã trong thi tin học.
+Slide mở đầu giới thiệu tác giả Zhou Mengyu, Trường Trung học số 7 Thành Đô,
+rồi chuyển sang thông tin luận: thế giới máy tính được xây từ những bit nhỏ
+\(0\) và \(1\). Claude E. Shannon, qua \textit{The Mathematical Theory of
+Communication}, đặt nền móng cho việc nhìn điện báo, điện thoại, phát thanh,
+điều khiển từ xa và radar như các hệ thống truyền tin.
 
-\section{Mã hóa trong OI}
+Mô hình truyền tin trong slide gồm:
+\[
+\text{nguồn tin}\to \text{bộ mã hóa}\to \text{kênh}\to
+\text{bộ giải mã}\to \text{đích nhận},
+\]
+với nguồn nhiễu can thiệp vào kênh. Trong mô hình này có nhiều lớp mã hóa:
+mã hóa nguồn, mã hóa mật mã, mã hóa kênh; và các lớp giải mã tương ứng. Câu
+nhấn của slide là: đời người sinh ra nhị phân, nhị phân sinh ra máy tính, và
+máy tính bao dung vạn vật.
 
-Trong bối cảnh thi lập trình, mã hóa thường là biến một đối tượng tổ hợp thành
-một số thứ tự, một chuỗi bit hoặc một biểu diễn ngắn. Giải mã là dựng lại đối
-tượng từ biểu diễn ấy. Các bài kiểu này thường xoay quanh hoán vị, tập con,
-chuỗi, đường đi hoặc cấu hình có ràng buộc.
+\section{Bài toán mã hóa và giải mã hoán vị}
 
-\section{Đếm theo lớp}
+Phần kỹ thuật đầu tiên dùng một bộ ký tự \(S\), với \(|S|!<2^{63}\).
+\begin{itemize}
+  \item \textbf{Giải mã:} tìm hoán vị thứ \(k\) theo thứ tự từ điển trong tất
+  cả hoán vị của \(S\).
+  \item \textbf{Mã hóa:} cho một hoán vị của \(S\), hỏi nó là hoán vị thứ mấy
+  theo thứ tự từ điển.
+\end{itemize}
 
-Với thứ tự từ điển của hoán vị, sinh lần lượt bằng
-\texttt{next\_permutation} là quá chậm. Cách tốt hơn là đếm số đối tượng trong
-từng lớp tiền tố. Khi mã hóa, ta cộng số lớp nhỏ hơn tiền tố hiện tại; khi
-giải mã, ta dùng thứ hạng để chọn lớp chứa đối tượng cần dựng.
+Cách trực tiếp là sắp xếp \(S\) để có hoán vị nhỏ nhất, rồi lặp
+\texttt{next\_permutation}. Với giải mã phải gọi \(k-1\) lần; với mã hóa phải
+gọi và so sánh liên tục. Vì \(k\) có thể lớn tới \(|S|!\), cách này không dùng
+được.
 
-\section{Công cụ}
+Slide nhắc lại cài đặt \texttt{next\_permutation}: tìm từ phải sang trái vị
+trí đầu tiên \(i\) sao cho \(s_i<s_{i+1}\), đổi \(s_i\) với phần tử phù hợp ở
+hậu tố, rồi đảo hậu tố. Một lần chạy tốn \(\Oh(|s|)\), nhưng lặp quá nhiều
+lần là điểm chết.
 
-Các slide gợi ý phối hợp đếm tổ hợp, quy hoạch động, tìm kiếm, sắp xếp và
-tham lam. Điểm chung là mỗi bước mã hóa hoặc giải mã cần biết số đối tượng
-trong một lớp, vì vậy bài toán thường trở thành bài toán đếm có điều kiện.
+\section{Đếm theo lớp tiền tố}
+
+Cách tốt hơn xem mã hóa là bài toán đếm: số thứ tự của một đối tượng bằng số
+đối tượng không lớn hơn nó. Thứ tự từ điển được quyết định bởi vị trí đầu tiên
+khác nhau, nên ta phân lớp theo từng tiền tố.
+
+Ví dụ slide mã hóa chuỗi \(\texttt{42153}\). Ta lần lượt đếm các lớp có tiền
+tố nhỏ hơn:
+\[
+  \texttt{1????},\ \texttt{2????},\ \texttt{3????}
+  \quad\Rightarrow\quad 3\cdot 4!=72,
+\]
+sau đó trong lớp \(\texttt{4????}\), xét tiếp \(\texttt{41???}\) trước
+\(\texttt{42???}\), cộng \(1\cdot3!=6\). Ở các vị trí sau, cộng thêm phần
+tương ứng; slide ghi tổng minh họa là \(80\).
+
+Giải mã làm ngược lại. Với mã \(80\), ta thử các lớp:
+\[
+\texttt{1????}:24,\quad
+\texttt{2????}:24,\quad
+\texttt{3????}:24,\quad
+\texttt{4????}:24.
+\]
+Tổng lũy tích vượt \(80\) ở lớp \(\texttt{4????}\), nên ký tự đầu là
+\(\texttt{4}\). Tiếp tục trên phần còn lại để dựng \(\texttt{42153}\).
+
+Nếu chuỗi cần dựng dài \(n\) và bảng chữ cái có kích thước \(m\), mỗi vị trí
+có thể thử tối đa \(m\) ký tự, mỗi lần thử gọi một mẫu đếm độ phức tạp
+\(\Oh(m)\). Slide đưa ra tổng \(\Oh(nm^2)\), thay vì cách lặp hoán vị có thể
+đụng tới \(\Oh(n\cdot n!)\).
+
+\section{Các công cụ thường dùng}
+
+Slide liệt kê ba nhóm công cụ cho bài mã hóa/giải mã:
+\begin{itemize}
+  \item số học và đếm tổ hợp, ví dụ \textit{Twofive} (IOI 2001) và
+  \textit{Hexadecimal Numbers} (CEOI 1997);
+  \item quy hoạch động, tìm kiếm, sắp xếp, tham lam và dựng cấu hình, ví dụ
+  \textit{CUDAK}, \textit{Zip}, \textit{A Decorative Fence};
+  \item cấu trúc dữ liệu đặc biệt như heap, Fenwick tree, Huffman và Prüfer.
+\end{itemize}
+
+Điểm chung là mỗi bước cần biết kích thước của một lớp cấu hình. Bài mã hóa
+thường trở thành bài đếm có điều kiện; bài giải mã dùng thứ hạng để chọn lớp
+đúng.
+
+\section{Các mã quen thuộc}
+
+Bản trình chiếu nêu bốn ví dụ cụ thể:
+\begin{itemize}
+  \item \textbf{Huffman code}: mã tiền tố tối ưu theo tần suất;
+  \item \textbf{Gray code}: hai mã liên tiếp chỉ khác một bit;
+  \item \textbf{Prüfer code}: song ánh giữa cây gán nhãn \(n\) đỉnh và dãy dài
+  \(n-2\) trên \([1,n]\);
+  \item \textbf{Hash function}: nén đối tượng lớn thành khóa ngắn để so sánh
+  hoặc tra cứu nhanh.
+\end{itemize}
+Slide dùng hình ảnh ``mã như vũ trụ'': vũ trụ dung chứa vạn vật mà không loạn,
+mã hóa cũng phải dung chứa đối tượng phức tạp trong một biểu diễn có trật tự.
+
+\section{Prüfer code}
+
+Với cây gán nhãn \(n\) đỉnh, định lý Cayley nói có \(n^{n-2}\) cây khác nhau.
+Prüfer đưa ra một chứng minh xây dựng qua mã Prüfer.
+
+Quá trình mã hóa:
+\begin{enumerate}
+  \item Khi cây còn hơn hai đỉnh, chọn lá có nhãn nhỏ nhất.
+  \item Ghi nhãn của đỉnh kề với lá đó vào dãy Prüfer.
+  \item Xóa lá khỏi cây.
+\end{enumerate}
+Sau \(n-2\) bước thu được dãy Prüfer. Slide minh họa một cây \(8\) đỉnh có mã
+\(\{2,1,3,3,5,1\}\).
+
+Giải mã dùng tính chất: ở mỗi bước, lá cần nối là nhãn nhỏ nhất chưa xuất hiện
+trong phần còn lại của dãy. Nối lá đó với phần tử đầu của dãy, xóa phần tử
+đầu, rồi tiếp tục; cuối cùng nối hai nhãn còn lại.
+
+\section{Ứng dụng Prüfer}
+
+Ví dụ \textit{Tree Counting} (HNOI 2004 Day 2) hỏi số cây \(n\) đỉnh có bậc
+của đỉnh \(v_i\) bằng \(d_i\). Trong mã Prüfer của một cây, nhãn \(i\) xuất
+hiện đúng \(d_i-1\) lần. Vì vậy nếu \(\sum_i d_i=2(n-1)\), số cây là hệ số đa
+thức:
+\[
+  \frac{(n-2)!}{\prod_{i=1}^n (d_i-1)!}.
+\]
+Đây là ví dụ điển hình: thay vì đếm cây trực tiếp, ta mã hóa cây thành dãy có
+ràng buộc số lần xuất hiện.
+
+\section{Các hệ mã ngoài OI}
+
+Slide kết thúc bằng một loạt hệ mã ngoài thi lập trình: RSA, chuẩn nén ảnh
+JPEG, MD5, SHA, ISBN, mã bưu chính, CRC, run-length encoding, MH, LZW, số điện
+thoại, truyền thông mạng, bảo mật và kiểm soát lỗi. Thông điệp là mã hóa/giải
+mã không phải thủ thuật riêng của vài bài tổ hợp; đó là cách thông tin tồn tại,
+truyền đi, được kiểm tra và được phục hồi.
+
+\section{Kết}
+
+Mã hóa và giải mã giống nước: nước là nguồn sống, mã là nguồn của thông tin;
+nước mềm mà cũng cứng, mã hóa cũng linh hoạt như vậy. Slide khép lại bằng câu
+``Đạo khả đạo, phi thường đạo'', rồi cảm ơn cha mẹ, thầy Zhang Junliang, các
+huấn luyện viên, bạn bè và CCF.
 
 \end{document}

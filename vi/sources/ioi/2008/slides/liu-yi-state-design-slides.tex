@@ -12,38 +12,160 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for reasonable state design and applications}
+\origtitle{Reasonable state design and applications}
 \sourcepath{IOI China candidate team papers / 2008 / Day 1 / Liu Yi.ppt}
 
 \section{Phạm vi bản dịch}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ tài liệu Word. Bản ghi chú này
-giữ lại trọng tâm: số lượng trạng thái quan trọng không kém chi phí xử lý từng
-trạng thái.
+Bản PowerPoint là phần trình bày ngắn đi kèm bài viết về thiết kế trạng thái.
+Các slide không lặp lại toàn bộ luận văn, mà chọn ba ví dụ để nhấn mạnh một
+ý: trong nhiều thuật toán, phần quyết định không chỉ là xử lý mỗi trạng thái
+nhanh hơn, mà còn là chọn được tập trạng thái đủ nhỏ và đủ đúng.
 
-\section{Công thức tư duy}
+Vì tệp PPT gốc chủ yếu gồm đề mục, công thức, mốc độ phức tạp và các đoạn mã
+minh họa dài, bản ghi chú này dịch và diễn giải theo mạch slide, đồng thời
+lược bỏ các khuôn chương trình Pascal.
 
-Trong nhiều thuật toán, thời gian chạy có thể nhìn như
+\section{Công thức trung tâm}
+
+Slide mở đầu đặt vấn đề bằng công thức quen thuộc:
 \[
-  \text{số trạng thái}\times\text{chi phí xử lý mỗi trạng thái}.
+  \text{thời gian chạy}
+  =
+  \text{số trạng thái}
+  \times
+  \text{thời gian xử lý một trạng thái}.
 \]
-Tối ưu chuyển trạng thái chỉ giải quyết vế thứ hai. Nếu cách biểu diễn trạng
-thái chứa quá nhiều thông tin dư, thuật toán vẫn có thể quá chậm dù mỗi bước
-xử lý đã được viết tốt.
+Khi tối ưu thuật toán, ta thường tập trung vào vế thứ hai: dùng cấu trúc dữ
+liệu tốt hơn, giảm số phép tính trong mỗi lần chuyển, hoặc viết cài đặt chặt
+hơn. Nhưng vế thứ nhất cũng có thể thay đổi rất mạnh theo cách ta mô hình hóa
+bài toán.
 
-\section{Ba hướng cải tiến}
+Một trạng thái hợp lý cần giữ đúng phần thông tin ảnh hưởng đến tương lai.
+Thông tin chỉ mô tả lịch sử, cách biểu diễn, hoặc những trường hợp không thể
+xảy ra nên được gộp hoặc bỏ đi. Ba ví dụ trong slide lần lượt minh họa ba
+cấp độ: đếm lại trạng thái, đổi biểu diễn trạng thái, và đặt lại vị trí của
+trạng thái trong mô hình.
 
-Các slide lần lượt nhắc ba hướng: đếm đúng số trạng thái thật sự cần xét,
-thay đổi cách biểu diễn trạng thái để gộp nhiều trạng thái tương đương, và
-thiết kế lại trạng thái khi mô hình quen thuộc dẫn tới bế tắc. Ví dụ
-\textit{Square Root} cho thấy nhóm truy vấn theo modulo nguyên tố có thể biến
-một cách liệt kê tưởng như thô thành lời giải đủ nhanh.
+\section{Ví dụ 1: Square Root}
+
+Bài toán yêu cầu, với nhiều truy vấn \((a,n)\), tìm các \(x\) thỏa
+\[
+  x^2 \equiv a \pmod n,\qquad 0 < x < n.
+\]
+Trong đề, \(1\le a,n\le 32767\), \(n\) là số nguyên tố, và số truy vấn có thể
+tới \(100000\).
+
+Cách nhìn trực tiếp xem mỗi truy vấn là một trạng thái riêng: với từng
+\((a,n)\), duyệt mọi \(x\), tính \(x^2\bmod n\), rồi kiểm tra có bằng \(a\)
+hay không. Nếu \(N\) là cỡ của modulo và \(K\) là số truy vấn, cách này tốn
+\(\Oh(KN)\), không phù hợp với giới hạn lớn nhất.
+
+Slide nhấn mạnh rằng một lần duyệt theo modulo \(n\) không chỉ trả lời một
+giá trị \(a\). Nó tạo được bảng
+\[
+  \text{value}(x)=x^2\bmod n
+\]
+cho mọi \(x\), từ đó biết nghiệm của mọi \(a\) cùng modulo. Vì vậy trạng thái
+đúng hơn không phải là từng truy vấn, mà là từng modulo nguyên tố xuất hiện.
+
+Giới hạn \(32767\) có khoảng vài nghìn số nguyên tố, nhỏ hơn nhiều so với
+\(100000\) truy vấn. Ta sắp xếp hoặc gom các truy vấn theo \(n\), xử lý mỗi
+modulo nguyên tố một lần, rồi trả lời các truy vấn của nó bằng bảng đã có.
+Mốc độ phức tạp trong slide có dạng
+\[
+  \Oh(\text{prime}(N)\cdot N + K\log K),
+\]
+nếu tính thêm chi phí sắp xếp truy vấn.
+
+Điểm rút ra không nằm ở số học modulo, mà ở việc tái sử dụng trạng thái lớn.
+Một thuật toán liệt kê tưởng như quá thô trở nên khả thi khi ta đếm đúng số
+``thế giới'' cần xét.
+
+\section{Ví dụ 2: Banal Tickets}
+
+Một vé có \(2n\) chữ số, \(n\le 18\). Một số vị trí có thể bị che bởi dấu hỏi.
+Vé được gọi là \emph{interesting} nếu tích của \(n\) chữ số đầu bằng tích của
+\(n\) chữ số sau; ngược lại là \emph{banal}. Vì tổng số cách điền biết ngay từ
+số dấu hỏi, chỉ cần đếm số vé \emph{interesting}.
+
+Trạng thái quy hoạch động tự nhiên là \(dp[i,j]\): sau khi xét \(i\) chữ số,
+có bao nhiêu cách đạt tích \(j\). Trạng thái này không thực tế vì tích có thể
+rất lớn và thưa. Slide chuyển sang quan sát rằng mọi chữ số từ \(1\) đến \(9\)
+chỉ có các thừa số nguyên tố
+\[
+  2,\quad 3,\quad 5,\quad 7.
+\]
+Do đó một tích khác \(0\) có thể biểu diễn bằng bộ bốn số mũ
+\[
+  (a,b,c,d)
+  \quad\Longleftrightarrow\quad
+  2^a3^b5^c7^d.
+\]
+Trạng thái trở thành \(dp[i,a,b,c,d]\); trường hợp tích bằng \(0\) được tách
+riêng.
+
+Nếu lấy miền cực đại cho từng số mũ, với \(n=18\) vẫn có thể tạo ra khoảng
+hơn một triệu tổ hợp chỉ số. Nhiều tổ hợp trong số đó không thể xuất hiện từ
+tích của \(18\) chữ số thật. Vì vậy slide đưa thêm bước nén: sinh hoặc đánh
+số bằng hash chỉ những bộ số mũ đạt được khi nhân các chữ số hợp lệ.
+
+Sau khi có bảng số trạng thái thật sự xuất hiện, ta tính phân bố tích cho nửa
+trái và nửa phải, rồi cộng tích các số cách tương ứng. Bản trình chiếu có kèm
+các khung chương trình cho phần sinh trạng thái và tra bảng; bản dịch này
+không chép lại vì mạch chính là lựa chọn biểu diễn:
+\begin{itemize}
+  \item từ tích nguyên lớn sang bốn số mũ nguyên tố;
+  \item từ miền hình hộp của số mũ sang tập trạng thái có thể đạt được;
+  \item tách riêng tích \(0\) thay vì ép nó vào biểu diễn thừa số.
+\end{itemize}
+
+\section{Ví dụ 3: Shoot Your Gun}
+
+Ví dụ cuối cùng trong slide là bài hình học phản xạ \textit{Shoot Your Gun}.
+Có các đa giác trực giao \(G\), \(T\) và miền bao \(M\). Ta đặt súng trên biên
+\(G\), bắn theo một trong bốn hướng chéo; tia phản xạ trên biên \(M\). Cần số
+lần phản xạ ít nhất để chạm \(T\) trước khi quay lại \(G\).
+
+Nếu coi mọi điểm lưới, mọi ô, hoặc mọi vị trí trên đường đi là trạng thái, số
+trạng thái tăng rất nhanh; trong slide xuất hiện mốc tọa độ tới khoảng
+\(4000\) và cảnh báo các cách dựng đồ thị thô có thể lên tới bậc hai theo
+kích thước lưới. Ngoài ra còn có hiện tượng biểu diễn trùng: cùng một điểm
+hình học có thể được nhìn như góc của nhiều ô khác nhau.
+
+Quan sát quan trọng là tia sáng chỉ đổi hành vi khi gặp biên phản xạ, chạm
+mục tiêu, hoặc chạm lại nguồn. Những điểm nằm giữa một đoạn thẳng không tạo ra
+quyết định mới. Vì vậy trạng thái nên đặt ở các điểm biên liên quan cùng với
+hướng đi, không đặt trên toàn bộ lưới.
+
+Một mô hình đầy đủ có thể dựng đồ thị trạng thái rồi chạy SPFA/Dijkstra: mỗi
+đỉnh là một điểm biên kèm hướng, mỗi cạnh là đoạn tia đi thẳng đến sự kiện kế
+tiếp. Nhưng bản trình chiếu nhấn mạnh rằng có thể mô phỏng trực tiếp từng tia
+xuất phát, vì các đoạn tia trong cùng hướng hoặc không gặp nhau, hoặc trùng
+theo cách có thể phát hiện lặp.
+
+Quy trình tóm tắt:
+\begin{enumerate}
+  \item chọn các điểm đại diện trên biên \(G\) và bốn hướng chéo ban đầu;
+  \item từ trạng thái hiện tại, tìm biên gần nhất mà tia sẽ gặp;
+  \item nếu gặp \(T\), cập nhật đáp án; nếu gặp lại \(G\), dừng đường tia;
+  \item nếu gặp biên \(M\), phản xạ hướng và tiếp tục;
+  \item dùng đánh dấu trạng thái để tránh vòng lặp vô hạn.
+\end{enumerate}
+Các đoạn mã dài của slide được lược bỏ; phần cần giữ là cách đặt trạng thái
+tại nơi quỹ đạo thật sự thay đổi.
 
 \section{Kết luận}
 
-Một trạng thái tốt cần giữ đúng phần thông tin ảnh hưởng đến tương lai và bỏ
-phần chỉ là lịch sử hoặc cách biểu diễn. Khi gặp DP, tìm kiếm hoặc liệt kê
-quá lớn, câu hỏi đầu tiên nên là: hai trạng thái nào thật sự khác nhau với
-phần còn lại của bài toán?
+Ba ví dụ tạo thành một chuỗi từ dễ đến khó. Với \textit{Square Root}, chỉ cần
+đếm lại trạng thái theo modulo nguyên tố là đủ. Với \textit{Banal Tickets},
+phải đổi hẳn cách biểu diễn tích và chỉ lưu trạng thái có thể đạt được. Với
+\textit{Shoot Your Gun}, phải bỏ mô hình ô lưới và đặt trạng thái trên biên
+phản xạ.
+
+Thông điệp của slide là: khi thuật toán quá chậm, đừng chỉ hỏi ``mỗi bước có
+thể nhanh hơn không''. Hãy hỏi thêm ``ta có đang tạo ra quá nhiều trạng thái
+không'', ``hai trạng thái này có thật sự khác nhau với phần còn lại của bài
+toán không'', và ``trạng thái có đang nằm đúng nơi quyết định xảy ra không''.
 
 \end{document}

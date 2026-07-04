@@ -12,34 +12,169 @@
 \begin{document}
 \maketitle
 
-\origtitle{Slide companion for layered thinking in shortest paths}
+\origtitle{Layered thinking in shortest paths}
 \sourcepath{IOI China candidate team papers / 2008 / Day 1 / Lu Zihong.ppt}
 
 \section{Phạm vi bản dịch}
 
-Tệp PowerPoint đi cùng bài viết đã được dịch từ tài liệu Word. Bản ghi chú này
-tóm lược hai cách dùng phân tầng: dựng mô hình đường đi ngắn nhất và tối ưu
-thuật toán trên đồ thị có tầng.
+Các slide đi cùng bài viết về tư tưởng phân tầng trong bài toán đường đi ngắn
+nhất. Tệp PPT gốc có nhiều hình vẽ và mốc độ phức tạp, nhưng phần chữ trích
+được cho thấy cấu trúc chính gồm năm ví dụ: \textit{Rescue}, \textit{Fence},
+\textit{Cow Relay}, \textit{Bicriterial Routing} và \textit{Roads}. Bản ghi
+chú này dịch và hệ thống hóa nội dung theo đúng mạch đó.
 
-\section{Dựng mô hình bằng tầng}
+Ý tưởng chung là sao chép một đồ thị thành nhiều tầng. Mỗi tầng giữ một phần
+trạng thái bổ sung: tập chìa khóa, tính chẵn lẻ của số lần cắt tia, số đường
+đã loại bỏ, tổng phí, hoặc tổng chiều dài. Khi đại lượng ấy được đưa vào đỉnh,
+bài toán có thể trở lại thành đường đi ngắn nhất hoặc quy hoạch động trên đồ
+thị phân tầng.
 
-Khi khả năng đi qua cạnh phụ thuộc vào điều kiện bổ sung, ta đưa điều kiện ấy
-vào trạng thái đỉnh. Trong bài có chìa khóa và cửa, mỗi tầng biểu diễn tập
-chìa khóa đang có; cạnh nhặt chìa có trọng số \(0\), còn cạnh di chuyển có
-trọng số \(1\). Sau khi mở rộng trạng thái như vậy, bài toán trở lại thành
-đường đi ngắn nhất chuẩn.
+\section{Rescue: tầng là tập chìa khóa}
 
-\section{Tầng cho điều kiện hình học hoặc số lần}
+Bài \textit{Rescue} có mê cung \(N\times M\). Giữa hai ô kề nhau có thể không
+có vật cản, có tường, hoặc có cửa khóa. Có \(P\) loại chìa khóa, \(P\le 10\);
+một số ô chứa chìa. Cần đi từ \((1,1)\) tới \((N,M)\) trong thời gian ngắn
+nhất.
 
-Trong bài hàng rào, hai tầng có thể biểu diễn tính chẵn lẻ của số lần cắt một
-tia. Một chu trình bao quanh điểm cần bảo vệ tương đương với đường đi giữa hai
-bản sao khác tầng. Ý tưởng tương tự áp dụng khi cần đếm số lần dùng tài nguyên,
-số cạnh đặc biệt, hoặc một điều kiện modulo nhỏ.
+Nếu không có cửa khóa, mỗi ô là một đỉnh và mỗi bước đi là một cạnh trọng số
+\(1\). Cửa khóa làm cho khả năng đi qua cạnh phụ thuộc vào tập chìa đã nhặt.
+Vì vậy ta tạo \(2^P\) tầng, mỗi tầng ứng với một tập chìa khóa.
+
+Trong một tầng, ta chỉ giữ những cạnh cửa mà tập chìa của tầng đó mở được.
+Nếu ô hiện tại có chìa loại \(q\), thêm cạnh trọng số \(0\) từ bản sao của ô
+trong tầng hiện tại sang bản sao trong tầng đã thêm chìa \(q\). Đồ thị mới có
+\(\Oh(2^P NM)\) trạng thái. Vì trọng số chỉ là \(0\) và \(1\), có thể dùng
+BFS \(0/1\) hoặc thuật toán đường đi ngắn nhất tương đương.
+
+Điểm chính của slide là cách biến ``đã nhặt những chìa nào'' từ lịch sử của
+đường đi thành một phần của đỉnh hiện tại.
+
+\section{Fence: tầng là tính chẵn lẻ}
+
+\textit{Fence} yêu cầu tìm hàng rào ngắn nhất bao quanh tòa nhà chính nhưng
+không đi vào vùng cấm quanh các công trình khác. Các vùng cấm là hình chữ nhật
+song song trục, và hàng rào cũng gồm các đoạn song song trục.
+
+Trước hết dựng một đồ thị hình học: đỉnh là các góc hình chữ nhật; nối hai
+đỉnh bằng cạnh nếu đoạn thẳng song song trục giữa chúng không đi xuyên qua
+vùng cấm. Trọng số cạnh là độ dài đoạn. Một chu trình trong đồ thị có thể là
+một hàng rào, nhưng ta còn phải biết nó có bao quanh tòa nhà chính hay không.
+
+Slide dùng tiêu chuẩn chẵn lẻ: kẻ một tia từ điểm cần bao quanh; một đường
+khép kín bao quanh điểm đó khi số lần cắt tia là lẻ. Do đó ta tách đồ thị
+thành hai tầng. Cạnh nào cắt tia sẽ nối sang tầng còn lại; cạnh nào không cắt
+tia sẽ nằm trong cùng tầng.
+
+Khi đó một chu trình bao quanh điểm tương đương với một đường đi từ một bản
+sao của đỉnh \(v\) tới bản sao \(v\) ở tầng còn lại. Chạy đường đi ngắn nhất
+và lấy nhỏ nhất trên mọi \(v\) cho ta độ dài hàng rào tối ưu. Đây là ví dụ
+điển hình nơi tầng không biểu diễn số lần đầy đủ, mà chỉ biểu diễn phần cần
+thiết của nó: chẵn hay lẻ.
+
+\section{Cow Relay: tầng là tập đường đi còn lại}
+
+Trong \textit{Cow Relay}, cần tìm đường đi thứ \(k\) ngắn nhất giữa hai đỉnh,
+với \(k\le 40\). Cách dùng hàng đợi ưu tiên để mở rộng các đường đi ứng viên
+có thể giải bài, nhưng slide trình bày một cách nhìn phân tầng để loại dần
+đường đi đã chọn.
+
+Thêm nguồn \(s\) nối tới đỉnh đầu và đỉnh cuối nối tới \(t\). Sau khi tìm
+đường ngắn nhất \(p_1\) từ \(s\) tới \(t\), ta tạo một tầng sao chép. Các cạnh
+không thuộc \(p_1\) được phép chuyển từ tầng cũ sang tầng mới; các cạnh thuộc
+\(p_1\) thì không. Vì vậy mọi đường từ \(s\) tới \(t'\) trong tầng mới tương
+ứng với một đường cũ nhưng không thể trùng đúng \(p_1\). Đường ngắn nhất mới
+chính là đường ngắn thứ hai.
+
+Lặp ý tưởng này cho các đường đã tìm được sẽ thu được đường thứ \(k\). Bản
+trình chiếu ghi các mốc tối ưu hóa: không cần sao chép toàn bộ đồ thị ở mọi
+vòng, chỉ cần sao chép phần có thể tạo ra nhánh khác; cây đường đi ngắn nhất
+của phần cũ được giữ lại. Với cách triển khai đó, độ phức tạp hướng tới
+\[
+  \Oh(km),
+\]
+và bộ nhớ khoảng \(\Oh(kn+m)\).
+
+Thông điệp ở đây hơi khác hai ví dụ trước: tầng không phải trạng thái vật lý
+của người đi, mà là trạng thái của không gian lời giải sau khi đã loại một số
+đường.
+
+\section{Bicriterial Routing: tầng là chi phí}
+
+\textit{Bicriterial Routing} xét mạng đường có hai trọng số trên mỗi cạnh:
+thời gian và phí. Một tuyến bị loại nếu có tuyến khác vừa không chậm hơn vừa
+không đắt hơn, và tốt hơn ở ít nhất một tiêu chí. Cần đếm các cặp
+\((\text{phí},\text{thời gian})\) không bị trội.
+
+Ta chọn phí làm chỉ số tầng. Nếu tổng phí hiện tại là \(q\), một cạnh có phí
+\(w\) và thời gian \(t\) nối từ tầng \(q\) sang tầng \(q+w\), với trọng số
+đường đi là \(t\). Như vậy, tại mỗi tầng phí, khoảng cách ngắn nhất tới đích
+cho ta thời gian tốt nhất ứng với mức phí ấy.
+
+Cách trực tiếp là chạy Dijkstra trên toàn đồ thị mở rộng. Nhưng đồ thị có
+cấu trúc một chiều theo phí: cạnh không đi từ tầng cao xuống tầng thấp. Vì
+vậy có thể xử lý các tầng theo thứ tự phí tăng dần và chỉ giải bài toán nhỏ
+trong từng tầng. Mốc trong bài viết là giảm từ dạng
+\[
+  \Oh(ncm\log(n^2c))
+\]
+xuống
+\[
+  \Oh(ncm\log n),
+\]
+trong đó \(c\) là chặn phí cạnh.
+
+Sau khi có thời gian tốt nhất theo từng mức phí, chỉ cần quét các cặp để bỏ
+những cặp bị trội.
+
+\section{Roads: đổi trục phân tầng}
+
+\textit{Roads} cũng có hai đại lượng trên mỗi cạnh: chiều dài và phí. Bob có
+ngân sách không quá \(k\) và muốn tới đích với chiều dài nhỏ nhất. Mô hình
+đầu tiên giống ví dụ trước: dùng tổng phí làm tầng, chạy Dijkstra trên đồ thị
+mở rộng. Slide ghi mốc
+\[
+  \Oh(k(kn^2+m))
+\]
+cho cách thô và
+\[
+  \Oh(k(n^2+m))
+\]
+khi xử lý tầng phí theo thứ tự.
+
+Tuy nhiên, bài này có chặn nhỏ trên chiều dài cạnh. Vì vậy slide đổi trục:
+dùng tổng chiều dài làm tầng, còn giá trị lưu trong trạng thái là phí nhỏ
+nhất. Đặt
+\[
+  f[i,j]=\text{phí nhỏ nhất để tới thành phố }j
+  \text{ với tổng chiều dài đúng }i.
+\]
+Điều kiện đầu là \(f[0,1]=0\), các trạng thái khác là vô hạn. Với cạnh
+\((j_0,j)\) có chiều dài \(\ell\) và phí \(w\), cập nhật
+\[
+  f[i,j]=\min\{f[i,j],\,f[i-\ell,j_0]+w\}.
+\]
+Đáp án là \(i\) nhỏ nhất sao cho \(f[i,N]\le k\). Nếu \(L\) là chặn chiều dài
+cạnh, độ phức tạp trở thành
+\[
+  \Oh(nLm).
+\]
+
+Ví dụ này cho thấy không phải đại lượng nào cũng nên làm tầng. Chọn phí làm
+tầng là tự nhiên, nhưng chọn chiều dài làm tầng mới khai thác tốt hơn giới
+hạn dữ liệu.
 
 \section{Kết luận}
 
-Phân tầng hữu ích vì nó biến ràng buộc lịch sử thành một phần của đỉnh hiện
-tại. Đổi lại, số tầng phải đủ nhỏ; nếu không, đồ thị mở rộng sẽ vượt quá giới
-hạn bộ nhớ và thời gian.
+Phân tầng có hai vai trò trong các slide. Thứ nhất, nó giúp dựng mô hình:
+tập chìa khóa, tính chẵn lẻ, hoặc tập đường đi còn lại được biến thành một
+phần của đỉnh. Thứ hai, nó giúp tối ưu: khi cạnh chỉ đi cùng tầng hoặc sang
+tầng cao hơn, ta có thứ tự xử lý tự nhiên và không cần xem đồ thị mở rộng như
+một khối đen.
+
+Khi áp dụng, cần trả lời ba câu hỏi: đại lượng nào gây khó cho đồ thị ban
+đầu; đại lượng ấy có bao nhiêu giá trị đủ nhỏ để làm tầng; và cấu trúc giữa
+các tầng có thể khai thác thêm hay không. Nếu chỉ sao chép đồ thị mà không
+khai thác cấu trúc, phân tầng có thể làm bài toán lớn hơn; nếu chọn đúng
+trục, nó biến ràng buộc lịch sử thành một mô hình đường đi ngắn nhất rõ ràng.
 
 \end{document}
