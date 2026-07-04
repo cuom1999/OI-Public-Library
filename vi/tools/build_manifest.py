@@ -34,6 +34,8 @@ REFERENCE_NOTE_SOURCES = {
 }
 COMPANION_NOTE_SOURCES = {
     "IOI中国国家候选队论文/2000/骆骥论文.pdf",
+    "IOI中国国家候选队论文/1999/陈宏.pdf",
+    "IOI中国国家候选队论文/2002/符文杰.pdf",
     "IOI中国国家候选队论文/2004/鬲融.pdf",
     "IOI中国国家候选队论文/2006/朱泽园/朱泽园.pdf",
     "IOI中国国家候选队论文/2007/day1/9.王欣上《浅谈基于分层思想的网络流算法》.pdf",
